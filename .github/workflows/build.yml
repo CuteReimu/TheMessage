@@ -28,6 +28,10 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        
+    - if: ${{ env.isUnix == 'true' }}
+      run: chmod -R 777 *
+        
     - name: Build with Gradle
       uses: gradle/gradle-build-action@v2
       with:
