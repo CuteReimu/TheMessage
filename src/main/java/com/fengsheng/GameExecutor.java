@@ -5,13 +5,23 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class GameExecutor {
+public class GameExecutor implements Runnable {
     private static final Logger log = Logger.getLogger(GameExecutor.class);
     private final static GameExecutor[] executors = new GameExecutor[(Runtime.getRuntime().availableProcessors() + 1) / 2];
 
     private final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1024);
 
     private GameExecutor() {
+    }
+
+    @SuppressWarnings("InfiniteLoopStatement")
+    @Override
+    public void run() {
+        while (true) try {
+            queue.take().run();
+        } catch (InterruptedException e) {
+            log.error("take queue interrupted", e);
+        }
     }
 
     private void post(Runnable callback) {
@@ -28,15 +38,7 @@ public class GameExecutor {
             synchronized (GameExecutor.class) {
                 if (executors[mod] == null) {
                     executors[mod] = new GameExecutor();
-                    Thread thread = new Thread(() -> {
-                        while (true) {
-                            try {
-                                executors[mod].queue.take().run();
-                            } catch (InterruptedException e) {
-                                log.error("take queue interrupted", e);
-                            }
-                        }
-                    });
+                    Thread thread = new Thread(executors[mod]);
                     thread.setDaemon(true);
                     thread.start();
                 }
