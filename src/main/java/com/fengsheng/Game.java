@@ -14,13 +14,13 @@ public class Game {
     private static Map<Integer, Game> gameCache = new HashMap<>();
     private static AtomicInteger increaseId = new AtomicInteger();
 
-    private final int id;
+    final int id;
     private final Player[] players;
     private final Deck deck = new Deck(this);
-    private Fsm fsm;
+    private Runnable fsm;
     private final List<Skill> listeningSkills = new ArrayList<>();
 
-    public Game(int totalPlayerCount) {
+    private Game(int totalPlayerCount) {
         id = increaseId.incrementAndGet();
         players = new Player[totalPlayerCount];
     }
@@ -33,7 +33,7 @@ public class Game {
         return deck;
     }
 
-    public Fsm getFsm() {
+    public Runnable getFsm() {
         return fsm;
     }
 
