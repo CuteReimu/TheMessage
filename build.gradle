@@ -34,6 +34,6 @@ protobuf {
 }
 
 task run(dependsOn: classes, type: JavaExec) {
-    main("com.fengsheng.Main")
+    main("com.fengsheng.Game")
     classpath(sourceSets.main.runtimeClasspath)
 }
