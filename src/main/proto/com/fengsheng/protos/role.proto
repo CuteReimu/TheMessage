@@ -1,0 +1,199 @@
+syntax = "proto3";
+option java_package = "com.fengsheng.protos";
+import "com/fengsheng/protos/common.proto";
+
+// 毛不拔【奇货可居】：你接收双色情报后，可以从你的情报区选择一张情报加入手牌。
+message skill_qi_huo_ke_ju_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【奇货可居】
+message skill_qi_huo_ke_ju_toc {
+  uint32 player_id = 1;
+  uint32 card_id = 2;
+}
+
+// 肥原龙川【诡诈】：出牌阶段限一次，你可以指定一名角色，然后视为你对其使用了一张【威逼】或【利诱】。
+message skill_gui_zha_tos {
+  uint32    target_player_id = 1;
+  card_type card_type = 2; // 威逼还是利诱
+  card_type want_type = 3; // 如果是威逼，还需要填威逼的卡牌类型
+  uint32    seq = 4;
+}
+
+// 广播使用【诡诈】
+message skill_gui_zha_toc {
+  uint32    player_id = 1;
+  uint32    target_player_id = 2;
+  card_type card_type = 3;
+}
+
+// 王魁【以牙还牙】：你接收黑色情报后，可以将一张黑色手牌置入情报传出者或其相邻角色的情报区，然后摸一张牌。
+message skill_yi_ya_huan_ya_tos {
+  uint32 target_player_id = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【以牙还牙】
+message skill_yi_ya_huan_ya_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  card   card = 3;
+}
+
+// 韩梅【移花接木】：争夺阶段，你可以翻开此角色牌，然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情牌加入你的手牌。
+message skill_yi_hua_jie_mu_tos {
+  uint32 from_player_id = 1;
+  uint32 card_id = 2;
+  uint32 to_player_id = 3;
+  uint32 seq = 4;
+}
+
+// 广播使用【移花接木】
+message skill_yi_hua_jie_mu_toc {
+  uint32 player_id = 1;
+  uint32 from_player_id = 2;
+  uint32 card_id = 3;
+  uint32 to_player_id = 4;
+  bool   join_into_hand = 5; // 是否改为加入手牌
+}
+
+// 鄭文先【偷天】：争夺阶段你可以翻开此角色牌，然后视为你使用了一张【截获】。
+message skill_tou_tian_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【偷天】
+message skill_tou_tian_toc {
+  uint32 player_id = 1;
+}
+
+// 广播使用【换日】：你使用【调包】或【破译】后，可以将你的角色牌翻至面朝下。
+message skill_huan_ri_toc {
+  uint32 player_id = 1;
+}
+
+// 鬼脚【急送】：争夺阶段限一次，你可以弃置两张手牌，或从你的情报区弃置一张非黑色情报，然后将待收情报移至一名角色面前。
+message skill_ji_song_tos {
+  repeated card hand_cards = 1; // 弃置的两张手牌，和下面的情报二选一
+  card          message_card = 2; // 弃置的情报，和上面的手牌二选一
+  uint32        target_player_id = 3;
+  uint32        seq = 4;
+}
+
+// 广播使用【急送】
+message skill_ji_song_toc {
+  uint32        player_id = 1;
+  repeated card hand_cards = 2; // 弃置的两张手牌，和下面的情报二选一
+  card          message_card = 3; // 弃置的情报，和上面的手牌二选一
+  uint32        target_player_id = 4;
+}
+
+// 邵秀【绵里藏针】：你传出的情报被接收后，可以将一张黑色手牌置入接收者的情报区，然后摸一张牌。
+message skill_mian_li_cang_zhen_tos {
+  uint32 card_id = 1;
+  uint32 target_player_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【绵里藏针】
+message skill_mian_li_cang_zhen_toc {
+  uint32 player_id = 1;
+  card   card = 2;
+  uint32 target_player_id = 3;
+}
+
+// 金生火【谨慎】：你接收双色情报后，可以用一张手牌与该情报面朝上互换。
+message skill_jin_shen_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【谨慎】
+message skill_jin_shen_toc {
+  uint32 player_id = 1;
+  card   card = 2;
+}
+
+// 白菲菲【怜悯】：你传出的非黑色情报被接收后，可以从你或接收者的情报区选择一张黑色情报加入你的手牌。
+message skill_lian_min_tos {
+  uint32 target_player_id = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【怜悯】
+message skill_lian_min_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  uint32 card_id = 3;
+}
+
+// 广播使用【腹黑】：你传出的黑色情报被接收后，你摸一张牌。
+message skill_fu_hei_toc {
+  uint32 player_id = 1;
+}
+
+// 端木静【新思潮】：出牌阶段限一次，你可以弃置一张手牌，然后摸两张牌。
+message skill_xin_si_chao_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【新思潮】，弃牌和摸牌走原本的协议
+message skill_xin_si_chao_toc {
+  uint32 player_id = 1;
+}
+
+// 广播使用【视死】：你接收黑色情报后，摸两张牌
+message skill_shi_si_toc {
+  uint32 player_id = 1;
+}
+
+// 广播询问客户端使用【如归】
+message skill_wait_for_ru_gui_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 老汉【如归】：你死亡前，可以将你情报区中的一张情报置入当前回合角色的情报区中。
+message skill_ru_gui_tos {
+  bool   enable = 1; // 是否发动
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【如归】
+message skill_ru_gui_toc {
+  uint32 player_id = 1;
+  uint32 card_id = 2;
+}
+
+// 广播询问客户端使用【转交】
+message skill_wait_for_zhuan_jiao_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 白小年【转交】：你使用一张手牌后，可以从你的情报区选择一张非黑色情报，将其置入另一名角色的情报区，然后你摸两张牌。你不能通过此技能让任何角色收集三张或更多同色情报。
+message skill_zhuan_jiao_tos {
+  uint32 card_id = 1;
+  uint32 target_player_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【转交】
+message skill_zhuan_jiao_toc {
+  uint32 player_id = 1;
+  uint32 card_id = 2;
+  uint32 target_player_id = 3;
+}
+
+// 广播使用【明饵】：你传出的红色或蓝色情报被接收后，你和接收者各摸一张牌。
+message skill_ming_er_toc {
+  uint32 player_id = 1;
+}

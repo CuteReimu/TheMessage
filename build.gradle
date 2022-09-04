@@ -1,0 +1,39 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.19'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'com.google.protobuf' version "0.8.19"
+}
+
+group 'com.fengsheng'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation group: 'io.netty', name: 'netty-all', version: '4.1.80.Final'
+    implementation 'com.google.protobuf:protobuf-java:3.21.5'
+    implementation 'log4j:log4j:1.2.17'
+    protobuf files("proto/")
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.21.5'
+    }
+}
+
+task run(dependsOn: classes, type: JavaExec) {
+    main("com.fengsheng.Main")
+    classpath(sourceSets.main.runtimeClasspath)
+}

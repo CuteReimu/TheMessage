@@ -1,0 +1,13 @@
+syntax = "proto3";
+option java_package = "com.fengsheng.protos";
+
+message error_code_toc {
+  error_code      code = 1;
+  repeated int64  int_params = 2;
+  repeated string str_params = 3;
+}
+
+enum error_code {
+  client_version_not_match = 0; // 客户端版本号不匹配，int_params[0]为服务器版本号
+  no_more_room = 1; // 没有更多的房间了
+}
