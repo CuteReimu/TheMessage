@@ -2,6 +2,9 @@ package com.fengsheng;
 
 import com.fengsheng.card.Card;
 import com.fengsheng.network.ProtoServerChannelHandler;
+import com.fengsheng.protos.Common;
+import com.fengsheng.protos.Fengsheng;
+import com.fengsheng.skill.RoleSkillsData;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
@@ -11,9 +14,11 @@ import org.apache.log4j.Logger;
 
 public class HumanPlayer extends AbstractPlayer {
     private static final Logger log = Logger.getLogger(HumanPlayer.class);
-    private static TextFormat.Printer printer = TextFormat.printer().escapingNonAscii(false);
+    private static final TextFormat.Printer printer = TextFormat.printer().escapingNonAscii(false);
 
     private final Channel channel;
+
+    private int seq;
 
     public HumanPlayer(Channel channel) {
         this.channel = channel;
@@ -37,8 +42,26 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyAddHandCard(int location, int unknownCount, Card... cards) {
+    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData) {
+        super.init(identity, secretTask, roleSkillsData);
+        var builder = Fengsheng.init_toc.newBuilder().setPlayerCount(game.getPlayers().length).setIdentity(identity).setSecretTask(secretTask);
+        int l = location;
+        do {
+            // TODO 需要通知玩家其他人的角色
+            builder.addRoles(Common.role.unknown);
+            l = (l + 1) % game.getPlayers().length;
+        } while (l != location);
+        send(builder.build());
+        seq++;
+    }
 
+    @Override
+    public void notifyAddHandCard(int location, int unknownCount, Card... cards) {
+        var builder = Fengsheng.add_card_toc.newBuilder().setPlayerId(getAlternativeLocation(location)).setUnknownCardCount(unknownCount);
+        for (Card card : cards) {
+            builder.addCards(card.toPbCard());
+        }
+        send(builder.build());
     }
 
     @Override
@@ -99,6 +122,16 @@ public class HumanPlayer extends AbstractPlayer {
     @Override
     public void waitForDieGiveCard(Player whoDie) {
 
+    }
+
+    public boolean checkSeq(int seq) {
+        return this.seq == seq;
+    }
+
+    @Override
+    public void incrSeq() {
+        seq++;
+        // TODO 可能将来要加上停计时器任务
     }
 
     @Override

@@ -60,7 +60,7 @@ public interface Card {
     /**
      * （日志用）将颜色转为卡牌的字符串
      */
-    public static String cardColorToString(Common.color[] colors) {
+    static String cardColorToString(List<Common.color> colors) {
         StringBuilder sb = new StringBuilder();
         for (Common.color c : colors) {
             switch (c) {
@@ -72,12 +72,12 @@ public interface Card {
                     sb.append("黑");
             }
         }
-        switch (colors.length) {
+        switch (colors.size()) {
             case 1:
                 return sb.append("色").toString();
             case 2:
                 return sb.append("双色").toString();
         }
-        throw new RuntimeException("unknown color: " + Arrays.toString(colors));
+        throw new RuntimeException("unknown color: " + Arrays.toString(colors.toArray()));
     }
 }

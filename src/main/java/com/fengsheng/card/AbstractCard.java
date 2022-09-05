@@ -5,12 +5,12 @@ import com.fengsheng.protos.Common;
 import java.util.List;
 
 public abstract class AbstractCard implements Card {
-    private final int id;
-    private final List<Common.color> colors;
-    private final Common.direction direction;
-    private final boolean lockable;
+    protected final int id;
+    protected final List<Common.color> colors;
+    protected final Common.direction direction;
+    protected final boolean lockable;
 
-    protected AbstractCard(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
+    public AbstractCard(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         this.id = id;
         this.colors = List.of(colors);
         this.direction = direction;

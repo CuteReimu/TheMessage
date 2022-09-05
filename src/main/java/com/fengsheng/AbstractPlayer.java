@@ -99,9 +99,9 @@ public abstract class AbstractPlayer implements Player {
         log.info(this + "摸了" + Arrays.toString(cards) + "，现在有" + cards.length + "张手牌");
         for (Player player : game.getPlayers()) {
             if (player == this)
-                notifyAddHandCard(location, 0, cards);
+                notifyAddHandCard(player.location(), 0, cards);
             else
-                notifyAddHandCard(location, cards.length);
+                notifyAddHandCard(player.location(), cards.length);
         }
     }
 

@@ -2,14 +2,18 @@ package com.fengsheng;
 
 import com.fengsheng.card.Deck;
 import com.fengsheng.network.Network;
+import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.Skill;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class Game {
     private static final Logger log = Logger.getLogger(Game.class);
@@ -35,7 +39,6 @@ public final class Game {
      */
     private static void newInstance() {
         newGame = new Game(Config.TotalPlayerCount);
-        GameCache.put(newGame.id, newGame);
     }
 
     /**
@@ -77,6 +80,30 @@ public final class Game {
 
     private void start() {
         started = true;
+        Random random = ThreadLocalRandom.current();
+        List<Common.color> identities = new ArrayList<>();
+        for (int i = 0; i < (players.length - 1) / 2; i++) {
+            identities.add(Common.color.Red);
+            identities.add(Common.color.Blue);
+        }
+        identities.add(Common.color.Black);
+        if (players.length % 2 == 0) identities.add(Common.color.Black);
+        Collections.shuffle(identities, random);
+        List<Common.secret_task> tasks = new ArrayList<>(List.of(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector));
+        Collections.shuffle(tasks, random);
+        // TODO 随机分配角色
+        int secretIndex = 0;
+        for (int i = 0; i < players.length; i++) {
+            var identity = identities.get(i);
+            var task = identity == Common.color.Black ? tasks.get(secretIndex++) : Common.secret_task.forNumber(0);
+            players[i].init(identity, task, null);
+        }
+        GameCache.put(id, this);
+        int whoseTurn = random.nextInt(players.length);
+        for (int i = 0; i < players.length; i++) {
+            players[(whoseTurn + i) % players.length].draw(Config.HandCardCountBegin);
+        }
+        // TODO 进入第一个人的出牌阶段
     }
 
     public void end() {

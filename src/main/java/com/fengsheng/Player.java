@@ -253,6 +253,18 @@ public interface Player {
     /**
      * （日志用）将颜色转为角色身份的字符串
      */
+    public static String identityColorToString(Common.color color) {
+        return switch (color) {
+            case Red -> "红方";
+            case Blue -> "蓝方";
+            case Black -> "神秘人";
+            default -> throw new RuntimeException("unknown color: " + color);
+        };
+    }
+
+    /**
+     * （日志用）将颜色转为角色身份的字符串
+     */
     public static String identityColorToString(Common.color color, Common.secret_task task) {
         return switch (color) {
             case Red -> "红方";
