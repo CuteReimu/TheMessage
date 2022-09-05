@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class GameExecutor implements Runnable {
+public final class GameExecutor implements Runnable {
     private static final Logger log = Logger.getLogger(GameExecutor.class);
     private final static GameExecutor[] executors = new GameExecutor[(Runtime.getRuntime().availableProcessors() + 1) / 2];
 

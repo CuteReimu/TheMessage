@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Game {
-    private static Map<Integer, Game> gameCache = new HashMap<>();
-    private static AtomicInteger increaseId = new AtomicInteger();
+public final class Game {
+    private static final Map<Integer, Game> gameCache = new HashMap<>();
+    private static final AtomicInteger increaseId = new AtomicInteger();
 
     final int id;
     private final Player[] players;
