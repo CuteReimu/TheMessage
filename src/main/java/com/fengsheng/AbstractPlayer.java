@@ -26,11 +26,11 @@ public abstract class AbstractPlayer implements Player {
     protected RoleSkillsData roleSkillsData;
     protected final Map<Integer, Integer> skillUseCount = new HashMap<>();
 
-    protected AbstractPlayer() {
-        
+    public AbstractPlayer() {
+
     }
 
-    protected AbstractPlayer(AbstractPlayer player) {
+    public AbstractPlayer(AbstractPlayer player) {
         game = player.game;
         location = player.location;
         identity = player.identity;
