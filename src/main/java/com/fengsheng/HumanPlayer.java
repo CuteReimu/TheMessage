@@ -3,6 +3,7 @@ package com.fengsheng;
 import com.fengsheng.card.Card;
 import com.fengsheng.network.ProtoServerChannelHandler;
 import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -10,6 +11,7 @@ import org.apache.log4j.Logger;
 
 public class HumanPlayer extends AbstractPlayer {
     private static final Logger log = Logger.getLogger(HumanPlayer.class);
+    private static TextFormat.Printer printer = TextFormat.printer().escapingNonAscii(false);
 
     private final Channel channel;
 
@@ -24,13 +26,14 @@ public class HumanPlayer extends AbstractPlayer {
         byte[] buf = message.toByteArray();
         String name = message.getDescriptorForType().getName();
         short id = ProtoServerChannelHandler.stringHash(name);
-        ByteBuf byteBuf = Unpooled.buffer(4, 4);
+        ByteBuf byteBuf = Unpooled.buffer(buf.length + 4, buf.length + 4);
         byteBuf.writeShortLE(buf.length + 2);
         byteBuf.writeShortLE(id);
         byteBuf.writeBytes(buf);
         channel.write(byteBuf);
         channel.writeAndFlush(buf);
-        log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name, message));
+        log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
+                printer.printToString(message).replace("\n", " ")));
     }
 
     @Override
@@ -96,5 +99,10 @@ public class HumanPlayer extends AbstractPlayer {
     @Override
     public void waitForDieGiveCard(Player whoDie) {
 
+    }
+
+    @Override
+    public String toString() {
+        return location + "号[" + (isRoleFaceUp() ? roleSkillsData.getName() : "玩家") + "]";
     }
 }

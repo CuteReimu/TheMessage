@@ -8,7 +8,7 @@ import com.fengsheng.skill.Skill;
 import java.util.Map;
 
 public interface Player {
-    void init(Game game, int location, Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData);
+    void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData);
 
     /**
      * 玩家停止计时器，并且seq值加一
@@ -17,10 +17,17 @@ public interface Player {
 
     Game getGame();
 
+    void setGame(Game game);
+
     /**
      * 玩家在服务器上的座位号，也就是在数组中的index
      */
     int location();
+
+    /**
+     * 设置玩家在服务器上的座位号，也就是在数组中的index
+     */
+    void setLocation(int location);
 
     /**
      * 根据玩家在服务器上的座位号获取玩家的相对座位号

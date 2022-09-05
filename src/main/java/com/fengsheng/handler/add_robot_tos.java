@@ -1,0 +1,22 @@
+package com.fengsheng.handler;
+
+import com.fengsheng.HumanPlayer;
+import com.fengsheng.Player;
+import com.fengsheng.RobotPlayer;
+import com.fengsheng.protos.Fengsheng;
+import org.apache.log4j.Logger;
+
+public class add_robot_tos extends AbstractProtoHandler<Fengsheng.add_robot_tos> {
+    private static final Logger log = Logger.getLogger(add_robot_tos.class);
+
+    @Override
+    protected void handle0(HumanPlayer player, Fengsheng.add_robot_tos pb) {
+        Player robotPlayer = new RobotPlayer();
+        if (player.getGame().isStarted()) {
+            log.error("room is already full");
+            return;
+        }
+        robotPlayer.setGame(player.getGame());
+        robotPlayer.getGame().onPlayerJoinRoom(robotPlayer);
+    }
+}

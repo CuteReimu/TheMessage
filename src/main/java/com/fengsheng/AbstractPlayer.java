@@ -14,23 +14,36 @@ import java.util.Objects;
 public abstract class AbstractPlayer implements Player {
     private static final Logger log = Logger.getLogger(AbstractPlayer.class);
 
-    private Game game;
-    private int location;
-    private final Map<Integer, Card> cards = new HashMap<>();
-    private final Map<Integer, Card> messageCards = new HashMap<>();
-    private Common.color identity;
-    private Common.secret_task secretTask;
-    private boolean alive = true;
-    private boolean lose = false;
-    private boolean hasNoIdentity = false;
-    private RoleSkillsData roleSkillsData;
-    private final Map<Integer, Integer> skillUseCount = new HashMap<>();
+    protected Game game;
+    protected int location;
+    protected final Map<Integer, Card> cards = new HashMap<>();
+    protected final Map<Integer, Card> messageCards = new HashMap<>();
+    protected Common.color identity;
+    protected Common.secret_task secretTask;
+    protected boolean alive = true;
+    protected boolean lose = false;
+    protected boolean hasNoIdentity = false;
+    protected RoleSkillsData roleSkillsData;
+    protected final Map<Integer, Integer> skillUseCount = new HashMap<>();
+
+    protected AbstractPlayer() {
+        
+    }
+
+    protected AbstractPlayer(AbstractPlayer player) {
+        game = player.game;
+        location = player.location;
+        identity = player.identity;
+        secretTask = player.secretTask;
+        alive = player.alive;
+        lose = player.lose;
+        hasNoIdentity = player.hasNoIdentity;
+        roleSkillsData = player.roleSkillsData;
+    }
 
     @Override
-    public void init(Game game, int location, Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData) {
+    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData) {
         log.info(this + "的身份是" + Player.identityColorToString(identity, secretTask));
-        this.game = game;
-        this.location = location;
         this.identity = identity;
         this.secretTask = secretTask;
         if (roleSkillsData != null) {
@@ -51,8 +64,18 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    @Override
     public int location() {
         return location;
+    }
+
+    @Override
+    public void setLocation(int location) {
+        this.location = location;
     }
 
     @Override
@@ -231,7 +254,7 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public boolean isRoleFaceUp() {
-        return roleSkillsData.isFaceUp();
+        return roleSkillsData != null && roleSkillsData.isFaceUp();
     }
 
     @Override

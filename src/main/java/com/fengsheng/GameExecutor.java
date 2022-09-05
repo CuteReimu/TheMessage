@@ -33,7 +33,7 @@ public final class GameExecutor implements Runnable {
     }
 
     public static void post(Game game, Runnable callback) {
-        int mod = game.id % executors.length;
+        int mod = game.getId() % executors.length;
         if (executors[mod] == null) {
             synchronized (GameExecutor.class) {
                 if (executors[mod] == null) {
