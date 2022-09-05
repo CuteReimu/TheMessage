@@ -33,6 +33,10 @@ protobuf {
     }
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
 task run(dependsOn: classes, type: JavaExec) {
     main("com.fengsheng.Game")
     classpath(sourceSets.main.runtimeClasspath)
