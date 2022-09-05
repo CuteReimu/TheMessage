@@ -9,7 +9,6 @@ import java.util.Properties;
 public final class Config {
     public static final int ListenPort;
     public static final int TotalPlayerCount;
-    public static final boolean IsTcpDebugLogOpen;
     public static final int HandCardCountBegin;
     public static final int HandCardCountEachTurn;
     public static final boolean IsGmEnable;
@@ -26,7 +25,6 @@ public final class Config {
         }
         pps.putIfAbsent("listen_port", "9091");
         pps.putIfAbsent("player.total_count", "5");
-        pps.putIfAbsent("log.tcp_debug_log", "true");
         pps.putIfAbsent("rule.hand_card_count_begin", "3");
         pps.putIfAbsent("rule.hand_card_count_each_turn", "3");
         pps.putIfAbsent("gm.enable", "false");
@@ -36,7 +34,6 @@ public final class Config {
         pps.putIfAbsent("gm.debug_roles", "22,26");
         ListenPort = Integer.parseInt(pps.getProperty("listen_port"));
         TotalPlayerCount = Integer.parseInt(pps.getProperty("player.total_count"));
-        IsTcpDebugLogOpen = Boolean.parseBoolean(pps.getProperty("log.tcp_debug_log"));
         HandCardCountBegin = Integer.parseInt(pps.getProperty("rule.hand_card_count_begin"));
         HandCardCountEachTurn = Integer.parseInt(pps.getProperty("rule.hand_card_count_each_turn"));
         IsGmEnable = Boolean.parseBoolean(pps.getProperty("gm.enable"));
