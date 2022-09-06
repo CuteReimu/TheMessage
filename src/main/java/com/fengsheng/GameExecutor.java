@@ -1,5 +1,6 @@
 package com.fengsheng;
 
+import io.netty.util.HashedWheelTimer;
 import org.apache.log4j.Logger;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -8,6 +9,7 @@ import java.util.concurrent.BlockingQueue;
 public final class GameExecutor implements Runnable {
     private static final Logger log = Logger.getLogger(GameExecutor.class);
     private final static GameExecutor[] executors = new GameExecutor[(Runtime.getRuntime().availableProcessors() + 1) / 2];
+    public final static HashedWheelTimer TimeWheel = new HashedWheelTimer();
 
     private final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1024);
 

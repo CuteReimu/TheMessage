@@ -10,6 +10,7 @@ import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.util.Timer;
 import org.apache.log4j.Logger;
 
 public class HumanPlayer extends AbstractPlayer {
@@ -19,6 +20,8 @@ public class HumanPlayer extends AbstractPlayer {
     private final Channel channel;
 
     private int seq;
+
+    private Timer timer;
 
     public HumanPlayer(Channel channel) {
         this.channel = channel;
@@ -135,7 +138,10 @@ public class HumanPlayer extends AbstractPlayer {
     @Override
     public void incrSeq() {
         seq++;
-        // TODO 可能将来要加上停计时器任务
+        if (timer != null) {
+            timer.stop();
+            timer = null;
+        }
     }
 
     @Override

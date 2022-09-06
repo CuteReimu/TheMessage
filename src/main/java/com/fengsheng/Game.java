@@ -3,6 +3,7 @@ package com.fengsheng;
 import com.fengsheng.card.Card;
 import com.fengsheng.card.Deck;
 import com.fengsheng.network.Network;
+import com.fengsheng.phase.DrawPhase;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.Skill;
@@ -13,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public final class Game {
     private static final Logger log = Logger.getLogger(Game.class);
@@ -98,11 +100,13 @@ public final class Game {
             players[i].init(identity, task, null);
         }
         GameCache.put(id, this);
-        int whoseTurn = random.nextInt(players.length);
+        final int whoseTurn = random.nextInt(players.length);
         for (int i = 0; i < players.length; i++) {
             players[(whoseTurn + i) % players.length].draw(Config.HandCardCountBegin);
         }
-        // TODO 进入第一个人的出牌阶段
+        GameExecutor.TimeWheel.newTimeout((timeout) -> {
+            GameExecutor.post(this, () -> resolve(new DrawPhase(players[whoseTurn])));
+        }, 1, TimeUnit.SECONDS);
     }
 
     public void end() {
@@ -170,6 +174,14 @@ public final class Game {
                 continueResolve();
             }
         });
+    }
+
+    /**
+     * 更新一个新的状态机并结算
+     */
+    public void resolve(Fsm fsm) {
+        this.fsm = fsm;
+        continueResolve();
     }
 
     public Fsm getFsm() {

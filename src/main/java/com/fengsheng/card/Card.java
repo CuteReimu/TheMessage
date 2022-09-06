@@ -64,12 +64,9 @@ public interface Card {
         StringBuilder sb = new StringBuilder();
         for (Common.color c : colors) {
             switch (c) {
-                case Red:
-                    sb.append("红");
-                case Blue:
-                    sb.append("蓝");
-                case Black:
-                    sb.append("黑");
+                case Red -> sb.append("红");
+                case Blue -> sb.append("蓝");
+                case Black -> sb.append("黑");
             }
         }
         switch (colors.size()) {
