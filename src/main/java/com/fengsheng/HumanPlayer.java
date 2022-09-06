@@ -107,13 +107,14 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyReceivePhase(int waitSecond) {
+    public void notifyReceivePhase(Player waitingPlayer, int waitSecond) {
 
     }
 
     @Override
     public void notifyDie(int location, boolean loseGame) {
-
+        super.notifyDie(location, loseGame);
+        send(Fengsheng.notify_die_toc.newBuilder().setPlayerId(getAlternativeLocation(location)).setLoseGame(loseGame).build());
     }
 
     @Override

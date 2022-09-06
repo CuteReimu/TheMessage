@@ -104,7 +104,7 @@ public final class Game {
         for (int i = 0; i < players.length; i++) {
             players[(whoseTurn + i) % players.length].draw(Config.HandCardCountBegin);
         }
-        GameExecutor.TimeWheel.newTimeout((timeout) -> {
+        GameExecutor.TimeWheel.newTimeout(timeout -> {
             GameExecutor.post(this, () -> resolve(new DrawPhase(players[whoseTurn])));
         }, 1, TimeUnit.SECONDS);
     }

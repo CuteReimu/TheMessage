@@ -53,12 +53,7 @@ public class IdlePlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyReceivePhase(int waitSecond) {
-
-    }
-
-    @Override
-    public void notifyDie(int location, boolean loseGame) {
+    public void notifyReceivePhase(Player waitingPlayer, int waitSecond) {
 
     }
 

@@ -4,6 +4,7 @@ import com.fengsheng.card.Card;
 import com.fengsheng.protos.Common;
 import com.fengsheng.skill.RoleSkillsData;
 import com.fengsheng.skill.Skill;
+import com.fengsheng.skill.SkillId;
 
 import java.util.Map;
 
@@ -162,9 +163,10 @@ public interface Player {
     /**
      * 通知进入了某名玩家的情报接收阶段
      *
-     * @param waitSecond 超时时间
+     * @param waitingPlayer 等待的那个玩家
+     * @param waitSecond    超时时间
      */
-    void notifyReceivePhase(int waitSecond);
+    void notifyReceivePhase(Player waitingPlayer, int waitSecond);
 
     /**
      * 通知某名玩家死亡了
@@ -233,7 +235,7 @@ public interface Player {
 
     Skill[] getSkills();
 
-    Skill findSkill(int skillHashCode);
+    Skill findSkill(SkillId skillId);
 
     /**
      * 获得玩家的角色
@@ -248,12 +250,12 @@ public interface Player {
     /**
      * 增加每回合技能使用次数计数
      */
-    void addSkillUseCount(int skillHashCode);
+    void addSkillUseCount(SkillId skillId);
 
     /**
      * 获取每回合技能使用次数计数
      */
-    int getSkillUseCount(int skillHashCode);
+    int getSkillUseCount(SkillId skillId);
 
     /**
      * 重置每回合技能使用次数计数

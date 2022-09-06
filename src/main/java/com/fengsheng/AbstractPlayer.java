@@ -4,6 +4,7 @@ import com.fengsheng.card.Card;
 import com.fengsheng.protos.Common;
 import com.fengsheng.skill.RoleSkillsData;
 import com.fengsheng.skill.Skill;
+import com.fengsheng.skill.SkillId;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -24,7 +25,7 @@ public abstract class AbstractPlayer implements Player {
     protected boolean lose = false;
     protected boolean hasNoIdentity = false;
     protected RoleSkillsData roleSkillsData;
-    protected final Map<Integer, Integer> skillUseCount = new HashMap<>();
+    protected final Map<SkillId, Integer> skillUseCount = new HashMap<>();
 
     public AbstractPlayer() {
 
@@ -178,6 +179,14 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
+    public void notifyDie(int location, boolean loseGame) {
+        if (this.location == location) {
+            game.playerDiscardCard(this, cards.values().toArray(new Card[0]));
+            game.getDeck().discard(messageCards.values().toArray(new Card[0]));
+        }
+    }
+
+    @Override
     public void setAlive(boolean alive) {
         this.alive = alive;
     }
@@ -238,9 +247,9 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public Skill findSkill(int skillHashCode) {
+    public Skill findSkill(SkillId skillId) {
         for (Skill skill : roleSkillsData.getSkills()) {
-            if (skill.hashCode() == skillHashCode) {
+            if (skill.getSkillId() == skillId) {
                 return skill;
             }
         }
@@ -258,13 +267,13 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public void addSkillUseCount(int skillHashCode) {
-        skillUseCount.compute(skillHashCode, (k, v) -> v == null ? 1 : v + 1);
+    public void addSkillUseCount(SkillId skillId) {
+        skillUseCount.compute(skillId, (k, v) -> v == null ? 1 : v + 1);
     }
 
     @Override
-    public int getSkillUseCount(int skillHashCode) {
-        return Objects.requireNonNullElse(skillUseCount.get(skillHashCode), 0);
+    public int getSkillUseCount(SkillId skillId) {
+        return Objects.requireNonNullElse(skillUseCount.get(skillId), 0);
     }
 
     @Override

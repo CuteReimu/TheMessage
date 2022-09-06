@@ -5,8 +5,8 @@ import com.fengsheng.protos.Common;
 import java.util.Arrays;
 
 public class RoleSkillsData {
-    private String name;
-    private Common.role role;
+    private final String name;
+    private final Common.role role;
     private boolean faceUp;
     private Skill[] skills;
 
