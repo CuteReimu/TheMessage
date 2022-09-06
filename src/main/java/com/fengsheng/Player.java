@@ -105,7 +105,7 @@ public interface Player {
      *
      * @return 被删除的所有情报
      */
-    Card[] deleteMessageAllCards();
+    Card[] deleteAllMessageCards();
 
     /**
      * 判断玩家是否有三张同色的情报
@@ -128,8 +128,12 @@ public interface Player {
 
     /**
      * 通知进入了某名玩家的情报传递阶段开始时
+     *
+     * @param waitSecond 超时时间
      */
-    void notifySendPhaseStart();
+    void notifySendPhaseStart(int waitSecond);
+
+    void notifySendMessageCard(Player player, Player targetPlayer, Player[] lockedPlayers, Card messageCard, Common.direction direction);
 
     /**
      * 通知进入了某名玩家的情报传递阶段
@@ -253,7 +257,7 @@ public interface Player {
     /**
      * （日志用）将颜色转为角色身份的字符串
      */
-    public static String identityColorToString(Common.color color) {
+    static String identityColorToString(Common.color color) {
         return switch (color) {
             case Red -> "红方";
             case Blue -> "蓝方";
@@ -265,7 +269,7 @@ public interface Player {
     /**
      * （日志用）将颜色转为角色身份的字符串
      */
-    public static String identityColorToString(Common.color color, Common.secret_task task) {
+    static String identityColorToString(Common.color color, Common.secret_task task) {
         return switch (color) {
             case Red -> "红方";
             case Blue -> "蓝方";

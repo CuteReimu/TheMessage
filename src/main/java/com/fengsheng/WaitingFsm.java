@@ -8,6 +8,8 @@ import com.google.protobuf.GeneratedMessageV3;
 public interface WaitingFsm extends Runnable {
     /**
      * 玩家发送协议时的处理函数
+     *
+     * @return 处理的结果 {@link ResolveResult} ，不能返回 {@code null}
      */
     ResolveResult resolveProtocol(Player r, GeneratedMessageV3 message);
 }

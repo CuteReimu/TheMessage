@@ -1,5 +1,6 @@
 package com.fengsheng.skill;
 
+import com.fengsheng.Fsm;
 import com.fengsheng.Game;
 import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
@@ -14,6 +15,8 @@ public interface Skill {
     /**
      * <li>对于自动发动的技能，判断并发动这个技能时会调用这个函数</li>
      * <li>对于使用卡牌、接收情报、死亡时询问发动的技能，判断并询问这个技能时会调用这个函数</li>
+     *
+     * @return 如果返回值不为 {@code null} ，说明满足技能触发的条件，将会进入返回的 {@link Fsm}
      */
     ResolveResult execute(Game g);
 

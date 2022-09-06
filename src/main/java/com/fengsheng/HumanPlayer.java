@@ -75,7 +75,11 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifySendPhaseStart() {
+    public void notifySendPhaseStart(int waitSecond) {
+
+    }
+
+    public void notifySendMessageCard(Player player, Player targetPlayer, Player[] lockedPlayers, Card messageCard, Common.direction direction) {
 
     }
 

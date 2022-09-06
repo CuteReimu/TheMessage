@@ -157,7 +157,7 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public Card[] deleteMessageAllCards() {
+    public Card[] deleteAllMessageCards() {
         Card[] cards = messageCards.values().toArray(new Card[0]);
         messageCards.clear();
         return cards;

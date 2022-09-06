@@ -1,6 +1,7 @@
 package com.fengsheng;
 
 import com.fengsheng.card.Card;
+import com.fengsheng.protos.Common;
 
 public class RobotPlayer extends AbstractPlayer {
     public RobotPlayer() {
@@ -27,7 +28,11 @@ public class RobotPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifySendPhaseStart() {
+    public void notifySendPhaseStart(int waitSecond) {
+
+    }
+
+    public void notifySendMessageCard(Player player, Player targetPlayer, Player[] lockedPlayers, Card messageCard, Common.direction direction) {
 
     }
 
