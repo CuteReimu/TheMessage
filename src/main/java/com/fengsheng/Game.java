@@ -1,16 +1,15 @@
 package com.fengsheng;
 
+import com.fengsheng.card.Card;
 import com.fengsheng.card.Deck;
 import com.fengsheng.network.Network;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.Skill;
+import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -25,7 +24,7 @@ public final class Game {
     private boolean started;
     private final Player[] players;
     private final Deck deck = new Deck(this);
-    private Runnable fsm;
+    private Fsm fsm;
     private final List<Skill> listeningSkills = new ArrayList<>();
 
     private Game(int totalPlayerCount) {
@@ -122,8 +121,77 @@ public final class Game {
         return deck;
     }
 
-    public Runnable getFsm() {
+    /**
+     * 玩家弃牌
+     */
+    public void playerDiscardCard(Player player, Card... cards) {
+        if (cards.length == 0) return;
+        for (Card card : cards) {
+            player.deleteCard(card.getId());
+        }
+        log.info(player + "弃掉了" + Arrays.toString(cards) + "，剩余手牌" + player.getCards().size() + "张");
+        deck.discard(cards);
+        for (Player p : players) {
+            if (p instanceof HumanPlayer) {
+                var builder = Fengsheng.discard_card_toc.newBuilder().setPlayerId(p.getAlternativeLocation(player.location()));
+                for (Card card : cards) {
+                    builder.addCards(card.toPbCard());
+                }
+                ((HumanPlayer) p).send(builder.build());
+            }
+        }
+    }
+
+    /**
+     * 继续处理当前状态机
+     */
+    public void continueResolve() {
+        GameExecutor.post(this, () -> {
+            ResolveResult result = fsm.resolve();
+            fsm = result.next();
+            if (result.continueResolve()) {
+                continueResolve();
+            }
+        });
+    }
+
+    /**
+     * 对于{@link WaitingFsm}，当收到玩家协议时，继续处理当前状态机
+     */
+    public void tryContinueResolveProtocol(final Player player, final GeneratedMessageV3 pb) {
+        if (!(fsm instanceof WaitingFsm)) {
+            log.error("时机错误，当前时点为：" + fsm);
+            return;
+        }
+        GameExecutor.post(this, () -> {
+            ResolveResult result = ((WaitingFsm) fsm).resolveProtocol(player, pb);
+            fsm = result.next();
+            if (result.continueResolve()) {
+                continueResolve();
+            }
+        });
+    }
+
+    public Fsm getFsm() {
         return fsm;
+    }
+
+    /**
+     * 增加一个新的需要监听的技能。仅用于接收情报时、使用卡牌时、死亡时的技能
+     */
+    public void addListeningSkill(Skill skill) {
+        listeningSkills.add(skill);
+    }
+
+    /**
+     * 遍历监听列表，结算技能
+     */
+    public ResolveResult dealListeningSkill() {
+        for (Skill skill : listeningSkills) {
+            ResolveResult result = skill.execute(this);
+            if (result != null) return result;
+        }
+        return null;
     }
 
     public static void main(String[] args) {
