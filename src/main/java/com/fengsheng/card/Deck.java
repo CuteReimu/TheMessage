@@ -18,7 +18,7 @@ public class Deck {
 
     public Deck(Game game) {
         this.game = game;
-        cards.addAll(defaultDeck);
+        cards.addAll(DefaultDeck);
         this.nextId = cards.size() - 1;
         Collections.shuffle(cards);
     }
@@ -87,7 +87,7 @@ public class Deck {
         return ++nextId;
     }
 
-    private static final List<Card> defaultDeck = List.of(
+    public static final List<Card> DefaultDeck = List.of(
             new ShiTan(1, colors(Common.color.Black), Common.direction.Right, false, colors(Common.color.Black)),
             new ShiTan(2, colors(Common.color.Black), Common.direction.Right, false, colors(Common.color.Blue)),
             new ShiTan(3, colors(Common.color.Black), Common.direction.Right, false, colors(Common.color.Red, Common.color.Black)),

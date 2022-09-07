@@ -21,6 +21,10 @@ public class ChengQing extends AbstractCard {
         super(id, colors, direction, lockable);
     }
 
+    public ChengQing(int id, AbstractCard card) {
+        super(id, card);
+    }
+
     @Override
     public Common.card_type getType() {
         return Common.card_type.Cheng_Qing;

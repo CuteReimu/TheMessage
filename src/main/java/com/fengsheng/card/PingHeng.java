@@ -20,6 +20,10 @@ public class PingHeng extends AbstractCard {
         super(id, colors, direction, lockable);
     }
 
+    public PingHeng(int id, AbstractCard card) {
+        super(id, card);
+    }
+
     @Override
     public Common.card_type getType() {
         return Common.card_type.Ping_Heng;

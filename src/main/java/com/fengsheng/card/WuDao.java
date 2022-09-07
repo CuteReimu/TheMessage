@@ -18,6 +18,10 @@ public class WuDao extends AbstractCard {
         super(id, colors, direction, lockable);
     }
 
+    public WuDao(int id, AbstractCard card) {
+        super(id, card);
+    }
+
     @Override
     public Common.card_type getType() {
         return Common.card_type.Wu_Dao;

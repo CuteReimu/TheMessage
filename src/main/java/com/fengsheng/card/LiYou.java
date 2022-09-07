@@ -21,6 +21,10 @@ public class LiYou extends AbstractCard {
         super(id, colors, direction, lockable);
     }
 
+    public LiYou(int id, AbstractCard card) {
+        super(id, card);
+    }
+
     @Override
     public Common.card_type getType() {
         return Common.card_type.Li_You;

@@ -17,6 +17,13 @@ public abstract class AbstractCard implements Card {
         this.lockable = lockable;
     }
 
+    public AbstractCard(int id, AbstractCard card) {
+        this.id = id;
+        this.colors = card.colors;
+        this.direction = card.direction;
+        this.lockable = card.lockable;
+    }
+
     @Override
     public int getId() {
         return id;

@@ -23,6 +23,11 @@ public class ShiTan extends AbstractCard {
         this.whoDrawCard = whoDrawCard;
     }
 
+    public ShiTan(int id, ShiTan card) {
+        super(id, card);
+        this.whoDrawCard = card.whoDrawCard;
+    }
+
     @Override
     public Common.card_type getType() {
         return Common.card_type.Shi_Tan;

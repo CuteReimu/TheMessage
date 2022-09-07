@@ -18,6 +18,10 @@ public class DiaoBao extends AbstractCard {
         super(id, colors, direction, lockable);
     }
 
+    public DiaoBao(int id, AbstractCard card) {
+        super(id, card);
+    }
+
     @Override
     public Common.card_type getType() {
         return Common.card_type.Diao_Bao;
