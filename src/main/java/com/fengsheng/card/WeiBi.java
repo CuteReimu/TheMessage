@@ -123,9 +123,13 @@ public class WeiBi extends AbstractCard {
         }
 
         @Override
-        public ResolveResult resolveProtocol(Player r, GeneratedMessageV3 message) {
+        public ResolveResult resolveProtocol(Player player1, GeneratedMessageV3 message) {
             if (!(message instanceof Fengsheng.wei_bi_give_card_tos msg)) {
                 log.error("现在正在结算威逼");
+                return new ResolveResult(this, false);
+            }
+            if (target != player1) {
+                log.error("你不是威逼的目标");
                 return new ResolveResult(this, false);
             }
             int cardId = msg.getCardId();
