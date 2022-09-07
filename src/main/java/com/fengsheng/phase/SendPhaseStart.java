@@ -20,6 +20,7 @@ public record SendPhaseStart(Player player) implements Fsm {
                 log.info(player + "没有情报可传，输掉了游戏");
                 game.getDeck().discard(player.deleteAllMessageCards());
                 player.setLose(true);
+                player.setAlive(false);
                 for (Player p : game.getPlayers()) {
                     p.notifyDie(player.location(), true);
                 }
