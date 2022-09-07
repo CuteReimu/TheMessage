@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private static final Logger log = Logger.getLogger(ProtoServerChannelHandler.class);
 
-    private static TextFormat.Printer printer = TextFormat.printer().escapingNonAscii(false);
+    private static final TextFormat.Printer printer = TextFormat.printer().escapingNonAscii(false);
 
     private static final Map<Short, ProtoInfo> ProtoInfoMap = new HashMap<>();
 

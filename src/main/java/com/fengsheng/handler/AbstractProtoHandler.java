@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 public abstract class AbstractProtoHandler<T extends GeneratedMessageV3> implements ProtoHandler {
     private static final Logger log = Logger.getLogger(AbstractProtoHandler.class);
 
-    protected abstract void handle0(HumanPlayer player, T pb);
+    protected abstract void handle0(HumanPlayer r, T pb);
 
     @SuppressWarnings("unchecked")
     @Override
