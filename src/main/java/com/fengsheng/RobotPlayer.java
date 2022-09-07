@@ -55,7 +55,7 @@ public class RobotPlayer extends AbstractPlayer {
     @Override
     public void notifySendPhaseStart(int waitSecond) {
         var fsm = (SendPhaseStart) game.getFsm();
-        if (location != fsm.player().location()) return;
+        if (this != fsm.player()) return;
         GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> autoSendMessageCard(this, true)), 2, TimeUnit.SECONDS);
     }
 
@@ -66,7 +66,7 @@ public class RobotPlayer extends AbstractPlayer {
     @Override
     public void notifySendPhase(int waitSecond) {
         final var fsm = (SendPhaseIdle) game.getFsm();
-        if (location != fsm.inFrontOfWhom.location()) return;
+        if (this != fsm.inFrontOfWhom) return;
         for (Card card : cards.values()) {
             var ai = aiSendPhase.get(card.getType());
             if (ai != null && ai.apply(fsm, card)) return;
@@ -91,7 +91,7 @@ public class RobotPlayer extends AbstractPlayer {
     @Override
     public void notifyFightPhase(int waitSecond) {
         var fsm = (FightPhaseIdle) game.getFsm();
-        if (this == fsm.whoseFightTurn) return;
+        if (this != fsm.whoseFightTurn) return;
         for (Card card : cards.values()) {
             var ai = aiFightPhase.get(card.getType());
             if (ai != null && ai.apply(fsm, card)) return;
