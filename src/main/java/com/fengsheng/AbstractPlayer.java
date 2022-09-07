@@ -97,7 +97,7 @@ public abstract class AbstractPlayer implements Player {
     public void draw(int n) {
         Card[] cards = game.getDeck().draw(n);
         addCard(cards);
-        log.info(this + "摸了" + Arrays.toString(cards) + "，现在有" + cards.length + "张手牌");
+        log.info(this + "摸了" + Arrays.toString(cards) + "，现在有" + this.cards.size() + "张手牌");
         for (Player player : game.getPlayers()) {
             if (player == this)
                 notifyAddHandCard(player.location(), 0, cards);
