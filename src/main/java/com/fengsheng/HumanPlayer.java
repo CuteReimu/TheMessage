@@ -47,7 +47,7 @@ public class HumanPlayer extends AbstractPlayer {
         channel.write(byteBuf);
         channel.writeAndFlush(buf);
         log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
-                printer.printToString(message).replace("\n", " ")));
+                printer.printToString(message).replaceAll("\n *", " ")));
     }
 
     @Override

@@ -103,7 +103,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         msg.readBytes(buf);
         var message = (GeneratedMessageV3) protoInfo.parser().parseFrom(buf);
         log.debug("recv@%s len: %d %s | %s".formatted(ctx.channel().id().asShortText(), msgLen - 2, protoInfo.name(),
-                printer.printToString(message).replace("\n", " ")));
+                printer.printToString(message).replaceAll("\n *", " ")));
         HumanPlayer player = playerCache.get(ctx.channel().id().asLongText());
         ProtoHandler handler = protoInfo.handler();
         if (handler != null) handler.handle(player, message);
