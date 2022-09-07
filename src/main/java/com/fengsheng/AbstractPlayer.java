@@ -238,17 +238,19 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public void setSkills(Skill[] skills) {
+        if (roleSkillsData == null)
+            roleSkillsData = new RoleSkillsData("无角色", Common.role.unknown, false);
         this.roleSkillsData.setSkills(skills);
     }
 
     @Override
     public Skill[] getSkills() {
-        return roleSkillsData.getSkills();
+        return roleSkillsData != null ? roleSkillsData.getSkills() : new Skill[0];
     }
 
     @Override
     public Skill findSkill(SkillId skillId) {
-        for (Skill skill : roleSkillsData.getSkills()) {
+        for (Skill skill : getSkills()) {
             if (skill.getSkillId() == skillId) {
                 return skill;
             }
@@ -258,7 +260,7 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public Common.role getRole() {
-        return roleSkillsData.getRole();
+        return roleSkillsData != null ? roleSkillsData.getRole() : Common.role.unknown;
     }
 
     @Override
