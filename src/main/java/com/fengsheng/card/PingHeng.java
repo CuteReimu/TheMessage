@@ -21,8 +21,7 @@ public class PingHeng extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
-        Fsm fsm = g.getFsm();
-        if (!(fsm instanceof MainPhaseIdle) || r != ((MainPhaseIdle) fsm).player()) {
+        if (!(g.getFsm() instanceof MainPhaseIdle fsm) || r != fsm.player()) {
             log.error("平衡的使用时机不对");
             return false;
         }
@@ -44,9 +43,9 @@ public class PingHeng extends AbstractCard {
         log.info(r + "对" + target + "使用了" + this);
         r.deleteCard(this.id);
         Fsm resolveFunc = () -> {
-            for (Player p : g.getPlayers()) {
-                if (p instanceof HumanPlayer) {
-                    ((HumanPlayer) p).send(Fengsheng.use_ping_heng_toc.newBuilder()
+            for (Player player : g.getPlayers()) {
+                if (player instanceof HumanPlayer p) {
+                    p.send(Fengsheng.use_ping_heng_toc.newBuilder()
                             .setPlayerId(p.getAlternativeLocation(r.location())).setTargetPlayerId(p.getAlternativeLocation(target.location()))
                             .setPingHengCard(this.toPbCard()).build());
                 }

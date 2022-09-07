@@ -67,7 +67,7 @@ public interface Player {
     /**
      * 从玩家手牌中查找一张牌
      */
-    Card findCards(int cardId);
+    Card findCard(int cardId);
 
     /**
      * 从玩家手牌中去掉一张牌
@@ -94,7 +94,7 @@ public interface Player {
     /**
      * 从玩家情报中查找一张牌
      */
-    Card findMessageCards(int cardId);
+    Card findMessageCard(int cardId);
 
     /**
      * 从玩家情报中去掉一张牌

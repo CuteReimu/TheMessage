@@ -21,12 +21,11 @@ public class JieHuo extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
-        Fsm fsm = g.getFsm();
-        if (!(fsm instanceof FightPhaseIdle) || r != ((FightPhaseIdle) fsm).whoseFightTurn) {
+        if (!(g.getFsm() instanceof FightPhaseIdle fsm) || r != fsm.whoseFightTurn) {
             log.error("截获的使用时机不对");
             return false;
         }
-        if (r == ((FightPhaseIdle) fsm).inFrontOfWhom) {
+        if (r == fsm.inFrontOfWhom) {
             log.error("情报在自己面前不能使用截获");
             return false;
         }
@@ -42,9 +41,9 @@ public class JieHuo extends AbstractCard {
             fsm.inFrontOfWhom = r;
             fsm.whoseFightTurn = fsm.inFrontOfWhom;
             g.getDeck().discard(this);
-            for (Player p : g.getPlayers()) {
-                if (p instanceof HumanPlayer) {
-                    ((HumanPlayer) p).send(Fengsheng.use_jie_huo_toc.newBuilder().setCard(this.toPbCard())
+            for (Player player : g.getPlayers()) {
+                if (player instanceof HumanPlayer p) {
+                    p.send(Fengsheng.use_jie_huo_toc.newBuilder().setCard(this.toPbCard())
                             .setPlayerId(p.getAlternativeLocation(r.location())).build());
                 }
             }

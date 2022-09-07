@@ -119,7 +119,7 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public Card findCards(int cardId) {
+    public Card findCard(int cardId) {
         return cards.get(cardId);
     }
 
@@ -148,7 +148,7 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public Card findMessageCards(int cardId) {
+    public Card findMessageCard(int cardId) {
         return messageCards.get(cardId);
     }
 

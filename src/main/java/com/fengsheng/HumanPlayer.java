@@ -146,7 +146,7 @@ public class HumanPlayer extends AbstractPlayer {
         if (this == fsm.inFrontOfWhom) {
             builder.setSeq(seq);
             final int seq2 = seq;
-            timer = GameExecutor.TimeWheel.newTimeout(timeout -> {
+            timer = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
                 if (checkSeq(seq2)) {
                     incrSeq();
                     boolean isLocked = false;
@@ -161,7 +161,7 @@ public class HumanPlayer extends AbstractPlayer {
                     else
                         game.resolve(new MessageMoveNext(fsm));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS).timer();
+            }), waitSecond + 2, TimeUnit.SECONDS).timer();
         }
         send(builder.build());
     }
@@ -282,6 +282,14 @@ public class HumanPlayer extends AbstractPlayer {
                 }
             }), waitSecond + 2, TimeUnit.SECONDS).timer();
         }
+    }
+
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
+
+    public int getSeq() {
+        return seq;
     }
 
     public boolean checkSeq(int seq) {

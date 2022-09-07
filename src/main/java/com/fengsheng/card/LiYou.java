@@ -23,8 +23,7 @@ public class LiYou extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
-        Fsm fsm = g.getFsm();
-        if (!(fsm instanceof MainPhaseIdle) || r != ((MainPhaseIdle) fsm).player()) {
+        if (!(g.getFsm() instanceof MainPhaseIdle fsm) || r != fsm.player()) {
             log.error("利诱的使用时机不对");
             return false;
         }
@@ -55,14 +54,14 @@ public class LiYou extends AbstractCard {
                     log.info(Arrays.toString(deckCards) + "加入了" + target + "的情报区");
                 }
             }
-            for (Player p : g.getPlayers()) {
-                if (p instanceof HumanPlayer) {
+            for (Player player : g.getPlayers()) {
+                if (player instanceof HumanPlayer p) {
                     var builder = Fengsheng.use_li_you_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
                     builder.setLiYouCard(this.toPbCard()).setJoinIntoHand(joinIntoHand);
                     if (deckCards.length > 0) builder.setMessageCard(deckCards[0].toPbCard());
-                    ((HumanPlayer) p).send(builder.build());
+                    p.send(builder.build());
                 }
             }
             g.getDeck().discard(this);

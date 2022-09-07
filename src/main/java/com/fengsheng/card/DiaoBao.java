@@ -21,8 +21,7 @@ public class DiaoBao extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
-        Fsm fsm = g.getFsm();
-        if (!(fsm instanceof FightPhaseIdle) || r != ((FightPhaseIdle) fsm).whoseFightTurn) {
+        if (!(g.getFsm() instanceof FightPhaseIdle fsm) || r != fsm.whoseFightTurn) {
             log.error("调包的使用时机不对");
             return false;
         }
@@ -40,12 +39,12 @@ public class DiaoBao extends AbstractCard {
             fsm.messageCard = this;
             fsm.isMessageCardFaceUp = false;
             fsm.whoseFightTurn = fsm.inFrontOfWhom;
-            for (Player p : g.getPlayers()) {
-                if (p instanceof HumanPlayer) {
+            for (Player player : g.getPlayers()) {
+                if (player instanceof HumanPlayer p) {
                     var builder = Fengsheng.use_diao_bao_toc.newBuilder();
                     builder.setOldMessageCard(oldCard.toPbCard()).setPlayerId(p.getAlternativeLocation(r.location()));
                     if (p == r) builder.setCardId(this.id);
-                    ((HumanPlayer) p).send(builder.build());
+                    p.send(builder.build());
                 }
             }
             return new ResolveResult(fsm, true);

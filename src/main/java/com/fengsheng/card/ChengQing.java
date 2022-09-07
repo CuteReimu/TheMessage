@@ -43,7 +43,7 @@ public class ChengQing extends AbstractCard {
             log.error("目标已死亡");
             return false;
         }
-        Card targetCard = target.findMessageCards(targetCardId);
+        Card targetCard = target.findMessageCard(targetCardId);
         if (targetCard == null) {
             log.error("没有这张情报");
             return false;
@@ -66,9 +66,9 @@ public class ChengQing extends AbstractCard {
             Card targetCard = target.deleteMessageCard(targetCardId);
             log.info(target + "面前的" + targetCard + "被置入弃牌堆");
             g.getDeck().discard(targetCard);
-            for (Player p : g.getPlayers()) {
-                if (p instanceof HumanPlayer) {
-                    ((HumanPlayer) p).send(Fengsheng.use_cheng_qing_toc.newBuilder()
+            for (Player player : g.getPlayers()) {
+                if (player instanceof HumanPlayer p) {
+                    p.send(Fengsheng.use_cheng_qing_toc.newBuilder()
                             .setCard(this.toPbCard()).setPlayerId(p.getAlternativeLocation(r.location()))
                             .setTargetPlayerId(p.getAlternativeLocation(target.location())).setTargetCardId(targetCardId).build());
                 }
