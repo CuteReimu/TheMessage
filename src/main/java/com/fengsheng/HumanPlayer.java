@@ -240,7 +240,7 @@ public class HumanPlayer extends AbstractPlayer {
         for (Player p : winners)
             winnerIds.add(getAlternativeLocation(p.location()));
         Collections.sort(winnerIds);
-        builder.addAllDeclarePlayerIds(winnerIds);
+        builder.addAllWinnerIds(winnerIds);
         for (int i = 0; i < game.getPlayers().length; i++) {
             Player p = game.getPlayers()[(location + i) % game.getPlayers().length];
             builder.addIdentity(p.getIdentity()).addSecretTasks(p.getSecretTask());
