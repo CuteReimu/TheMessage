@@ -22,7 +22,7 @@ public record OnChooseReceiveCard(Player whoseTurn, Card messageCard, Player inF
     public ResolveResult resolve() {
         log.info(inFrontOfWhom + "选择接收情报");
         for (Player p : whoseTurn.getGame().getPlayers())
-            p.notifyChooseReceiveCard();
+            p.notifyChooseReceiveCard(inFrontOfWhom);
         return new ResolveResult(new FightPhaseIdle(whoseTurn, messageCard, inFrontOfWhom, inFrontOfWhom, isMessageCardFaceUp), true);
     }
 }

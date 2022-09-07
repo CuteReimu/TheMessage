@@ -146,7 +146,7 @@ public interface Player {
     /**
      * 通知某名玩家选择接收情报
      */
-    void notifyChooseReceiveCard();
+    void notifyChooseReceiveCard(Player player);
 
     /**
      * 通知进入了某名玩家的争夺阶段
@@ -156,17 +156,20 @@ public interface Player {
     void notifyFightPhase(int waitSecond);
 
     /**
-     * 通知进入了某名玩家的情报接收阶段
+     * 通知进入了某名玩家的情报接收阶段，用于刚刚确定成功接收情报时
      */
     void notifyReceivePhase();
 
     /**
-     * 通知进入了某名玩家的情报接收阶段
+     * 通知进入了某名玩家的情报接收阶段，用于询问情报接收阶段的技能
      *
+     * @param whoseTurn     谁的回合
+     * @param inFrontOfWhom 情报在谁面前
+     * @param messageCard   情报牌
      * @param waitingPlayer 等待的那个玩家
      * @param waitSecond    超时时间
      */
-    void notifyReceivePhase(Player waitingPlayer, int waitSecond);
+    void notifyReceivePhase(Player whoseTurn, Player inFrontOfWhom, Card messageCard, Player waitingPlayer, int waitSecond);
 
     /**
      * 通知某名玩家死亡了
@@ -187,17 +190,19 @@ public interface Player {
     /**
      * 通知有人在濒死求澄清
      *
-     * @param whoDie  濒死的玩家
-     * @param askWhom 被询问是否使用澄清救人的玩家
+     * @param whoDie     濒死的玩家
+     * @param askWhom    被询问是否使用澄清救人的玩家
+     * @param waitSecond 超时时间
      */
-    void notifyAskForChengQing(Player whoDie, Player askWhom);
+    void notifyAskForChengQing(Player whoDie, Player askWhom, int waitSecond);
 
     /**
      * 通知有人正在选择死亡给的三张牌
      *
-     * @param whoDie 死亡的玩家
+     * @param whoDie     死亡的玩家
+     * @param waitSecond 超时时间
      */
-    void waitForDieGiveCard(Player whoDie);
+    void waitForDieGiveCard(Player whoDie, int waitSecond);
 
     void setAlive(boolean alive);
 

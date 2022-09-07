@@ -84,7 +84,7 @@ public class RobotPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyChooseReceiveCard() {
+    public void notifyChooseReceiveCard(Player player) {
 
     }
 
@@ -105,7 +105,7 @@ public class RobotPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyReceivePhase(Player waitingPlayer, int waitSecond) {
+    public void notifyReceivePhase(Player whoseTurn, Player inFrontOfWhom, Card messageCard, Player waitingPlayer, int waitSecond) {
         if (waitingPlayer != this) return;
         // TODO 需要增加AI
         GameExecutor.TimeWheel.newTimeout(timeout -> game.tryContinueResolveProtocol(this, Fengsheng.end_receive_phase_tos.getDefaultInstance()), 2, TimeUnit.SECONDS);
@@ -117,14 +117,14 @@ public class RobotPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyAskForChengQing(Player whoDie, Player askWhom) {
+    public void notifyAskForChengQing(Player whoDie, Player askWhom, int waitSecond) {
         var fsm = (WaitForChengQing) game.getFsm();
         if (askWhom != this) return;
         GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> game.resolve(new WaitNextForChengQing(fsm))), 2, TimeUnit.SECONDS);
     }
 
     @Override
-    public void waitForDieGiveCard(Player whoDie) {
+    public void waitForDieGiveCard(Player whoDie, int waitSecond) {
         var fsm = (WaitForDieGiveCard) game.getFsm();
         if (whoDie != this) return;
         GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {

@@ -49,7 +49,7 @@ public class WaitForChengQing implements Fsm {
     public ResolveResult resolve() {
         log.info("正在询问" + askWhom + "是否使用澄清");
         for (Player p : askWhom.getGame().getPlayers()) {
-            p.notifyAskForChengQing(whoDie, askWhom);
+            p.notifyAskForChengQing(whoDie, askWhom, 20);
         }
         return new ResolveResult(this, false);
     }

@@ -38,7 +38,7 @@ public class IdlePlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyChooseReceiveCard() {
+    public void notifyChooseReceiveCard(Player player) {
 
     }
 
@@ -53,7 +53,7 @@ public class IdlePlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyReceivePhase(Player waitingPlayer, int waitSecond) {
+    public void notifyReceivePhase(Player whoseTurn, Player inFrontOfWhom, Card messageCard, Player waitingPlayer, int waitSecond) {
 
     }
 
@@ -63,12 +63,12 @@ public class IdlePlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyAskForChengQing(Player whoDie, Player askWhom) {
+    public void notifyAskForChengQing(Player whoDie, Player askWhom, int waitSecond) {
 
     }
 
     @Override
-    public void waitForDieGiveCard(Player whoDie) {
+    public void waitForDieGiveCard(Player whoDie, int waitSecond) {
 
     }
 

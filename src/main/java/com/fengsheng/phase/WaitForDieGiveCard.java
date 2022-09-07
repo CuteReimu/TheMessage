@@ -25,7 +25,7 @@ public class WaitForDieGiveCard implements Fsm {
     /**
      * 在结算死亡技能时，又有新的人获得三张黑色情报的顺序
      */
-    public ReceiveOrder receiveOrder = new ReceiveOrder();
+    public ReceiveOrder receiveOrder;
     /**
      * 死亡结算后的下一个动作
      */
@@ -48,7 +48,7 @@ public class WaitForDieGiveCard implements Fsm {
         }
         Player whoDie = diedQueue.get(diedIndex);
         for (Player p : whoDie.getGame().getPlayers()) {
-            p.waitForDieGiveCard(whoDie);
+            p.waitForDieGiveCard(whoDie, 30);
         }
         return new ResolveResult(this, false);
     }
