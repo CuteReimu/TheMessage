@@ -72,7 +72,7 @@ public interface Player {
     /**
      * 从玩家手牌中去掉一张牌
      */
-    void deleteCard(int cardId);
+    Card deleteCard(int cardId);
 
     /**
      * 玩家删除所有手牌
@@ -99,7 +99,7 @@ public interface Player {
     /**
      * 从玩家情报中去掉一张牌
      */
-    void deleteMessageCard(int cardId);
+    Card deleteMessageCard(int cardId);
 
     /**
      * 玩家删除所有情报

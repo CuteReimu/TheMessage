@@ -3,6 +3,7 @@ package com.fengsheng.card;
 import com.fengsheng.Game;
 import com.fengsheng.Player;
 import com.fengsheng.protos.Common;
+import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,7 +11,9 @@ import java.util.List;
 import java.util.Set;
 
 public class ShiTan extends AbstractCard {
-    private Common.color[] whoDrawCard;
+    private static final Logger log = Logger.getLogger(ShiTan.class);
+
+    private final Common.color[] whoDrawCard;
 
     public ShiTan(int id, Common.color[] colors, Common.direction direction, boolean lockable, Common.color[] whoDrawCard) {
         super(id, colors, direction, lockable);
@@ -28,12 +31,17 @@ public class ShiTan extends AbstractCard {
     }
 
     @Override
-    public void execute(Game g, Player r, Object... args) {
+    public void execute(final Game g, final Player r, Object... args) {
 
     }
 
     public Common.color[] getWhoDrawCard() {
         return whoDrawCard;
+    }
+
+    @Override
+    public Common.card toPbCard() {
+        return Common.card.newBuilder().setCardId(id).setCardDir(direction).setCanLock(lockable).setCardType(getType()).addAllCardColor(colors).addAllWhoDrawCard(Arrays.asList(whoDrawCard)).build();
     }
 
     @Override

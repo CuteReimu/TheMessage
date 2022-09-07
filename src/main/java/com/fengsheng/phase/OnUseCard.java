@@ -30,6 +30,14 @@ public class OnUseCard implements Fsm {
      */
     public Fsm resolveFunc;
 
+    public OnUseCard(Player whoseTurn, Player player, Card card, Player askWhom, Fsm resolveFunc) {
+        this.whoseTurn = whoseTurn;
+        this.player = player;
+        this.card = card;
+        this.askWhom = askWhom;
+        this.resolveFunc = resolveFunc;
+    }
+
     @Override
     public ResolveResult resolve() {
         ResolveResult result = whoseTurn.getGame().dealListeningSkill();

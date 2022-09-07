@@ -39,6 +39,6 @@ public abstract class AbstractCard implements Card {
 
     @Override
     public Common.card toPbCard() {
-        return Common.card.newBuilder().setCardId(id).setCardDir(direction).setCanLock(lockable).addAllCardColor(colors).build();
+        return Common.card.newBuilder().setCardId(id).setCardDir(direction).setCanLock(lockable).setCardType(getType()).addAllCardColor(colors).build();
     }
 }

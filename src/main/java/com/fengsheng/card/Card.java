@@ -50,7 +50,7 @@ public interface Card {
      * @param r    使用者
      * @param args 根据不同的卡牌，传入的其他不同参数
      */
-    void execute(Game g, Player r, Object... args);
+    void execute(final Game g, final Player r, Object... args);
 
     /**
      * 转换为卡牌的协议对象

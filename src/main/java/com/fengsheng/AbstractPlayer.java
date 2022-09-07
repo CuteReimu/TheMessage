@@ -124,8 +124,8 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public void deleteCard(int cardId) {
-        cards.remove(cardId);
+    public Card deleteCard(int cardId) {
+        return cards.remove(cardId);
     }
 
     @Override
@@ -153,8 +153,8 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public void deleteMessageCard(int cardId) {
-        messageCards.remove(cardId);
+    public Card deleteMessageCard(int cardId) {
+        return messageCards.remove(cardId);
     }
 
     @Override
