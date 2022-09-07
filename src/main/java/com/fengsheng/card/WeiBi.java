@@ -101,13 +101,13 @@ public class WeiBi extends AbstractCard {
                     if (p == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);
-                        player.setTimer(GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(r.getGame(), () -> {
+                        player.setTimeout(GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(r.getGame(), () -> {
                             if (player.checkSeq(seq2)) {
                                 player.incrSeq();
                                 autoSelect();
                                 r.getGame().resolve(new MainPhaseIdle(r));
                             }
-                        }), builder.getWaitingSecond() + 2, TimeUnit.SECONDS).timer());
+                        }), builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
                     }
                     player.send(builder.build());
                 }

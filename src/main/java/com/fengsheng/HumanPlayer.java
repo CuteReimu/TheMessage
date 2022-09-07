@@ -11,7 +11,7 @@ import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.util.Timer;
+import io.netty.util.Timeout;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class HumanPlayer extends AbstractPlayer {
 
     private int seq;
 
-    private Timer timer;
+    private Timeout timeout;
 
     public HumanPlayer(Channel channel) {
         this.channel = channel;
@@ -92,12 +92,12 @@ public class HumanPlayer extends AbstractPlayer {
         if (this == player) {
             builder.setSeq(seq);
             final int seq2 = seq;
-            timer = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+            timeout = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
                 if (checkSeq(seq2)) {
                     incrSeq();
                     game.resolve(new SendPhaseStart(player));
                 }
-            }), waitSecond + 2, TimeUnit.SECONDS).timer();
+            }), waitSecond + 2, TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -112,12 +112,12 @@ public class HumanPlayer extends AbstractPlayer {
         if (this == player) {
             builder.setSeq(seq);
             final int seq2 = seq;
-            timer = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+            timeout = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
                 if (checkSeq(seq2)) {
                     incrSeq();
                     RobotPlayer.autoSendMessageCard(this, false);
                 }
-            }), waitSecond + 2, TimeUnit.SECONDS).timer();
+            }), waitSecond + 2, TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -146,7 +146,7 @@ public class HumanPlayer extends AbstractPlayer {
         if (this == fsm.inFrontOfWhom) {
             builder.setSeq(seq);
             final int seq2 = seq;
-            timer = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+            timeout = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
                 if (checkSeq(seq2)) {
                     incrSeq();
                     boolean isLocked = false;
@@ -161,7 +161,7 @@ public class HumanPlayer extends AbstractPlayer {
                     else
                         game.resolve(new MessageMoveNext(fsm));
                 }
-            }), waitSecond + 2, TimeUnit.SECONDS).timer();
+            }), waitSecond + 2, TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -183,12 +183,12 @@ public class HumanPlayer extends AbstractPlayer {
         if (this == fsm.whoseFightTurn) {
             builder.setSeq(seq);
             final int seq2 = seq;
-            timer = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+            timeout = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
                 if (checkSeq(seq2)) {
                     incrSeq();
                     game.resolve(new FightPhaseNext(fsm));
                 }
-            }), waitSecond + 2, TimeUnit.SECONDS).timer();
+            }), waitSecond + 2, TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -214,10 +214,10 @@ public class HumanPlayer extends AbstractPlayer {
         if (this == waitingPlayer) {
             builder.setSeq(seq);
             final int seq2 = seq;
-            timer = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+            timeout = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
                 if (checkSeq(seq2))
                     game.tryContinueResolveProtocol(this, Fengsheng.end_receive_phase_tos.newBuilder().setSeq(seq2).build());
-            }), waitSecond + 2, TimeUnit.SECONDS).timer();
+            }), waitSecond + 2, TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -257,12 +257,12 @@ public class HumanPlayer extends AbstractPlayer {
         if (askWhom == this) {
             builder.setSeq(seq);
             final int seq2 = seq;
-            timer = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+            timeout = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
                 if (checkSeq(seq2)) {
                     incrSeq();
                     game.resolve(new WaitNextForChengQing((WaitForChengQing) game.getFsm()));
                 }
-            }), waitSecond + 2, TimeUnit.SECONDS).timer();
+            }), waitSecond + 2, TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -275,17 +275,17 @@ public class HumanPlayer extends AbstractPlayer {
         if (whoDie == this) {
             builder.setSeq(seq);
             final int seq2 = seq;
-            timer = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+            timeout = GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
                 if (checkSeq(seq2)) {
                     incrSeq();
                     game.resolve(new AfterDieGiveCard((WaitForDieGiveCard) game.getFsm()));
                 }
-            }), waitSecond + 2, TimeUnit.SECONDS).timer();
+            }), waitSecond + 2, TimeUnit.SECONDS);
         }
     }
 
-    public void setTimer(Timer timer) {
-        this.timer = timer;
+    public void setTimeout(Timeout timeout) {
+        this.timeout = timeout;
     }
 
     public int getSeq() {
@@ -299,9 +299,9 @@ public class HumanPlayer extends AbstractPlayer {
     @Override
     public void incrSeq() {
         seq++;
-        if (timer != null) {
-            timer.stop();
-            timer = null;
+        if (timeout != null) {
+            timeout.cancel();
+            timeout = null;
         }
     }
 
