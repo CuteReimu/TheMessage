@@ -7,6 +7,12 @@ import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+
 public class PingHeng extends AbstractCard {
     private static final Logger log = Logger.getLogger(PingHeng.class);
 
@@ -63,5 +69,19 @@ public class PingHeng extends AbstractCard {
     @Override
     public String toString() {
         return Card.cardColorToString(colors) + "平衡";
+    }
+
+    public static class Ai implements BiFunction<MainPhaseIdle, Card, Boolean> {
+        @Override
+        public Boolean apply(MainPhaseIdle e, Card card) {
+            Player player = e.player();
+            List<Player> players = new ArrayList<>();
+            for (Player p : player.getGame().getPlayers())
+                if (p.isAlive()) players.add(p);
+            if (players.isEmpty()) return false;
+            Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
+            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p)), 2, TimeUnit.SECONDS);
+            return true;
+        }
     }
 }

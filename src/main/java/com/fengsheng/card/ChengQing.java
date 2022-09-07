@@ -8,6 +8,12 @@ import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+
 public class ChengQing extends AbstractCard {
     private static final Logger log = Logger.getLogger(ChengQing.class);
 
@@ -85,5 +91,30 @@ public class ChengQing extends AbstractCard {
     @Override
     public String toString() {
         return Card.cardColorToString(colors) + "澄清";
+    }
+
+    public static class Ai implements BiFunction<MainPhaseIdle, Card, Boolean> {
+        @Override
+        public Boolean apply(MainPhaseIdle e, Card card) {
+            Player player = e.player();
+            List<PlayerAndCard> playerAndCards = new ArrayList<>();
+            var identity = player.getIdentity();
+            for (Player p : player.getGame().getPlayers()) {
+                if ((p == player || identity != Common.color.Black && identity == p.getIdentity()) && p.isAlive()) {
+                    for (Card c : p.getMessageCards().values()) {
+                        if (c.getColors().contains(Common.color.Black))
+                            playerAndCards.add(new PlayerAndCard(p, c));
+                    }
+                }
+            }
+            if (playerAndCards.isEmpty()) return false;
+            PlayerAndCard p = playerAndCards.get(ThreadLocalRandom.current().nextInt(playerAndCards.size()));
+            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p.player(), p.card().getId())), 2, TimeUnit.SECONDS);
+            return true;
+        }
+
+        private record PlayerAndCard(Player player, Card card) {
+
+        }
     }
 }

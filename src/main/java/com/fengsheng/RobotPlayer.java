@@ -1,6 +1,6 @@
 package com.fengsheng;
 
-import com.fengsheng.card.Card;
+import com.fengsheng.card.*;
 import com.fengsheng.phase.*;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
@@ -224,4 +224,16 @@ public class RobotPlayer extends AbstractPlayer {
     private static final Map<Common.card_type, BiFunction<MainPhaseIdle, Card, Boolean>> aiMainPhase = new HashMap<>();
     private static final Map<Common.card_type, BiFunction<SendPhaseIdle, Card, Boolean>> aiSendPhase = new HashMap<>();
     private static final Map<Common.card_type, BiFunction<FightPhaseIdle, Card, Boolean>> aiFightPhase = new HashMap<>();
+
+    static {
+        aiMainPhase.put(Common.card_type.Cheng_Qing, new ChengQing.Ai());
+        aiMainPhase.put(Common.card_type.Li_You, new LiYou.Ai());
+        aiMainPhase.put(Common.card_type.Ping_Heng, new PingHeng.Ai());
+        aiMainPhase.put(Common.card_type.Shi_Tan, new ShiTan.Ai());
+        aiMainPhase.put(Common.card_type.Wei_Bi, new WeiBi.Ai());
+        aiSendPhase.put(Common.card_type.Po_Yi, new PoYi.Ai());
+        aiFightPhase.put(Common.card_type.Diao_Bao, new DiaoBao.Ai());
+        aiFightPhase.put(Common.card_type.Jie_Huo, new JieHuo.Ai());
+        aiFightPhase.put(Common.card_type.Wu_Dao, new WuDao.Ai());
+    }
 }

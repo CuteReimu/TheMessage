@@ -8,7 +8,9 @@ import com.fengsheng.protos.Fengsheng;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 public class PoYi extends AbstractCard {
     private static final Logger log = Logger.getLogger(PoYi.class);
@@ -111,5 +113,16 @@ public class PoYi extends AbstractCard {
     @Override
     public String toString() {
         return Card.cardColorToString(colors) + "破译";
+    }
+
+    public static class Ai implements BiFunction<SendPhaseIdle, Card, Boolean> {
+        @Override
+        public Boolean apply(SendPhaseIdle e, Card card) {
+            Player player = e.inFrontOfWhom;
+            if (player == e.whoseTurn || e.isMessageCardFaceUp) return false;
+            if (ThreadLocalRandom.current().nextBoolean()) return false;
+            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player)), 2, TimeUnit.SECONDS);
+            return true;
+        }
     }
 }

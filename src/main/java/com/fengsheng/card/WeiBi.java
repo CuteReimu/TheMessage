@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 import static com.fengsheng.protos.Common.card_type.*;
 
@@ -161,5 +162,32 @@ public class WeiBi extends AbstractCard {
     @Override
     public String toString() {
         return Card.cardColorToString(colors) + "威逼";
+    }
+
+    public static class Ai implements BiFunction<MainPhaseIdle, Card, Boolean> {
+        private static final List<Common.card_type> availableCardType = List.of(Cheng_Qing, Jie_Huo, Diao_Bao, Wu_Dao);
+
+        @Override
+        public Boolean apply(MainPhaseIdle e, Card card) {
+            Player player = e.player();
+            var identity = player.getIdentity();
+            List<Player> players = new ArrayList<>();
+            for (Player p : player.getGame().getPlayers()) {
+                if (p != player && p.isAlive() && !p.getCards().isEmpty()) {
+                    if (identity == Common.color.Black || identity != p.getIdentity()) {
+                        for (Card c : p.getCards().values())
+                            if (availableCardType.contains(c.getType())) players.add(p);
+                    }
+                }
+            }
+            if (players.isEmpty()) return false;
+            Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
+            List<Common.card_type> cardTypes = new ArrayList<>();
+            for (Card c : p.getCards().values())
+                if (availableCardType.contains(c.getType())) cardTypes.add(c.getType());
+            var cardType = cardTypes.get(ThreadLocalRandom.current().nextInt(cardTypes.size()));
+            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p, cardType)), 2, TimeUnit.SECONDS);
+            return true;
+        }
     }
 }
