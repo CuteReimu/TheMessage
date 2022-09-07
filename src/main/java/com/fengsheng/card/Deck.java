@@ -1,7 +1,10 @@
 package com.fengsheng.card;
 
 import com.fengsheng.Game;
+import com.fengsheng.HumanPlayer;
+import com.fengsheng.Player;
 import com.fengsheng.protos.Common;
+import com.fengsheng.protos.Fengsheng;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +20,7 @@ public class Deck {
         this.game = game;
         cards.addAll(defaultDeck);
         this.nextId = cards.size() - 1;
-        shuffle();
+        Collections.shuffle(cards);
     }
 
     /**
@@ -43,6 +46,7 @@ public class Deck {
         List<Card> subList = cards.subList(cards.size() - n, cards.size());
         Card[] result = subList.toArray(new Card[0]);
         subList.clear();
+        notifyDeckCount(false);
         if (cards.size() == 0) {
             shuffle();
         }
@@ -69,7 +73,11 @@ public class Deck {
      * @param shuffled 是否洗牌
      */
     private void notifyDeckCount(boolean shuffled) {
-
+        for (Player player : game.getPlayers()) {
+            if (player instanceof HumanPlayer p) {
+                p.send(Fengsheng.sync_deck_num_toc.newBuilder().setNum(cards.size()).setShuffled(shuffled).build());
+            }
+        }
     }
 
     /**
