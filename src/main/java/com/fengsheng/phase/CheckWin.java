@@ -13,12 +13,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 判断是否胜利或者有人濒死
+ * 判断是否有人胜利
  * <li>只有接收阶段正常接收情报才会进入 {@link ReceivePhaseSenderSkill} </li>
  * <li>其它情况均为置入情报区，一律进入这里。</li>
  */
-public class CheckWinOrDie implements Fsm {
-    private static final Logger log = Logger.getLogger(CheckWinOrDie.class);
+public class CheckWin implements Fsm {
+    private static final Logger log = Logger.getLogger(CheckWin.class);
 
     /**
      * 谁的回合
@@ -33,11 +33,11 @@ public class CheckWinOrDie implements Fsm {
      */
     public Fsm afterDieResolve;
 
-    public CheckWinOrDie(Player whoseTurn, Fsm afterDieResolve) {
+    public CheckWin(Player whoseTurn, Fsm afterDieResolve) {
         this(whoseTurn, new ReceiveOrder(), afterDieResolve);
     }
 
-    public CheckWinOrDie(Player whoseTurn, ReceiveOrder receiveOrder, Fsm afterDieResolve) {
+    public CheckWin(Player whoseTurn, ReceiveOrder receiveOrder, Fsm afterDieResolve) {
         this.whoseTurn = whoseTurn;
         this.receiveOrder = receiveOrder;
         this.afterDieResolve = afterDieResolve;
@@ -49,14 +49,12 @@ public class CheckWinOrDie implements Fsm {
         Player stealer = null; // 簒夺者
         List<Player> redPlayers = new ArrayList<>(), bluePlayers = new ArrayList<>();
         for (Player p : game.getPlayers()) {
-            if (p.isAlive() && !p.hasNoIdentity() && !p.isLose()) {
-                switch (p.getIdentity()) {
-                    case Black -> {
-                        if (p.getSecretTask() == Common.secret_task.Stealer) stealer = p;
-                    }
-                    case Red -> redPlayers.add(p);
-                    case Blue -> bluePlayers.add(p);
+            switch (p.getIdentity()) {
+                case Black -> {
+                    if (p.getSecretTask() == Common.secret_task.Stealer) stealer = p;
                 }
+                case Red -> redPlayers.add(p);
+                case Blue -> bluePlayers.add(p);
             }
         }
         List<Player> declareWinner = new ArrayList<>(), winner = new ArrayList<>();
@@ -105,5 +103,4 @@ public class CheckWinOrDie implements Fsm {
         }
         return new ResolveResult(new StartWaitForChengQing(whoseTurn, receiveOrder, afterDieResolve), true);
     }
-
 }

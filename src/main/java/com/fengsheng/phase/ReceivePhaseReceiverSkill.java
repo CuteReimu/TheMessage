@@ -18,7 +18,7 @@ public record ReceivePhaseReceiverSkill(Player whoseTurn, Card messageCard, Rece
     @Override
     public ResolveResult resolve() {
         ResolveResult result = inFrontOfWhom.getGame().dealListeningSkill();
-        return result != null ? result : new ResolveResult(new CheckWinOrDie(whoseTurn, receiveOrder, new NextTurn(whoseTurn)), true);
+        return result != null ? result : new ResolveResult(new CheckWin(whoseTurn, receiveOrder, new NextTurn(whoseTurn)), true);
     }
 
     @Override
