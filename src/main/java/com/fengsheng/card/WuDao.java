@@ -33,16 +33,9 @@ public class WuDao extends AbstractCard {
             log.error("误导的使用时机不对");
             return false;
         }
-        int left, right;
-        for (left = fsm.inFrontOfWhom.location() - 1; left != fsm.inFrontOfWhom.location(); left--) {
-            if (left < 0) left += g.getPlayers().length;
-            if (g.getPlayers()[left].isAlive()) break;
-        }
-        for (right = fsm.inFrontOfWhom.location() + 1; right != fsm.inFrontOfWhom.location(); right++) {
-            if (right >= g.getPlayers().length) right -= g.getPlayers().length;
-            if (g.getPlayers()[right].isAlive()) break;
-        }
-        if (target == fsm.inFrontOfWhom || (target.location() != left && target.location() != right)) {
+        Player left = r.getNextLeftAlivePlayer();
+        Player right = r.getNextRightAlivePlayer();
+        if (target == fsm.inFrontOfWhom || (target != left && target != right)) {
             log.error("误导只能选择情报当前人左右两边的人作为目标");
             return false;
         }

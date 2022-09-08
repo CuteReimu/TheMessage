@@ -1,6 +1,7 @@
 package com.fengsheng.handler;
 
 import com.fengsheng.HumanPlayer;
+import com.fengsheng.Player;
 import com.fengsheng.card.Card;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
@@ -24,9 +25,14 @@ public class use_wu_dao_tos extends AbstractProtoHandler<Fengsheng.use_wu_dao_to
             log.error("这张牌不是误导，而是" + card);
             return;
         }
-        if (card.canUse(r.getGame(), r)) {
+        if (pb.getTargetPlayerId() < 0 || pb.getTargetPlayerId() >= r.getGame().getPlayers().length) {
+            log.error("目标错误");
+            return;
+        }
+        Player target = r.getGame().getPlayers()[r.getAbstractLocation(pb.getTargetPlayerId())];
+        if (card.canUse(r.getGame(), r, target)) {
             r.incrSeq();
-            card.execute(r.getGame(), r);
+            card.execute(r.getGame(), r, target);
         }
     }
 }
