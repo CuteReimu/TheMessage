@@ -16,6 +16,6 @@ public class skill_qi_huo_ke_ju_tos extends AbstractProtoHandler<Role.skill_qi_h
             log.error("你没有这个技能");
             return;
         }
-        skill.executeProtocol(r.getGame(), r, pb);
+        r.getGame().tryContinueResolveProtocol(r, pb);
     }
 }

@@ -16,6 +16,6 @@ public class skill_jin_shen_tos extends AbstractProtoHandler<Role.skill_jin_shen
             log.error("你没有这个技能");
             return;
         }
-        skill.executeProtocol(r.getGame(), r, pb);
+        r.getGame().tryContinueResolveProtocol(r, pb);
     }
 }

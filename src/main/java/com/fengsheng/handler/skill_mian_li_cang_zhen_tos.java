@@ -16,6 +16,6 @@ public class skill_mian_li_cang_zhen_tos extends AbstractProtoHandler<Role.skill
             log.error("你没有这个技能");
             return;
         }
-        skill.executeProtocol(r.getGame(), r, pb);
+        r.getGame().tryContinueResolveProtocol(r, pb);
     }
 }
