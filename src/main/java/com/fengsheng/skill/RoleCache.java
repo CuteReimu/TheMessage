@@ -44,8 +44,8 @@ public final class RoleCache {
         int[] indexArray = new int[Math.max(cache.size(), n)];
         for (int i = 0; i < indexArray.length; i++)
             indexArray[i] = i;
-        for (int i = 0; i < indexArray.length; i++) {
-            int index = random.nextInt(i, n);
+        for (int i = 0; i < n; i++) {
+            int index = random.nextInt(i, indexArray.length);
             if (i != index) {
                 int temp = indexArray[i];
                 indexArray[i] = indexArray[index];
