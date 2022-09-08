@@ -199,18 +199,8 @@ public class RobotPlayer extends AbstractPlayer {
                 if (lock && card.canLock() && random.nextBoolean())
                     lockedPlayer = r.getGame().getPlayers()[targetLocation];
             }
-            case Left -> {
-                targetLocation = (r.location() + r.getGame().getPlayers().length - 1) % r.getGame().getPlayers().length;
-                while (!r.getGame().getPlayers()[targetLocation].isAlive()) {
-                    targetLocation = (targetLocation + r.getGame().getPlayers().length - 1) % r.getGame().getPlayers().length;
-                }
-            }
-            case Right -> {
-                targetLocation = (r.location() + 1) % r.getGame().getPlayers().length;
-                while (!r.getGame().getPlayers()[targetLocation].isAlive()) {
-                    targetLocation = (targetLocation + 1) % r.getGame().getPlayers().length;
-                }
-            }
+            case Left -> targetLocation = r.getNextLeftAlivePlayer().location();
+            case Right -> targetLocation = r.getNextRightAlivePlayer().location();
         }
         r.getGame().resolve(new OnSendCard(fsm.player(), card, dir, r.getGame().getPlayers()[targetLocation],
                 lockedPlayer == null ? new Player[0] : new Player[]{lockedPlayer}));

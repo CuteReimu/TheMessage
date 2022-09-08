@@ -39,19 +39,11 @@ public class send_message_card_tos extends AbstractProtoHandler<Fengsheng.send_m
             log.error("方向错误: " + pb.getCardDir());
             return;
         }
-        int targetLocation = 0;
-        switch (pb.getCardDir()) {
-            case Left -> {
-                targetLocation = (r.location() + r.getGame().getPlayers().length - 1) % r.getGame().getPlayers().length;
-                while (!r.getGame().getPlayers()[targetLocation].isAlive())
-                    targetLocation = (targetLocation + r.getGame().getPlayers().length - 1) % r.getGame().getPlayers().length;
-            }
-            case Right -> {
-                targetLocation = (r.location() + 1) % r.getGame().getPlayers().length;
-                while (!r.getGame().getPlayers()[targetLocation].isAlive())
-                    targetLocation = (targetLocation + 1) % r.getGame().getPlayers().length;
-            }
-        }
+        int targetLocation = switch (pb.getCardDir()) {
+            case Left -> r.getNextLeftAlivePlayer().location();
+            case Right -> r.getNextRightAlivePlayer().location();
+            default -> 0;
+        };
         if (pb.getCardDir() != Common.direction.Up && pb.getTargetPlayerId() != r.getAlternativeLocation(targetLocation)) {
             log.error("不能传给那个人: " + pb.getTargetPlayerId());
             return;

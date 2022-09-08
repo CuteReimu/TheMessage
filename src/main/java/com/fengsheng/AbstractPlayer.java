@@ -282,4 +282,24 @@ public abstract class AbstractPlayer implements Player {
     public void resetSkillUseCount() {
         skillUseCount.clear();
     }
+
+    @Override
+    public Player getNextLeftAlivePlayer() {
+        int left;
+        for (left = location - 1; left != location; left--) {
+            if (left < 0) left += game.getPlayers().length;
+            if (game.getPlayers()[left].isAlive()) break;
+        }
+        return game.getPlayers()[left];
+    }
+
+    @Override
+    public Player getNextRightAlivePlayer() {
+        int right;
+        for (right = location + 1; right != location; right++) {
+            if (right >= game.getPlayers().length) right -= game.getPlayers().length;
+            if (game.getPlayers()[right].isAlive()) break;
+        }
+        return game.getPlayers()[right];
+    }
 }

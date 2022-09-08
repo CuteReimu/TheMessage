@@ -268,6 +268,16 @@ public interface Player {
     void resetSkillUseCount();
 
     /**
+     * 获取左手边下一个存活的玩家
+     */
+    Player getNextLeftAlivePlayer();
+
+    /**
+     * 获取右手边下一个存活的玩家
+     */
+    Player getNextRightAlivePlayer();
+
+    /**
      * （日志用）将颜色转为角色身份的字符串
      */
     static String identityColorToString(Common.color color) {

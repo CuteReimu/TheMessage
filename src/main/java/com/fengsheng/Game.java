@@ -179,7 +179,7 @@ public final class Game {
     }
 
     /**
-     * 更新一个新的状态机并结算
+     * 更新一个新的状态机并结算，只能由游戏所在线程调用
      */
     public void resolve(Fsm fsm) {
         this.fsm = fsm;
