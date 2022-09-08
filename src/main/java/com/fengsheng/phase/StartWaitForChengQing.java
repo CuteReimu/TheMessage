@@ -26,7 +26,7 @@ record StartWaitForChengQing(Player whoseTurn, LinkedList<Player> dyingQueue, Li
 
     @Override
     public ResolveResult resolve() {
-        if (diedQueue.isEmpty())
+        if (dyingQueue.isEmpty())
             return new ResolveResult(new CheckKillerWin(whoseTurn, diedQueue, afterDieResolve), true);
         Player whoDie = dyingQueue.removeFirst();
         log.info(whoDie + "濒死");

@@ -85,6 +85,7 @@ public class QiHuoKeJu implements Skill {
             r.incrSeq();
             log.info("[毛不拔]发动了[奇货可居]");
             r.deleteMessageCard(card.getId());
+            fsm.receiveOrder().removePlayerIfNotHaveThreeBlack(r);
             r.addCard(card);
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player1)

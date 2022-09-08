@@ -87,7 +87,9 @@ public class JinShen implements Skill {
             Card messageCard = fsm.messageCard();
             r.deleteCard(card.getId());
             r.deleteMessageCard(messageCard.getId());
+            fsm.receiveOrder().removePlayerIfNotHaveThreeBlack(r);
             r.addMessageCard(card);
+            fsm.receiveOrder().addPlayerIfHasThreeBlack(r);
             r.addCard(messageCard);
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player1)

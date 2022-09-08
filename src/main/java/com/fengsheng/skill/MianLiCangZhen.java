@@ -97,6 +97,7 @@ public class MianLiCangZhen implements Skill {
             log.info("[邵秀]发动了[绵里藏针]");
             r.deleteCard(card.getId());
             target.addMessageCard(card);
+            fsm.receiveOrder.addPlayerIfHasThreeBlack(target);
             for (Player p : r.getGame().getPlayers()) {
                 if (p instanceof HumanPlayer player1)
                     player1.send(Role.skill_mian_li_cang_zhen_toc.newBuilder().setCard(card.toPbCard())
