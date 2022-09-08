@@ -1,5 +1,7 @@
 package com.fengsheng;
 
+import com.fengsheng.protos.Common;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -15,7 +17,7 @@ public final class Config {
     public static final int GmListenPort;
     public static final int ClientVersion;
     public static final int MaxRoomCount;
-    public static final int[] DebugRoles;
+    public static final Common.role[] DebugRoles;
 
     static {
         Properties pps = new Properties();
@@ -40,10 +42,14 @@ public final class Config {
         GmListenPort = Integer.parseInt(pps.getProperty("gm.listen_port"));
         ClientVersion = Integer.parseInt(pps.getProperty("client_version"));
         MaxRoomCount = Integer.parseInt(pps.getProperty("room_count"));
-        String[] debugRoles = pps.getProperty("gm.debug_roles").split(",");
-        DebugRoles = new int[debugRoles.length];
-        for (int i = 0; i < DebugRoles.length; i++) {
-            DebugRoles[i] = Integer.parseInt(debugRoles[i]);
+        String debugRoleStr = pps.getProperty("gm.debug_roles");
+        if (debugRoleStr.isBlank()) {
+            DebugRoles = new Common.role[0];
+        } else {
+            String[] debugRoles = debugRoleStr.split(",");
+            DebugRoles = new Common.role[debugRoles.length];
+            for (int i = 0; i < DebugRoles.length; i++)
+                DebugRoles[i] = Common.role.forNumber(Integer.parseInt(debugRoles[i]));
         }
         try (OutputStream out = new FileOutputStream("application.properties")) {
             pps.store(out, "application.properties");

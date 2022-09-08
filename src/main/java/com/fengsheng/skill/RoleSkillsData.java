@@ -11,6 +11,13 @@ public class RoleSkillsData {
     private Skill[] skills;
 
     /**
+     * 新建一个名字为“无角色”、没技能的隐藏角色
+     */
+    public RoleSkillsData() {
+        this("无角色", Common.role.unknown, false);
+    }
+
+    /**
      * 角色技能数据
      *
      * @param name   角色名

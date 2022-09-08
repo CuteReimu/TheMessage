@@ -6,6 +6,8 @@ import com.fengsheng.network.Network;
 import com.fengsheng.phase.DrawPhase;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
+import com.fengsheng.skill.RoleCache;
+import com.fengsheng.skill.RoleSkillsData;
 import com.fengsheng.skill.Skill;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
@@ -92,12 +94,14 @@ public final class Game {
         Collections.shuffle(identities, random);
         List<Common.secret_task> tasks = new ArrayList<>(List.of(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector));
         Collections.shuffle(tasks, random);
-        // TODO 随机分配角色
+        RoleSkillsData[] roleSkillsDataArray = Config.IsGmEnable
+                ? RoleCache.getRandomRolesWithSpecific(players.length, Config.DebugRoles)
+                : RoleCache.getRandomRoles(players.length);
         int secretIndex = 0;
         for (int i = 0; i < players.length; i++) {
             var identity = identities.get(i);
             var task = identity == Common.color.Black ? tasks.get(secretIndex++) : Common.secret_task.forNumber(0);
-            players[i].init(identity, task, null);
+            players[i].init(identity, task, roleSkillsDataArray[i], roleSkillsDataArray);
         }
         GameCache.put(id, this);
         final int whoseTurn = random.nextInt(players.length);

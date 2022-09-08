@@ -9,7 +9,7 @@ import com.fengsheng.skill.SkillId;
 import java.util.Map;
 
 public interface Player {
-    void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData);
+    void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray);
 
     /**
      * 玩家停止计时器，并且seq值加一

@@ -51,13 +51,12 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData) {
-        super.init(identity, secretTask, roleSkillsData);
+    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray) {
+        super.init(identity, secretTask, roleSkillsData, roleSkillsDataArray);
         var builder = Fengsheng.init_toc.newBuilder().setPlayerCount(game.getPlayers().length).setIdentity(identity).setSecretTask(secretTask);
         int l = location;
         do {
-            // TODO 需要通知玩家其他人的角色
-            builder.addRoles(Common.role.unknown);
+            builder.addRoles(roleSkillsDataArray[l].isFaceUp() || l == location ? roleSkillsDataArray[l].getRole() : Common.role.unknown);
             l = (l + 1) % game.getPlayers().length;
         } while (l != location);
         send(builder.build());

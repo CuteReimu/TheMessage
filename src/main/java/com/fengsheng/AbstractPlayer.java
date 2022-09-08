@@ -43,7 +43,7 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData) {
+    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray) {
         log.info(this + "的身份是" + Player.identityColorToString(identity, secretTask));
         this.identity = identity;
         this.secretTask = secretTask;
@@ -239,7 +239,7 @@ public abstract class AbstractPlayer implements Player {
     @Override
     public void setSkills(Skill[] skills) {
         if (roleSkillsData == null)
-            roleSkillsData = new RoleSkillsData("无角色", Common.role.unknown, false);
+            roleSkillsData = new RoleSkillsData();
         this.roleSkillsData.setSkills(skills);
     }
 
