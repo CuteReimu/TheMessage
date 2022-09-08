@@ -8,11 +8,19 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.fengsheng.protos.Common.role.*;
+
 /**
  * 记录所有角色的工具类
  */
 public final class RoleCache {
-    private static final List<RoleSkillsData> cache = List.of();
+    private static final List<RoleSkillsData> cache = List.of(
+            new RoleSkillsData("端木静", duan_mu_jing, true, new XinSiChao()),
+            new RoleSkillsData("金生火", jin_sheng_huo, true, new JinShen()),
+            new RoleSkillsData("老鳖", lao_bie, true, new LianLuo(), new MingEr()),
+            new RoleSkillsData("毛不拔", mao_bu_ba, true, new QiHuoKeJu()),
+            new RoleSkillsData("邵秀", shao_xiu, true, new MianLiCangZhen())
+    );
 
     private static final Map<Common.role, RoleSkillsData> mapCache = new HashMap<>();
 

@@ -6,6 +6,7 @@ import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.Skill;
 import com.fengsheng.skill.SkillId;
+import com.fengsheng.skill.XinSiChao;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -226,6 +227,7 @@ public class RobotPlayer extends AbstractPlayer {
     private static final Map<Common.card_type, BiFunction<FightPhaseIdle, Card, Boolean>> aiFightPhase = new HashMap<>();
 
     static {
+        aiSkillMainPhase.put(SkillId.XIN_SI_CHAO, XinSiChao::ai);
         aiMainPhase.put(Common.card_type.Cheng_Qing, ChengQing::ai);
         aiMainPhase.put(Common.card_type.Li_You, LiYou::ai);
         aiMainPhase.put(Common.card_type.Ping_Heng, PingHeng::ai);
