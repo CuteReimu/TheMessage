@@ -96,6 +96,10 @@ public class YiYaHuanYa extends AbstractSkill {
                 log.error("目标已死亡");
                 return new ResolveResult(this, false);
             }
+            if (target != fsm.whoseTurn() && target != fsm.whoseTurn().getNextLeftAlivePlayer() && target != fsm.whoseTurn().getNextRightAlivePlayer()) {
+                log.error("你只能选择情报传出者或者其左边或右边的角色作为目标：" + pb.getTargetPlayerId());
+                return new ResolveResult(this, false);
+            }
             r.incrSeq();
             log.info(r + "对" + target + "发动了[以牙还牙]");
             r.deleteCard(card.getId());
