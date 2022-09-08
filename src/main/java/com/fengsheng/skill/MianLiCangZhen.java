@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 /**
  * 邵秀技能【绵里藏针】：你传出的情报被接收后，可以将一张黑色手牌置入接收者的情报区，然后摸一张牌。
  */
-public class MianLiCangZhen implements Skill {
+public class MianLiCangZhen extends AbstractSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);

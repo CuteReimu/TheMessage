@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 端木静技能【新思潮】：出牌阶段限一次，你可以弃置一张手牌，然后摸两张牌。
  */
-public class XinSiChao implements Skill {
+public class XinSiChao extends AbstractSkill {
     private static final Logger log = Logger.getLogger(XinSiChao.class);
 
     @Override

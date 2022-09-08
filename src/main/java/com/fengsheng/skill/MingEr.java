@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 /**
  * 老鳖技能【明饵】：你传出的红色或蓝色情报被接收后，你和接收者各摸一张牌。
  */
-public class MingEr implements Skill {
+public class MingEr extends AbstractSkill {
     private static final Logger log = Logger.getLogger(MingEr.class);
 
     @Override

@@ -8,7 +8,7 @@ import com.google.protobuf.GeneratedMessageV3;
 /**
  * 老鳖技能【联络】：你传递情报时，可以将箭头视为任意方向。
  */
-public class LianLuo implements Skill {
+public class LianLuo extends AbstractSkill {
     @Override
     public void init(Game g) {
 

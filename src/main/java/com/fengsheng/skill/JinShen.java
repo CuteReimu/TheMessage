@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 /**
  * 金生火技能【谨慎】：你接收双色情报后，可以用一张手牌与该情报面朝上互换。
  */
-public class JinShen implements Skill {
+public class JinShen extends AbstractSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);
