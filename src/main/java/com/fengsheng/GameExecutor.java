@@ -25,6 +25,8 @@ public final class GameExecutor implements Runnable {
             queue.take().run();
         } catch (InterruptedException e) {
             log.error("take queue interrupted", e);
+        } catch (Throwable e) {
+            log.error("catch throwable", e);
         }
     }
 
