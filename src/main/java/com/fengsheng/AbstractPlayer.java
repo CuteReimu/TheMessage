@@ -268,6 +268,12 @@ public abstract class AbstractPlayer implements Player {
         return roleSkillsData != null && roleSkillsData.isFaceUp();
     }
 
+    public void setRoleFaceUp(boolean faceUp) {
+        if (roleSkillsData == null)
+            roleSkillsData = new RoleSkillsData();
+        roleSkillsData.setFaceUp(faceUp);
+    }
+
     @Override
     public void addSkillUseCount(SkillId skillId) {
         skillUseCount.compute(skillId, (k, v) -> v == null ? 1 : v + 1);

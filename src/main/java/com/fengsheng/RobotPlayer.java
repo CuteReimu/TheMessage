@@ -6,6 +6,7 @@ import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.Skill;
 import com.fengsheng.skill.SkillId;
+import com.fengsheng.skill.TouTian;
 import com.fengsheng.skill.XinSiChao;
 import org.apache.log4j.Logger;
 
@@ -93,6 +94,10 @@ public class RobotPlayer extends AbstractPlayer {
     public void notifyFightPhase(int waitSecond) {
         var fsm = (FightPhaseIdle) game.getFsm();
         if (this != fsm.whoseFightTurn) return;
+        for (Skill skill : getSkills()) {
+            var ai = aiSkillFightPhase.get(skill.getSkillId());
+            if (ai != null && ai.apply(fsm, skill)) return;
+        }
         for (Card card : cards.values()) {
             var ai = aiFightPhase.get(card.getType());
             if (ai != null && ai.apply(fsm, card)) return;
@@ -214,10 +219,12 @@ public class RobotPlayer extends AbstractPlayer {
     private static final Map<SkillId, BiFunction<MainPhaseIdle, Skill, Boolean>> aiSkillMainPhase = new HashMap<>();
     private static final Map<Common.card_type, BiFunction<MainPhaseIdle, Card, Boolean>> aiMainPhase = new HashMap<>();
     private static final Map<Common.card_type, BiFunction<SendPhaseIdle, Card, Boolean>> aiSendPhase = new HashMap<>();
+    private static final Map<SkillId, BiFunction<FightPhaseIdle, Skill, Boolean>> aiSkillFightPhase = new HashMap<>();
     private static final Map<Common.card_type, BiFunction<FightPhaseIdle, Card, Boolean>> aiFightPhase = new HashMap<>();
 
     static {
         aiSkillMainPhase.put(SkillId.XIN_SI_CHAO, XinSiChao::ai);
+        aiSkillFightPhase.put(SkillId.TOU_TIAN, TouTian::ai);
         aiMainPhase.put(Common.card_type.Cheng_Qing, ChengQing::ai);
         aiMainPhase.put(Common.card_type.Li_You, LiYou::ai);
         aiMainPhase.put(Common.card_type.Ping_Heng, PingHeng::ai);

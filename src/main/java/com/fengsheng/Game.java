@@ -148,6 +148,23 @@ public final class Game {
         }
     }
 
+    public void playerSetRoleFaceUp(Player player, boolean faceUp) {
+        if (faceUp) {
+            player.setRoleFaceUp(true);
+            log.info(player + "将角色翻至正面朝上");
+        } else {
+            log.info(player + "将角色翻至背面朝上");
+            player.setRoleFaceUp(false);
+        }
+        for (Player p : players) {
+            if (p instanceof HumanPlayer) {
+                var builder = Fengsheng.notify_role_update_toc.newBuilder().setPlayerId(p.getAlternativeLocation(player.location()));
+                builder.setRole(player.isRoleFaceUp() ? player.getRole() : Common.role.unknown);
+                ((HumanPlayer) p).send(builder.build());
+            }
+        }
+    }
+
     /**
      * 继续处理当前状态机
      */

@@ -28,6 +28,10 @@ public class JieHuo extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        return JieHuo.canUse(g, r);
+    }
+
+    public static boolean canUse(Game g, Player r) {
         if (!(g.getFsm() instanceof FightPhaseIdle fsm) || r != fsm.whoseFightTurn) {
             log.error("截获的使用时机不对");
             return false;
@@ -41,22 +45,36 @@ public class JieHuo extends AbstractCard {
 
     @Override
     public void execute(final Game g, final Player r, Object... args) {
-        final var fsm = (FightPhaseIdle) g.getFsm();
         log.info(r + "使用了" + this);
         r.deleteCard(this.id);
+        JieHuo.execute(this, g, r);
+    }
+
+    /**
+     * 执行【截获】的效果
+     *
+     * @param card 使用的那张【截获】卡牌。可以为 {@code null} ，因为鄭文先技能【偷天】可以视为使用了【截获】。
+     */
+    public static void execute(JieHuo card, final Game g, final Player r) {
+        final var fsm = (FightPhaseIdle) g.getFsm();
         Fsm resolveFunc = () -> {
             fsm.inFrontOfWhom = r;
             fsm.whoseFightTurn = fsm.inFrontOfWhom;
-            g.getDeck().discard(this);
+            if (card != null) g.getDeck().discard(card);
             for (Player player : g.getPlayers()) {
                 if (player instanceof HumanPlayer p) {
-                    p.send(Fengsheng.use_jie_huo_toc.newBuilder().setCard(this.toPbCard())
-                            .setPlayerId(p.getAlternativeLocation(r.location())).build());
+                    var builder = Fengsheng.use_jie_huo_toc.newBuilder();
+                    builder.setPlayerId(p.getAlternativeLocation(r.location()));
+                    if (card != null) builder.setCard(card.toPbCard());
+                    p.send(builder.build());
                 }
             }
             return new ResolveResult(fsm, true);
         };
-        g.resolve(new OnUseCard(fsm.whoseTurn, r, this, r, resolveFunc));
+        if (card != null)
+            g.resolve(new OnUseCard(fsm.whoseTurn, r, card, r, resolveFunc));
+        else
+            g.resolve(resolveFunc);
     }
 
     @Override

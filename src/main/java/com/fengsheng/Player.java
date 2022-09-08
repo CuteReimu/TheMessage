@@ -253,6 +253,11 @@ public interface Player {
     boolean isRoleFaceUp();
 
     /**
+     * 设置玩家的角色牌是否面朝上
+     */
+    void setRoleFaceUp(boolean faceUp);
+
+    /**
      * 增加每回合技能使用次数计数
      */
     void addSkillUseCount(SkillId skillId);
