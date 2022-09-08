@@ -281,6 +281,7 @@ public class HumanPlayer extends AbstractPlayer {
                 }
             }, waitSecond + 2, TimeUnit.SECONDS);
         }
+        send(builder.build());
     }
 
     /**
