@@ -116,7 +116,8 @@ public class WeiBi extends AbstractCard {
             for (Player p : r.getGame().getPlayers()) {
                 if (p instanceof HumanPlayer player) {
                     var builder = Fengsheng.wei_bi_wait_for_give_card_toc.newBuilder();
-                    builder.setCard(card.toPbCard()).setWantType(wantType).setWaitingSecond(20);
+                    if (card != null) builder.setCard(card.toPbCard());
+                    builder.setWantType(wantType).setWaitingSecond(20);
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
                     if (p == target) {
@@ -170,7 +171,7 @@ public class WeiBi extends AbstractCard {
                     player.send(builder.setCard(c.toPbCard()).build());
                 }
             }
-            r.getGame().getDeck().discard(card);
+            if (card != null) r.getGame().getDeck().discard(card);
             return new ResolveResult(new MainPhaseIdle(r), true);
         }
 
