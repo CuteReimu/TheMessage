@@ -47,7 +47,7 @@ public class TouTian extends AbstractSkill {
         r.incrSeq();
         r.addSkillUseCount(getSkillId());
         g.playerSetRoleFaceUp(r, true);
-        log.info("[鄭文先]发动了[偷天]");
+        log.info(r + "发动了[偷天]");
         for (Player p : g.getPlayers()) {
             if (p instanceof HumanPlayer player)
                 player.send(Role.skill_tou_tian_toc.newBuilder().setPlayerId(player.getAlternativeLocation(r.location())).build());

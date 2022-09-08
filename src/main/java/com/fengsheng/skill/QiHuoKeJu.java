@@ -83,7 +83,7 @@ public class QiHuoKeJu extends AbstractSkill {
                 return new ResolveResult(this, false);
             }
             r.incrSeq();
-            log.info("[毛不拔]发动了[奇货可居]");
+            log.info(r + "发动了[奇货可居]");
             r.deleteMessageCard(card.getId());
             fsm.receiveOrder().removePlayerIfNotHaveThreeBlack(r);
             r.addCard(card);

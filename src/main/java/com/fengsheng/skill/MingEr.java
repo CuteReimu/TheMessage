@@ -36,7 +36,7 @@ public class MingEr extends AbstractSkill {
         if (!colors.contains(Common.color.Red) && !colors.contains(Common.color.Blue))
             return null;
         fsm.whoseTurn.addSkillUseCount(getSkillId());
-        log.info("[老鳖]发动了[明饵]");
+        log.info(fsm.whoseTurn + "发动了[明饵]");
         for (Player p : g.getPlayers()) {
             if (p instanceof HumanPlayer player)
                 player.send(Role.skill_ming_er_toc.newBuilder().setPlayerId(player.getAlternativeLocation(fsm.whoseTurn.location())).build());

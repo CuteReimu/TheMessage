@@ -97,7 +97,7 @@ public class YiYaHuanYa extends AbstractSkill {
                 return new ResolveResult(this, false);
             }
             r.incrSeq();
-            log.info("[王魁]对" + target + "发动了[以牙还牙]");
+            log.info(r + "对" + target + "发动了[以牙还牙]");
             r.deleteCard(card.getId());
             target.addMessageCard(card);
             fsm.receiveOrder().addPlayerIfHasThreeBlack(target);

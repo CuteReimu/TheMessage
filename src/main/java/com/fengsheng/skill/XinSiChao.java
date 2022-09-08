@@ -52,7 +52,7 @@ public class XinSiChao extends AbstractSkill {
         }
         r.incrSeq();
         r.addSkillUseCount(getSkillId());
-        log.info("[端木静]发动了[新思潮]");
+        log.info(r + "发动了[新思潮]");
         for (Player p : g.getPlayers()) {
             if (p instanceof HumanPlayer player)
                 player.send(Role.skill_xin_si_chao_toc.newBuilder().setPlayerId(player.getAlternativeLocation(r.location())).build());

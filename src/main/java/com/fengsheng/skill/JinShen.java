@@ -83,7 +83,7 @@ public class JinShen extends AbstractSkill {
                 return new ResolveResult(this, false);
             }
             r.incrSeq();
-            log.info("[金生火]发动了[谨慎]");
+            log.info(r + "发动了[谨慎]");
             Card messageCard = fsm.messageCard();
             r.deleteCard(card.getId());
             r.deleteMessageCard(messageCard.getId());

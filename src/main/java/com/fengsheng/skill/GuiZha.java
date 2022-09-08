@@ -69,7 +69,7 @@ public class GuiZha extends AbstractSkill {
         }
         r.incrSeq();
         r.addSkillUseCount(getSkillId());
-        log.info("[肥原龙川]对" + target + "发动了[诡诈]");
+        log.info(r + "对" + target + "发动了[诡诈]");
         for (Player p : g.getPlayers()) {
             if (p instanceof HumanPlayer player)
                 player.send(Role.skill_gui_zha_toc.newBuilder().setPlayerId(player.getAlternativeLocation(r.location()))

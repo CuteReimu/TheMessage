@@ -35,7 +35,7 @@ public class HuanRi extends AbstractSkill {
         if (!fsm.player.isRoleFaceUp())
             return null;
         fsm.whoseTurn.addSkillUseCount(getSkillId());
-        log.info("[鄭文先]发动了[换日]");
+        log.info(fsm.whoseTurn + "发动了[换日]");
         for (Player p : g.getPlayers()) {
             if (p instanceof HumanPlayer player)
                 player.send(Role.skill_huan_ri_toc.newBuilder().setPlayerId(player.getAlternativeLocation(fsm.whoseTurn.location())).build());

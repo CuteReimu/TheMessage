@@ -94,7 +94,7 @@ public class MianLiCangZhen extends AbstractSkill {
                 return new ResolveResult(this, false);
             }
             r.incrSeq();
-            log.info("[邵秀]发动了[绵里藏针]");
+            log.info(r + "发动了[绵里藏针]");
             r.deleteCard(card.getId());
             target.addMessageCard(card);
             fsm.receiveOrder.addPlayerIfHasThreeBlack(target);
