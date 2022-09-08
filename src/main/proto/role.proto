@@ -1,6 +1,6 @@
 syntax = "proto3";
 option java_package = "com.fengsheng.protos";
-import "com/fengsheng/protos/common.proto";
+import "common.proto";
 
 // 毛不拔【奇货可居】：你接收双色情报后，可以从你的情报区选择一张情报加入手牌。
 message skill_qi_huo_ke_ju_tos {

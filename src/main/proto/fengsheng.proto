@@ -1,6 +1,6 @@
 syntax = "proto3";
 option java_package = "com.fengsheng.protos";
-import "com/fengsheng/protos/common.proto";
+import "common.proto";
 
 // 申请加入房间
 message join_room_tos {
