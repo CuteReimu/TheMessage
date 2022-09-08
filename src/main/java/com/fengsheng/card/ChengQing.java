@@ -113,7 +113,7 @@ public class ChengQing extends AbstractCard {
             }
             if (playerAndCards.isEmpty()) return false;
             PlayerAndCard p = playerAndCards.get(ThreadLocalRandom.current().nextInt(playerAndCards.size()));
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p.player(), p.card().getId())), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p.player(), p.card().getId()), 2, TimeUnit.SECONDS);
             return true;
         }
 

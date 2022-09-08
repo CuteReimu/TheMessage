@@ -106,22 +106,22 @@ public class WeiBi extends AbstractCard {
                     if (p == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);
-                        player.setTimeout(GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(r.getGame(), () -> {
+                        player.setTimeout(GameExecutor.post(r.getGame(), () -> {
                             if (player.checkSeq(seq2)) {
                                 player.incrSeq();
                                 autoSelect();
                                 r.getGame().resolve(new MainPhaseIdle(r));
                             }
-                        }), builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
+                        }, builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
                     }
                     player.send(builder.build());
                 }
             }
             if (target instanceof RobotPlayer) {
-                GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(r.getGame(), () -> {
+                GameExecutor.post(r.getGame(), () -> {
                     autoSelect();
                     r.getGame().resolve(new MainPhaseIdle(r));
-                }), 2, TimeUnit.SECONDS);
+                }, 2, TimeUnit.SECONDS);
             }
             return new ResolveResult(this, false);
         }
@@ -194,7 +194,7 @@ public class WeiBi extends AbstractCard {
             for (Card c : p.getCards().values())
                 if (availableCardType.contains(c.getType())) cardTypes.add(c.getType());
             var cardType = cardTypes.get(ThreadLocalRandom.current().nextInt(cardTypes.size()));
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p, cardType)), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p, cardType), 2, TimeUnit.SECONDS);
             return true;
         }
     }

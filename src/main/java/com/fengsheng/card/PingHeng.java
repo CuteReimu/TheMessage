@@ -84,7 +84,7 @@ public class PingHeng extends AbstractCard {
                 if (p != player && p.isAlive()) players.add(p);
             if (players.isEmpty()) return false;
             Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p)), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p), 2, TimeUnit.SECONDS);
             return true;
         }
     }

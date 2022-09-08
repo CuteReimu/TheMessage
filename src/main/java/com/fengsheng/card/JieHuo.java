@@ -74,7 +74,7 @@ public class JieHuo extends AbstractCard {
                 return false;
             if (ThreadLocalRandom.current().nextBoolean())
                 return false;
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player)), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player), 2, TimeUnit.SECONDS);
             return true;
         }
     }

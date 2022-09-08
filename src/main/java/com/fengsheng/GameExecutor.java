@@ -1,10 +1,12 @@
 package com.fengsheng;
 
 import io.netty.util.HashedWheelTimer;
+import io.netty.util.Timeout;
 import org.apache.log4j.Logger;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public final class GameExecutor implements Runnable {
     private static final Logger log = Logger.getLogger(GameExecutor.class);
@@ -34,7 +36,12 @@ public final class GameExecutor implements Runnable {
         }
     }
 
-    public static void post(Game game, Runnable callback) {
+    /**
+     * （重要）由游戏的主线程去执行一段逻辑。
+     * <p>
+     * 绝大部分逻辑代码都应该由游戏的主线程去执行，因此不需要加锁。
+     */
+    public static void post(final Game game, final Runnable callback) {
         int mod = game.getId() % executors.length;
         if (executors[mod] == null) {
             synchronized (GameExecutor.class) {
@@ -47,5 +54,15 @@ public final class GameExecutor implements Runnable {
             }
         }
         executors[mod].post(callback);
+    }
+
+
+    /**
+     * （重要）在一段时间延迟后，由游戏的主线程去执行一段逻辑。
+     * <p>
+     * 绝大部分逻辑代码都应该由游戏的主线程去执行，因此不需要加锁。
+     */
+    public static Timeout post(final Game game, final Runnable callback, long delay, TimeUnit unit) {
+        return TimeWheel.newTimeout(timeout -> post(game, callback), delay, unit);
     }
 }

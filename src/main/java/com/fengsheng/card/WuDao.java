@@ -112,7 +112,7 @@ public class WuDao extends AbstractCard {
             }
             if (target == null) return false;
             final Player finalTarget = target;
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, finalTarget)), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, finalTarget), 2, TimeUnit.SECONDS);
             return true;
         }
     }

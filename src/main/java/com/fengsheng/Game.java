@@ -104,7 +104,7 @@ public final class Game {
         for (int i = 0; i < players.length; i++) {
             players[(whoseTurn + i) % players.length].draw(Config.HandCardCountBegin);
         }
-        GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(this, () -> resolve(new DrawPhase(players[whoseTurn]))), 1, TimeUnit.SECONDS);
+        GameExecutor.post(this, () -> resolve(new DrawPhase(players[whoseTurn])), 1, TimeUnit.SECONDS);
     }
 
     public void end() {
@@ -161,11 +161,11 @@ public final class Game {
      * 对于{@link WaitingFsm}，当收到玩家协议时，继续处理当前状态机
      */
     public void tryContinueResolveProtocol(final Player player, final GeneratedMessageV3 pb) {
-        if (!(fsm instanceof WaitingFsm)) {
-            log.error("时机错误，当前时点为：" + fsm);
-            return;
-        }
         GameExecutor.post(this, () -> {
+            if (!(fsm instanceof WaitingFsm)) {
+                log.error("时机错误，当前时点为：" + fsm);
+                return;
+            }
             ResolveResult result = ((WaitingFsm) fsm).resolveProtocol(player, pb);
             fsm = result.next();
             if (result.continueResolve()) {

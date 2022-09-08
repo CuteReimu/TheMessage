@@ -62,16 +62,24 @@ public class PoYi extends AbstractCard {
                     builder.setCard(card.toPbCard()).setPlayerId(p.getAlternativeLocation(r.location()));
                     if (p == r) {
                         builder.setMessageCard(sendPhase.messageCard.toPbCard()).setWaitingSecond(20);
-                        builder.setSeq(p.getSeq());
+                        final int seq2 = p.getSeq();
+                        builder.setSeq(seq2).setCard(card.toPbCard());
+                        p.setTimeout(GameExecutor.post(r.getGame(), () -> {
+                            if (p.checkSeq(seq2)) {
+                                p.incrSeq();
+                                showAndDrawCard(false);
+                                r.getGame().resolve(sendPhase);
+                            }
+                        }, builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
                     }
                     p.send(builder.build());
                 }
             }
             if (r instanceof RobotPlayer) {
-                GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(r.getGame(), () -> {
+                GameExecutor.post(r.getGame(), () -> {
                     showAndDrawCard(sendPhase.messageCard.getColors().contains(Common.color.Black));
                     r.getGame().resolve(sendPhase);
-                }), 2, TimeUnit.SECONDS);
+                }, 2, TimeUnit.SECONDS);
             }
             return new ResolveResult(this, false);
         }
@@ -125,7 +133,7 @@ public class PoYi extends AbstractCard {
             Player player = e.inFrontOfWhom;
             if (player == e.whoseTurn || e.isMessageCardFaceUp) return false;
             if (ThreadLocalRandom.current().nextBoolean()) return false;
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player)), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player), 2, TimeUnit.SECONDS);
             return true;
         }
     }

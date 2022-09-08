@@ -99,13 +99,13 @@ public class ShiTan extends AbstractCard {
                     if (p == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2).setCard(card.toPbCard());
-                        player.setTimeout(GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(r.getGame(), () -> {
+                        player.setTimeout(GameExecutor.post(r.getGame(), () -> {
                             if (player.checkSeq(seq2)) {
                                 player.incrSeq();
                                 autoSelect();
                                 r.getGame().resolve(new MainPhaseIdle(r));
                             }
-                        }), builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
+                        }, builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
                     } else if (p == r) {
                         builder.setCard(card.toPbCard());
                     }
@@ -113,10 +113,10 @@ public class ShiTan extends AbstractCard {
                 }
             }
             if (target instanceof RobotPlayer) {
-                GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(target.getGame(), () -> {
+                GameExecutor.post(target.getGame(), () -> {
                     autoSelect();
                     target.getGame().resolve(new MainPhaseIdle(r));
-                }), 4, TimeUnit.SECONDS);
+                }, 4, TimeUnit.SECONDS);
             }
             return new ResolveResult(this, false);
         }
@@ -200,7 +200,7 @@ public class ShiTan extends AbstractCard {
                 if (p != player && p.isAlive()) players.add(p);
             if (players.isEmpty()) return false;
             Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p)), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p), 2, TimeUnit.SECONDS);
             return true;
         }
     }

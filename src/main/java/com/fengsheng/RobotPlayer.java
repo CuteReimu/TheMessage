@@ -49,14 +49,14 @@ public class RobotPlayer extends AbstractPlayer {
                 if (ai != null && ai.apply(fsm, card)) return;
             }
         }
-        GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> game.resolve(new SendPhaseStart(this))), 2, TimeUnit.SECONDS);
+        GameExecutor.post(game, () -> game.resolve(new SendPhaseStart(this)), 2, TimeUnit.SECONDS);
     }
 
     @Override
     public void notifySendPhaseStart(int waitSecond) {
         var fsm = (SendPhaseStart) game.getFsm();
         if (this != fsm.player()) return;
-        GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> autoSendMessageCard(this, true)), 2, TimeUnit.SECONDS);
+        GameExecutor.post(game, () -> autoSendMessageCard(this, true), 2, TimeUnit.SECONDS);
     }
 
     public void notifySendMessageCard(Player player, Player targetPlayer, Player[] lockedPlayers, Card messageCard, Common.direction direction) {
@@ -71,7 +71,7 @@ public class RobotPlayer extends AbstractPlayer {
             var ai = aiSendPhase.get(card.getType());
             if (ai != null && ai.apply(fsm, card)) return;
         }
-        GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+        GameExecutor.post(game, () -> {
             var colors = fsm.messageCard.getColors();
             boolean certainlyReceive = fsm.isMessageCardFaceUp && colors.size() == 1 && colors.get(0) != Common.color.Black;
             boolean certainlyReject = fsm.isMessageCardFaceUp && colors.size() == 1 && colors.get(0) == Common.color.Black;
@@ -80,7 +80,7 @@ public class RobotPlayer extends AbstractPlayer {
                 game.resolve(new OnChooseReceiveCard(fsm.whoseTurn, fsm.messageCard, fsm.inFrontOfWhom, fsm.isMessageCardFaceUp));
             else
                 game.resolve(new MessageMoveNext(fsm));
-        }), 2, TimeUnit.SECONDS);
+        }, 2, TimeUnit.SECONDS);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class RobotPlayer extends AbstractPlayer {
             var ai = aiFightPhase.get(card.getType());
             if (ai != null && ai.apply(fsm, card)) return;
         }
-        GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> game.resolve(new FightPhaseNext(fsm))), 2, TimeUnit.SECONDS);
+        GameExecutor.post(game, () -> game.resolve(new FightPhaseNext(fsm)), 2, TimeUnit.SECONDS);
     }
 
     @Override
@@ -120,14 +120,14 @@ public class RobotPlayer extends AbstractPlayer {
     public void notifyAskForChengQing(Player whoDie, Player askWhom, int waitSecond) {
         var fsm = (WaitForChengQing) game.getFsm();
         if (askWhom != this) return;
-        GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> game.resolve(new WaitNextForChengQing(fsm))), 2, TimeUnit.SECONDS);
+        GameExecutor.post(game, () -> game.resolve(new WaitNextForChengQing(fsm)), 2, TimeUnit.SECONDS);
     }
 
     @Override
     public void waitForDieGiveCard(Player whoDie, int waitSecond) {
         var fsm = (WaitForDieGiveCard) game.getFsm();
         if (whoDie != this) return;
-        GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(game, () -> {
+        GameExecutor.post(game, () -> {
             if (identity != Common.color.Black) {
                 for (Player target : game.getPlayers()) {
                     if (target != this && target.getIdentity() == identity) {
@@ -160,7 +160,7 @@ public class RobotPlayer extends AbstractPlayer {
                 }
             }
             game.resolve(new AfterDieGiveCard(fsm));
-        }), 2, TimeUnit.SECONDS);
+        }, 2, TimeUnit.SECONDS);
     }
 
     /**

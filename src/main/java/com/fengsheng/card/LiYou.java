@@ -93,7 +93,7 @@ public class LiYou extends AbstractCard {
                 if (p.isAlive()) players.add(p);
             if (players.isEmpty()) return false;
             Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p)), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p), 2, TimeUnit.SECONDS);
             return true;
         }
     }

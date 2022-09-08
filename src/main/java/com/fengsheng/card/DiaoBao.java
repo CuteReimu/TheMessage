@@ -74,7 +74,7 @@ public class DiaoBao extends AbstractCard {
                 return false;
             if (ThreadLocalRandom.current().nextInt(4) != 0)
                 return false;
-            GameExecutor.TimeWheel.newTimeout(timeout -> GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player)), 2, TimeUnit.SECONDS);
+            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player), 2, TimeUnit.SECONDS);
             return true;
         }
     }
