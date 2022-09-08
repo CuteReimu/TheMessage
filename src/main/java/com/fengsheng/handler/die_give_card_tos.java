@@ -47,6 +47,10 @@ public class die_give_card_tos extends AbstractProtoHandler<Fengsheng.die_give_c
         }
         for (Card card : cards) r.deleteCard(card.getId());
         Player target = r.getGame().getPlayers()[r.getAbstractLocation(pb.getTargetPlayerId())];
+        if (!target.isAlive()) {
+            log.error("目标已死亡");
+            return;
+        }
         target.addCard(cards.toArray(new Card[0]));
         log.info(r + "给了" + target + cards);
         for (Player p : r.getGame().getPlayers()) {
