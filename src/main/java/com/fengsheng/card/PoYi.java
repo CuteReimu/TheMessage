@@ -59,8 +59,8 @@ public class PoYi extends AbstractCard {
                 if (player instanceof HumanPlayer p) {
                     var builder = Fengsheng.use_po_yi_toc.newBuilder();
                     builder.setCard(card.toPbCard()).setPlayerId(p.getAlternativeLocation(r.location()));
+                    builder.setMessageCard(sendPhase.messageCard.toPbCard()).setWaitingSecond(20);
                     if (p == r) {
-                        builder.setMessageCard(sendPhase.messageCard.toPbCard()).setWaitingSecond(20);
                         final int seq2 = p.getSeq();
                         builder.setSeq(seq2).setCard(card.toPbCard());
                         p.setTimeout(GameExecutor.post(r.getGame(), () -> {
