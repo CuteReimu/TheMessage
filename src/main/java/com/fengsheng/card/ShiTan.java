@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 
 public class ShiTan extends AbstractCard {
     private static final Logger log = Logger.getLogger(ShiTan.class);
@@ -191,17 +190,14 @@ public class ShiTan extends AbstractCard {
         throw new RuntimeException("impossible whoDrawCard: " + Arrays.toString(whoDrawCard));
     }
 
-    public static class Ai implements BiFunction<MainPhaseIdle, Card, Boolean> {
-        @Override
-        public Boolean apply(MainPhaseIdle e, Card card) {
-            Player player = e.player();
-            List<Player> players = new ArrayList<>();
-            for (Player p : player.getGame().getPlayers())
-                if (p != player && p.isAlive()) players.add(p);
-            if (players.isEmpty()) return false;
-            Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
-            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p), 2, TimeUnit.SECONDS);
-            return true;
-        }
+    public static boolean ai(MainPhaseIdle e, Card card) {
+        Player player = e.player();
+        List<Player> players = new ArrayList<>();
+        for (Player p : player.getGame().getPlayers())
+            if (p != player && p.isAlive()) players.add(p);
+        if (players.isEmpty()) return false;
+        Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
+        GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p), 2, TimeUnit.SECONDS);
+        return true;
     }
 }

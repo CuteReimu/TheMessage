@@ -226,14 +226,14 @@ public class RobotPlayer extends AbstractPlayer {
     private static final Map<Common.card_type, BiFunction<FightPhaseIdle, Card, Boolean>> aiFightPhase = new HashMap<>();
 
     static {
-        aiMainPhase.put(Common.card_type.Cheng_Qing, new ChengQing.Ai());
-        aiMainPhase.put(Common.card_type.Li_You, new LiYou.Ai());
-        aiMainPhase.put(Common.card_type.Ping_Heng, new PingHeng.Ai());
-        aiMainPhase.put(Common.card_type.Shi_Tan, new ShiTan.Ai());
-        aiMainPhase.put(Common.card_type.Wei_Bi, new WeiBi.Ai());
-        aiSendPhase.put(Common.card_type.Po_Yi, new PoYi.Ai());
-        aiFightPhase.put(Common.card_type.Diao_Bao, new DiaoBao.Ai());
-        aiFightPhase.put(Common.card_type.Jie_Huo, new JieHuo.Ai());
-        aiFightPhase.put(Common.card_type.Wu_Dao, new WuDao.Ai());
+        aiMainPhase.put(Common.card_type.Cheng_Qing, ChengQing::ai);
+        aiMainPhase.put(Common.card_type.Li_You, LiYou::ai);
+        aiMainPhase.put(Common.card_type.Ping_Heng, PingHeng::ai);
+        aiMainPhase.put(Common.card_type.Shi_Tan, ShiTan::ai);
+        aiMainPhase.put(Common.card_type.Wei_Bi, WeiBi::ai);
+        aiSendPhase.put(Common.card_type.Po_Yi, PoYi::ai);
+        aiFightPhase.put(Common.card_type.Diao_Bao, DiaoBao::ai);
+        aiFightPhase.put(Common.card_type.Jie_Huo, JieHuo::ai);
+        aiFightPhase.put(Common.card_type.Wu_Dao, WuDao::ai);
     }
 }

@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 
 public class DiaoBao extends AbstractCard {
     private static final Logger log = Logger.getLogger(DiaoBao.class);
@@ -65,17 +64,14 @@ public class DiaoBao extends AbstractCard {
         return Card.cardColorToString(colors) + "调包";
     }
 
-    public static class Ai implements BiFunction<FightPhaseIdle, Card, Boolean> {
-        @Override
-        public Boolean apply(FightPhaseIdle e, Card card) {
-            Player player = e.whoseFightTurn;
-            var colors = e.messageCard.getColors();
-            if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
-                return false;
-            if (ThreadLocalRandom.current().nextInt(4) != 0)
-                return false;
-            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player), 2, TimeUnit.SECONDS);
-            return true;
-        }
+    public static boolean ai(FightPhaseIdle e, Card card) {
+        Player player = e.whoseFightTurn;
+        var colors = e.messageCard.getColors();
+        if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
+            return false;
+        if (ThreadLocalRandom.current().nextInt(4) != 0)
+            return false;
+        GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player), 2, TimeUnit.SECONDS);
+        return true;
     }
 }

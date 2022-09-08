@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 
 public class WuDao extends AbstractCard {
     private static final Logger log = Logger.getLogger(WuDao.class);
@@ -78,42 +77,39 @@ public class WuDao extends AbstractCard {
         return Card.cardColorToString(colors) + "误导";
     }
 
-    public static class Ai implements BiFunction<FightPhaseIdle, Card, Boolean> {
-        @Override
-        public Boolean apply(FightPhaseIdle e, Card card) {
-            Player player = e.whoseFightTurn;
-            var colors = e.messageCard.getColors();
-            if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
-                return false;
-            Player[] players = player.getGame().getPlayers();
-            Player target = null;
-            switch (ThreadLocalRandom.current().nextInt(4)) {
-                case 0 -> {
-                    for (int left = e.inFrontOfWhom.location() - 1; left != e.inFrontOfWhom.location(); left--) {
-                        if (left < 0) left += players.length;
-                        if (player.getGame().getPlayers()[left].isAlive()) {
-                            target = players[left];
-                            break;
-                        }
+    public static boolean ai(FightPhaseIdle e, Card card) {
+        Player player = e.whoseFightTurn;
+        var colors = e.messageCard.getColors();
+        if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
+            return false;
+        Player[] players = player.getGame().getPlayers();
+        Player target = null;
+        switch (ThreadLocalRandom.current().nextInt(4)) {
+            case 0 -> {
+                for (int left = e.inFrontOfWhom.location() - 1; left != e.inFrontOfWhom.location(); left--) {
+                    if (left < 0) left += players.length;
+                    if (player.getGame().getPlayers()[left].isAlive()) {
+                        target = players[left];
+                        break;
                     }
-                }
-                case 1 -> {
-                    for (int right = e.inFrontOfWhom.location() + 1; right != e.inFrontOfWhom.location(); right++) {
-                        if (right >= players.length) right -= players.length;
-                        if (player.getGame().getPlayers()[right].isAlive()) {
-                            target = players[right];
-                            break;
-                        }
-                    }
-                }
-                default -> {
-                    return false;
                 }
             }
-            if (target == null) return false;
-            final Player finalTarget = target;
-            GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, finalTarget), 2, TimeUnit.SECONDS);
-            return true;
+            case 1 -> {
+                for (int right = e.inFrontOfWhom.location() + 1; right != e.inFrontOfWhom.location(); right++) {
+                    if (right >= players.length) right -= players.length;
+                    if (player.getGame().getPlayers()[right].isAlive()) {
+                        target = players[right];
+                        break;
+                    }
+                }
+            }
+            default -> {
+                return false;
+            }
         }
+        if (target == null) return false;
+        final Player finalTarget = target;
+        GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, finalTarget), 2, TimeUnit.SECONDS);
+        return true;
     }
 }
