@@ -28,8 +28,6 @@ client_version=1
 gm.debug_roles=22,26
 gm.enable=false
 gm.listen_port=9092
-# 是否开启tcp调试日志
-log.tcp_debug_log=true
 ```
 
 ## 游戏步骤
