@@ -19,7 +19,9 @@ public final class RoleCache {
             new RoleSkillsData("金生火", jin_sheng_huo, true, new JinShen()),
             new RoleSkillsData("老鳖", lao_bie, true, new LianLuo(), new MingEr()),
             new RoleSkillsData("毛不拔", mao_bu_ba, true, new QiHuoKeJu()),
-            new RoleSkillsData("邵秀", shao_xiu, true, new MianLiCangZhen())
+            new RoleSkillsData("邵秀", shao_xiu, true, new MianLiCangZhen()),
+            new RoleSkillsData("肥原龙川", fei_yuan_long_chuan, true, new GuiZha()),
+            new RoleSkillsData("王魁", wang_kui, true, new YiYaHuanYa())
     );
 
     private static final Map<Common.role, RoleSkillsData> mapCache = new HashMap<>();

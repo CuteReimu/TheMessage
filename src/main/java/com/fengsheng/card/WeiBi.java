@@ -35,6 +35,10 @@ public class WeiBi extends AbstractCard {
     public boolean canUse(Game g, Player r, Object... args) {
         Player target = (Player) args[0];
         Common.card_type wantType = (Common.card_type) args[1];
+        return WeiBi.canUse(g, r, target, wantType);
+    }
+
+    public static boolean canUse(Game g, Player r, Player target, Common.card_type wantType) {
         if (!(g.getFsm() instanceof MainPhaseIdle fsm) || r != fsm.player()) {
             log.error("威逼的使用时机不对");
             return false;
@@ -60,16 +64,26 @@ public class WeiBi extends AbstractCard {
         final Common.card_type wantType = (Common.card_type) args[1];
         log.info(r + "对" + target + "使用了" + this);
         r.deleteCard(this.id);
+        WeiBi.execute(this, g, r, target, wantType);
+    }
+
+    /**
+     * 执行【威逼】的效果
+     *
+     * @param card 使用的那张【威逼】卡牌。可以为 {@code null} ，因为肥原龙川技能【诡诈】可以视为使用了【威逼】。
+     */
+    public static void execute(final WeiBi card, final Game g, final Player r, final Player target, final Common.card_type wantType) {
         Fsm resolveFunc = () -> {
             if (hasCard(target, wantType)) {
-                return new ResolveResult(new executeWeiBi(r, target, this, wantType), true);
+                return new ResolveResult(new executeWeiBi(r, target, card, wantType), true);
             } else {
                 log.info(target + "向" + r + "展示了所有手牌");
-                g.getDeck().discard(this);
+                if (card != null) g.getDeck().discard(card);
                 for (Player p : g.getPlayers()) {
                     if (p instanceof HumanPlayer player) {
                         var builder = Fengsheng.wei_bi_show_hand_card_toc.newBuilder();
-                        builder.setCard(this.toPbCard()).setWantType(wantType);
+                        if (card != null) builder.setCard(card.toPbCard());
+                        builder.setWantType(wantType);
                         builder.setPlayerId(p.getAlternativeLocation(r.location()));
                         builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
                         if (p == r) {
@@ -82,7 +96,10 @@ public class WeiBi extends AbstractCard {
                 return new ResolveResult(new MainPhaseIdle(r), true);
             }
         };
-        g.resolve(new OnUseCard(r, r, this, r, resolveFunc));
+        if (card != null)
+            g.resolve(new OnUseCard(r, r, card, r, resolveFunc));
+        else
+            g.resolve(resolveFunc);
     }
 
     private static boolean hasCard(Player player, Common.card_type cardType) {

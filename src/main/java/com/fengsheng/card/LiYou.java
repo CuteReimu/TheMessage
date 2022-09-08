@@ -31,11 +31,15 @@ public class LiYou extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        Player target = (Player) args[0];
+        return LiYou.canUse(g, r, target);
+    }
+
+    public static boolean canUse(Game g, Player r, Player target) {
         if (!(g.getFsm() instanceof MainPhaseIdle fsm) || r != fsm.player()) {
             log.error("利诱的使用时机不对");
             return false;
         }
-        Player target = (Player) args[0];
         if (!target.isAlive()) {
             log.error("目标已死亡");
             return false;
@@ -48,6 +52,15 @@ public class LiYou extends AbstractCard {
         final Player target = (Player) args[0];
         log.info(r + "对" + target + "使用了" + this);
         r.deleteCard(this.id);
+        LiYou.execute(this, g, r, target);
+    }
+
+    /**
+     * 执行【利诱】的效果
+     *
+     * @param card 使用的那张【利诱】卡牌。可以为 {@code null} ，因为肥原龙川技能【诡诈】可以视为使用了【利诱】。
+     */
+    public static void execute(LiYou card, final Game g, final Player r, final Player target) {
         Fsm resolveFunc = () -> {
             Card[] deckCards = g.getDeck().draw(1);
             boolean joinIntoHand = false;
@@ -67,15 +80,19 @@ public class LiYou extends AbstractCard {
                     var builder = Fengsheng.use_li_you_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                    builder.setLiYouCard(this.toPbCard()).setJoinIntoHand(joinIntoHand);
+                    if (card != null) builder.setLiYouCard(card.toPbCard());
+                    builder.setJoinIntoHand(joinIntoHand);
                     if (deckCards.length > 0) builder.setMessageCard(deckCards[0].toPbCard());
                     p.send(builder.build());
                 }
             }
-            g.getDeck().discard(this);
+            if (card != null) g.getDeck().discard(card);
             return new ResolveResult(new MainPhaseIdle(r), true);
         };
-        g.resolve(new OnUseCard(r, r, this, r, resolveFunc));
+        if (card != null)
+            g.resolve(new OnUseCard(r, r, card, r, resolveFunc));
+        else
+            g.resolve(resolveFunc);
     }
 
     @Override
