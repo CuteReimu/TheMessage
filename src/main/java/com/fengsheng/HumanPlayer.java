@@ -251,7 +251,7 @@ public class HumanPlayer extends AbstractPlayer {
     public void notifyAskForChengQing(Player whoDie, Player askWhom, int waitSecond) {
         var builder = Fengsheng.wait_for_cheng_qing_toc.newBuilder();
         builder.setDiePlayerId(getAlternativeLocation(whoDie.location()));
-        builder.setWaitingSecond(getAlternativeLocation(askWhom.location()));
+        builder.setWaitingPlayerId(getAlternativeLocation(askWhom.location()));
         builder.setWaitingSecond(waitSecond);
         if (askWhom == this) {
             builder.setSeq(seq);
