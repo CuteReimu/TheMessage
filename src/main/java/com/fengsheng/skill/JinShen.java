@@ -60,10 +60,6 @@ public class JinShen extends AbstractSkill {
                     log.error("操作太晚了, required Seq: " + r.getSeq() + ", actual Seq: " + pb.getSeq());
                     return new ResolveResult(this, false);
                 }
-                if (player != fsm.inFrontOfWhom()) {
-                    log.error("还没轮到你");
-                    return new ResolveResult(this, false);
-                }
                 player.incrSeq();
                 return new ResolveResult(fsm, true);
             }
