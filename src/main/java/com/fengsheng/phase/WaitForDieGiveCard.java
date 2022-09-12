@@ -44,7 +44,7 @@ public class WaitForDieGiveCard implements Fsm {
             if (receiveOrder.isEmpty())
                 return new ResolveResult(afterDieResolve, true);
             else
-                return new ResolveResult(new CheckKillerWin(whoseTurn, receiveOrder, afterDieResolve), true);
+                return new ResolveResult(new CheckWin(whoseTurn, receiveOrder, afterDieResolve), true);
         }
         Player whoDie = diedQueue.get(diedIndex);
         for (Player p : whoDie.getGame().getPlayers()) {
