@@ -22,7 +22,8 @@ public record SendPhaseStart(Player player) implements Fsm {
                 player.setLose(true);
                 player.setAlive(false);
                 for (Player p : game.getPlayers()) {
-                    p.notifyDie(player.location(), true);
+                    p.notifyDying(player.location(), true);
+                    p.notifyDie(player.location());
                 }
             }
         }

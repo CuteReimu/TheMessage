@@ -179,7 +179,12 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public void notifyDie(int location, boolean loseGame) {
+    public void notifyDying(int location, boolean loseGame) {
+        
+    }
+
+    @Override
+    public void notifyDie(int location) {
         if (this.location == location) {
             game.playerDiscardCard(this, cards.values().toArray(new Card[0]));
             game.getDeck().discard(messageCards.values().toArray(new Card[0]));

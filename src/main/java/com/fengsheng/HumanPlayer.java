@@ -222,9 +222,15 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void notifyDie(int location, boolean loseGame) {
-        super.notifyDie(location, loseGame);
-        send(Fengsheng.notify_die_toc.newBuilder().setPlayerId(getAlternativeLocation(location)).setLoseGame(loseGame).build());
+    public void notifyDying(int location, boolean loseGame) {
+        super.notifyDying(location, loseGame);
+        send(Fengsheng.notify_dying_toc.newBuilder().setPlayerId(getAlternativeLocation(location)).setLoseGame(loseGame).build());
+    }
+
+    @Override
+    public void notifyDie(int location) {
+        super.notifyDie(location);
+        send(Fengsheng.notify_die_toc.newBuilder().setPlayerId(getAlternativeLocation(location)).build());
     }
 
     @Override

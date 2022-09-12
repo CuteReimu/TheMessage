@@ -172,12 +172,19 @@ public interface Player {
     void notifyReceivePhase(Player whoseTurn, Player inFrontOfWhom, Card messageCard, Player waitingPlayer, int waitSecond);
 
     /**
-     * 通知某名玩家死亡了
+     * 通知某名玩家已确定死亡（用于通知客户端把头像置灰）
      *
      * @param location 死亡的玩家在服务器上的座位号
      * @param loseGame 是否因为没有手牌可以作为情报传递而输掉游戏导致的死亡
      */
-    void notifyDie(int location, boolean loseGame);
+    void notifyDying(int location, boolean loseGame);
+
+    /**
+     * 通知某名玩家死亡了（用于通知客户端弃掉所有情报）
+     *
+     * @param location 死亡的玩家在服务器上的座位号
+     */
+    void notifyDie(int location);
 
     /**
      * 通知胜利

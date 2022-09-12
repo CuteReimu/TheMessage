@@ -15,7 +15,7 @@ public record AfterDieGiveCard(WaitForDieGiveCard dieGiveCard) implements Fsm {
         Card[] cards = player.getCards().values().toArray(new Card[0]);
         player.getGame().playerDiscardCard(player, cards);
         for (Player p : player.getGame().getPlayers()) {
-            p.notifyDie(player.location(), false);
+            p.notifyDie(player.location());
         }
         dieGiveCard.diedIndex++;
         return new ResolveResult(dieGiveCard, true);

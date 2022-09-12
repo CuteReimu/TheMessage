@@ -21,6 +21,8 @@ public record WaitNextForChengQing(WaitForChengQing waitForChengQing) implements
                 log.info("无人拯救，" + waitForChengQing.whoDie + "已死亡");
                 waitForChengQing.whoDie.setAlive(false);
                 waitForChengQing.diedQueue.add(waitForChengQing.whoDie);
+                for (Player p : players)
+                    p.notifyDying(waitForChengQing.whoDie.location(), false);
                 return new ResolveResult(new StartWaitForChengQing(waitForChengQing.whoseTurn, waitForChengQing.dyingQueue, waitForChengQing.diedQueue, waitForChengQing.afterDieResolve), true);
             }
             if (players[askWhom].isAlive()) {

@@ -232,10 +232,15 @@ message end_fight_phase_tos {
   uint32 seq = 1;
 }
 
-// 通知客户端谁死亡了
-message notify_die_toc {
+// 通知客户端谁死亡了（通知客户端将其置灰，之后不能再成为目标了）
+message notify_dying_toc {
   uint32 player_id = 1;
   bool   lose_game = 2; // true表示因为轮到传递情报时没情报传了导致输掉游戏
+}
+
+// 通知客户端谁死亡了（通知客户端弃掉所有情报）
+message notify_die_toc {
+  uint32 player_id = 1;
 }
 
 // 通知谁获胜了
