@@ -76,6 +76,7 @@ public class YiHuaJieMu extends AbstractSkill {
         }
         r.incrSeq();
         r.addSkillUseCount(getSkillId());
+        g.playerSetRoleFaceUp(r, true);
         log.info(r + "发动了[移花接木]");
         fromPlayer.deleteMessageCard(card.getId());
         toPlayer.addMessageCard(card);
