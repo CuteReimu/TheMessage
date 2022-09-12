@@ -29,9 +29,12 @@ public class HttpServerChannelHandler extends SimpleChannelInboundHandler<HttpOb
                 try {
                     URI uri = new URI(request.uri());
                     Map<String, String> form = new HashMap<>();
-                    for (String s : uri.getQuery().split("&")) {
-                        String[] arr = s.split("=", 2);
-                        form.putIfAbsent(arr[0], arr.length >= 2 ? arr[1] : "");
+                    String query = uri.getQuery();
+                    if (query != null) {
+                        for (String s : query.split("&")) {
+                            String[] arr = s.split("=", 2);
+                            form.putIfAbsent(arr[0], arr.length >= 2 ? arr[1] : "");
+                        }
                     }
                     String name = uri.getPath().replace("/", "");
                     Class<?> cls = this.getClass().getClassLoader().loadClass("com.fengsheng.gm." + name);
