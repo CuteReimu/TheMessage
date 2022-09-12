@@ -36,7 +36,7 @@ public class TouTian extends AbstractSkill {
     public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
         if (!JieHuo.canUse(g, r)) return;
         if (r.isRoleFaceUp()) {
-            log.error("你现在正面朝上，不能发动【偷天】");
+            log.error("你现在正面朝上，不能发动[偷天]");
             return;
         }
         var pb = (Role.skill_tou_tian_tos) message;
