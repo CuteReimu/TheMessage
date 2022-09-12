@@ -4,8 +4,8 @@ import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import org.apache.log4j.Logger;
 
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public final class GameExecutor implements Runnable {
@@ -13,7 +13,7 @@ public final class GameExecutor implements Runnable {
     private final static GameExecutor[] executors = new GameExecutor[(Runtime.getRuntime().availableProcessors() + 1) / 2];
     public final static HashedWheelTimer TimeWheel = new HashedWheelTimer();
 
-    private final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1024);
+    private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(1024);
 
     private GameExecutor() {
     }
