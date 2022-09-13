@@ -3,6 +3,7 @@ package com.fengsheng.card;
 import com.fengsheng.*;
 import com.fengsheng.phase.MainPhaseIdle;
 import com.fengsheng.phase.OnUseCard;
+import com.fengsheng.phase.UseChengQingOnDying;
 import com.fengsheng.phase.WaitForChengQing;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
@@ -83,7 +84,10 @@ public class ChengQing extends AbstractCard {
                 }
             }
             g.getDeck().discard(this);
-            return new ResolveResult(fsm, true);
+            if (fsm instanceof MainPhaseIdle)
+                return new ResolveResult(fsm, true);
+            else
+                return new ResolveResult(new UseChengQingOnDying((WaitForChengQing) fsm), true);
         };
         if (fsm instanceof MainPhaseIdle)
             g.resolve(new OnUseCard(((MainPhaseIdle) fsm).player(), r, this, r, resolveFunc));
