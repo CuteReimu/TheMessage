@@ -4,10 +4,7 @@ import com.fengsheng.card.*;
 import com.fengsheng.phase.*;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
-import com.fengsheng.skill.Skill;
-import com.fengsheng.skill.SkillId;
-import com.fengsheng.skill.TouTian;
-import com.fengsheng.skill.XinSiChao;
+import com.fengsheng.skill.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -43,7 +40,7 @@ public class RobotPlayer extends AbstractPlayer {
         if (location != player.location()) return;
         for (Skill skill : getSkills()) {
             var ai = aiSkillMainPhase.get(skill.getSkillId());
-            if (ai != null && ai.apply(fsm, skill)) return;
+            if (ai != null && ai.apply(fsm, (ActiveSkill) skill)) return;
         }
         if (cards.size() > 1) {
             for (Card card : cards.values()) {
@@ -96,7 +93,7 @@ public class RobotPlayer extends AbstractPlayer {
         if (this != fsm.whoseFightTurn) return;
         for (Skill skill : getSkills()) {
             var ai = aiSkillFightPhase.get(skill.getSkillId());
-            if (ai != null && ai.apply(fsm, skill)) return;
+            if (ai != null && ai.apply(fsm, (ActiveSkill) skill)) return;
         }
         for (Card card : cards.values()) {
             var ai = aiFightPhase.get(card.getType());
@@ -216,14 +213,15 @@ public class RobotPlayer extends AbstractPlayer {
         return location + "号[" + (isRoleFaceUp() ? roleSkillsData.getName() : "机器人") + "]";
     }
 
-    private static final Map<SkillId, BiFunction<MainPhaseIdle, Skill, Boolean>> aiSkillMainPhase = new HashMap<>();
+    private static final Map<SkillId, BiFunction<MainPhaseIdle, ActiveSkill, Boolean>> aiSkillMainPhase = new HashMap<>();
     private static final Map<Common.card_type, BiFunction<MainPhaseIdle, Card, Boolean>> aiMainPhase = new HashMap<>();
     private static final Map<Common.card_type, BiFunction<SendPhaseIdle, Card, Boolean>> aiSendPhase = new HashMap<>();
-    private static final Map<SkillId, BiFunction<FightPhaseIdle, Skill, Boolean>> aiSkillFightPhase = new HashMap<>();
+    private static final Map<SkillId, BiFunction<FightPhaseIdle, ActiveSkill, Boolean>> aiSkillFightPhase = new HashMap<>();
     private static final Map<Common.card_type, BiFunction<FightPhaseIdle, Card, Boolean>> aiFightPhase = new HashMap<>();
 
     static {
         aiSkillMainPhase.put(SkillId.XIN_SI_CHAO, XinSiChao::ai);
+        aiSkillMainPhase.put(SkillId.GUI_ZHA, GuiZha::ai);
         aiSkillFightPhase.put(SkillId.TOU_TIAN, TouTian::ai);
         aiMainPhase.put(Common.card_type.Cheng_Qing, ChengQing::ai);
         aiMainPhase.put(Common.card_type.Li_You, LiYou::ai);

@@ -7,13 +7,12 @@ import com.fengsheng.ResolveResult;
 import com.fengsheng.phase.ReceivePhaseReceiverSkill;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Role;
-import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
 /**
  * 老汉技能【视死】：你接收黑色情报后，摸两张牌
  */
-public class ShiSi extends AbstractSkill {
+public class ShiSi extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(ShiSi.class);
 
     @Override
@@ -43,10 +42,5 @@ public class ShiSi extends AbstractSkill {
         }
         fsm.inFrontOfWhom().draw(2);
         return null;
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 }

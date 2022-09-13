@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 /**
  * 白菲菲技能【怜悯】：你传出的非黑色情报被接收后，可以从你或接收者的情报区选择一张黑色情报加入你的手牌。
  */
-public class LianMin extends AbstractSkill {
+public class LianMin extends AbstractSkill implements TriggeredSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);
@@ -33,11 +33,6 @@ public class LianMin extends AbstractSkill {
             return null;
         fsm.whoseTurn.addSkillUseCount(getSkillId());
         return new ResolveResult(new executeLianMin(fsm), true);
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 
     private record executeLianMin(ReceivePhaseSenderSkill fsm) implements WaitingFsm {

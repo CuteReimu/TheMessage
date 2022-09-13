@@ -1,6 +1,9 @@
 package com.fengsheng.skill;
 
-import com.fengsheng.*;
+import com.fengsheng.Game;
+import com.fengsheng.GameExecutor;
+import com.fengsheng.HumanPlayer;
+import com.fengsheng.Player;
 import com.fengsheng.card.LiYou;
 import com.fengsheng.card.WeiBi;
 import com.fengsheng.phase.MainPhaseIdle;
@@ -17,22 +20,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * 肥原龙川技能【诡诈】：出牌阶段限一次，你可以指定一名角色，然后视为你对其使用了一张【威逼】或【利诱】。
  */
-public class GuiZha extends AbstractSkill {
+public class GuiZha extends AbstractSkill implements ActiveSkill {
     private static final Logger log = Logger.getLogger(GuiZha.class);
-
-    @Override
-    public void init(Game g) {
-
-    }
 
     @Override
     public SkillId getSkillId() {
         return SkillId.GUI_ZHA;
-    }
-
-    @Override
-    public ResolveResult execute(Game g) {
-        return null;
     }
 
     @Override
@@ -81,7 +74,7 @@ public class GuiZha extends AbstractSkill {
             LiYou.execute(null, g, r, target);
     }
 
-    public static boolean ai(MainPhaseIdle e, final Skill skill) {
+    public static boolean ai(MainPhaseIdle e, final ActiveSkill skill) {
         if (e.player().getSkillUseCount(SkillId.GUI_ZHA) > 0)
             return false;
         List<Player> players = new ArrayList<>();

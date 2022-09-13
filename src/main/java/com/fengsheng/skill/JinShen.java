@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 /**
  * 金生火技能【谨慎】：你接收双色情报后，可以用一张手牌与该情报面朝上互换。
  */
-public class JinShen extends AbstractSkill {
+public class JinShen extends AbstractSkill implements TriggeredSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);
@@ -32,11 +32,6 @@ public class JinShen extends AbstractSkill {
             return null;
         fsm.inFrontOfWhom().addSkillUseCount(getSkillId());
         return new ResolveResult(new executeJinShen(fsm), true);
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 
     private record executeJinShen(ReceivePhaseReceiverSkill fsm) implements WaitingFsm {

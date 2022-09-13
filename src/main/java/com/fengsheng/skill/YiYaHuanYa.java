@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 /**
  * 王魁技能【以牙还牙】：你接收黑色情报后，可以将一张黑色手牌置入情报传出者或其相邻角色的情报区，然后摸一张牌。
  */
-public class YiYaHuanYa extends AbstractSkill {
+public class YiYaHuanYa extends AbstractSkill implements TriggeredSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);
@@ -33,11 +33,6 @@ public class YiYaHuanYa extends AbstractSkill {
             return null;
         fsm.inFrontOfWhom().addSkillUseCount(getSkillId());
         return new ResolveResult(new executeYiYaHuanYa(fsm), true);
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 
     private record executeYiYaHuanYa(ReceivePhaseReceiverSkill fsm) implements WaitingFsm {

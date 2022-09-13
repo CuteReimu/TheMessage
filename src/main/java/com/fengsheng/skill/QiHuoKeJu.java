@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 /**
  * 毛不拔技能【奇货可居】：你接收双色情报后，可以从你的情报区选择一张情报加入手牌。
  */
-public class QiHuoKeJu extends AbstractSkill {
+public class QiHuoKeJu extends AbstractSkill implements TriggeredSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);
@@ -32,11 +32,6 @@ public class QiHuoKeJu extends AbstractSkill {
             return null;
         fsm.inFrontOfWhom().addSkillUseCount(getSkillId());
         return new ResolveResult(new executeQiHuoKeJu(fsm), true);
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 
     private record executeQiHuoKeJu(ReceivePhaseReceiverSkill fsm) implements WaitingFsm {

@@ -2,6 +2,7 @@ package com.fengsheng.handler;
 
 import com.fengsheng.HumanPlayer;
 import com.fengsheng.protos.Role;
+import com.fengsheng.skill.ActiveSkill;
 import com.fengsheng.skill.Skill;
 import com.fengsheng.skill.SkillId;
 import org.apache.log4j.Logger;
@@ -16,6 +17,6 @@ public class skill_gui_zha_tos extends AbstractProtoHandler<Role.skill_gui_zha_t
             log.error("你没有这个技能");
             return;
         }
-        skill.executeProtocol(r.getGame(), r, pb);
+        ((ActiveSkill) skill).executeProtocol(r.getGame(), r, pb);
     }
 }

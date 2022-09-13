@@ -8,7 +8,7 @@ import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.RoleCache;
 import com.fengsheng.skill.RoleSkillsData;
-import com.fengsheng.skill.Skill;
+import com.fengsheng.skill.TriggeredSkill;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
@@ -29,7 +29,7 @@ public final class Game {
     private final Player[] players;
     private final Deck deck = new Deck(this);
     private Fsm fsm;
-    private final List<Skill> listeningSkills = new ArrayList<>();
+    private final List<TriggeredSkill> listeningSkills = new ArrayList<>();
 
     private Game(int totalPlayerCount) {
         // 调用构造函数时加锁了，所以increaseId无需加锁
@@ -210,7 +210,7 @@ public final class Game {
     /**
      * 增加一个新的需要监听的技能。仅用于接收情报时、使用卡牌时、死亡时的技能
      */
-    public void addListeningSkill(Skill skill) {
+    public void addListeningSkill(TriggeredSkill skill) {
         listeningSkills.add(skill);
     }
 
@@ -218,7 +218,7 @@ public final class Game {
      * 遍历监听列表，结算技能
      */
     public ResolveResult dealListeningSkill() {
-        for (Skill skill : listeningSkills) {
+        for (TriggeredSkill skill : listeningSkills) {
             ResolveResult result = skill.execute(this);
             if (result != null) return result;
         }

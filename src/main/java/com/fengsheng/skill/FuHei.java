@@ -7,13 +7,12 @@ import com.fengsheng.ResolveResult;
 import com.fengsheng.phase.ReceivePhaseSenderSkill;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Role;
-import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
 /**
  * 白菲菲技能【腹黑】：你传出的黑色情报被接收后，你摸一张牌。
  */
-public class FuHei extends AbstractSkill {
+public class FuHei extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(FuHei.class);
 
     @Override
@@ -43,10 +42,5 @@ public class FuHei extends AbstractSkill {
         }
         fsm.whoseTurn.draw(1);
         return null;
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 }

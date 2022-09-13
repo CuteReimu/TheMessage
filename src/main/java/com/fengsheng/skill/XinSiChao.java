@@ -1,6 +1,9 @@
 package com.fengsheng.skill;
 
-import com.fengsheng.*;
+import com.fengsheng.Game;
+import com.fengsheng.GameExecutor;
+import com.fengsheng.HumanPlayer;
+import com.fengsheng.Player;
 import com.fengsheng.card.Card;
 import com.fengsheng.phase.MainPhaseIdle;
 import com.fengsheng.protos.Role;
@@ -12,22 +15,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * 端木静技能【新思潮】：出牌阶段限一次，你可以弃置一张手牌，然后摸两张牌。
  */
-public class XinSiChao extends AbstractSkill {
+public class XinSiChao extends AbstractSkill implements ActiveSkill {
     private static final Logger log = Logger.getLogger(XinSiChao.class);
-
-    @Override
-    public void init(Game g) {
-
-    }
 
     @Override
     public SkillId getSkillId() {
         return SkillId.XIN_SI_CHAO;
-    }
-
-    @Override
-    public ResolveResult execute(Game g) {
-        return null;
     }
 
     @Override
@@ -62,7 +55,7 @@ public class XinSiChao extends AbstractSkill {
         g.continueResolve();
     }
 
-    public static boolean ai(MainPhaseIdle e, final Skill skill) {
+    public static boolean ai(MainPhaseIdle e, final ActiveSkill skill) {
         if (e.player().getSkillUseCount(SkillId.XIN_SI_CHAO) > 0)
             return false;
         Card card = null;

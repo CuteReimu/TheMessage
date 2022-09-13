@@ -1,6 +1,9 @@
 package com.fengsheng.skill;
 
-import com.fengsheng.*;
+import com.fengsheng.Game;
+import com.fengsheng.GameExecutor;
+import com.fengsheng.HumanPlayer;
+import com.fengsheng.Player;
 import com.fengsheng.card.JieHuo;
 import com.fengsheng.phase.FightPhaseIdle;
 import com.fengsheng.protos.Common;
@@ -14,22 +17,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * 鄭文先技能【偷天】：争夺阶段你可以翻开此角色牌，然后视为你使用了一张【截获】。
  */
-public class TouTian extends AbstractSkill {
+public class TouTian extends AbstractSkill implements ActiveSkill {
     private static final Logger log = Logger.getLogger(TouTian.class);
-
-    @Override
-    public void init(Game g) {
-
-    }
 
     @Override
     public SkillId getSkillId() {
         return SkillId.TOU_TIAN;
-    }
-
-    @Override
-    public ResolveResult execute(Game g) {
-        return null;
     }
 
     @Override
@@ -55,7 +48,7 @@ public class TouTian extends AbstractSkill {
         JieHuo.execute(null, g, r);
     }
 
-    public static boolean ai(FightPhaseIdle e, final Skill skill) {
+    public static boolean ai(FightPhaseIdle e, final ActiveSkill skill) {
         if (e.whoseFightTurn.isRoleFaceUp())
             return false;
         Player player = e.whoseFightTurn;

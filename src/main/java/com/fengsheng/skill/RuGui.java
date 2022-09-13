@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 老汉技能【如归】：你死亡前，可以将你情报区中的一张情报置入当前回合角色的情报区中。
  */
-public class RuGui extends AbstractSkill {
+public class RuGui extends AbstractSkill implements TriggeredSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);
@@ -31,11 +31,6 @@ public class RuGui extends AbstractSkill {
             return null;
         fsm.askWhom.addSkillUseCount(getSkillId());
         return new ResolveResult(new executeRuGui(fsm), true);
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 
     private record executeRuGui(DieSkill fsm) implements WaitingFsm {
