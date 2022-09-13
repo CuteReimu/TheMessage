@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class AbstractPlayer implements Player {
     private static final Logger log = Logger.getLogger(AbstractPlayer.class);
@@ -242,7 +243,7 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public Skill[] getSkills() {
-        return roleSkillsData != null ? roleSkillsData.getSkills() : new Skill[0];
+        return roleSkillsData.getSkills();
     }
 
     @SuppressWarnings("unchecked")
@@ -258,12 +259,12 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public Common.role getRole() {
-        return roleSkillsData != null ? roleSkillsData.getRole() : Common.role.unknown;
+        return roleSkillsData.getRole();
     }
 
     @Override
     public boolean isRoleFaceUp() {
-        return roleSkillsData != null && roleSkillsData.isFaceUp();
+        return roleSkillsData.isFaceUp();
     }
 
     public void setRoleFaceUp(boolean faceUp) {
@@ -277,7 +278,7 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public int getSkillUseCount(SkillId skillId) {
-        return skillUseCount.get(skillId);
+        return Objects.requireNonNullElse(skillUseCount.get(skillId), 0);
     }
 
     @Override
