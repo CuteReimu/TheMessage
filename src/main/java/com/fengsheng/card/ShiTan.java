@@ -115,7 +115,7 @@ public class ShiTan extends AbstractCard {
                 GameExecutor.post(target.getGame(), () -> {
                     autoSelect();
                     target.getGame().resolve(new MainPhaseIdle(r));
-                }, 4, TimeUnit.SECONDS);
+                }, 2, TimeUnit.SECONDS);
             }
             return null;
         }
