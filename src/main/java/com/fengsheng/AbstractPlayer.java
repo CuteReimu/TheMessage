@@ -11,36 +11,37 @@ import org.apache.log4j.Logger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public abstract class AbstractPlayer implements Player {
     private static final Logger log = Logger.getLogger(AbstractPlayer.class);
 
     protected Game game;
     protected int location;
-    protected final Map<Integer, Card> cards = new HashMap<>();
-    protected final Map<Integer, Card> messageCards = new HashMap<>();
+    protected final Map<Integer, Card> cards;
+    protected final Map<Integer, Card> messageCards;
     protected Common.color identity;
     protected Common.secret_task secretTask;
-    protected boolean alive = true;
-    protected boolean lose = false;
-    protected boolean hasNoIdentity = false;
+    protected final AliveInfo aliveInfo;
     protected RoleSkillsData roleSkillsData;
-    protected final Map<SkillId, Integer> skillUseCount = new HashMap<>();
+    protected final Map<SkillId, Integer> skillUseCount;
 
     public AbstractPlayer() {
-
+        cards = new HashMap<>();
+        messageCards = new HashMap<>();
+        aliveInfo = new AliveInfo();
+        skillUseCount = new HashMap<>();
     }
 
     public AbstractPlayer(AbstractPlayer player) {
         game = player.game;
+        cards = player.cards;
+        messageCards = player.messageCards;
         location = player.location;
         identity = player.identity;
         secretTask = player.secretTask;
-        alive = player.alive;
-        lose = player.lose;
-        hasNoIdentity = player.hasNoIdentity;
+        aliveInfo = player.aliveInfo;
         roleSkillsData = player.roleSkillsData;
+        skillUseCount = player.skillUseCount;
     }
 
     @Override
@@ -53,6 +54,8 @@ public abstract class AbstractPlayer implements Player {
             for (Skill skill : roleSkillsData.getSkills()) {
                 if (skill instanceof TriggeredSkill s) s.init(game);
             }
+        } else {
+            this.roleSkillsData = new RoleSkillsData();
         }
     }
 
@@ -194,47 +197,37 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public void setAlive(boolean alive) {
-        this.alive = alive;
+        this.aliveInfo.alive = alive;
     }
 
     @Override
     public boolean isAlive() {
-        return alive;
+        return aliveInfo.alive;
     }
 
     @Override
     public void setLose(boolean lose) {
-        this.lose = lose;
+        this.aliveInfo.lose = lose;
     }
 
     @Override
     public boolean isLose() {
-        return lose;
+        return aliveInfo.lose;
     }
 
     @Override
     public void setHasNoIdentity(boolean hasNoIdentity) {
-        this.hasNoIdentity = hasNoIdentity;
+        this.aliveInfo.hasNoIdentity = hasNoIdentity;
     }
 
     @Override
     public boolean hasNoIdentity() {
-        return hasNoIdentity;
-    }
-
-    @Override
-    public void setIdentity(Common.color identity) {
-        this.identity = identity;
+        return aliveInfo.hasNoIdentity;
     }
 
     @Override
     public Common.color getIdentity() {
         return identity;
-    }
-
-    @Override
-    public void setSecretTask(Common.secret_task secretTask) {
-        this.secretTask = secretTask;
     }
 
     @Override
@@ -244,8 +237,6 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public void setSkills(Skill[] skills) {
-        if (roleSkillsData == null)
-            roleSkillsData = new RoleSkillsData();
         this.roleSkillsData.setSkills(skills);
     }
 
@@ -276,8 +267,6 @@ public abstract class AbstractPlayer implements Player {
     }
 
     public void setRoleFaceUp(boolean faceUp) {
-        if (roleSkillsData == null)
-            roleSkillsData = new RoleSkillsData();
         roleSkillsData.setFaceUp(faceUp);
     }
 
@@ -288,7 +277,7 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public int getSkillUseCount(SkillId skillId) {
-        return Objects.requireNonNullElse(skillUseCount.get(skillId), 0);
+        return skillUseCount.get(skillId);
     }
 
     @Override
@@ -314,5 +303,11 @@ public abstract class AbstractPlayer implements Player {
             if (game.getPlayers()[right].isAlive()) break;
         }
         return game.getPlayers()[right];
+    }
+
+    private static class AliveInfo {
+        boolean alive = false;
+        boolean lose = true;
+        boolean hasNoIdentity = false;
     }
 }

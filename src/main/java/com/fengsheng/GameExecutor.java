@@ -13,7 +13,7 @@ public final class GameExecutor implements Runnable {
     private final static GameExecutor[] executors = new GameExecutor[(Runtime.getRuntime().availableProcessors() + 1) / 2];
     public final static HashedWheelTimer TimeWheel = new HashedWheelTimer();
 
-    private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(1024);
+    private final BlockingQueue<GameAndCallback> queue = new LinkedBlockingQueue<>();
 
     private GameExecutor() {
     }
@@ -22,7 +22,8 @@ public final class GameExecutor implements Runnable {
     @Override
     public void run() {
         while (true) try {
-            queue.take().run();
+            GameAndCallback gameAndCallback = queue.take();
+            if (!gameAndCallback.game().isEnd()) gameAndCallback.callback().run();
         } catch (InterruptedException e) {
             log.error("take queue interrupted", e);
         } catch (Throwable e) {
@@ -30,9 +31,9 @@ public final class GameExecutor implements Runnable {
         }
     }
 
-    private void post(Runnable callback) {
+    private void post(GameAndCallback gameAndCallback) {
         try {
-            queue.put(callback);
+            queue.put(gameAndCallback);
         } catch (InterruptedException e) {
             log.error("put queue interrupted", e);
         }
@@ -55,7 +56,7 @@ public final class GameExecutor implements Runnable {
                 }
             }
         }
-        executors[mod].post(callback);
+        executors[mod].post(new GameAndCallback(game, callback));
     }
 
 
@@ -66,5 +67,9 @@ public final class GameExecutor implements Runnable {
      */
     public static Timeout post(final Game game, final Runnable callback, long delay, TimeUnit unit) {
         return TimeWheel.newTimeout(timeout -> post(game, callback), delay, unit);
+    }
+
+    private record GameAndCallback(Game game, Runnable callback) {
+
     }
 }

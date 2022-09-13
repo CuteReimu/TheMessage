@@ -26,6 +26,7 @@ public final class Game {
 
     private final int id;
     private boolean started;
+    private boolean ended;
     private final Player[] players;
     private final Deck deck = new Deck(this);
     private Fsm fsm;
@@ -111,7 +112,12 @@ public final class Game {
         GameExecutor.post(this, () -> resolve(new DrawPhase(players[whoseTurn])), 1, TimeUnit.SECONDS);
     }
 
+    public boolean isEnd() {
+        return ended;
+    }
+
     public void end() {
+        ended = true;
         GameCache.remove(id);
     }
 

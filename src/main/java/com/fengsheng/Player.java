@@ -230,16 +230,9 @@ public interface Player {
     boolean hasNoIdentity();
 
     /**
-     * 设置玩家的初始身份。如果玩家失去身份，则调用 {@link #setHasNoIdentity}
-     */
-    void setIdentity(Common.color identity);
-
-    /**
      * 获得玩家的初始身份。调用 {@link #hasNoIdentity} 可以判断他是否已经失去了身份
      */
     Common.color getIdentity();
-
-    void setSecretTask(Common.secret_task secretTask);
 
     Common.secret_task getSecretTask();
 

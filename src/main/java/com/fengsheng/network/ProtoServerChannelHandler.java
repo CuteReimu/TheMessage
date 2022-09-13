@@ -61,10 +61,6 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
                 if (hasHumanPlayer) {
                     game.getPlayers()[player.location()] = new RobotPlayer(player);
                 } else {
-                    // 当全部是机器人后，暂时用这种方法使游戏停下来
-                    for (int i = 0; i < game.getPlayers().length; i++) {
-                        game.getPlayers()[i] = new IdlePlayer(player);
-                    }
                     game.end();
                 }
             } else {
