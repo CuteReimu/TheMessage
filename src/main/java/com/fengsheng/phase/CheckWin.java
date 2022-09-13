@@ -99,6 +99,7 @@ public class CheckWin implements Fsm {
             log.info(Arrays.toString(declareWinners) + "宣告胜利，胜利者有" + Arrays.toString(winners));
             for (Player p : game.getPlayers())
                 p.notifyWin(declareWinners, winners);
+            whoseTurn.getGame().end();
             return new ResolveResult(null, false);
         }
         return new ResolveResult(new StartWaitForChengQing(whoseTurn, receiveOrder, afterDieResolve), true);
