@@ -91,7 +91,7 @@ public class CheckWin implements Fsm {
         }
         if (redWin) winner.addAll(redPlayers);
         if (blueWin) winner.addAll(bluePlayers);
-        if (!declareWinner.isEmpty() && stealer != null && whoseTurn == stealer)
+        if (!declareWinner.isEmpty() && stealer != null && stealer.equals(whoseTurn))
             declareWinner = winner = List.of(stealer);
         if (!declareWinner.isEmpty()) {
             var declareWinners = declareWinner.toArray(new Player[0]);

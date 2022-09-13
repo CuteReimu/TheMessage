@@ -35,7 +35,7 @@ public class WuDao extends AbstractCard {
         }
         Player left = fsm.inFrontOfWhom.getNextLeftAlivePlayer();
         Player right = fsm.inFrontOfWhom.getNextRightAlivePlayer();
-        if (target == fsm.inFrontOfWhom || (target != left && target != right)) {
+        if (target.equals(fsm.inFrontOfWhom) || (target != left && target != right)) {
             log.error("误导只能选择情报当前人左右两边的人作为目标");
             return false;
         }
@@ -73,7 +73,7 @@ public class WuDao extends AbstractCard {
     public static boolean ai(FightPhaseIdle e, Card card) {
         Player player = e.whoseFightTurn;
         var colors = e.messageCard.getColors();
-        if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
+        if (e.inFrontOfWhom.equals(player) && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
             return false;
         Player target = switch (ThreadLocalRandom.current().nextInt(4)) {
             case 0 -> e.inFrontOfWhom.getNextLeftAlivePlayer();

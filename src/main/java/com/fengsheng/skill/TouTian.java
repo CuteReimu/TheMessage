@@ -53,7 +53,7 @@ public class TouTian extends AbstractSkill implements ActiveSkill {
             return false;
         Player player = e.whoseFightTurn;
         var colors = e.messageCard.getColors();
-        if (e.inFrontOfWhom == player || (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) == Common.color.Black)
+        if (e.inFrontOfWhom.equals(player) || (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) == Common.color.Black)
             return false;
         if (ThreadLocalRandom.current().nextBoolean())
             return false;

@@ -35,7 +35,7 @@ public class PingHeng extends AbstractCard {
             return false;
         }
         Player target = (Player) args[0];
-        if (r == target) {
+        if (r.equals(target)) {
             log.error("平衡不能对自己使用");
             return false;
         }

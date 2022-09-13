@@ -305,6 +305,12 @@ public abstract class AbstractPlayer implements Player {
         return game.getPlayers()[right];
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Player p)) return false;
+        return game == p.getGame() && location == p.location();
+    }
+
     private static class AliveInfo {
         boolean alive = true;
         boolean lose = false;
