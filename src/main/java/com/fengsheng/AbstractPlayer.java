@@ -30,6 +30,7 @@ public abstract class AbstractPlayer implements Player {
         cards = new HashMap<>();
         messageCards = new HashMap<>();
         aliveInfo = new AliveInfo();
+        roleSkillsData = new RoleSkillsData();
         skillUseCount = new HashMap<>();
     }
 
