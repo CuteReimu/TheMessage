@@ -306,8 +306,8 @@ public abstract class AbstractPlayer implements Player {
     }
 
     private static class AliveInfo {
-        boolean alive = false;
-        boolean lose = true;
+        boolean alive = true;
+        boolean lose = false;
         boolean hasNoIdentity = false;
     }
 }
