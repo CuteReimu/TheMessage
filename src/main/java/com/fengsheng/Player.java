@@ -247,7 +247,7 @@ public interface Player {
 
     Skill[] getSkills();
 
-    Skill findSkill(SkillId skillId);
+    <T extends Skill> T findSkill(SkillId skillId);
 
     /**
      * 获得玩家的角色

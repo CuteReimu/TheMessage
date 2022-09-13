@@ -7,13 +7,12 @@ import com.fengsheng.ResolveResult;
 import com.fengsheng.phase.ReceivePhaseSenderSkill;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Role;
-import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
 /**
  * 老鳖技能【明饵】：你传出的红色或蓝色情报被接收后，你和接收者各摸一张牌。
  */
-public class MingEr extends AbstractSkill {
+public class MingEr extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(MingEr.class);
 
     @Override
@@ -48,10 +47,5 @@ public class MingEr extends AbstractSkill {
             fsm.inFrontOfWhom.draw(1);
         }
         return null;
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 }

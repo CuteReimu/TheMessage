@@ -33,7 +33,7 @@ public record SendPhaseStart(Player player) implements Fsm {
         for (Player p : game.getPlayers()) {
             p.notifySendPhaseStart(20);
         }
-        return new ResolveResult(this, false);
+        return null;
     }
 
     @Override

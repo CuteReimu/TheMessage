@@ -117,28 +117,28 @@ public class ShiTan extends AbstractCard {
                     target.getGame().resolve(new MainPhaseIdle(r));
                 }, 4, TimeUnit.SECONDS);
             }
-            return new ResolveResult(this, false);
+            return null;
         }
 
         @Override
         public ResolveResult resolveProtocol(Player player, GeneratedMessageV3 message) {
             if (!(message instanceof Fengsheng.execute_shi_tan_tos msg)) {
                 log.error("现在正在结算试探：" + card);
-                return new ResolveResult(this, false);
+                return null;
             }
             if (target != player) {
                 log.error("你不是试探的目标：" + card);
-                return new ResolveResult(this, false);
+                return null;
             }
             if (card.checkDrawCard(target) || target.getCards().isEmpty()) {
                 if (msg.getCardIdCount() != 0) {
                     log.error(target + "被使用" + card + "时不应该弃牌");
-                    return new ResolveResult(this, false);
+                    return null;
                 }
             } else {
                 if (msg.getCardIdCount() != 1) {
                     log.error(target + "被使用" + card + "时应该弃一张牌");
-                    return new ResolveResult(this, false);
+                    return null;
                 }
             }
             player.incrSeq();

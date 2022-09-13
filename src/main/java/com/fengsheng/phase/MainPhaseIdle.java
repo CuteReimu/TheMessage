@@ -16,7 +16,7 @@ public record MainPhaseIdle(Player player) implements Fsm {
         for (Player p : player.getGame().getPlayers()) {
             p.notifyMainPhase(30);
         }
-        return new ResolveResult(this, false);
+        return null;
     }
 
     @Override

@@ -42,7 +42,7 @@ public class FightPhaseIdle implements Fsm {
     public ResolveResult resolve() {
         for (Player p : whoseTurn.getGame().getPlayers())
             p.notifyFightPhase(20);
-        return new ResolveResult(this, false);
+        return null;
     }
 
     @Override

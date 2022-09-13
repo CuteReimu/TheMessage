@@ -50,6 +50,6 @@ public class WaitForDieGiveCard implements Fsm {
         for (Player p : whoDie.getGame().getPlayers()) {
             p.waitForDieGiveCard(whoDie, 30);
         }
-        return new ResolveResult(this, false);
+        return null;
     }
 }

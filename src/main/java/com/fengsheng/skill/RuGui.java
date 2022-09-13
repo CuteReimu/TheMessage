@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 老汉技能【如归】：你死亡前，可以将你情报区中的一张情报置入当前回合角色的情报区中。
  */
-public class RuGui extends AbstractSkill {
+public class RuGui extends AbstractSkill implements TriggeredSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);
@@ -33,11 +33,6 @@ public class RuGui extends AbstractSkill {
         return new ResolveResult(new executeRuGui(fsm), true);
     }
 
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
-    }
-
     private record executeRuGui(DieSkill fsm) implements WaitingFsm {
         private static final Logger log = Logger.getLogger(executeRuGui.class);
 
@@ -56,24 +51,24 @@ public class RuGui extends AbstractSkill {
                     p.send(builder.build());
                 }
             }
-            return new ResolveResult(this, false);
+            return null;
         }
 
         @Override
         public ResolveResult resolveProtocol(Player player, GeneratedMessageV3 message) {
             if (player != fsm.askWhom) {
                 log.error("不是你发技能的时机");
-                return new ResolveResult(this, false);
+                return null;
             }
             if (!(message instanceof Role.skill_ru_gui_tos pb)) {
                 log.error("错误的协议");
-                return new ResolveResult(this, false);
+                return null;
             }
             Player r = fsm.askWhom;
             Game g = r.getGame();
             if (r instanceof HumanPlayer humanPlayer && !humanPlayer.checkSeq(pb.getSeq())) {
                 log.error("操作太晚了, required Seq: " + humanPlayer.getSeq() + ", actual Seq: " + pb.getSeq());
-                return new ResolveResult(this, false);
+                return null;
             }
             if (!pb.getEnable()) {
                 r.incrSeq();
@@ -82,12 +77,12 @@ public class RuGui extends AbstractSkill {
             Card card = r.findMessageCard(pb.getCardId());
             if (card == null) {
                 log.error("没有这张卡");
-                return new ResolveResult(this, false);
+                return null;
             }
             Player target = fsm.whoseTurn;
             if (!target.isAlive()) {
                 log.error("目标已死亡");
-                return new ResolveResult(this, false);
+                return null;
             }
             r.incrSeq();
             log.info(r + "发动了[如归]");

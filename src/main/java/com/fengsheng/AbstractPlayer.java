@@ -5,6 +5,7 @@ import com.fengsheng.protos.Common;
 import com.fengsheng.skill.RoleSkillsData;
 import com.fengsheng.skill.Skill;
 import com.fengsheng.skill.SkillId;
+import com.fengsheng.skill.TriggeredSkill;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -50,7 +51,7 @@ public abstract class AbstractPlayer implements Player {
         if (roleSkillsData != null) {
             this.roleSkillsData = new RoleSkillsData(roleSkillsData);
             for (Skill skill : roleSkillsData.getSkills()) {
-                skill.init(game);
+                if (skill instanceof TriggeredSkill s) s.init(game);
             }
         }
     }
@@ -180,7 +181,7 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public void notifyDying(int location, boolean loseGame) {
-        
+
     }
 
     @Override
@@ -253,11 +254,12 @@ public abstract class AbstractPlayer implements Player {
         return roleSkillsData != null ? roleSkillsData.getSkills() : new Skill[0];
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Skill findSkill(SkillId skillId) {
+    public <T extends Skill> T findSkill(SkillId skillId) {
         for (Skill skill : getSkills()) {
             if (skill.getSkillId() == skillId) {
-                return skill;
+                return (T) skill;
             }
         }
         return null;

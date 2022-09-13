@@ -7,13 +7,12 @@ import com.fengsheng.ResolveResult;
 import com.fengsheng.phase.OnUseCard;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Role;
-import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
 /**
  * 鄭文先技能【换日】：你使用【调包】或【破译】后，可以将你的角色牌翻至面朝下。
  */
-public class HuanRi extends AbstractSkill {
+public class HuanRi extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(HuanRi.class);
 
     @Override
@@ -42,10 +41,5 @@ public class HuanRi extends AbstractSkill {
         }
         g.playerSetRoleFaceUp(fsm.whoseTurn, false);
         return null;
-    }
-
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
     }
 }

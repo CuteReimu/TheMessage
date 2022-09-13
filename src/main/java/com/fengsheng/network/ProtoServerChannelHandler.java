@@ -30,20 +30,18 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
     private final ConcurrentMap<String, HumanPlayer> playerCache = new ConcurrentHashMap<>();
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
+    public void channelActive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
-        log.info("session connected: " + channel.id().asShortText());
+        log.info("session connected: " + channel.id().asShortText() + " " + channel.remoteAddress());
         if (playerCache.putIfAbsent(channel.id().asLongText(), new HumanPlayer(channel)) != null) {
             log.error("already assigned channel id: " + channel.id().asLongText());
         }
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
+    public void channelInactive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
-        log.info("session closed: " + channel.id().asShortText());
+        log.info("session closed: " + channel.id().asShortText() + " " + channel.remoteAddress());
         final HumanPlayer player = playerCache.remove(channel.id().asLongText());
         if (player == null) {
             log.error("already unassigned channel id: " + channel.id().asLongText());

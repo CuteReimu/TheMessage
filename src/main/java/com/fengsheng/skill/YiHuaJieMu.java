@@ -3,7 +3,6 @@ package com.fengsheng.skill;
 import com.fengsheng.Game;
 import com.fengsheng.HumanPlayer;
 import com.fengsheng.Player;
-import com.fengsheng.ResolveResult;
 import com.fengsheng.card.Card;
 import com.fengsheng.phase.FightPhaseIdle;
 import com.fengsheng.protos.Common;
@@ -14,22 +13,12 @@ import org.apache.log4j.Logger;
 /**
  * 韩梅技能【移花接木】：争夺阶段，你可以翻开此角色牌，然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情牌加入你的手牌。
  */
-public class YiHuaJieMu extends AbstractSkill {
+public class YiHuaJieMu extends AbstractSkill implements ActiveSkill {
     private static final Logger log = Logger.getLogger(YiHuaJieMu.class);
-
-    @Override
-    public void init(Game g) {
-
-    }
 
     @Override
     public SkillId getSkillId() {
         return SkillId.YI_HUA_JIE_MU;
-    }
-
-    @Override
-    public ResolveResult execute(Game g) {
-        return null;
     }
 
     @Override

@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 /**
  * 毛不拔技能【奇货可居】：你接收双色情报后，可以从你的情报区选择一张情报加入手牌。
  */
-public class QiHuoKeJu extends AbstractSkill {
+public class QiHuoKeJu extends AbstractSkill implements TriggeredSkill {
     @Override
     public void init(Game g) {
         g.addListeningSkill(this);
@@ -34,11 +34,6 @@ public class QiHuoKeJu extends AbstractSkill {
         return new ResolveResult(new executeQiHuoKeJu(fsm), true);
     }
 
-    @Override
-    public void executeProtocol(Game g, Player r, GeneratedMessageV3 message) {
-
-    }
-
     private record executeQiHuoKeJu(ReceivePhaseReceiverSkill fsm) implements WaitingFsm {
         private static final Logger log = Logger.getLogger(executeQiHuoKeJu.class);
 
@@ -46,37 +41,37 @@ public class QiHuoKeJu extends AbstractSkill {
         public ResolveResult resolve() {
             for (Player p : fsm.whoseTurn().getGame().getPlayers())
                 p.notifyReceivePhase(fsm.whoseTurn(), fsm.inFrontOfWhom(), fsm.messageCard(), fsm.inFrontOfWhom(), 20);
-            return new ResolveResult(this, false);
+            return null;
         }
 
         @Override
         public ResolveResult resolveProtocol(Player player, GeneratedMessageV3 message) {
             if (player != fsm.inFrontOfWhom()) {
                 log.error("不是你发技能的时机");
-                return new ResolveResult(this, false);
+                return null;
             }
             if (message instanceof Fengsheng.end_receive_phase_tos pb) {
                 if (player instanceof HumanPlayer r && !r.checkSeq(pb.getSeq())) {
                     log.error("操作太晚了, required Seq: " + r.getSeq() + ", actual Seq: " + pb.getSeq());
-                    return new ResolveResult(this, false);
+                    return null;
                 }
                 player.incrSeq();
                 return new ResolveResult(fsm, true);
             }
             if (!(message instanceof Role.skill_qi_huo_ke_ju_tos pb)) {
                 log.error("错误的协议");
-                return new ResolveResult(this, false);
+                return null;
             }
             Player r = fsm.inFrontOfWhom();
             Game g = r.getGame();
             if (r instanceof HumanPlayer humanPlayer && !humanPlayer.checkSeq(pb.getSeq())) {
                 log.error("操作太晚了, required Seq: " + humanPlayer.getSeq() + ", actual Seq: " + pb.getSeq());
-                return new ResolveResult(this, false);
+                return null;
             }
             Card card = r.findMessageCard(pb.getCardId());
             if (card == null) {
                 log.error("没有这张卡");
-                return new ResolveResult(this, false);
+                return null;
             }
             r.incrSeq();
             log.info(r + "发动了[奇货可居]");

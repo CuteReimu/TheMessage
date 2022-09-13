@@ -33,8 +33,8 @@ public class WuDao extends AbstractCard {
             log.error("误导的使用时机不对");
             return false;
         }
-        Player left = r.getNextLeftAlivePlayer();
-        Player right = r.getNextRightAlivePlayer();
+        Player left = fsm.inFrontOfWhom.getNextLeftAlivePlayer();
+        Player right = fsm.inFrontOfWhom.getNextRightAlivePlayer();
         if (target == fsm.inFrontOfWhom || (target != left && target != right)) {
             log.error("误导只能选择情报当前人左右两边的人作为目标");
             return false;
@@ -75,31 +75,11 @@ public class WuDao extends AbstractCard {
         var colors = e.messageCard.getColors();
         if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
             return false;
-        Player[] players = player.getGame().getPlayers();
-        Player target = null;
-        switch (ThreadLocalRandom.current().nextInt(4)) {
-            case 0 -> {
-                for (int left = e.inFrontOfWhom.location() - 1; left != e.inFrontOfWhom.location(); left--) {
-                    if (left < 0) left += players.length;
-                    if (player.getGame().getPlayers()[left].isAlive()) {
-                        target = players[left];
-                        break;
-                    }
-                }
-            }
-            case 1 -> {
-                for (int right = e.inFrontOfWhom.location() + 1; right != e.inFrontOfWhom.location(); right++) {
-                    if (right >= players.length) right -= players.length;
-                    if (player.getGame().getPlayers()[right].isAlive()) {
-                        target = players[right];
-                        break;
-                    }
-                }
-            }
-            default -> {
-                return false;
-            }
-        }
+        Player target = switch (ThreadLocalRandom.current().nextInt(4)) {
+            case 0 -> e.inFrontOfWhom.getNextLeftAlivePlayer();
+            case 1 -> e.inFrontOfWhom.getNextRightAlivePlayer();
+            default -> null;
+        };
         if (target == null) return false;
         final Player finalTarget = target;
         GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, finalTarget), 2, TimeUnit.SECONDS);

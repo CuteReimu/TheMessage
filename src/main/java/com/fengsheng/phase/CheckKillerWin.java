@@ -49,6 +49,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
                     log.info(killer + "宣告胜利，胜利者有" + Arrays.toString(winner));
                     for (Player p : players)
                         p.notifyWin(winner, winner);
+                    whoseTurn.getGame().end();
                     return new ResolveResult(null, false);
                 }
             }
@@ -71,6 +72,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
             for (Player p : players) {
                 p.notifyWin(new Player[0], winner.toArray(new Player[0]));
             }
+            whoseTurn.getGame().end();
             return new ResolveResult(null, false);
         }
         // 只剩1个人存活，游戏结束
@@ -89,6 +91,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
         for (Player p : players) {
             p.notifyWin(new Player[0], winners);
         }
+        whoseTurn.getGame().end();
         return new ResolveResult(null, false);
     }
 }
