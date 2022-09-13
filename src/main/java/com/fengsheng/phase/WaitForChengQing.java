@@ -51,7 +51,7 @@ public class WaitForChengQing implements Fsm {
         for (Player p : askWhom.getGame().getPlayers()) {
             p.notifyAskForChengQing(whoDie, askWhom, 20);
         }
-        return new ResolveResult(this, false);
+        return null;
     }
 
     @Override

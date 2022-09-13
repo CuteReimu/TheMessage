@@ -140,24 +140,24 @@ public class WeiBi extends AbstractCard {
                     r.getGame().resolve(new MainPhaseIdle(r));
                 }, 2, TimeUnit.SECONDS);
             }
-            return new ResolveResult(this, false);
+            return null;
         }
 
         @Override
         public ResolveResult resolveProtocol(Player player1, GeneratedMessageV3 message) {
             if (!(message instanceof Fengsheng.wei_bi_give_card_tos msg)) {
                 log.error("现在正在结算威逼");
-                return new ResolveResult(this, false);
+                return null;
             }
             if (target != player1) {
                 log.error("你不是威逼的目标");
-                return new ResolveResult(this, false);
+                return null;
             }
             int cardId = msg.getCardId();
             Card c = target.findCard(cardId);
             if (c == null) {
                 log.error("没有这张牌");
-                return new ResolveResult(this, false);
+                return null;
             }
             target.incrSeq();
             log.info(target + "给了" + r + "一张" + c);

@@ -80,22 +80,22 @@ public class PoYi extends AbstractCard {
                     r.getGame().resolve(sendPhase);
                 }, 2, TimeUnit.SECONDS);
             }
-            return new ResolveResult(this, false);
+            return null;
         }
 
         @Override
         public ResolveResult resolveProtocol(Player player, GeneratedMessageV3 message) {
             if (!(message instanceof Fengsheng.po_yi_show_tos msg)) {
                 log.error("现在正在结算破译");
-                return new ResolveResult(this, false);
+                return null;
             }
             if (player != sendPhase.inFrontOfWhom) {
                 log.error("你不是破译的使用者");
-                return new ResolveResult(this, false);
+                return null;
             }
             if (msg.getShow() && !sendPhase.messageCard.getColors().contains(Common.color.Black)) {
                 log.error("非黑牌不能翻开");
-                return new ResolveResult(this, false);
+                return null;
             }
             player.incrSeq();
             showAndDrawCard(msg.getShow());

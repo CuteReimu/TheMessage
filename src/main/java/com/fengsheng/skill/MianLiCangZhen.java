@@ -40,49 +40,49 @@ public class MianLiCangZhen extends AbstractSkill implements TriggeredSkill {
         public ResolveResult resolve() {
             for (Player p : fsm.whoseTurn.getGame().getPlayers())
                 p.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.whoseTurn, 20);
-            return new ResolveResult(this, false);
+            return null;
         }
 
         @Override
         public ResolveResult resolveProtocol(Player player, GeneratedMessageV3 message) {
             if (player != fsm.whoseTurn) {
                 log.error("不是你发技能的时机");
-                return new ResolveResult(this, false);
+                return null;
             }
             if (message instanceof Fengsheng.end_receive_phase_tos pb) {
                 if (player instanceof HumanPlayer r && !r.checkSeq(pb.getSeq())) {
                     log.error("操作太晚了, required Seq: " + r.getSeq() + ", actual Seq: " + pb.getSeq());
-                    return new ResolveResult(this, false);
+                    return null;
                 }
                 player.incrSeq();
                 return new ResolveResult(fsm, true);
             }
             if (!(message instanceof Role.skill_mian_li_cang_zhen_tos pb)) {
                 log.error("错误的协议");
-                return new ResolveResult(this, false);
+                return null;
             }
             Player r = fsm.whoseTurn;
             if (r instanceof HumanPlayer humanPlayer && !humanPlayer.checkSeq(pb.getSeq())) {
                 log.error("操作太晚了, required Seq: " + humanPlayer.getSeq() + ", actual Seq: " + pb.getSeq());
-                return new ResolveResult(this, false);
+                return null;
             }
             Card card = r.findCard(pb.getCardId());
             if (card == null) {
                 log.error("没有这张卡");
-                return new ResolveResult(this, false);
+                return null;
             }
             if (!card.getColors().contains(Common.color.Black)) {
                 log.error("你选择的不是黑色手牌");
-                return new ResolveResult(this, false);
+                return null;
             }
             if (pb.getTargetPlayerId() < 0 || pb.getTargetPlayerId() >= r.getGame().getPlayers().length) {
                 log.error("目标错误");
-                return new ResolveResult(this, false);
+                return null;
             }
             Player target = r.getGame().getPlayers()[r.getAbstractLocation(pb.getTargetPlayerId())];
             if (!target.isAlive()) {
                 log.error("目标已死亡");
-                return new ResolveResult(this, false);
+                return null;
             }
             r.incrSeq();
             log.info(r + "发动了[绵里藏针]");

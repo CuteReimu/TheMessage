@@ -171,9 +171,11 @@ public final class Game {
     public void continueResolve() {
         GameExecutor.post(this, () -> {
             ResolveResult result = fsm.resolve();
-            fsm = result.next();
-            if (result.continueResolve()) {
-                continueResolve();
+            if (result != null) {
+                fsm = result.next();
+                if (result.continueResolve()) {
+                    continueResolve();
+                }
             }
         });
     }
@@ -188,9 +190,11 @@ public final class Game {
                 return;
             }
             ResolveResult result = ((WaitingFsm) fsm).resolveProtocol(player, pb);
-            fsm = result.next();
-            if (result.continueResolve()) {
-                continueResolve();
+            if (result != null) {
+                fsm = result.next();
+                if (result.continueResolve()) {
+                    continueResolve();
+                }
             }
         });
     }
