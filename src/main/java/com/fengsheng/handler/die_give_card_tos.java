@@ -27,6 +27,7 @@ public class die_give_card_tos extends AbstractProtoHandler<Fengsheng.die_give_c
         if (pb.getTargetPlayerId() == 0) {
             r.incrSeq();
             r.getGame().resolve(new AfterDieGiveCard(fsm));
+            return;
         } else if (pb.getTargetPlayerId() < 0 || pb.getTargetPlayerId() >= r.getGame().getPlayers().length) {
             log.error("目标错误: " + pb.getTargetPlayerId());
             return;
@@ -35,6 +36,7 @@ public class die_give_card_tos extends AbstractProtoHandler<Fengsheng.die_give_c
             log.warn("参数似乎有些不对，姑且认为不给牌吧");
             r.incrSeq();
             r.getGame().resolve(new AfterDieGiveCard(fsm));
+            return;
         }
         List<Card> cards = new ArrayList<>();
         for (int cardId : pb.getCardIdList()) {
