@@ -57,7 +57,7 @@ public class ChengQing extends AbstractCard {
             log.error("没有这张情报");
             return false;
         }
-        if (targetCard.getColors().contains(Common.color.Black)) {
+        if (!targetCard.getColors().contains(Common.color.Black)) {
             log.error("澄清只能对黑情报使用");
             return false;
         }
