@@ -11,6 +11,7 @@ import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.util.Timeout;
 import org.apache.log4j.Logger;
 
@@ -38,14 +39,16 @@ public class HumanPlayer extends AbstractPlayer {
      */
     public void send(GeneratedMessageV3 message) {
         byte[] buf = message.toByteArray();
-        String name = message.getDescriptorForType().getName();
+        final String name = message.getDescriptorForType().getName();
         short id = ProtoServerChannelHandler.stringHash(name);
         ByteBuf byteBuf = Unpooled.buffer(buf.length + 4, buf.length + 4);
         byteBuf.writeShortLE(buf.length + 2);
         byteBuf.writeShortLE(id);
         byteBuf.writeBytes(buf);
-        channel.write(byteBuf);
-        channel.writeAndFlush(buf);
+        channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) future -> {
+            if (!future.isSuccess())
+                log.error("send@%s %s failed len: %d".formatted(channel.id().asShortText(), name, buf.length));
+        });
         log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
                 printer.printToString(message).replaceAll("\n *", " ")));
     }
