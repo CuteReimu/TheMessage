@@ -26,6 +26,8 @@ public class Recorder {
 
     private int currentIndex;
 
+    private volatile boolean loading = false;
+
     public void add(short messageId, byte[] messageBuf) {
         if (messageId == initTocId || list.size() > 0)
             list.add(new RecorderLine(System.nanoTime(), messageId, messageBuf));
@@ -71,6 +73,7 @@ public class Recorder {
             return;
         }
         final File recordFile = files[0];
+        loading = true;
         saveLoadPool.submit(() -> {
             try (ObjectInputStream is = new ObjectInputStream(new FileInputStream(recordFile))) {
                 int recordVersion = is.readInt();
@@ -86,6 +89,7 @@ public class Recorder {
                 log.info("load record success" + recordId);
                 displayNext(player);
             } catch (IOException | ClassNotFoundException | ClassCastException e) {
+                loading = false;
                 log.error("load record failed", e);
                 player.send(Errcode.error_code_toc.newBuilder()
                         .setCode(Errcode.error_code.load_record_failed).build());
@@ -94,17 +98,27 @@ public class Recorder {
     }
 
     private void displayNext(final HumanPlayer player) {
-        while (currentIndex < list.size()) {
+        while (true) {
+            if (currentIndex >= list.size()) {
+                loading = false;
+                break;
+            }
             RecorderLine line = list.get(currentIndex);
             player.send(line.messageId, line.messageBuf);
-            if (++currentIndex >= list.size())
+            if (++currentIndex >= list.size()) {
+                loading = false;
                 break;
+            }
             long diffNanoTime = list.get(currentIndex).nanoTime - line.nanoTime;
             if (diffNanoTime > 100000000) {
                 GameExecutor.TimeWheel.newTimeout(timeout -> displayNext(player), Math.min(diffNanoTime, 2000000000), TimeUnit.NANOSECONDS);
                 break;
             }
         }
+    }
+
+    public boolean loading() {
+        return loading;
     }
 
     private record RecorderLine(long nanoTime, short messageId, byte[] messageBuf) implements Serializable {

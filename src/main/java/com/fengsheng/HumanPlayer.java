@@ -68,6 +68,10 @@ public class HumanPlayer extends AbstractPlayer {
         recorder.load(version, recordId, this);
     }
 
+    public boolean isLoadingRecord() {
+        return recorder.loading();
+    }
+
     @Override
     public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray) {
         super.init(identity, secretTask, roleSkillsData, roleSkillsDataArray);

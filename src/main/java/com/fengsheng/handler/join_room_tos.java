@@ -14,7 +14,7 @@ public class join_room_tos implements ProtoHandler {
 
     @Override
     public void handle(HumanPlayer player, GeneratedMessageV3 message) {
-        if (player.getGame() != null) {
+        if (player.getGame() != null || player.isLoadingRecord()) {
             log.error("player is already in a room");
             return;
         }
