@@ -40,7 +40,7 @@ public class Recorder {
             if (!sb.isEmpty()) sb.append("-");
             sb.append(player.getRoleName());
         }
-        final String recordId = Long.toString((now.getTime() * 1000 + g.getId() % 100 + p.location()) % (36L * 36 * 36 * 36 * 36 * 36), Character.MAX_RADIX);
+        final String recordId = Long.toString((now.getTime() * 1000 + g.getId() % 100 + p.location()) % (36L * 36 * 36 * 36 * 36 * 36 * 36 * 36), Character.MAX_RADIX);
         final String fileName = timeStr + "-" + sb + "-" + p.location() + "-" + recordId;
         saveLoadPool.submit(() -> {
             File file = new File("records/");
