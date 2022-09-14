@@ -2,6 +2,17 @@ syntax = "proto3";
 option java_package = "com.fengsheng.protos";
 import "common.proto";
 
+// 请求播放录像
+message display_record_tos {
+  uint32 version   = 1; // 客户端版本号
+  string record_id = 2; // 录像ID
+}
+
+// 通知客户端录像存好了
+message save_record_success_toc {
+  string record_id = 1;
+}
+
 // 申请加入房间
 message join_room_tos {
   uint32 version = 1; // 客户端版本号

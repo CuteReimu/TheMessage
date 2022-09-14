@@ -43,21 +43,29 @@ public class HumanPlayer extends AbstractPlayer {
         byte[] buf = message.toByteArray();
         final String name = message.getDescriptorForType().getName();
         short id = ProtoServerChannelHandler.stringHash(name);
+        send(id, buf);
+        recorder.add(id, buf);
+        log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
+                printer.printToString(message).replaceAll("\n *", " ")));
+    }
+
+    public void send(short id, byte[] buf) {
         ByteBuf byteBuf = Unpooled.buffer(buf.length + 4, buf.length + 4);
         byteBuf.writeShortLE(buf.length + 2);
         byteBuf.writeShortLE(id);
         byteBuf.writeBytes(buf);
         channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess())
-                log.error("send@%s %s failed len: %d".formatted(channel.id().asShortText(), name, buf.length));
+                log.error("send@%s failed, id: %d, len: %d".formatted(channel.id().asShortText(), id, buf.length));
         });
-        recorder.add(id, buf);
-        log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
-                printer.printToString(message).replaceAll("\n *", " ")));
     }
 
-    public String saveRecord() {
-        return recorder.save(game, this);
+    public void saveRecord(boolean notify) {
+        recorder.save(game, this, notify);
+    }
+
+    public void loadRecord(int version, String recordId) {
+        recorder.load(version, recordId, this);
     }
 
     @Override

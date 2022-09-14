@@ -59,7 +59,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
                         break;
                     }
                 }
-                player.saveRecord();
+                player.saveRecord(false);
                 game.getPlayers()[player.location()] = new RobotPlayer(player);
                 if (!hasHumanPlayer) game.end();
             } else {
