@@ -259,6 +259,11 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
+    public String getRoleName() {
+        return roleSkillsData.getName();
+    }
+
+    @Override
     public Common.role getRole() {
         return roleSkillsData.getRole();
     }

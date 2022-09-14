@@ -242,6 +242,8 @@ public interface Player {
 
     <T extends Skill> T findSkill(SkillId skillId);
 
+    String getRoleName();
+
     /**
      * 获得玩家的角色
      */

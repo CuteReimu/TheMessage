@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 public final class GameExecutor implements Runnable {
     private static final Logger log = Logger.getLogger(GameExecutor.class);
-    private final static GameExecutor[] executors = new GameExecutor[(Runtime.getRuntime().availableProcessors() + 1) / 2];
-    public final static HashedWheelTimer TimeWheel = new HashedWheelTimer();
+    private static final GameExecutor[] executors = new GameExecutor[(Runtime.getRuntime().availableProcessors() + 1) / 2];
+    public static final HashedWheelTimer TimeWheel = new HashedWheelTimer();
 
     private final BlockingQueue<GameAndCallback> queue = new LinkedBlockingQueue<>();
 

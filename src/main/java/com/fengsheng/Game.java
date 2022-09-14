@@ -119,6 +119,8 @@ public final class Game {
     public void end() {
         ended = true;
         GameCache.remove(id);
+        for (Player p : players)
+            if (p instanceof HumanPlayer) ((HumanPlayer) p).saveRecord();
     }
 
     int getId() {

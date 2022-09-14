@@ -30,6 +30,8 @@ public class HumanPlayer extends AbstractPlayer {
 
     private Timeout timeout;
 
+    private final Recorder recorder = new Recorder();
+
     public HumanPlayer(Channel channel) {
         this.channel = channel;
     }
@@ -49,8 +51,13 @@ public class HumanPlayer extends AbstractPlayer {
             if (!future.isSuccess())
                 log.error("send@%s %s failed len: %d".formatted(channel.id().asShortText(), name, buf.length));
         });
+        recorder.add(id, buf);
         log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
                 printer.printToString(message).replaceAll("\n *", " ")));
+    }
+
+    public String saveRecord() {
+        return recorder.save(game, this);
     }
 
     @Override
@@ -319,6 +326,6 @@ public class HumanPlayer extends AbstractPlayer {
 
     @Override
     public String toString() {
-        return location + "号[" + (isRoleFaceUp() ? roleSkillsData.getName() : "玩家") + "]";
+        return location + "号[" + (isRoleFaceUp() ? getRoleName() : "玩家") + "]";
     }
 }
