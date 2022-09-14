@@ -25,7 +25,7 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
 
     @Override
     public ResolveResult execute(Game g) {
-        if (!(g.getFsm() instanceof DieSkill fsm) || fsm.askWhom.findSkill(getSkillId()) == null)
+        if (!(g.getFsm() instanceof DieSkill fsm) || !fsm.askWhom.equals(fsm.diedQueue.get(fsm.diedIndex)) || fsm.askWhom.findSkill(getSkillId()) == null)
             return null;
         if (fsm.askWhom.equals(fsm.whoseTurn))
             return null;
@@ -53,6 +53,8 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
                     p.send(builder.build());
                 }
             }
+            if (r instanceof RobotPlayer)
+                GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(false).build()), 2, TimeUnit.SECONDS);
             return null;
         }
 
