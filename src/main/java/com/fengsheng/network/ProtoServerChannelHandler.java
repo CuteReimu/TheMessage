@@ -15,6 +15,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -140,6 +141,13 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
                 throw new RuntimeException("Duplicate message meta register by id: " + id);
             }
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        if (cause instanceof SocketException && "Connection reset".equals(cause.getMessage()))
+            return;
+        super.exceptionCaught(ctx, cause);
     }
 
     public static short stringHash(String s) {
