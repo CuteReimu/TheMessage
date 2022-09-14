@@ -7,6 +7,8 @@ import com.fengsheng.card.Card;
 import com.fengsheng.protos.Common;
 import org.apache.log4j.Logger;
 
+import java.util.Arrays;
+
 /**
  * 选择了要传递哪张情报时
  *
@@ -22,7 +24,9 @@ public record OnSendCard(Player whoseTurn, Card messageCard, Common.direction di
 
     @Override
     public ResolveResult resolve() {
-        log.info(whoseTurn + "传出了" + messageCard + "，方向是" + dir + "，传给了" + targetPlayer);
+        String s = whoseTurn + "传出了" + messageCard + "，方向是" + dir + "，传给了" + targetPlayer;
+        if (lockedPlayers.length > 0) s += "，并锁定了" + Arrays.toString(lockedPlayers);
+        log.info(s);
         whoseTurn.deleteCard(messageCard.getId());
         for (Player p : whoseTurn.getGame().getPlayers())
             p.notifySendMessageCard(whoseTurn, targetPlayer, lockedPlayers, messageCard, dir);
