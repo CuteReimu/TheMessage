@@ -3,6 +3,7 @@ package com.fengsheng.phase;
 import com.fengsheng.Fsm;
 import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
+import com.fengsheng.skill.SkillId;
 
 import java.util.List;
 
@@ -54,6 +55,7 @@ public class DieSkill implements Fsm {
     private record DieSkillNext(DieSkill dieSkill) implements Fsm {
         @Override
         public ResolveResult resolve() {
+            dieSkill.askWhom.resetSkillUseCount(SkillId.CHENG_ZHI);
             Player[] players = dieSkill.whoseTurn.getGame().getPlayers();
             int askWhom = dieSkill.askWhom.location();
             while (true) {

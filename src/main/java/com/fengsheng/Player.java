@@ -229,21 +229,18 @@ public interface Player {
     boolean isLose();
 
     /**
-     * 设置玩家是否已经失去了身份牌
-     */
-    void setHasNoIdentity(boolean hasNoIdentity);
-
-    /**
-     * 获取玩家是否已经失去了身份牌
-     */
-    boolean hasNoIdentity();
-
-    /**
-     * 获得玩家的初始身份。调用 {@link #hasNoIdentity} 可以判断他是否已经失去了身份
+     * 获得玩家的身份。
      */
     Common.color getIdentity();
 
+    /**
+     * 设置玩家的身份
+     */
+    void setIdentity(Common.color color);
+
     Common.secret_task getSecretTask();
+
+    void setSecretTask(Common.secret_task secretTask);
 
     void setSkills(Skill[] skills);
 
@@ -282,6 +279,11 @@ public interface Player {
      * 重置每回合技能使用次数计数
      */
     void resetSkillUseCount();
+
+    /**
+     * 重置每回合技能使用次数计数
+     */
+    void resetSkillUseCount(SkillId skillId);
 
     /**
      * 获取左手边下一个存活的玩家

@@ -230,23 +230,23 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public void setHasNoIdentity(boolean hasNoIdentity) {
-        this.aliveInfo.hasNoIdentity = hasNoIdentity;
-    }
-
-    @Override
-    public boolean hasNoIdentity() {
-        return aliveInfo.hasNoIdentity;
-    }
-
-    @Override
     public Common.color getIdentity() {
         return identity;
     }
 
     @Override
+    public void setIdentity(Common.color identity) {
+        this.identity = identity;
+    }
+
+    @Override
     public Common.secret_task getSecretTask() {
         return secretTask;
+    }
+
+    @Override
+    public void setSecretTask(Common.secret_task secretTask) {
+        this.secretTask = secretTask;
     }
 
     @Override
@@ -304,6 +304,14 @@ public abstract class AbstractPlayer implements Player {
         skillUseCount.clear();
     }
 
+    /**
+     * 重置每回合技能使用次数计数
+     */
+    @Override
+    public void resetSkillUseCount(SkillId skillId) {
+        skillUseCount.remove(skillId);
+    }
+
     @Override
     public Player getNextLeftAlivePlayer() {
         int left;
@@ -333,6 +341,5 @@ public abstract class AbstractPlayer implements Player {
     private static class AliveInfo {
         boolean alive = true;
         boolean lose = false;
-        boolean hasNoIdentity = false;
     }
 }

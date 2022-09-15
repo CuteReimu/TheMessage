@@ -25,7 +25,8 @@ public final class RoleCache {
             new RoleSkillsData("鄭文先", zheng_wen_xian, false, false, new TouTian(), new HuanRi()),
             new RoleSkillsData("韩梅", han_mei, true, false, new YiHuaJieMu()),
             new RoleSkillsData("白菲菲", bai_fei_fei, true, true, new LianMin(), new FuHei()),
-            new RoleSkillsData("老汉", lao_han, true, true, new ShiSi(), new RuGui())
+            new RoleSkillsData("老汉", lao_han, true, true, new ShiSi(), new RuGui()),
+            new RoleSkillsData("顾小梦", gu_xiao_meng, true, false, new JiZhi(), new ChengZhi(), new WeiSheng())
     );
 
     private static final Map<Common.role, RoleSkillsData> mapCache = new HashMap<>();

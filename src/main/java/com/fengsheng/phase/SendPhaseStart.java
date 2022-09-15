@@ -21,10 +21,15 @@ public record SendPhaseStart(Player player) implements Fsm {
                 game.getDeck().discard(player.deleteAllMessageCards());
                 player.setLose(true);
                 player.setAlive(false);
-                for (Player p : game.getPlayers()) {
+                for (Player p : game.getPlayers())
                     p.notifyDying(player.location(), true);
-                    p.notifyDie(player.location());
+                Player alivePlayer = getOnlyOneAlivePlayer(game.getPlayers());
+                if (alivePlayer != null) {
+                    CheckKillerWin.onlyOneAliveWinner(game, alivePlayer);
+                    return new ResolveResult(null, false);
                 }
+                for (Player p : game.getPlayers())
+                    p.notifyDie(player.location());
             }
         }
         if (!player.isAlive()) {
@@ -34,6 +39,19 @@ public record SendPhaseStart(Player player) implements Fsm {
             p.notifySendPhaseStart(20);
         }
         return null;
+    }
+
+    private static Player getOnlyOneAlivePlayer(Player[] players) {
+        Player alivePlayer = null;
+        for (Player p : players) {
+            if (p.isAlive()) {
+                if (alivePlayer == null)
+                    alivePlayer = p;
+                else
+                    return null;
+            }
+        }
+        return alivePlayer;
     }
 
     @Override
