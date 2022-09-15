@@ -30,7 +30,7 @@ public class Recorder {
     private volatile boolean loading = false;
 
     public void add(short messageId, byte[] messageBuf) {
-        if (messageId == initTocId || list.size() > 0)
+        if (!loading && (messageId == initTocId || list.size() > 0))
             list.add(Record.recorder_line.newBuilder().setNanoTime(System.nanoTime()).setMessageId(messageId)
                     .setMessageBuf(ByteString.copyFrom(messageBuf)).build());
     }
@@ -84,10 +84,10 @@ public class Recorder {
                 Record.record_file pb = Record.record_file.parseFrom(is.readAllBytes());
                 int recordVersion = pb.getClientVersion();
                 if (version < recordVersion) {
-                    loading = false;
                     player.send(Errcode.error_code_toc.newBuilder()
                             .setCode(Errcode.error_code.record_version_not_match)
                             .addIntParams(recordVersion).build());
+                    loading = false;
                     return;
                 }
                 list = pb.getLinesList();
@@ -95,10 +95,10 @@ public class Recorder {
                 log.info("load record success: " + recordId);
                 displayNext(player);
             } catch (IOException e) {
-                loading = false;
                 log.error("load record failed", e);
                 player.send(Errcode.error_code_toc.newBuilder()
                         .setCode(Errcode.error_code.load_record_failed).build());
+                loading = false;
             }
         });
     }
@@ -107,6 +107,7 @@ public class Recorder {
         while (player.isActive()) {
             if (currentIndex >= list.size()) {
                 player.send(Fengsheng.display_record_end_toc.getDefaultInstance());
+                list = new ArrayList<>();
                 loading = false;
                 break;
             }
@@ -114,6 +115,7 @@ public class Recorder {
             player.send((short) line.getMessageId(), line.getMessageBuf().toByteArray());
             if (++currentIndex >= list.size()) {
                 player.send(Fengsheng.display_record_end_toc.getDefaultInstance());
+                list = new ArrayList<>();
                 loading = false;
                 break;
             }
