@@ -87,4 +87,8 @@ public final class RoleCache {
         }
         return roleSkillsDataArray;
     }
+
+    public static String randName() {
+        return cache.get(ThreadLocalRandom.current().nextInt(cache.size())).getName();
+    }
 }

@@ -18,6 +18,7 @@ public class add_robot_tos extends AbstractProtoHandler<Fengsheng.add_robot_tos>
                 return;
             }
             Player robotPlayer = new RobotPlayer();
+            robotPlayer.setPlayerName(Player.randPlayerName());
             robotPlayer.setGame(player.getGame());
             robotPlayer.getGame().onPlayerJoinRoom(robotPlayer);
         }

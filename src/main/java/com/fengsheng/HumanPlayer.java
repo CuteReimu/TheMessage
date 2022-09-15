@@ -86,6 +86,7 @@ public class HumanPlayer extends AbstractPlayer {
         int l = location;
         do {
             builder.addRoles(roleSkillsDataArray[l].isFaceUp() || l == location ? roleSkillsDataArray[l].getRole() : Common.role.unknown);
+            builder.addNames(game.getPlayers()[l].getPlayerName());
             l = (l + 1) % game.getPlayers().length;
         } while (l != location);
         send(builder.build());

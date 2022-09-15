@@ -31,11 +31,13 @@ public class join_room_tos implements ProtoHandler {
             if (Game.GameCache.size() > Config.MaxRoomCount) {
                 reply = Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.no_more_room).build();
             } else {
+                String playerName = pb.getName();
+                player.setPlayerName(playerName.isBlank() ? Player.randPlayerName() : playerName);
                 player.setGame(Game.getInstance());
                 player.getGame().onPlayerJoinRoom(player);
                 var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location());
                 for (Player p : player.getGame().getPlayers()) {
-                    builder.addNames(p != null ? p.toString() : "");
+                    builder.addNames(p != null ? p.getPlayerName() : "");
                 }
                 reply = builder.build();
             }

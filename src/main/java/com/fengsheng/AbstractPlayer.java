@@ -17,6 +17,7 @@ public abstract class AbstractPlayer implements Player {
     private static final Logger log = Logger.getLogger(AbstractPlayer.class);
 
     protected Game game;
+    protected String playerName;
     protected int location;
     protected final Map<Integer, Card> cards;
     protected final Map<Integer, Card> messageCards;
@@ -36,6 +37,7 @@ public abstract class AbstractPlayer implements Player {
 
     public AbstractPlayer(AbstractPlayer player) {
         game = player.game;
+        playerName = player.playerName;
         cards = player.cards;
         messageCards = player.messageCards;
         location = player.location;
@@ -73,6 +75,16 @@ public abstract class AbstractPlayer implements Player {
     @Override
     public void setGame(Game game) {
         this.game = game;
+    }
+
+    @Override
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    @Override
+    public void setPlayerName(String name) {
+        playerName = name;
     }
 
     @Override

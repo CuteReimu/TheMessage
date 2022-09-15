@@ -2,11 +2,13 @@ package com.fengsheng;
 
 import com.fengsheng.card.Card;
 import com.fengsheng.protos.Common;
+import com.fengsheng.skill.RoleCache;
 import com.fengsheng.skill.RoleSkillsData;
 import com.fengsheng.skill.Skill;
 import com.fengsheng.skill.SkillId;
 
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public interface Player {
     void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray);
@@ -19,6 +21,13 @@ public interface Player {
     Game getGame();
 
     void setGame(Game game);
+
+    /**
+     * 获取玩家的名字
+     */
+    String getPlayerName();
+
+    void setPlayerName(String name);
 
     /**
      * 玩家在服务器上的座位号，也就是在数组中的index
@@ -311,5 +320,12 @@ public interface Player {
             };
             default -> throw new RuntimeException("unknown color: " + color);
         };
+    }
+
+    static String randPlayerName() {
+        final String[] nameAdj = new String[]{"开心", "高兴", "愉悦", "幸福", "得意", "欢乐", "快活", "陶醉", "甜美", "兴奋", "失落", "委屈", "绝望", "哭泣", "伤心", "沮丧", "落魄", "躁郁", "无聊"};
+        String adj = nameAdj[ThreadLocalRandom.current().nextInt(nameAdj.length)];
+        String name = RoleCache.randName();
+        return adj + "的" + name;
     }
 }

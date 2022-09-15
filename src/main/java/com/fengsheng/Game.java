@@ -63,7 +63,7 @@ public final class Game {
                 player.setLocation(index);
             }
         }
-        var msg = Fengsheng.join_room_toc.newBuilder().setName(player.toString()).setPosition(player.location()).build();
+        var msg = Fengsheng.join_room_toc.newBuilder().setName(player.getPlayerName()).setPosition(player.location()).build();
         for (Player p : players) {
             if (p != player && p instanceof HumanPlayer) {
                 ((HumanPlayer) p).send(msg);
