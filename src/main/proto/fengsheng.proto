@@ -20,6 +20,7 @@ message save_record_success_toc {
 // 申请加入房间
 message join_room_tos {
   uint32 version = 1; // 客户端版本号
+  string name    = 2; // 玩家的名字
 }
 
 // 返回房间所有人的信息
@@ -30,6 +31,10 @@ message get_room_info_toc {
 
 // 请求加一个机器人
 message add_robot_tos {
+}
+
+// 请求减少一个机器人
+message remove_robot_tos {
 }
 
 // 通知谁加入了房间
@@ -45,10 +50,11 @@ message leave_room_toc {
 
 // 通知客户端：初始化游戏
 message init_toc {
-  uint32        player_count = 1; // 玩家总人数（包括你）
-  color         identity = 2; // 你的身份
-  secret_task   secret_task = 3; // （你的身份是神秘人时）你的机密任务
-  repeated role roles = 4; // 从自己开始，依次每个人的角色
+  uint32          player_count = 1; // 玩家总人数（包括你）
+  color           identity = 2; // 你的身份
+  secret_task     secret_task = 3; // （你的身份是神秘人时）你的机密任务
+  repeated role   roles = 4; // 从自己开始，依次每个人的角色
+  repeated string names = 5; // 从自己开始，依次每个人的名字
 }
 
 // 通知客户端角色变化
