@@ -72,6 +72,13 @@ public class HumanPlayer extends AbstractPlayer {
         return recorder.loading();
     }
 
+    /**
+     * Return {@code true} if the {@link Channel} of the {@code HumanPlayer} is active and so connected.
+     */
+    public boolean isActive() {
+        return channel.isActive();
+    }
+
     @Override
     public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray) {
         super.init(identity, secretTask, roleSkillsData, roleSkillsDataArray);

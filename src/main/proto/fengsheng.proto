@@ -8,6 +8,10 @@ message display_record_tos {
   string record_id = 2; // 录像ID
 }
 
+// 通知客户端录像播放完了
+message display_record_end_toc {
+}
+
 // 通知客户端录像存好了
 message save_record_success_toc {
   string record_id = 1;

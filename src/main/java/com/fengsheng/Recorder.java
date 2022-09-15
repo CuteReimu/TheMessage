@@ -66,7 +66,7 @@ public class Recorder {
                     .setCode(Errcode.error_code.record_not_exists).build());
             return;
         }
-        File[] files = file.listFiles((dir, name) -> name.endsWith("-" + recordId));
+        File[] files = recordId.length() == 6 ? file.listFiles((dir, name) -> name.endsWith("-" + recordId)) : null;
         if (files == null || files.length == 0) {
             player.send(Errcode.error_code_toc.newBuilder()
                     .setCode(Errcode.error_code.record_not_exists).build());
@@ -77,7 +77,8 @@ public class Recorder {
         saveLoadPool.submit(() -> {
             try (ObjectInputStream is = new ObjectInputStream(new FileInputStream(recordFile))) {
                 int recordVersion = is.readInt();
-                if (version != recordVersion) {
+                if (version < recordVersion) {
+                    loading = false;
                     player.send(Errcode.error_code_toc.newBuilder()
                             .setCode(Errcode.error_code.record_version_not_match)
                             .addIntParams(recordVersion).build());
@@ -98,14 +99,16 @@ public class Recorder {
     }
 
     private void displayNext(final HumanPlayer player) {
-        while (true) {
+        while (player.isActive()) {
             if (currentIndex >= list.size()) {
+                player.send(Fengsheng.display_record_end_toc.getDefaultInstance());
                 loading = false;
                 break;
             }
             RecorderLine line = list.get(currentIndex);
             player.send(line.messageId, line.messageBuf);
             if (++currentIndex >= list.size()) {
+                player.send(Fengsheng.display_record_end_toc.getDefaultInstance());
                 loading = false;
                 break;
             }
