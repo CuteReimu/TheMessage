@@ -118,6 +118,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         var descriptor = (Descriptors.FileDescriptor) protoCls.getDeclaredMethod("getDescriptor").invoke(null);
         for (Descriptors.Descriptor d : descriptor.getMessageTypes()) {
             String name = d.getName();
+            if (!name.endsWith("_tos")) continue;
             short id = stringHash(name);
             if (id == 0) {
                 throw new RuntimeException("message meta require 'ID' field: " + name);
