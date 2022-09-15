@@ -9,6 +9,8 @@ import com.fengsheng.protos.Fengsheng;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
+
 public class join_room_tos implements ProtoHandler {
     private static final Logger log = Logger.getLogger(join_room_tos.class);
 
@@ -24,6 +26,11 @@ public class join_room_tos implements ProtoHandler {
             player.send(Errcode.error_code_toc.newBuilder()
                     .setCode(Errcode.error_code.client_version_not_match)
                     .addIntParams(Config.ClientVersion).build());
+            return;
+        }
+        if (pb.getName().getBytes(StandardCharsets.UTF_8).length > 24) {
+            player.send(Errcode.error_code_toc.newBuilder()
+                    .setCode(Errcode.error_code.name_too_long).build());
             return;
         }
         GeneratedMessageV3 reply;
