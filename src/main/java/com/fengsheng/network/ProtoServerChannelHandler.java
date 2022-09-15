@@ -76,10 +76,9 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        if (msg.readableBytes() < 4) {
-            ctx.close();
+        if (msg.readableBytes() < 2)
             return;
-        }
+        msg.markReaderIndex();
         short msgLen = msg.readShortLE();
         if (msgLen < 2) {
             log.error("incorrect msgLen: " + msgLen);
@@ -87,8 +86,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
             return;
         }
         if (msg.readableBytes() < msgLen) {
-            log.error("not enough bytes: " + msgLen);
-            ctx.close();
+            msg.resetReaderIndex();
             return;
         }
         short id = msg.readShortLE();
