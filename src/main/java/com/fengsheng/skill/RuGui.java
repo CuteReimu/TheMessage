@@ -76,6 +76,10 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
             }
             if (!pb.getEnable()) {
                 r.incrSeq();
+                for (Player p : g.getPlayers()) {
+                    if (p instanceof HumanPlayer player1)
+                        player1.send(Role.skill_ru_gui_toc.newBuilder().setEnable(false).build());
+                }
                 return new ResolveResult(fsm, true);
             }
             Card card = r.findMessageCard(pb.getCardId());
@@ -96,7 +100,7 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
             log.info(r + "面前的" + card + "移到了" + target + "面前");
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player1)
-                    player1.send(Role.skill_ru_gui_toc.newBuilder().setCardId(card.getId())
+                    player1.send(Role.skill_ru_gui_toc.newBuilder().setEnable(true).setCardId(card.getId())
                             .setPlayerId(player1.getAlternativeLocation(r.location())).build());
             }
             return new ResolveResult(fsm, true);
