@@ -77,14 +77,12 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         if (msg.readableBytes() < 4) {
-            msg.release();
             ctx.close();
             return;
         }
         short msgLen = msg.readShortLE();
         if (msgLen < 2) {
             log.error("incorrect msgLen: " + msgLen);
-            msg.release();
             ctx.close();
             return;
         }
@@ -97,13 +95,11 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         var protoInfo = ProtoInfoMap.get(id);
         if (protoInfo == null) {
             log.error("incorrect msg id: " + id);
-            msg.release();
             ctx.close();
             return;
         }
         byte[] buf = new byte[msgLen - 2];
         msg.readBytes(buf);
-        msg.release();
         var message = (GeneratedMessageV3) protoInfo.parser().parseFrom(buf);
         log.debug("recv@%s len: %d %s | %s".formatted(ctx.channel().id().asShortText(), msgLen - 2, protoInfo.name(),
                 printer.printToString(message).replaceAll("\n *", " ")));
