@@ -15,6 +15,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,16 +59,11 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
                         break;
                     }
                 }
-                if (hasHumanPlayer) {
-                    game.getPlayers()[player.location()] = new RobotPlayer(player);
-                } else {
-                    // 当全部是机器人后，暂时用这种方法使游戏停下来
-                    for (int i = 0; i < game.getPlayers().length; i++) {
-                        game.getPlayers()[i] = new IdlePlayer(player);
-                    }
-                    game.end();
-                }
+                player.saveRecord(false);
+                game.getPlayers()[player.location()] = new RobotPlayer(player);
+                if (!hasHumanPlayer) game.end();
             } else {
+                game.getPlayers()[player.location()] = null;
                 var reply = Fengsheng.leave_room_toc.newBuilder().setPosition(player.location()).build();
                 for (Player p : game.getPlayers()) {
                     if (p instanceof HumanPlayer) {
@@ -80,18 +76,9 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        if (msg.readableBytes() < 4) {
-            ctx.close();
-            return;
-        }
-        short msgLen = msg.readShortLE();
+        int msgLen = msg.readableBytes();
         if (msgLen < 2) {
-            log.error("incorrect msgLen: " + msgLen);
-            ctx.close();
-            return;
-        }
-        if (msg.readableBytes() < msgLen) {
-            log.error("not enough bytes: " + msgLen);
+            log.error("incorrect msgLen: " + msg.readableBytes());
             ctx.close();
             return;
         }
@@ -143,6 +130,13 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
                 throw new RuntimeException("Duplicate message meta register by id: " + id);
             }
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        if (cause instanceof SocketException && "Connection reset".equals(cause.getMessage()))
+            return;
+        super.exceptionCaught(ctx, cause);
     }
 
     public static short stringHash(String s) {

@@ -3,6 +3,7 @@ package com.fengsheng.card;
 import com.fengsheng.*;
 import com.fengsheng.phase.MainPhaseIdle;
 import com.fengsheng.phase.OnUseCard;
+import com.fengsheng.phase.UseChengQingOnDying;
 import com.fengsheng.phase.WaitForChengQing;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
@@ -57,7 +58,7 @@ public class ChengQing extends AbstractCard {
             log.error("没有这张情报");
             return false;
         }
-        if (targetCard.getColors().contains(Common.color.Black)) {
+        if (!targetCard.getColors().contains(Common.color.Black)) {
             log.error("澄清只能对黑情报使用");
             return false;
         }
@@ -83,7 +84,10 @@ public class ChengQing extends AbstractCard {
                 }
             }
             g.getDeck().discard(this);
-            return new ResolveResult(fsm, true);
+            if (fsm instanceof MainPhaseIdle)
+                return new ResolveResult(fsm, true);
+            else
+                return new ResolveResult(new UseChengQingOnDying((WaitForChengQing) fsm), true);
         };
         if (fsm instanceof MainPhaseIdle)
             g.resolve(new OnUseCard(((MainPhaseIdle) fsm).player(), r, this, r, resolveFunc));
@@ -101,7 +105,7 @@ public class ChengQing extends AbstractCard {
         List<PlayerAndCard> playerAndCards = new ArrayList<>();
         var identity = player.getIdentity();
         for (Player p : player.getGame().getPlayers()) {
-            if ((p == player || identity != Common.color.Black && identity == p.getIdentity()) && p.isAlive()) {
+            if ((p.equals(player) || identity != Common.color.Black && identity == p.getIdentity()) && p.isAlive()) {
                 for (Card c : p.getMessageCards().values()) {
                     if (c.getColors().contains(Common.color.Black))
                         playerAndCards.add(new PlayerAndCard(p, c));

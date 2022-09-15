@@ -17,7 +17,7 @@ public abstract class AbstractProtoHandler<T extends GeneratedMessageV3> impleme
         // 因为player.setGame()只会join_room_tos调用，所以一定和这里的player.getGame()在同一线程，所以无需加锁
         Game game = player.getGame();
         if (game == null) {
-            log.error("player didn't not join room");
+            log.error("player didn't not join room, current msg: " + message.getDescriptorForType().getName());
         } else {
             GameExecutor.post(game, () -> handle0(player, (T) message));
         }

@@ -1,5 +1,6 @@
 package com.fengsheng.handler;
 
+import com.fengsheng.Game;
 import com.fengsheng.HumanPlayer;
 import com.fengsheng.Player;
 import com.fengsheng.RobotPlayer;
@@ -11,12 +12,14 @@ public class add_robot_tos extends AbstractProtoHandler<Fengsheng.add_robot_tos>
 
     @Override
     protected void handle0(HumanPlayer player, Fengsheng.add_robot_tos pb) {
-        Player robotPlayer = new RobotPlayer();
-        if (player.getGame().isStarted()) {
-            log.error("room is already full");
-            return;
+        synchronized (Game.class) {
+            if (player.getGame().isStarted()) {
+                log.error("room is already full");
+                return;
+            }
+            Player robotPlayer = new RobotPlayer();
+            robotPlayer.setGame(player.getGame());
+            robotPlayer.getGame().onPlayerJoinRoom(robotPlayer);
         }
-        robotPlayer.setGame(player.getGame());
-        robotPlayer.getGame().onPlayerJoinRoom(robotPlayer);
     }
 }

@@ -60,7 +60,7 @@ public class PoYi extends AbstractCard {
                     var builder = Fengsheng.use_po_yi_toc.newBuilder();
                     builder.setCard(card.toPbCard()).setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setMessageCard(sendPhase.messageCard.toPbCard()).setWaitingSecond(20);
-                    if (p == r) {
+                    if (p.equals(r)) {
                         final int seq2 = p.getSeq();
                         builder.setSeq(seq2).setCard(card.toPbCard());
                         p.setTimeout(GameExecutor.post(r.getGame(), () -> {
@@ -128,7 +128,7 @@ public class PoYi extends AbstractCard {
 
     public static boolean ai(SendPhaseIdle e, Card card) {
         Player player = e.inFrontOfWhom;
-        if (player == e.whoseTurn || e.isMessageCardFaceUp) return false;
+        if (player.equals(e.whoseTurn) || e.isMessageCardFaceUp) return false;
         if (ThreadLocalRandom.current().nextBoolean()) return false;
         GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player), 2, TimeUnit.SECONDS);
         return true;

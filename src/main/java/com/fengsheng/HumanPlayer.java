@@ -9,8 +9,9 @@ import com.fengsheng.skill.RoleSkillsData;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.util.Timeout;
 import org.apache.log4j.Logger;
 
@@ -29,6 +30,8 @@ public class HumanPlayer extends AbstractPlayer {
 
     private Timeout timeout;
 
+    private final Recorder recorder = new Recorder();
+
     public HumanPlayer(Channel channel) {
         this.channel = channel;
     }
@@ -38,16 +41,42 @@ public class HumanPlayer extends AbstractPlayer {
      */
     public void send(GeneratedMessageV3 message) {
         byte[] buf = message.toByteArray();
-        String name = message.getDescriptorForType().getName();
+        final String name = message.getDescriptorForType().getName();
         short id = ProtoServerChannelHandler.stringHash(name);
-        ByteBuf byteBuf = Unpooled.buffer(buf.length + 4, buf.length + 4);
+        send(id, buf);
+        recorder.add(id, buf);
+        log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
+                printer.printToString(message).replaceAll("\n *", " ")));
+    }
+
+    public void send(short id, byte[] buf) {
+        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.ioBuffer(buf.length + 4, buf.length + 4);
         byteBuf.writeShortLE(buf.length + 2);
         byteBuf.writeShortLE(id);
         byteBuf.writeBytes(buf);
-        channel.write(byteBuf);
-        channel.writeAndFlush(buf);
-        log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
-                printer.printToString(message).replaceAll("\n *", " ")));
+        channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) future -> {
+            if (!future.isSuccess())
+                log.error("send@%s failed, id: %d, len: %d".formatted(channel.id().asShortText(), id, buf.length));
+        });
+    }
+
+    public void saveRecord(boolean notify) {
+        recorder.save(game, this, notify);
+    }
+
+    public void loadRecord(int version, String recordId) {
+        recorder.load(version, recordId, this);
+    }
+
+    public boolean isLoadingRecord() {
+        return recorder.loading();
+    }
+
+    /**
+     * Return {@code true} if the {@link Channel} of the {@code HumanPlayer} is active and so connected.
+     */
+    public boolean isActive() {
+        return channel.isActive();
     }
 
     @Override
@@ -316,6 +345,6 @@ public class HumanPlayer extends AbstractPlayer {
 
     @Override
     public String toString() {
-        return location + "号[" + (isRoleFaceUp() ? roleSkillsData.getName() : "玩家") + "]";
+        return location + "号[" + (isRoleFaceUp() ? getRoleName() : "玩家") + "]";
     }
 }

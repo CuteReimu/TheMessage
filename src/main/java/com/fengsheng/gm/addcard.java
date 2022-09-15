@@ -23,10 +23,10 @@ public class addcard implements Function<Map<String, String>, String> {
             final int playerId = Integer.parseInt(form.get("player"));
             int cardTypeNum = Integer.parseInt(form.get("card"));
             final Common.card_type cardType = Common.card_type.forNumber(cardTypeNum);
-            int count = Integer.parseInt(form.get("count"));
             if (cardType == null || cardType == Common.card_type.UNRECOGNIZED)
                 return "{\"error\": \"invalid arguments\"}";
-            final int finalCount = Math.max(1, Math.min(count, 99));
+            String count = form.get("count");
+            final int finalCount = count != null ? Math.max(1, Math.min(Integer.parseInt(count), 99)) : 1;
             List<Card> availableCards = new ArrayList<>();
             for (Card c : Deck.DefaultDeck)
                 if (c.getType() == cardType) availableCards.add(c);

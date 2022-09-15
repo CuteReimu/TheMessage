@@ -210,7 +210,7 @@ public class RobotPlayer extends AbstractPlayer {
 
     @Override
     public String toString() {
-        return location + "号[" + (isRoleFaceUp() ? roleSkillsData.getName() : "机器人") + "]";
+        return location + "号[" + (isRoleFaceUp() ? getRoleName() : "机器人") + "]";
     }
 
     private static final Map<SkillId, BiFunction<MainPhaseIdle, ActiveSkill, Boolean>> aiSkillMainPhase = new HashMap<>();

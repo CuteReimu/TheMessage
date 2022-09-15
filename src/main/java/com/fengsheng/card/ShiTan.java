@@ -39,7 +39,7 @@ public class ShiTan extends AbstractCard {
             log.error("试探的使用时机不对");
             return false;
         }
-        if (r == target) {
+        if (r.equals(target)) {
             log.error("试探不能对自己使用");
             return false;
         }
@@ -61,7 +61,7 @@ public class ShiTan extends AbstractCard {
                     var builder = Fengsheng.use_shi_tan_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                    if (p == r) builder.setCardId(this.id);
+                    if (p.equals(r)) builder.setCardId(this.id);
                     player.send(builder.build());
                 }
             }
@@ -95,7 +95,7 @@ public class ShiTan extends AbstractCard {
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
                     builder.setWaitingSecond(20);
-                    if (p == target) {
+                    if (p.equals(target)) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2).setCard(card.toPbCard());
                         player.setTimeout(GameExecutor.post(r.getGame(), () -> {
@@ -105,7 +105,7 @@ public class ShiTan extends AbstractCard {
                                 r.getGame().resolve(new MainPhaseIdle(r));
                             }
                         }, builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
-                    } else if (p == r) {
+                    } else if (p.equals(r)) {
                         builder.setCard(card.toPbCard());
                     }
                     player.send(builder.build());
@@ -115,7 +115,7 @@ public class ShiTan extends AbstractCard {
                 GameExecutor.post(target.getGame(), () -> {
                     autoSelect();
                     target.getGame().resolve(new MainPhaseIdle(r));
-                }, 4, TimeUnit.SECONDS);
+                }, 2, TimeUnit.SECONDS);
             }
             return null;
         }
