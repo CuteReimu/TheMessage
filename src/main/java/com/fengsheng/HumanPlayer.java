@@ -9,7 +9,7 @@ import com.fengsheng.skill.RoleSkillsData;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.util.Timeout;
@@ -50,7 +50,7 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     public void send(short id, byte[] buf) {
-        ByteBuf byteBuf = Unpooled.buffer(buf.length + 4, buf.length + 4);
+        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.ioBuffer(buf.length + 4, buf.length + 4);
         byteBuf.writeShortLE(buf.length + 2);
         byteBuf.writeShortLE(id);
         byteBuf.writeBytes(buf);
