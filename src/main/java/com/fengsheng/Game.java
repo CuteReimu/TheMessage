@@ -25,7 +25,7 @@ public final class Game {
     private static Game newGame;
 
     private final int id;
-    private boolean started;
+    private volatile boolean started;
     private boolean ended;
     private final Player[] players;
     private final Deck deck = new Deck(this);
@@ -71,6 +71,7 @@ public final class Game {
         }
         if (unready == 0) {
             log.info(player + "加入了。已加入" + players.length + "个人，游戏开始。。。");
+            started = true;
             GameExecutor.post(this, this::start);
             newInstance();
         } else {
@@ -83,7 +84,6 @@ public final class Game {
     }
 
     private void start() {
-        started = true;
         Random random = ThreadLocalRandom.current();
         List<Common.color> identities = new ArrayList<>();
         for (int i = 0; i < (players.length - 1) / 2; i++) {
