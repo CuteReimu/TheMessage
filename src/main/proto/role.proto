@@ -213,10 +213,11 @@ message skill_wait_for_cheng_zhi_toc {
   uint32        player_id = 1; // 发动者
   uint32        die_player_id = 2; // 死亡角色
   repeated card cards = 3; // 死亡角色的所有手牌
-  color         identity = 4; // 死亡角色的身份牌
-  secret_task   secret_task = 5; // 死亡角色的机密任务（如果是神秘人）
-  uint32        waiting_second = 6;
-  uint32        seq = 7;
+  uint32        unknown_card_count = 4; // 背面朝上的牌的数量（用于其它人的牌，你看不到）
+  color         identity = 5; // 死亡角色的身份牌
+  secret_task   secret_task = 6; // 死亡角色的机密任务（如果是神秘人）
+  uint32        waiting_second = 7;
+  uint32        seq = 8;
 }
 
 // 顾小梦【承志】：一名其他角色死亡前，若此角色牌已翻开，则你获得其所有手牌，并查看其身份牌，你可以获得该身份牌，并将你原本的身份牌面朝下移出游戏。
