@@ -11,6 +11,7 @@ enum role {
   gui_jiao = 17; // 鬼脚
   shao_xiu = 18; // 邵秀
   jin_sheng_huo = 19; // 金生火
+  gu_xiao_meng = 20; // 顾小梦
   bai_fei_fei = 21; // 白菲菲
   duan_mu_jing = 22; // 端木静
   lao_han = 24; // 老汉
@@ -43,6 +44,7 @@ enum color {
   Black = 0; // 对于身份，则是绿色（神秘人）；对于卡牌，则是黑色
   Red = 1;   // 红色
   Blue = 2;  // 蓝色
+  Has_No_Identity = 3; // 失去身份
 }
 
 // 神秘人任务

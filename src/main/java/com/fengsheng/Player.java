@@ -318,6 +318,7 @@ public interface Player {
                 case Collector -> "神秘人[双重间谍]";
                 default -> throw new RuntimeException("unknown secret task: " + task);
             };
+            case Has_No_Identity -> "无身份";
             default -> throw new RuntimeException("unknown color: " + color);
         };
     }
