@@ -76,6 +76,7 @@ public class PingHeng extends AbstractCard {
 
     public static boolean ai(MainPhaseIdle e, Card card) {
         Player player = e.player();
+        if (player.getCards().size() > 3) return false;
         List<Player> players = new ArrayList<>();
         for (Player p : player.getGame().getPlayers())
             if (p != player && p.isAlive()) players.add(p);
