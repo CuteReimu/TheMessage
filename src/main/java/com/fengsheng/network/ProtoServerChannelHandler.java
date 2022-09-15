@@ -50,28 +50,33 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         }
         final Game game = player.getGame();
         if (game == null) return;
-        GameExecutor.post(game, () -> {
+        GeneratedMessageV3 reply = null;
+        synchronized (Game.class) {
             if (game.isStarted()) {
-                boolean hasHumanPlayer = false;
-                for (Player p : game.getPlayers()) {
-                    if (p != player && p instanceof HumanPlayer) {
-                        hasHumanPlayer = true;
-                        break;
+                GameExecutor.post(game, () -> {
+                    boolean hasHumanPlayer = false;
+                    for (Player p : game.getPlayers()) {
+                        if (p != player && p instanceof HumanPlayer) {
+                            hasHumanPlayer = true;
+                            break;
+                        }
                     }
-                }
-                player.saveRecord(false);
-                game.getPlayers()[player.location()] = new RobotPlayer(player);
-                if (!hasHumanPlayer) game.end();
+                    player.saveRecord(false);
+                    game.getPlayers()[player.location()] = new RobotPlayer(player);
+                    if (!hasHumanPlayer) game.end();
+                });
             } else {
                 game.getPlayers()[player.location()] = null;
-                var reply = Fengsheng.leave_room_toc.newBuilder().setPosition(player.location()).build();
-                for (Player p : game.getPlayers()) {
-                    if (p instanceof HumanPlayer) {
-                        ((HumanPlayer) p).send(reply);
-                    }
+                reply = Fengsheng.leave_room_toc.newBuilder().setPosition(player.location()).build();
+            }
+        }
+        if (reply != null) {
+            for (Player p : game.getPlayers()) {
+                if (p instanceof HumanPlayer) {
+                    ((HumanPlayer) p).send(reply);
                 }
             }
-        });
+        }
     }
 
     @Override
