@@ -52,7 +52,7 @@ public class Recorder {
                 os.writeInt(Config.ClientVersion);
                 os.writeObject(list.toArray(new RecorderLine[0]));
                 if (notify) p.send(Fengsheng.save_record_success_toc.newBuilder().setRecordId(recordId).build());
-                log.info("save record success" + recordId);
+                log.info("save record success: " + recordId);
             } catch (IOException e) {
                 log.error("save record failed", e);
             }
@@ -87,7 +87,7 @@ public class Recorder {
                 var lines = (RecorderLine[]) is.readObject();
                 list = new ArrayList<>(Arrays.asList(lines));
                 currentIndex = 0;
-                log.info("load record success" + recordId);
+                log.info("load record success: " + recordId);
                 displayNext(player);
             } catch (IOException | ClassNotFoundException | ClassCastException e) {
                 loading = false;
