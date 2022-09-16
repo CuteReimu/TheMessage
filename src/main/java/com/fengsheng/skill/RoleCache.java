@@ -2,9 +2,8 @@ package com.fengsheng.skill;
 
 import com.fengsheng.protos.Common;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -29,7 +28,7 @@ public final class RoleCache {
             new RoleSkillsData("顾小梦", gu_xiao_meng, true, false, new JiZhi(), new ChengZhi(), new WeiSheng())
     );
 
-    private static final Map<Common.role, RoleSkillsData> mapCache = new HashMap<>();
+    private static final EnumMap<Common.role, RoleSkillsData> mapCache = new EnumMap<>(Common.role.class);
 
     static {
         for (RoleSkillsData data : cache)
@@ -67,18 +66,18 @@ public final class RoleCache {
      * @param roles 返回数组的前几个角色强行指定
      * @return 长度为 {@code n} 的数组
      */
-    public static RoleSkillsData[] getRandomRolesWithSpecific(int n, Common.role... roles) {
+    public static RoleSkillsData[] getRandomRolesWithSpecific(int n, List<Common.role> roles) {
         RoleSkillsData[] roleSkillsDataArray = getRandomRoles(n);
-        for (int roleIndex = 0; roleIndex < roles.length; roleIndex++) {
+        for (int roleIndex = 0; roleIndex < roles.size(); roleIndex++) {
             int index = -1;
             for (int i = 0; i < roleSkillsDataArray.length; i++) {
-                if (roles[roleIndex] == roleSkillsDataArray[i].getRole()) {
+                if (roles.get(roleIndex) == roleSkillsDataArray[i].getRole()) {
                     index = i;
                     break;
                 }
             }
             if (index == -1) {
-                RoleSkillsData data = mapCache.get(roles[roleIndex]);
+                RoleSkillsData data = mapCache.get(roles.get(roleIndex));
                 roleSkillsDataArray[roleIndex] = data != null ? data : new RoleSkillsData();
             } else {
                 RoleSkillsData temp = roleSkillsDataArray[index];

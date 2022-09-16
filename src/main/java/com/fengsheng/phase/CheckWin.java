@@ -48,7 +48,8 @@ public class CheckWin implements Fsm {
     public ResolveResult resolve() {
         Game game = whoseTurn.getGame();
         Player stealer = null; // 簒夺者
-        List<Player> redPlayers = new ArrayList<>(), bluePlayers = new ArrayList<>();
+        List<Player> redPlayers = new ArrayList<>();
+        List<Player> bluePlayers = new ArrayList<>();
         for (Player p : game.getPlayers()) {
             if (p.isLose()) continue;
             switch (p.getIdentity()) {
@@ -59,17 +60,18 @@ public class CheckWin implements Fsm {
                 case Blue -> bluePlayers.add(p);
             }
         }
-        List<Player> declareWinner = new ArrayList<>(), winner = new ArrayList<>();
-        boolean redWin = false, blueWin = false;
+        List<Player> declareWinner = new ArrayList<>();
+        List<Player> winner = new ArrayList<>();
+        boolean redWin = false;
+        boolean blueWin = false;
         for (Player player : game.getPlayers()) {
             if (player.isLose()) continue;
-            int red = 0, blue = 0;
+            int red = 0;
+            int blue = 0;
             for (Card card : player.getMessageCards().values()) {
                 for (Common.color color : card.getColors()) {
-                    switch (color) {
-                        case Red -> red++;
-                        case Blue -> blue++;
-                    }
+                    if (color == Common.color.Red) red++;
+                    else if (color == Common.color.Blue) blue++;
                 }
             }
             switch (player.getIdentity()) {

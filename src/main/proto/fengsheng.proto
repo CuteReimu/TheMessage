@@ -156,14 +156,14 @@ message use_ping_heng_tos {
   uint32 seq = 3;
 }
 
-// 通知客户端使用利诱的结果
+// 通知客户端使用平衡的结果
 message use_ping_heng_toc {
   uint32        player_id = 1; // 使用者
   uint32        target_player_id = 2; // 被使用者
-  card          ping_heng_card = 3; // 使用的这张利诱牌
+  card          ping_heng_card = 3; // 使用的这张平衡牌
 }
 
-// 请求使用平衡
+// 请求使用威逼
 message use_wei_bi_tos {
   uint32    card_id = 1; // 卡牌ID
   uint32    player_id = 2;

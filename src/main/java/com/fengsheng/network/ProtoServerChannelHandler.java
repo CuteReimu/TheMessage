@@ -148,7 +148,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
     public static short stringHash(String s) {
         int hash = 0;
         for (byte c : s.getBytes()) {
-            int i = c >= 0 ? (int) c : 256 + (int) c;
+            int i = c >= 0 ? (int) c : 256 + c;
             hash = (short) (hash + (hash << 5) + i + (i << 7));
         }
         return (short) hash;

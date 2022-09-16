@@ -196,11 +196,9 @@ public class WeiBi extends AbstractCard {
         var identity = player.getIdentity();
         List<Player> players = new ArrayList<>();
         for (Player p : player.getGame().getPlayers()) {
-            if (p != player && p.isAlive() && !p.getCards().isEmpty()) {
-                if (identity == Common.color.Black || identity != p.getIdentity()) {
-                    for (Card c : p.getCards().values())
-                        if (availableCardType.contains(c.getType())) players.add(p);
-                }
+            if (p != player && p.isAlive() && !p.getCards().isEmpty() && (identity == Common.color.Black || identity != p.getIdentity())) {
+                for (Card c : p.getCards().values())
+                    if (availableCardType.contains(c.getType())) players.add(p);
             }
         }
         if (players.isEmpty()) return false;

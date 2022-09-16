@@ -26,7 +26,8 @@ public final class GameExecutor implements Runnable {
             if (!gameAndCallback.game().isEnd()) gameAndCallback.callback().run();
         } catch (InterruptedException e) {
             log.error("take queue interrupted", e);
-        } catch (Throwable e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
             log.error("catch throwable", e);
         }
     }
@@ -36,6 +37,7 @@ public final class GameExecutor implements Runnable {
             queue.put(gameAndCallback);
         } catch (InterruptedException e) {
             log.error("put queue interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 

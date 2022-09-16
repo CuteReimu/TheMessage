@@ -70,11 +70,10 @@ public interface Card {
             }
         }
         switch (colors.size()) {
-            case 1:
-                return sb.append("色").toString();
-            case 2:
-                return sb.append("双色").toString();
+            case 1 -> sb.append("色");
+            case 2 -> sb.append("双色");
+            default -> throw new RuntimeException("unknown color: " + Arrays.toString(colors.toArray()));
         }
-        throw new RuntimeException("unknown color: " + Arrays.toString(colors.toArray()));
+        return sb.toString();
     }
 }

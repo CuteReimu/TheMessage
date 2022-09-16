@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 public class RobotPlayer extends AbstractPlayer {
     private static final Logger log = Logger.getLogger(RobotPlayer.class);
@@ -40,12 +40,12 @@ public class RobotPlayer extends AbstractPlayer {
         if (location != player.location()) return;
         for (Skill skill : getSkills()) {
             var ai = aiSkillMainPhase.get(skill.getSkillId());
-            if (ai != null && ai.apply(fsm, (ActiveSkill) skill)) return;
+            if (ai != null && ai.test(fsm, (ActiveSkill) skill)) return;
         }
         if (cards.size() > 1) {
             for (Card card : cards.values()) {
                 var ai = aiMainPhase.get(card.getType());
-                if (ai != null && ai.apply(fsm, card)) return;
+                if (ai != null && ai.test(fsm, card)) return;
             }
         }
         GameExecutor.post(game, () -> game.resolve(new SendPhaseStart(this)), 2, TimeUnit.SECONDS);
@@ -68,7 +68,7 @@ public class RobotPlayer extends AbstractPlayer {
         if (this != fsm.inFrontOfWhom) return;
         for (Card card : cards.values()) {
             var ai = aiSendPhase.get(card.getType());
-            if (ai != null && ai.apply(fsm, card)) return;
+            if (ai != null && ai.test(fsm, card)) return;
         }
         GameExecutor.post(game, () -> {
             var colors = fsm.messageCard.getColors();
@@ -93,11 +93,11 @@ public class RobotPlayer extends AbstractPlayer {
         if (this != fsm.whoseFightTurn) return;
         for (Skill skill : getSkills()) {
             var ai = aiSkillFightPhase.get(skill.getSkillId());
-            if (ai != null && ai.apply(fsm, (ActiveSkill) skill)) return;
+            if (ai != null && ai.test(fsm, (ActiveSkill) skill)) return;
         }
         for (Card card : cards.values()) {
             var ai = aiFightPhase.get(card.getType());
-            if (ai != null && ai.apply(fsm, card)) return;
+            if (ai != null && ai.test(fsm, card)) return;
         }
         GameExecutor.post(game, () -> game.resolve(new FightPhaseNext(fsm)), 2, TimeUnit.SECONDS);
     }
@@ -213,11 +213,11 @@ public class RobotPlayer extends AbstractPlayer {
         return location + "号[" + (isRoleFaceUp() ? getRoleName() : "机器人") + "]";
     }
 
-    private static final Map<SkillId, BiFunction<MainPhaseIdle, ActiveSkill, Boolean>> aiSkillMainPhase = new HashMap<>();
-    private static final Map<Common.card_type, BiFunction<MainPhaseIdle, Card, Boolean>> aiMainPhase = new HashMap<>();
-    private static final Map<Common.card_type, BiFunction<SendPhaseIdle, Card, Boolean>> aiSendPhase = new HashMap<>();
-    private static final Map<SkillId, BiFunction<FightPhaseIdle, ActiveSkill, Boolean>> aiSkillFightPhase = new HashMap<>();
-    private static final Map<Common.card_type, BiFunction<FightPhaseIdle, Card, Boolean>> aiFightPhase = new HashMap<>();
+    private static final EnumMap<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>> aiSkillMainPhase = new EnumMap<>(SkillId.class);
+    private static final EnumMap<Common.card_type, BiPredicate<MainPhaseIdle, Card>> aiMainPhase = new EnumMap<>(Common.card_type.class);
+    private static final EnumMap<Common.card_type, BiPredicate<SendPhaseIdle, Card>> aiSendPhase = new EnumMap<>(Common.card_type.class);
+    private static final EnumMap<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>> aiSkillFightPhase = new EnumMap<>(SkillId.class);
+    private static final EnumMap<Common.card_type, BiPredicate<FightPhaseIdle, Card>> aiFightPhase = new EnumMap<>(Common.card_type.class);
 
     static {
         aiSkillMainPhase.put(SkillId.XIN_SI_CHAO, XinSiChao::ai);

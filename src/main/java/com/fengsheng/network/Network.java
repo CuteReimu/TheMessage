@@ -10,12 +10,17 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.util.concurrent.CountDownLatch;
 
 public final class Network {
+    private Network() {
+        
+    }
+
     public static void init() {
         new Thread(Network::initGameNetwork).start();
         new Thread(Network::initGmNetwork).start();
         try {
             cd.await();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
     }
@@ -36,6 +41,7 @@ public final class Network {
             cd.countDown();
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         } finally {
             bossGroup.shutdownGracefully();
@@ -61,6 +67,7 @@ public final class Network {
             cd.countDown();
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         } finally {
             bossGroup.shutdownGracefully();

@@ -8,10 +8,7 @@ import com.fengsheng.skill.SkillId;
 import com.fengsheng.skill.TriggeredSkill;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class AbstractPlayer implements Player {
     private static final Logger log = Logger.getLogger(AbstractPlayer.class);
@@ -25,17 +22,17 @@ public abstract class AbstractPlayer implements Player {
     protected Common.secret_task secretTask;
     protected final AliveInfo aliveInfo;
     protected RoleSkillsData roleSkillsData;
-    protected final Map<SkillId, Integer> skillUseCount;
+    protected final EnumMap<SkillId, Integer> skillUseCount;
 
-    public AbstractPlayer() {
+    protected AbstractPlayer() {
         cards = new HashMap<>();
         messageCards = new HashMap<>();
         aliveInfo = new AliveInfo();
         roleSkillsData = new RoleSkillsData();
-        skillUseCount = new HashMap<>();
+        skillUseCount = new EnumMap<>(SkillId.class);
     }
 
-    public AbstractPlayer(AbstractPlayer player) {
+    protected AbstractPlayer(AbstractPlayer player) {
         game = player.game;
         playerName = player.playerName;
         cards = player.cards;

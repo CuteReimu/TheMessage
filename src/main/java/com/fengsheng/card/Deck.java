@@ -47,7 +47,7 @@ public class Deck {
         Card[] result = subList.toArray(new Card[0]);
         subList.clear();
         notifyDeckCount(false);
-        if (cards.size() == 0) {
+        if (cards.isEmpty()) {
             shuffle();
         }
         return result;

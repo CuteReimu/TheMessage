@@ -30,7 +30,7 @@ public class Recorder {
     private volatile boolean loading = false;
 
     public void add(short messageId, byte[] messageBuf) {
-        if (!loading && (messageId == initTocId || list.size() > 0))
+        if (!loading && (messageId == initTocId || !list.isEmpty()))
             list.add(Record.recorder_line.newBuilder().setNanoTime(System.nanoTime()).setMessageId(messageId)
                     .setMessageBuf(ByteString.copyFrom(messageBuf)).build());
     }
