@@ -70,12 +70,12 @@ public final class Game {
             }
         }
         if (unready == 0) {
-            log.info(player + "加入了。已加入" + players.length + "个人，游戏开始。。。");
+            log.info(player.getPlayerName() + "加入了。已加入" + players.length + "个人，游戏开始。。。");
             started = true;
             GameExecutor.post(this, this::start);
             newInstance();
         } else {
-            log.info(player + "加入了。已加入" + (players.length - unready) + "个人，等待" + unready + "人加入。。。");
+            log.info(player.getPlayerName() + "加入了。已加入" + (players.length - unready) + "个人，等待" + unready + "人加入。。。");
         }
     }
 
