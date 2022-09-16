@@ -154,7 +154,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         return (short) hash;
     }
 
-    record ProtoInfo(String name, Parser<?> parser, ProtoHandler handler) {
+    private record ProtoInfo(String name, Parser<?> parser, ProtoHandler handler) {
 
     }
 }
