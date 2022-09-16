@@ -91,14 +91,14 @@ public final class Game {
         Random random = ThreadLocalRandom.current();
         List<Common.color> identities = new ArrayList<>();
         switch (players.length) {
-            case 3:
-                identities.add(Common.color.Black);
-                identities.add(Common.color.Black);
-                identities.add(Common.color.Red);
-                identities.add(Common.color.Blue);
             case 4:
                 identities.add(Common.color.Red);
                 identities.add(Common.color.Blue);
+            case 3:
+                identities.add(Common.color.Red);
+                identities.add(Common.color.Blue);
+                identities.add(Common.color.Black);
+                identities.add(Common.color.Black);
                 while (identities.size() > players.length)
                     identities.remove(random.nextInt(identities.size()));
                 break;
