@@ -48,6 +48,8 @@ public class JiZhi extends AbstractSkill implements ActiveSkill {
         }
         g.playerSetRoleFaceUp(r, true);
         r.draw(4);
+        if (g.getFsm() instanceof FightPhaseIdle fsm)
+            fsm.whoseFightTurn = fsm.inFrontOfWhom;
         g.continueResolve();
     }
 

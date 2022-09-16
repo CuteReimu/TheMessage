@@ -85,6 +85,7 @@ public class YiHuaJieMu extends AbstractSkill implements ActiveSkill {
                         .setFromPlayerId(player.getAlternativeLocation(fromPlayer.location()))
                         .setToPlayerId(player.getAlternativeLocation(toPlayer.location())).build());
         }
+        fsm.whoseFightTurn = fsm.inFrontOfWhom;
         g.continueResolve();
     }
 }
