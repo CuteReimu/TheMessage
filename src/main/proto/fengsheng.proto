@@ -2,6 +2,23 @@ syntax = "proto3";
 option java_package = "com.fengsheng.protos";
 import "common.proto";
 
+// 请求房间加一个位置
+message add_one_position_tos {
+}
+
+// 广播房间加一个位置
+message add_one_position_toc {
+}
+
+// 请求房间减少一个位置
+message remove_one_position_tos {
+}
+
+// 广播房间减少一个位置
+message remove_one_position_toc {
+  uint32 position = 1; // 减少的是哪个位置
+}
+
 // 请求播放录像
 message display_record_tos {
   uint32 version   = 1; // 客户端版本号

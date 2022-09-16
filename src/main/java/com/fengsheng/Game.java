@@ -27,7 +27,7 @@ public final class Game {
     private final int id;
     private volatile boolean started;
     private boolean ended;
-    private final Player[] players;
+    private Player[] players;
     private final Deck deck = new Deck(this);
     private Fsm fsm;
     private final List<TriggeredSkill> listeningSkills = new ArrayList<>();
@@ -41,7 +41,7 @@ public final class Game {
     /**
      * 不是线程安全的
      */
-    private static void newInstance() {
+    public static void newInstance() {
         newGame = new Game(Config.TotalPlayerCount);
     }
 
@@ -83,17 +83,35 @@ public final class Game {
         return started;
     }
 
-    private void start() {
+    public void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    public void start() {
         Random random = ThreadLocalRandom.current();
         List<Common.color> identities = new ArrayList<>();
-        for (int i = 0; i < (players.length - 1) / 2; i++) {
-            identities.add(Common.color.Red);
-            identities.add(Common.color.Blue);
+        switch (players.length) {
+            case 3:
+                identities.add(Common.color.Black);
+                identities.add(Common.color.Black);
+                identities.add(Common.color.Red);
+                identities.add(Common.color.Blue);
+            case 4:
+                identities.add(Common.color.Red);
+                identities.add(Common.color.Blue);
+                while (identities.size() > players.length)
+                    identities.remove(random.nextInt(identities.size()));
+                break;
+            default:
+                for (int i = 0; i < (players.length - 1) / 2; i++) {
+                    identities.add(Common.color.Red);
+                    identities.add(Common.color.Blue);
+                }
+                identities.add(Common.color.Black);
+                if (players.length % 2 == 0) identities.add(Common.color.Black);
         }
-        identities.add(Common.color.Black);
-        if (players.length % 2 == 0) identities.add(Common.color.Black);
         Collections.shuffle(identities, random);
-        List<Common.secret_task> tasks = new ArrayList<>(List.of(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector));
+        List<Common.secret_task> tasks = Arrays.asList(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector);
         Collections.shuffle(tasks, random);
         RoleSkillsData[] roleSkillsDataArray = Config.IsGmEnable
                 ? RoleCache.getRandomRolesWithSpecific(players.length, Config.DebugRoles)
@@ -129,6 +147,10 @@ public final class Game {
 
     public Player[] getPlayers() {
         return players;
+    }
+
+    public void setPlayers(Player[] players) {
+        this.players = players;
     }
 
     public Deck getDeck() {
