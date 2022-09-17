@@ -100,6 +100,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         HumanPlayer player = playerCache.get(ctx.channel().id().asLongText());
         ProtoHandler handler = protoInfo.handler();
         if (handler != null) handler.handle(player, message);
+        else log.warn("message: " + protoInfo.name() + " doesn't have a handler");
     }
 
     public static void exchangePlayer(HumanPlayer oldPlayer, HumanPlayer newPlayer) {
