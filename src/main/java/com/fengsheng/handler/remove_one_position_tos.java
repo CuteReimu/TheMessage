@@ -32,7 +32,7 @@ public class remove_one_position_tos extends AbstractProtoHandler<Fengsheng.remo
             }
             for (Player p : players)
                 if (p == null) return;
-            log.info(player + "已满" + players.length + "个人，游戏开始。。。");
+            log.info("已满" + players.length + "个人，游戏开始。。。");
             player.getGame().setStarted(true);
             GameExecutor.post(player.getGame(), player.getGame()::start);
             Game.newInstance();
