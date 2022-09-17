@@ -1,6 +1,9 @@
 package com.fengsheng.network;
 
-import com.fengsheng.*;
+import com.fengsheng.Game;
+import com.fengsheng.GameExecutor;
+import com.fengsheng.HumanPlayer;
+import com.fengsheng.Player;
 import com.fengsheng.handler.ProtoHandler;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.protos.Role;
@@ -28,7 +31,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
 
     private static final Map<Short, ProtoInfo> ProtoInfoMap = new HashMap<>();
 
-    private final ConcurrentMap<String, HumanPlayer> playerCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, HumanPlayer> playerCache = new ConcurrentHashMap<>();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -54,16 +57,11 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         synchronized (Game.class) {
             if (game.isStarted()) {
                 GameExecutor.post(game, () -> {
-                    boolean hasHumanPlayer = false;
                     for (Player p : game.getPlayers()) {
-                        if (p != player && p instanceof HumanPlayer) {
-                            hasHumanPlayer = true;
-                            break;
-                        }
+                        if (p instanceof HumanPlayer humanPlayer && humanPlayer.isActive())
+                            return;
                     }
-                    player.saveRecord(false);
-                    game.getPlayers()[player.location()] = new RobotPlayer(player);
-                    if (!hasHumanPlayer) game.end();
+                    game.end();
                 });
             } else {
                 game.getPlayers()[player.location()] = null;
@@ -102,6 +100,14 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         HumanPlayer player = playerCache.get(ctx.channel().id().asLongText());
         ProtoHandler handler = protoInfo.handler();
         if (handler != null) handler.handle(player, message);
+    }
+
+    public static void exchangePlayer(HumanPlayer oldPlayer, HumanPlayer newPlayer) {
+        oldPlayer.getChannel().close();
+        oldPlayer.setChannel(newPlayer.getChannel());
+        if (playerCache.put(newPlayer.getChannel().id().asLongText(), oldPlayer) == null) {
+            log.error("channel [id: " + newPlayer.getChannel().id().asLongText() + "] not exists");
+        }
     }
 
     static {

@@ -21,12 +21,13 @@ import java.util.concurrent.TimeUnit;
 public final class Game {
     private static final Logger log = Logger.getLogger(Game.class);
     public static final ConcurrentMap<Integer, Game> GameCache = new ConcurrentHashMap<>();
+    public static final ConcurrentMap<String, HumanPlayer> deviceCache = new ConcurrentHashMap<>();
     private static int increaseId = 0;
     private static Game newGame;
 
     private final int id;
     private volatile boolean started;
-    private boolean ended;
+    private volatile boolean ended;
     private Player[] players;
     private final Deck deck = new Deck(this);
     private Fsm fsm;
@@ -137,8 +138,12 @@ public final class Game {
     public void end() {
         ended = true;
         GameCache.remove(id);
-        for (Player p : players)
-            if (p instanceof HumanPlayer) ((HumanPlayer) p).saveRecord(true);
+        for (Player p : players) {
+            if (p instanceof HumanPlayer humanPlayer) {
+                humanPlayer.saveRecord(true);
+                deviceCache.remove(humanPlayer.getDevice());
+            }
+        }
     }
 
     int getId() {

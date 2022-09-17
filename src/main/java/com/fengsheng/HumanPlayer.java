@@ -24,13 +24,15 @@ public class HumanPlayer extends AbstractPlayer {
     private static final Logger log = Logger.getLogger(HumanPlayer.class);
     private static final TextFormat.Printer printer = TextFormat.printer().escapingNonAscii(false);
 
-    private final Channel channel;
+    private Channel channel;
 
     private int seq;
 
     private Timeout timeout;
 
     private final Recorder recorder = new Recorder();
+
+    private String device;
 
     public HumanPlayer(Channel channel) {
         this.channel = channel;
@@ -72,11 +74,31 @@ public class HumanPlayer extends AbstractPlayer {
         return recorder.loading();
     }
 
+    public void reconnect() {
+        recorder.reconnect(this);
+    }
+
     /**
      * Return {@code true} if the {@link Channel} of the {@code HumanPlayer} is active and so connected.
      */
     public boolean isActive() {
         return channel.isActive();
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public String getDevice() {
+        return device;
+    }
+
+    public void setDevice(String device) {
+        this.device = device;
     }
 
     @Override

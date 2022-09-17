@@ -1,15 +1,14 @@
 package com.fengsheng.handler;
 
-import com.fengsheng.Config;
-import com.fengsheng.Game;
-import com.fengsheng.HumanPlayer;
-import com.fengsheng.Player;
+import com.fengsheng.*;
+import com.fengsheng.network.ProtoServerChannelHandler;
 import com.fengsheng.protos.Errcode;
 import com.fengsheng.protos.Fengsheng;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CountDownLatch;
 
 public class join_room_tos implements ProtoHandler {
     private static final Logger log = Logger.getLogger(join_room_tos.class);
@@ -28,6 +27,23 @@ public class join_room_tos implements ProtoHandler {
                     .addIntParams(Config.ClientVersion).build());
             return;
         }
+        String device = pb.getDevice();
+        HumanPlayer oldPlayer = Game.deviceCache.get(device);
+        if (oldPlayer != null && !oldPlayer.isActive() && oldPlayer.getGame() != null && oldPlayer.getGame().isStarted() && !oldPlayer.getGame().isEnd()) { // 断线重连
+            CountDownLatch cd = new CountDownLatch(1);
+            GameExecutor.post(oldPlayer.getGame(), () -> {
+                ProtoServerChannelHandler.exchangePlayer(oldPlayer, player);
+                cd.countDown();
+                oldPlayer.reconnect();
+            });
+            try {
+                cd.await();
+            } catch (InterruptedException e) {
+                log.error("thread " + Thread.currentThread().getId() + " interrupted");
+                Thread.currentThread().interrupt();
+            }
+            return;
+        }
         if (pb.getName().getBytes(StandardCharsets.UTF_8).length > 24) {
             player.send(Errcode.error_code_toc.newBuilder()
                     .setCode(Errcode.error_code.name_too_long).build());
@@ -38,6 +54,8 @@ public class join_room_tos implements ProtoHandler {
             if (Game.GameCache.size() > Config.MaxRoomCount) {
                 reply = Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.no_more_room).build();
             } else {
+                player.setDevice(pb.getDevice());
+                Game.deviceCache.putIfAbsent(pb.getDevice(), player);
                 String playerName = pb.getName();
                 player.setPlayerName(playerName.isBlank() ? Player.randPlayerName() : playerName);
                 player.setGame(Game.getInstance());

@@ -127,6 +127,11 @@ public class Recorder {
         }
     }
 
+    public void reconnect(HumanPlayer player) {
+        for (Record.recorder_line line : list)
+            player.send((short) line.getMessageId(), line.getMessageBuf().toByteArray());
+    }
+
     public boolean loading() {
         return loading;
     }
