@@ -69,7 +69,7 @@ public class PoYi extends AbstractCard {
                                 showAndDrawCard(false);
                                 r.getGame().resolve(sendPhase);
                             }
-                        }, builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
+                        }, p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
                     }
                     p.send(builder.build());
                 }

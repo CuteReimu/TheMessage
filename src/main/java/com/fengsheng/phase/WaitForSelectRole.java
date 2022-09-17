@@ -44,7 +44,7 @@ public class WaitForSelectRole implements WaitingFsm {
                 builder.addRoles(options[p.location()].getRole());
                 builder.setWaitingSecond(30);
                 p.send(builder.build());
-                GameExecutor.post(game, () -> game.tryContinueResolveProtocol(p, Fengsheng.select_role_tos.newBuilder().setRole(builder.getRoles(0)).build()), builder.getWaitingSecond() + 2, TimeUnit.SECONDS);
+                GameExecutor.post(game, () -> game.tryContinueResolveProtocol(p, Fengsheng.select_role_tos.newBuilder().setRole(builder.getRoles(0)).build()), p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS);
             } else {
                 selected[player.location()] = options[player.location()];
                 player.setRoleSkillsData(selected[player.location()]);

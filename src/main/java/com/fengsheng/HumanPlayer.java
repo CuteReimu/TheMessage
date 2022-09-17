@@ -148,7 +148,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     game.resolve(new SendPhaseStart(player));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -168,7 +168,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     RobotPlayer.autoSendMessageCard(this, false);
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -212,7 +212,7 @@ public class HumanPlayer extends AbstractPlayer {
                     else
                         game.resolve(new MessageMoveNext(fsm));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -239,7 +239,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     game.resolve(new FightPhaseNext(fsm));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -268,7 +268,7 @@ public class HumanPlayer extends AbstractPlayer {
             timeout = GameExecutor.post(game, () -> {
                 if (checkSeq(seq2))
                     game.tryContinueResolveProtocol(this, Fengsheng.end_receive_phase_tos.newBuilder().setSeq(seq2).build());
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -319,7 +319,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     game.resolve(new WaitNextForChengQing((WaitForChengQing) game.getFsm()));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -337,7 +337,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     game.resolve(new AfterDieGiveCard((WaitForDieGiveCard) game.getFsm()));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -364,6 +364,10 @@ public class HumanPlayer extends AbstractPlayer {
             timeout.cancel();
             timeout = null;
         }
+    }
+
+    public int getWaitSeconds(int seconds) {
+        return isActive() ? seconds : 5;
     }
 
     @Override
