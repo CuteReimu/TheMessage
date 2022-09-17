@@ -5,7 +5,6 @@ import com.fengsheng.network.ProtoServerChannelHandler;
 import com.fengsheng.phase.*;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
-import com.fengsheng.skill.RoleSkillsData;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
@@ -103,12 +102,12 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray) {
-        super.init(identity, secretTask, roleSkillsData, roleSkillsDataArray);
+    public void init() {
+        super.init();
         var builder = Fengsheng.init_toc.newBuilder().setPlayerCount(game.getPlayers().length).setIdentity(identity).setSecretTask(secretTask);
         int l = location;
         do {
-            builder.addRoles(roleSkillsDataArray[l].isFaceUp() || l == location ? roleSkillsDataArray[l].getRole() : Common.role.unknown);
+            builder.addRoles(game.getPlayers()[l].isRoleFaceUp() || l == location ? game.getPlayers()[l].getRole() : Common.role.unknown);
             builder.addNames(game.getPlayers()[l].getPlayerName());
             l = (l + 1) % game.getPlayers().length;
         } while (l != location);

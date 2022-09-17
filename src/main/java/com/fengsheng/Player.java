@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public interface Player {
-    void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray);
+    void setRoleSkillsData(RoleSkillsData roleSkillsData);
+
+    void init();
 
     /**
      * 玩家停止计时器，并且seq值加一

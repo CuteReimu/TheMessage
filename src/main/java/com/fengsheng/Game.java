@@ -3,7 +3,7 @@ package com.fengsheng;
 import com.fengsheng.card.Card;
 import com.fengsheng.card.Deck;
 import com.fengsheng.network.Network;
-import com.fengsheng.phase.DrawPhase;
+import com.fengsheng.phase.WaitForSelectRole;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.RoleCache;
@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 
 public final class Game {
     private static final Logger log = Logger.getLogger(Game.class);
@@ -114,21 +113,17 @@ public final class Game {
         Collections.shuffle(identities, random);
         List<Common.secret_task> tasks = Arrays.asList(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector);
         Collections.shuffle(tasks, random);
-        RoleSkillsData[] roleSkillsDataArray = Config.IsGmEnable
-                ? RoleCache.getRandomRolesWithSpecific(players.length, Config.DebugRoles)
-                : RoleCache.getRandomRoles(players.length);
         int secretIndex = 0;
         for (int i = 0; i < players.length; i++) {
             var identity = identities.get(i);
             var task = identity == Common.color.Black ? tasks.get(secretIndex++) : Common.secret_task.forNumber(0);
-            players[i].init(identity, task, roleSkillsDataArray[i], roleSkillsDataArray);
+            players[i].setIdentity(identity);
+            players[i].setSecretTask(task);
         }
-        GameCache.put(id, this);
-        final int whoseTurn = random.nextInt(players.length);
-        for (int i = 0; i < players.length; i++) {
-            players[(whoseTurn + i) % players.length].draw(Config.HandCardCountBegin);
-        }
-        GameExecutor.post(this, () -> resolve(new DrawPhase(players[whoseTurn])), 1, TimeUnit.SECONDS);
+        RoleSkillsData[] roleSkillsDataArray = Config.IsGmEnable
+                ? RoleCache.getRandomRolesWithSpecific(players.length * 2, Config.DebugRoles)
+                : RoleCache.getRandomRoles(players.length * 2);
+        resolve(new WaitForSelectRole(this, roleSkillsDataArray));
     }
 
     public boolean isEnd() {
@@ -146,7 +141,7 @@ public final class Game {
         }
     }
 
-    int getId() {
+    public int getId() {
         return id;
     }
 

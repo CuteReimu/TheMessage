@@ -45,18 +45,15 @@ public abstract class AbstractPlayer implements Player {
         skillUseCount = player.skillUseCount;
     }
 
+    public void setRoleSkillsData(RoleSkillsData roleSkillsData) {
+        this.roleSkillsData = roleSkillsData != null ? new RoleSkillsData(roleSkillsData) : new RoleSkillsData();
+    }
+
     @Override
-    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray) {
+    public void init() {
         log.info(this + "的身份是" + Player.identityColorToString(identity, secretTask));
-        this.identity = identity;
-        this.secretTask = secretTask;
-        if (roleSkillsData != null) {
-            this.roleSkillsData = new RoleSkillsData(roleSkillsData);
-            for (Skill skill : roleSkillsData.getSkills()) {
-                if (skill instanceof TriggeredSkill s) s.init(game);
-            }
-        } else {
-            this.roleSkillsData = new RoleSkillsData();
+        for (Skill skill : roleSkillsData.getSkills()) {
+            if (skill instanceof TriggeredSkill s) s.init(game);
         }
     }
 
