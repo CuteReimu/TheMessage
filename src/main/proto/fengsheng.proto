@@ -66,6 +66,20 @@ message leave_room_toc {
   uint32 position = 1;
 }
 
+// 等待客户端选角色
+message wait_for_select_role_toc {
+  uint32        player_count = 1; // 玩家总人数（包括你）
+  color         identity = 2; // 你的身份
+  secret_task   secret_task = 3; // （你的身份是神秘人时）你的机密任务
+  repeated role roles = 4; // 发给你的角色
+  uint32        waiting_second = 5; // 读多少秒
+}
+
+// 选角色
+message select_role_tos {
+  role role = 1;
+}
+
 // 通知客户端：初始化游戏
 message init_toc {
   uint32          player_count = 1; // 玩家总人数（包括你）
