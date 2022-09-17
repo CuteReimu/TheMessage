@@ -50,8 +50,10 @@ public final class Config {
         } else {
             String[] debugRoles = debugRoleStr.split(",");
             debugRolesArr = new Common.role[debugRoles.length];
-            for (int i = 0; i < debugRolesArr.length; i++)
+            for (int i = 0; i < debugRolesArr.length; i++) {
                 debugRolesArr[i] = Common.role.forNumber(Integer.parseInt(debugRoles[i]));
+                if (debugRolesArr[i] == null) debugRolesArr[i] = Common.role.unknown;
+            }
         }
         DebugRoles = List.of(debugRolesArr);
         try (OutputStream out = new FileOutputStream("application.properties")) {
@@ -62,6 +64,6 @@ public final class Config {
     }
 
     private Config() {
-        
+
     }
 }
