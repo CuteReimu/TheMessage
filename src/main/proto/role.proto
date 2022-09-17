@@ -231,3 +231,46 @@ message skill_cheng_zhi_toc {
   uint32 die_player_id = 2; // 死亡角色
   bool   enable = 3; // 是否发动
 }
+
+// 广播使用【就计】A：你被【试探】【威逼】或【利诱】指定为目标后，你可以翻开此角色牌，然后摸两张牌。
+message skill_jiu_ji_a_toc {
+  uint32 player_id = 1;
+}
+
+// 广播使用【城府】：【试探】和【威逼】对你无效。
+message skill_cheng_fu_toc {
+  uint32 player_id = 1;
+  uint32 from_player_id = 2; // 使用那张牌的玩家
+  card   card = 3; // 使用的那张牌。因为肥原龙川可以视为使用了【威逼】，因此这个字段可能为空。
+  uint32 unknown_card_count = 4; // 如果是【试探】且结算后要被李宁玉拿走时，其他人将会看不到这张牌。
+}
+
+// 广播使用【就计】B：并在触发此技能的卡牌结算后，将其加入你的手牌。
+message skill_jiu_ji_b_toc {
+  uint32 player_id = 1;
+  card   card = 2; // 拿走的那张卡牌
+  uint32 unknown_card_count = 3; // 如果是【试探】且结算后要被李宁玉拿走时，其他人将会看不到这张牌。
+}
+
+// 广播询问客户端使用【遗信】
+message skill_wait_for_yi_xin_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 李宁玉【遗信】：你死亡前，可以将一张手牌置入另一名角色的情报区。
+message skill_yi_xin_tos {
+  bool   enable = 1; // 是否发动
+  uint32 target_player_id = 2;
+  uint32 card_id = 3;
+  uint32 seq = 4;
+}
+
+// 广播使用【遗信】
+message skill_yi_xin_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  uint32 card_id = 3;
+  bool   enable = 4; // 是否发动
+}

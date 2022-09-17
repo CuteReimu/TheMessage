@@ -72,7 +72,7 @@ public class JieHuo extends AbstractCard {
             return new ResolveResult(fsm, true);
         };
         if (card != null)
-            g.resolve(new OnUseCard(fsm.whoseTurn, r, card, r, resolveFunc));
+            g.resolve(new OnUseCard(fsm.whoseTurn, r, null, card, r, resolveFunc));
         else
             g.resolve(resolveFunc);
     }

@@ -5,6 +5,8 @@ import com.fengsheng.phase.MainPhaseIdle;
 import com.fengsheng.phase.OnUseCard;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
+import com.fengsheng.protos.Role;
+import com.fengsheng.skill.SkillId;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
@@ -74,6 +76,32 @@ public class WeiBi extends AbstractCard {
      */
     public static void execute(final WeiBi card, final Game g, final Player r, final Player target, final Common.card_type wantType) {
         Fsm resolveFunc = () -> {
+            if (target.isRoleFaceUp() && target.findSkill(SkillId.CHENG_FU) != null) {
+                log.info(target + "触发了[城府]，威逼无效");
+                for (Player player : g.getPlayers()) {
+                    if (player instanceof HumanPlayer p) {
+                        var builder = Role.skill_cheng_fu_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                        builder.setFromPlayerId(p.getAlternativeLocation(r.location()));
+                        if (card != null) builder.setCard(card.toPbCard());
+                        p.send(builder.build());
+                    }
+                }
+                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                    target.addSkillUseCount(SkillId.JIU_JI);
+                    target.addCard(card);
+                    log.info(target + "将使用的" + card + "加入了手牌");
+                    for (Player player : g.getPlayers()) {
+                        if (player instanceof HumanPlayer p) {
+                            var builder = Role.skill_jiu_ji_b_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                            if (card != null) builder.setCard(card.toPbCard());
+                            p.send(builder.build());
+                        }
+                    }
+                } else if (card != null) {
+                    g.getDeck().discard(card);
+                }
+                return new ResolveResult(new MainPhaseIdle(r), true);
+            }
             if (hasCard(target, wantType)) {
                 return new ResolveResult(new executeWeiBi(r, target, card, wantType), true);
             } else {
@@ -97,7 +125,7 @@ public class WeiBi extends AbstractCard {
             }
         };
         if (card != null)
-            g.resolve(new OnUseCard(r, r, card, r, resolveFunc));
+            g.resolve(new OnUseCard(r, r, target, card, r, resolveFunc));
         else
             g.resolve(resolveFunc);
     }

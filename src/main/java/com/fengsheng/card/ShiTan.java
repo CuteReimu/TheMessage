@@ -5,6 +5,8 @@ import com.fengsheng.phase.MainPhaseIdle;
 import com.fengsheng.phase.OnUseCard;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
+import com.fengsheng.protos.Role;
+import com.fengsheng.skill.SkillId;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
@@ -56,6 +58,38 @@ public class ShiTan extends AbstractCard {
         log.info(r + "对" + target + "使用了" + this);
         r.deleteCard(this.id);
         Fsm resolveFunc = () -> {
+            if (target.isRoleFaceUp() && target.findSkill(SkillId.CHENG_FU) != null) {
+                log.info(target + "触发了[城府]，试探无效");
+                for (Player player : g.getPlayers()) {
+                    if (player instanceof HumanPlayer p) {
+                        var builder = Role.skill_cheng_fu_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                        builder.setFromPlayerId(p.getAlternativeLocation(r.location()));
+                        if (p.equals(r) || p.equals(target) || target.getSkillUseCount(SkillId.JIU_JI) != 1)
+                            builder.setCard(this.toPbCard());
+                        else
+                            builder.setUnknownCardCount(1);
+                        p.send(builder.build());
+                    }
+                }
+                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                    target.addSkillUseCount(SkillId.JIU_JI);
+                    target.addCard(this);
+                    log.info(target + "将使用的" + this + "加入了手牌");
+                    for (Player player : g.getPlayers()) {
+                        if (player instanceof HumanPlayer p) {
+                            var builder = Role.skill_jiu_ji_b_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                            if (p.equals(r) || p.equals(target))
+                                builder.setCard(this.toPbCard());
+                            else
+                                builder.setUnknownCardCount(1);
+                            p.send(builder.build());
+                        }
+                    }
+                } else {
+                    g.getDeck().discard(this);
+                }
+                return new ResolveResult(new MainPhaseIdle(r), true);
+            }
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player) {
                     var builder = Fengsheng.use_shi_tan_toc.newBuilder();
@@ -67,7 +101,7 @@ public class ShiTan extends AbstractCard {
             }
             return new ResolveResult(new executeShiTan(r, target, this), true);
         };
-        g.resolve(new OnUseCard(r, r, this, r, resolveFunc));
+        g.resolve(new OnUseCard(r, r, target, this, r, resolveFunc));
     }
 
     private boolean checkDrawCard(Player target) {

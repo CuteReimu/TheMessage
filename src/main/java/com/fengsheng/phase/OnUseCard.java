@@ -14,6 +14,10 @@ public class OnUseCard implements Fsm {
      */
     public Player whoseTurn;
     /**
+     * 目标角色
+     */
+    public Player targetPlayer;
+    /**
      * 出牌的人
      */
     public Player player;
@@ -30,9 +34,10 @@ public class OnUseCard implements Fsm {
      */
     public Fsm resolveFunc;
 
-    public OnUseCard(Player whoseTurn, Player player, Card card, Player askWhom, Fsm resolveFunc) {
+    public OnUseCard(Player whoseTurn, Player player, Player targetPlayer, Card card, Player askWhom, Fsm resolveFunc) {
         this.whoseTurn = whoseTurn;
         this.player = player;
+        this.targetPlayer = targetPlayer;
         this.card = card;
         this.askWhom = askWhom;
         this.resolveFunc = resolveFunc;

@@ -66,7 +66,7 @@ public class PingHeng extends AbstractCard {
             g.getDeck().discard(this);
             return new ResolveResult(new MainPhaseIdle(r), true);
         };
-        g.resolve(new OnUseCard(r, r, this, r, resolveFunc));
+        g.resolve(new OnUseCard(r, r, target, this, r, resolveFunc));
     }
 
     @Override

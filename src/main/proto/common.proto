@@ -17,6 +17,7 @@ enum role {
   lao_han = 24; // 老汉
   bai_xiao_nian = 25; // 白小年
   lao_bie = 26; // 老鳖
+  li_ning_yu = 28; // 李宁玉
 }
 
 enum phase {

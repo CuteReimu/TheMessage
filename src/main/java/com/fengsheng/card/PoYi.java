@@ -46,7 +46,7 @@ public class PoYi extends AbstractCard {
         log.info(r + "使用了" + this);
         r.deleteCard(this.id);
         Fsm resolveFunc = () -> new ResolveResult(new executePoYi(this, fsm), true);
-        g.resolve(new OnUseCard(r, r, this, r, resolveFunc));
+        g.resolve(new OnUseCard(r, r, null, this, r, resolveFunc));
     }
 
     private record executePoYi(PoYi card, SendPhaseIdle sendPhase) implements WaitingFsm {
