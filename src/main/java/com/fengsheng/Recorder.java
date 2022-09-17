@@ -112,7 +112,7 @@ public class Recorder {
                 break;
             }
             Record.recorder_line line = list.get(currentIndex);
-            player.send((short) line.getMessageId(), line.getMessageBuf().toByteArray());
+            player.send((short) line.getMessageId(), line.getMessageBuf().toByteArray(), true);
             if (++currentIndex >= list.size()) {
                 player.send(Fengsheng.display_record_end_toc.getDefaultInstance());
                 list = new ArrayList<>();
@@ -128,8 +128,10 @@ public class Recorder {
     }
 
     public void reconnect(HumanPlayer player) {
-        for (Record.recorder_line line : list)
-            player.send((short) line.getMessageId(), line.getMessageBuf().toByteArray());
+        for (int i = 0; i < list.size(); i++) {
+            var line = list.get(i);
+            player.send((short) line.getMessageId(), line.getMessageBuf().toByteArray(), i == list.size() - 1);
+        }
     }
 
     public boolean loading() {

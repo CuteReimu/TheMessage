@@ -45,18 +45,19 @@ public class HumanPlayer extends AbstractPlayer {
         byte[] buf = message.toByteArray();
         final String name = message.getDescriptorForType().getName();
         short id = ProtoServerChannelHandler.stringHash(name);
-        send(id, buf);
         recorder.add(id, buf);
+        if (isActive()) send(id, buf, true);
         log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
                 printer.printToString(message).replaceAll("\n *", " ")));
     }
 
-    public void send(short id, byte[] buf) {
+    public void send(short id, byte[] buf, boolean flush) {
         ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.ioBuffer(buf.length + 4, buf.length + 4);
         byteBuf.writeShortLE(buf.length + 2);
         byteBuf.writeShortLE(id);
         byteBuf.writeBytes(buf);
-        channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) future -> {
+        var f = flush ? channel.writeAndFlush(byteBuf) : channel.write(byteBuf);
+        f.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess())
                 log.error("send@%s failed, id: %d, len: %d".formatted(channel.id().asShortText(), id, buf.length));
         });
