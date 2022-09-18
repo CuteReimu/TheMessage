@@ -196,7 +196,8 @@ public class WeiBi extends AbstractCard {
                     var builder = Fengsheng.wei_bi_give_card_toc.newBuilder();
                     builder.setPlayerId(player.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(player.getAlternativeLocation(target.location()));
-                    player.send(builder.setCard(c.toPbCard()).build());
+                    if (p == r || p == target) builder.setCard(c.toPbCard());
+                    player.send(builder.build());
                 }
             }
             if (card != null) r.getGame().getDeck().discard(card);
