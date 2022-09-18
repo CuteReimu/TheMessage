@@ -42,7 +42,7 @@ public final class Game {
      * 不是线程安全的
      */
     public static void newInstance() {
-        newGame = new Game(Math.max(newGame.getPlayers().length, 5));
+        newGame = new Game(Math.max(newGame != null ? newGame.getPlayers().length : 0, Config.TotalPlayerCount));
     }
 
     /**
