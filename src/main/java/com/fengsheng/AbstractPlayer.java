@@ -32,19 +32,6 @@ public abstract class AbstractPlayer implements Player {
         skillUseCount = new EnumMap<>(SkillId.class);
     }
 
-    protected AbstractPlayer(AbstractPlayer player) {
-        game = player.game;
-        playerName = player.playerName;
-        cards = player.cards;
-        messageCards = player.messageCards;
-        location = player.location;
-        identity = player.identity;
-        secretTask = player.secretTask;
-        aliveInfo = player.aliveInfo;
-        roleSkillsData = player.roleSkillsData;
-        skillUseCount = player.skillUseCount;
-    }
-
     public void setRoleSkillsData(RoleSkillsData roleSkillsData) {
         this.roleSkillsData = roleSkillsData != null ? new RoleSkillsData(roleSkillsData) : new RoleSkillsData();
     }
@@ -324,6 +311,11 @@ public abstract class AbstractPlayer implements Player {
             if (game.getPlayers()[right].isAlive()) break;
         }
         return game.getPlayers()[right];
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override

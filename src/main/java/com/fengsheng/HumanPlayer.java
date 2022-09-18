@@ -371,6 +371,16 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
     public String toString() {
         return location + "号[" + (isRoleFaceUp() ? getRoleName() : "玩家") + "]";
     }

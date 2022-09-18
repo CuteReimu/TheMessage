@@ -16,21 +16,17 @@ public class RobotPlayer extends AbstractPlayer {
     private static final Logger log = Logger.getLogger(RobotPlayer.class);
 
     public RobotPlayer() {
-
-    }
-
-    public RobotPlayer(AbstractPlayer player) {
-        super(player);
+        // Do nothing
     }
 
     @Override
     public void notifyAddHandCard(int location, int unknownCount, Card... cards) {
-
+        // Do nothing
     }
 
     @Override
     public void notifyDrawPhase() {
-
+        // Do nothing
     }
 
     @Override
@@ -59,7 +55,7 @@ public class RobotPlayer extends AbstractPlayer {
     }
 
     public void notifySendMessageCard(Player player, Player targetPlayer, Player[] lockedPlayers, Card messageCard, Common.direction direction) {
-
+        // Do nothing
     }
 
     @Override
@@ -84,7 +80,7 @@ public class RobotPlayer extends AbstractPlayer {
 
     @Override
     public void notifyChooseReceiveCard(Player player) {
-
+        // Do nothing
     }
 
     @Override
@@ -104,7 +100,7 @@ public class RobotPlayer extends AbstractPlayer {
 
     @Override
     public void notifyReceivePhase() {
-
+        // Do nothing
     }
 
     @Override
@@ -116,7 +112,7 @@ public class RobotPlayer extends AbstractPlayer {
 
     @Override
     public void notifyWin(Player[] declareWinners, Player[] winners) {
-
+        // Do nothing
     }
 
     @Override

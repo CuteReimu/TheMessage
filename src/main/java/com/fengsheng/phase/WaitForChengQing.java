@@ -5,8 +5,8 @@ import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
 import org.apache.log4j.Logger;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class WaitForChengQing implements Fsm {
     private static final Logger log = Logger.getLogger(WaitForChengQing.class);
@@ -26,7 +26,7 @@ public class WaitForChengQing implements Fsm {
     /**
      * 结算濒死的顺序
      */
-    public LinkedList<Player> dyingQueue;
+    public Queue<Player> dyingQueue;
     /**
      * 死亡的顺序
      */
@@ -36,7 +36,7 @@ public class WaitForChengQing implements Fsm {
      */
     public Fsm afterDieResolve;
 
-    public WaitForChengQing(Player whoseTurn, Player whoDie, Player askWhom, LinkedList<Player> dyingQueue, List<Player> diedQueue, Fsm afterDieResolve) {
+    public WaitForChengQing(Player whoseTurn, Player whoDie, Player askWhom, Queue<Player> dyingQueue, List<Player> diedQueue, Fsm afterDieResolve) {
         this.whoseTurn = whoseTurn;
         this.whoDie = whoDie;
         this.askWhom = askWhom;
