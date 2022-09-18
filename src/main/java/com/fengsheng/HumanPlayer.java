@@ -62,8 +62,8 @@ public class HumanPlayer extends AbstractPlayer {
         });
     }
 
-    public void saveRecord(boolean notify) {
-        recorder.save(game, this, notify);
+    public void saveRecord() {
+        recorder.save(game, this, channel.isActive());
     }
 
     public void loadRecord(int version, String recordId) {

@@ -35,7 +35,7 @@ public class Recorder {
                     .setMessageBuf(ByteString.copyFrom(messageBuf)).build());
     }
 
-    public void save(Game g, final HumanPlayer p, boolean notify) {
+    public void save(Game g, final HumanPlayer p, final boolean notify) {
         if (list.isEmpty()) return;
         Date now = new Date();
         LocalDateTime localDateTime = now.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();

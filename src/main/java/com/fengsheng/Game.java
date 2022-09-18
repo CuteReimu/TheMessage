@@ -135,7 +135,7 @@ public final class Game {
         GameCache.remove(id);
         for (Player p : players) {
             if (p instanceof HumanPlayer humanPlayer) {
-                humanPlayer.saveRecord(true);
+                humanPlayer.saveRecord();
                 deviceCache.remove(humanPlayer.getDevice());
             }
         }
