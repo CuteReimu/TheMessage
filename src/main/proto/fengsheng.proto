@@ -80,6 +80,11 @@ message select_role_tos {
   role role = 1;
 }
 
+// 通知客户端选角色成功了
+message select_role_toc {
+  role role = 1;
+}
+
 // 通知客户端：初始化游戏
 message init_toc {
   uint32          player_count = 1; // 玩家总人数（包括你）

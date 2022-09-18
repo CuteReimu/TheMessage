@@ -68,6 +68,8 @@ public class WaitForSelectRole implements WaitingFsm {
         }
         selected[p.location()] = pb.getRole() == role1 ? options[p.location()] : options[p.location() + game.getPlayers().length];
         p.setRoleSkillsData(selected[p.location()]);
+        if (p instanceof HumanPlayer humanPlayer)
+            humanPlayer.send(Fengsheng.select_role_toc.newBuilder().setRole(selected[p.location()].getRole()).build());
         for (var role : selected)
             if (role == null) return null;
         return new ResolveResult(new StartGame(game), true);
