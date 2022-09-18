@@ -379,9 +379,4 @@ public class HumanPlayer extends AbstractPlayer {
     public boolean equals(Object obj) {
         return super.equals(obj);
     }
-
-    @Override
-    public String toString() {
-        return location + "号[" + (isRoleFaceUp() ? getRoleName() : "玩家") + "]";
-    }
 }

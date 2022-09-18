@@ -208,11 +208,6 @@ public class RobotPlayer extends AbstractPlayer {
                 lockedPlayer == null ? new Player[0] : new Player[]{lockedPlayer}));
     }
 
-    @Override
-    public String toString() {
-        return location + "号[" + (isRoleFaceUp() ? getRoleName() : "机器人") + "]";
-    }
-
     private static final EnumMap<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>> aiSkillMainPhase = new EnumMap<>(SkillId.class);
     private static final EnumMap<Common.card_type, BiPredicate<MainPhaseIdle, Card>> aiMainPhase = new EnumMap<>(Common.card_type.class);
     private static final EnumMap<Common.card_type, BiPredicate<SendPhaseIdle, Card>> aiSendPhase = new EnumMap<>(Common.card_type.class);

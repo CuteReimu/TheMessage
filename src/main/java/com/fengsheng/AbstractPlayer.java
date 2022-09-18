@@ -324,6 +324,11 @@ public abstract class AbstractPlayer implements Player {
         return game == p.getGame() && location == p.location();
     }
 
+    @Override
+    public String toString() {
+        return location + "号[" + getRoleName() + (isRoleFaceUp() ? "" : "(隐)") + "]";
+    }
+
     private static class AliveInfo {
         boolean alive = true;
         boolean lose = false;
