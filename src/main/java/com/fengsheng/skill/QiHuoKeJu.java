@@ -9,6 +9,8 @@ import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 毛不拔技能【奇货可居】：你接收双色情报后，可以从你的情报区选择一张情报加入手牌。
  */
@@ -94,7 +96,7 @@ public class QiHuoKeJu extends AbstractSkill implements TriggeredSkill {
         Player p = fsm.fsm().inFrontOfWhom();
         for (Card card : p.getMessageCards().values()) {
             if (card.getColors().contains(Common.color.Black)) {
-                p.getGame().tryContinueResolveProtocol(p, Role.skill_qi_huo_ke_ju_tos.newBuilder().setCardId(card.getId()).build());
+                GameExecutor.post(p.getGame(), () -> p.getGame().tryContinueResolveProtocol(p, Role.skill_qi_huo_ke_ju_tos.newBuilder().setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
                 return true;
             }
         }

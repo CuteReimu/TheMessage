@@ -9,6 +9,8 @@ import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 邵秀技能【绵里藏针】：你传出的情报被接收后，可以将一张黑色手牌置入接收者的情报区，然后摸一张牌。
  */
@@ -103,7 +105,7 @@ public class MianLiCangZhen extends AbstractSkill implements TriggeredSkill {
         if (p == fsm.fsm().inFrontOfWhom) return false;
         for (Card card : p.getCards().values()) {
             if (card.getColors().contains(Common.color.Black)) {
-                p.getGame().tryContinueResolveProtocol(p, Role.skill_mian_li_cang_zhen_tos.newBuilder().setCardId(card.getId()).build());
+                GameExecutor.post(p.getGame(), () -> p.getGame().tryContinueResolveProtocol(p, Role.skill_mian_li_cang_zhen_tos.newBuilder().setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
                 return true;
             }
         }

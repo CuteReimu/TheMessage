@@ -9,6 +9,8 @@ import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 金生火技能【谨慎】：你接收双色情报后，可以用一张手牌与该情报面朝上互换。
  */
@@ -98,7 +100,7 @@ public class JinShen extends AbstractSkill implements TriggeredSkill {
         Player p = fsm.fsm().inFrontOfWhom();
         for (Card card : p.getCards().values()) {
             if (!card.getColors().contains(Common.color.Black)) {
-                p.getGame().tryContinueResolveProtocol(p, Role.skill_jin_shen_tos.newBuilder().setCardId(card.getId()).build());
+                GameExecutor.post(p.getGame(), () -> p.getGame().tryContinueResolveProtocol(p, Role.skill_jin_shen_tos.newBuilder().setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
                 return true;
             }
         }
