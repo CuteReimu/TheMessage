@@ -36,6 +36,7 @@ public class Recorder {
     }
 
     public void save(Game g, final HumanPlayer p, boolean notify) {
+        if (list.isEmpty()) return;
         Date now = new Date();
         LocalDateTime localDateTime = now.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         String timeStr = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
