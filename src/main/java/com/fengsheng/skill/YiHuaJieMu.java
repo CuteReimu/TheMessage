@@ -103,6 +103,7 @@ public class YiHuaJieMu extends AbstractSkill implements ActiveSkill {
                 break;
             }
         }
+        if (blackCard == null) return false;
         final Card targetCard = blackCard;
         Player target = e.whoseTurn;
         if (p.getIdentity() == Common.color.Black || p.getIdentity() != target.getIdentity()) {
