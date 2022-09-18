@@ -105,7 +105,7 @@ public class YiXin extends AbstractSkill implements TriggeredSkill {
             r.deleteCard(card.getId());
             target.addMessageCard(card);
             fsm.receiveOrder.addPlayerIfHasThreeBlack(target);
-            log.info(r + "讲" + card + "放置在" + target + "面前");
+            log.info(r + "将" + card + "放置在" + target + "面前");
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player1)
                     player1.send(Role.skill_yi_xin_toc.newBuilder().setEnable(true).setCardId(card.getId())
