@@ -3,6 +3,7 @@ package com.fengsheng.skill;
 import com.fengsheng.*;
 import com.fengsheng.card.Card;
 import com.fengsheng.phase.DieSkill;
+import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
@@ -55,8 +56,15 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
                     p.send(builder.build());
                 }
             }
-            if (r instanceof RobotPlayer)
+            if (r instanceof RobotPlayer) {
+                for (Card card : r.getMessageCards().values()) {
+                    if (card.getColors().contains(Common.color.Black)) {
+                        GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(true).setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
+                        return null;
+                    }
+                }
                 GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(false).build()), 2, TimeUnit.SECONDS);
+            }
             return null;
         }
 

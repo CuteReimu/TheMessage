@@ -3,6 +3,7 @@ package com.fengsheng.skill;
 import com.fengsheng.*;
 import com.fengsheng.card.Card;
 import com.fengsheng.phase.ReceivePhaseReceiverSkill;
+import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
@@ -89,5 +90,18 @@ public class JinShen extends AbstractSkill implements TriggeredSkill {
             }
             return new ResolveResult(fsm, true);
         }
+    }
+
+    public static boolean ai(Fsm fsm0) {
+        if (!(fsm0 instanceof executeJinShen fsm))
+            return false;
+        Player p = fsm.fsm().inFrontOfWhom();
+        for (Card card : p.getCards().values()) {
+            if (!card.getColors().contains(Common.color.Black)) {
+                p.getGame().tryContinueResolveProtocol(p, Role.skill_jin_shen_tos.newBuilder().setCardId(card.getId()).build());
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -94,7 +94,6 @@ message skill_ji_song_toc {
 // 邵秀【绵里藏针】：你传出的情报被接收后，可以将一张黑色手牌置入接收者的情报区，然后摸一张牌。
 message skill_mian_li_cang_zhen_tos {
   uint32 card_id = 1;
-  uint32 target_player_id = 2;
   uint32 seq = 3;
 }
 

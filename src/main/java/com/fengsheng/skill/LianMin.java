@@ -104,4 +104,20 @@ public class LianMin extends AbstractSkill implements TriggeredSkill {
             return new ResolveResult(fsm, true);
         }
     }
+
+    public static boolean ai(Fsm fsm0) {
+        if (!(fsm0 instanceof executeLianMin fsm))
+            return false;
+        Player p = fsm.fsm().whoseTurn;
+        for (Player target : new Player[]{p, fsm.fsm().inFrontOfWhom}) {
+            for (Card card : target.getMessageCards().values()) {
+                if (card.getColors().contains(Common.color.Black)) {
+                    p.getGame().tryContinueResolveProtocol(p, Role.skill_lian_min_tos.newBuilder().setCardId(card.getId())
+                            .setTargetPlayerId(p.getAlternativeLocation(target.location())).build());
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

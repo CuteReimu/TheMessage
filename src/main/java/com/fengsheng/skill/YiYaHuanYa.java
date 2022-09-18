@@ -106,4 +106,18 @@ public class YiYaHuanYa extends AbstractSkill implements TriggeredSkill {
             return new ResolveResult(fsm, true);
         }
     }
+
+    public static boolean ai(Fsm fsm0) {
+        if (!(fsm0 instanceof executeYiYaHuanYa fsm))
+            return false;
+        Player p = fsm.fsm().inFrontOfWhom();
+        for (Card card : p.getCards().values()) {
+            if (card.getColors().contains(Common.color.Black)) {
+                p.getGame().tryContinueResolveProtocol(p, Role.skill_yi_ya_huan_ya_tos.newBuilder().setCardId(card.getId())
+                        .setTargetPlayerId(p.getAlternativeLocation(fsm.fsm().whoseTurn().location())).build());
+                return true;
+            }
+        }
+        return false;
+    }
 }

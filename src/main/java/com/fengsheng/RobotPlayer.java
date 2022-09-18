@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 public class RobotPlayer extends AbstractPlayer {
     private static final Logger log = Logger.getLogger(RobotPlayer.class);
@@ -106,7 +107,10 @@ public class RobotPlayer extends AbstractPlayer {
     @Override
     public void notifyReceivePhase(Player whoseTurn, Player inFrontOfWhom, Card messageCard, Player waitingPlayer, int waitSecond) {
         if (waitingPlayer != this) return;
-        // TODO 需要增加AI
+        for (Skill skill : getSkills()) {
+            var ai = aiSkillReceivePhase.get(skill.getSkillId());
+            if (ai != null && ai.test(game.getFsm())) return;
+        }
         GameExecutor.TimeWheel.newTimeout(timeout -> game.tryContinueResolveProtocol(this, Fengsheng.end_receive_phase_tos.getDefaultInstance()), 2, TimeUnit.SECONDS);
     }
 
@@ -214,12 +218,18 @@ public class RobotPlayer extends AbstractPlayer {
     private static final EnumMap<Common.card_type, BiPredicate<SendPhaseIdle, Card>> aiSendPhase = new EnumMap<>(Common.card_type.class);
     private static final EnumMap<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>> aiSkillFightPhase = new EnumMap<>(SkillId.class);
     private static final EnumMap<Common.card_type, BiPredicate<FightPhaseIdle, Card>> aiFightPhase = new EnumMap<>(Common.card_type.class);
+    private static final EnumMap<SkillId, Predicate<Fsm>> aiSkillReceivePhase = new EnumMap<>(SkillId.class);
 
     static {
         aiSkillMainPhase.put(SkillId.XIN_SI_CHAO, XinSiChao::ai);
         aiSkillMainPhase.put(SkillId.GUI_ZHA, GuiZha::ai);
         aiSkillFightPhase.put(SkillId.TOU_TIAN, TouTian::ai);
         aiSkillFightPhase.put(SkillId.JI_ZHI, JiZhi::ai);
+        aiSkillFightPhase.put(SkillId.YI_HUA_JIE_MU, YiHuaJieMu::ai);
+        aiSkillReceivePhase.put(SkillId.JIN_SHEN, JinShen::ai);
+        aiSkillReceivePhase.put(SkillId.LIAN_MIN, LianMin::ai);
+        aiSkillReceivePhase.put(SkillId.MIAN_LI_CANG_ZHEN, MianLiCangZhen::ai);
+        aiSkillReceivePhase.put(SkillId.YI_YA_HUAN_YA, YiYaHuanYa::ai);
         aiMainPhase.put(Common.card_type.Cheng_Qing, ChengQing::ai);
         aiMainPhase.put(Common.card_type.Li_You, LiYou::ai);
         aiMainPhase.put(Common.card_type.Ping_Heng, PingHeng::ai);

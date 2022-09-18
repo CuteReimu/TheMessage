@@ -1,6 +1,7 @@
 package com.fengsheng.skill;
 
 import com.fengsheng.Game;
+import com.fengsheng.GameExecutor;
 import com.fengsheng.HumanPlayer;
 import com.fengsheng.Player;
 import com.fengsheng.card.Card;
@@ -9,6 +10,8 @@ import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * 韩梅技能【移花接木】：争夺阶段，你可以翻开此角色牌，然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情牌加入你的手牌。
@@ -87,5 +90,34 @@ public class YiHuaJieMu extends AbstractSkill implements ActiveSkill {
         }
         fsm.whoseFightTurn = fsm.inFrontOfWhom;
         g.continueResolve();
+    }
+
+    public static boolean ai(FightPhaseIdle e, final ActiveSkill skill) {
+        Player p = e.whoseFightTurn;
+        if (p.isRoleFaceUp())
+            return false;
+        Card blackCard = null;
+        for (Card card : p.getMessageCards().values()) {
+            if (card.getColors().size() == 1 && card.getColors().get(0) == Common.color.Black) {
+                blackCard = card;
+                break;
+            }
+        }
+        final Card targetCard = blackCard;
+        Player target = e.whoseTurn;
+        if (p.getIdentity() == Common.color.Black || p.getIdentity() != target.getIdentity()) {
+            int black = 0;
+            for (Card card : target.getMessageCards().values()) {
+                if (card.getColors().contains(Common.color.Black)) black++;
+            }
+            if (black < 2) {
+                GameExecutor.post(e.whoseFightTurn.getGame(), () -> skill.executeProtocol(
+                        e.whoseFightTurn.getGame(), e.whoseFightTurn, Role.skill_yi_hua_jie_mu_tos.newBuilder().setCardId(targetCard.getId())
+                                .setFromPlayerId(0).setToPlayerId(p.getAlternativeLocation(target.location())).build()
+                ), 2, TimeUnit.SECONDS);
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -75,11 +75,7 @@ public class MianLiCangZhen extends AbstractSkill implements TriggeredSkill {
                 log.error("你选择的不是黑色手牌");
                 return null;
             }
-            if (pb.getTargetPlayerId() < 0 || pb.getTargetPlayerId() >= r.getGame().getPlayers().length) {
-                log.error("目标错误");
-                return null;
-            }
-            Player target = r.getGame().getPlayers()[r.getAbstractLocation(pb.getTargetPlayerId())];
+            Player target = fsm.inFrontOfWhom;
             if (!target.isAlive()) {
                 log.error("目标已死亡");
                 return null;
@@ -98,5 +94,18 @@ public class MianLiCangZhen extends AbstractSkill implements TriggeredSkill {
             r.draw(1);
             return new ResolveResult(fsm, true);
         }
+    }
+
+    public static boolean ai(Fsm fsm0) {
+        if (!(fsm0 instanceof executeMianLiCangZhen fsm))
+            return false;
+        Player p = fsm.fsm().whoseTurn;
+        for (Card card : p.getCards().values()) {
+            if (card.getColors().contains(Common.color.Black)) {
+                p.getGame().tryContinueResolveProtocol(p, Role.skill_mian_li_cang_zhen_tos.newBuilder().setCardId(card.getId()).build());
+                return true;
+            }
+        }
+        return false;
     }
 }
