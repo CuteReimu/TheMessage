@@ -35,7 +35,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
                 break;
             }
         }
-        if (whoseTurn.equals(killer)) {
+        if (whoseTurn == killer) {
             for (Player whoDie : diedQueue) {
                 int count = 0;
                 for (Card card : whoDie.getMessageCards().values()) {

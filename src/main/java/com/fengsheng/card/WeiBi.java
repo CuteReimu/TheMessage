@@ -43,7 +43,7 @@ public class WeiBi extends AbstractCard {
             log.error("威逼的使用时机不对");
             return false;
         }
-        if (r.equals(target)) {
+        if (r == target) {
             log.error("威逼不能对自己使用");
             return false;
         }
@@ -86,7 +86,7 @@ public class WeiBi extends AbstractCard {
                         builder.setWantType(wantType);
                         builder.setPlayerId(p.getAlternativeLocation(r.location()));
                         builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                        if (p.equals(r)) {
+                        if (p == r) {
                             for (Card c : target.getCards().values())
                                 builder.addCards(c.toPbCard());
                         }
@@ -120,7 +120,7 @@ public class WeiBi extends AbstractCard {
                     builder.setWantType(wantType).setWaitingSecond(20);
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                    if (p.equals(target)) {
+                    if (p == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);
                         player.setTimeout(GameExecutor.post(r.getGame(), () -> {

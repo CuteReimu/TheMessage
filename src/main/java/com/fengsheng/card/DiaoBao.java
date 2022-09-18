@@ -50,7 +50,7 @@ public class DiaoBao extends AbstractCard {
                 if (player instanceof HumanPlayer p) {
                     var builder = Fengsheng.use_diao_bao_toc.newBuilder();
                     builder.setOldMessageCard(oldCard.toPbCard()).setPlayerId(p.getAlternativeLocation(r.location()));
-                    if (p.equals(r)) builder.setCardId(this.id);
+                    if (p == r) builder.setCardId(this.id);
                     p.send(builder.build());
                 }
             }
@@ -67,7 +67,7 @@ public class DiaoBao extends AbstractCard {
     public static boolean ai(FightPhaseIdle e, Card card) {
         Player player = e.whoseFightTurn;
         var colors = e.messageCard.getColors();
-        if (e.inFrontOfWhom.equals(player) && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
+        if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
             return false;
         if (ThreadLocalRandom.current().nextInt(4) != 0)
             return false;

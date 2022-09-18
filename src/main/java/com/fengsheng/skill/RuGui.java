@@ -26,9 +26,9 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
 
     @Override
     public ResolveResult execute(Game g) {
-        if (!(g.getFsm() instanceof DieSkill fsm) || !fsm.askWhom.equals(fsm.diedQueue.get(fsm.diedIndex)) || fsm.askWhom.findSkill(getSkillId()) == null)
+        if (!(g.getFsm() instanceof DieSkill fsm) || fsm.askWhom != fsm.diedQueue.get(fsm.diedIndex) || fsm.askWhom.findSkill(getSkillId()) == null)
             return null;
-        if (fsm.askWhom.equals(fsm.whoseTurn))
+        if (fsm.askWhom == fsm.whoseTurn)
             return null;
         if (fsm.askWhom.getMessageCards().isEmpty())
             return null;
@@ -48,7 +48,7 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
                 if (player instanceof HumanPlayer p) {
                     var builder = Role.skill_wait_for_ru_gui_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location())).setWaitingSecond(20);
-                    if (p.equals(r)) {
+                    if (p == r) {
                         final int seq2 = p.getSeq();
                         builder.setSeq(seq2);
                         GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(false).setSeq(seq2).build()), p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS);

@@ -39,7 +39,7 @@ public class ShiTan extends AbstractCard {
             log.error("试探的使用时机不对");
             return false;
         }
-        if (r.equals(target)) {
+        if (r == target) {
             log.error("试探不能对自己使用");
             return false;
         }
@@ -61,7 +61,7 @@ public class ShiTan extends AbstractCard {
                     var builder = Fengsheng.use_shi_tan_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                    if (p.equals(r)) builder.setCardId(this.id);
+                    if (p == r) builder.setCardId(this.id);
                     player.send(builder.build());
                 }
             }
@@ -95,7 +95,7 @@ public class ShiTan extends AbstractCard {
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
                     builder.setWaitingSecond(20);
-                    if (p.equals(target)) {
+                    if (p == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2).setCard(card.toPbCard());
                         player.setTimeout(GameExecutor.post(r.getGame(), () -> {
@@ -105,7 +105,7 @@ public class ShiTan extends AbstractCard {
                                 r.getGame().resolve(new MainPhaseIdle(r));
                             }
                         }, player.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
-                    } else if (p.equals(r)) {
+                    } else if (p == r) {
                         builder.setCard(card.toPbCard());
                     }
                     player.send(builder.build());

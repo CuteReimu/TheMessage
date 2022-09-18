@@ -36,7 +36,7 @@ public class JieHuo extends AbstractCard {
             log.error("截获的使用时机不对");
             return false;
         }
-        if (r.equals(fsm.inFrontOfWhom)) {
+        if (r == fsm.inFrontOfWhom) {
             log.error("情报在自己面前不能使用截获");
             return false;
         }
@@ -85,7 +85,7 @@ public class JieHuo extends AbstractCard {
     public static boolean ai(FightPhaseIdle e, Card card) {
         Player player = e.whoseFightTurn;
         var colors = e.messageCard.getColors();
-        if (e.inFrontOfWhom.equals(player) || (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) == Common.color.Black)
+        if (e.inFrontOfWhom == player || (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) == Common.color.Black)
             return false;
         if (ThreadLocalRandom.current().nextBoolean())
             return false;

@@ -29,7 +29,7 @@ public class HuanRi extends AbstractSkill implements TriggeredSkill {
     public ResolveResult execute(Game g) {
         if (!(g.getFsm() instanceof OnUseCard fsm) || fsm.askWhom.findSkill(getSkillId()) == null || !fsm.askWhom.isAlive())
             return null;
-        if (!fsm.player.equals(fsm.askWhom))
+        if (fsm.player != fsm.askWhom)
             return null;
         if (fsm.card.getType() != Common.card_type.Diao_Bao && fsm.card.getType() != Common.card_type.Po_Yi)
             return null;

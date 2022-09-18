@@ -314,17 +314,6 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Player p)) return false;
-        return game == p.getGame() && location == p.location();
-    }
-
-    @Override
     public String toString() {
         return location + "号[" + getRoleName() + (isRoleFaceUp() ? "" : "(隐)") + "]";
     }

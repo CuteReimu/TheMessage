@@ -40,7 +40,7 @@ public class MingEr extends AbstractSkill implements TriggeredSkill {
             if (p instanceof HumanPlayer player)
                 player.send(Role.skill_ming_er_toc.newBuilder().setPlayerId(player.getAlternativeLocation(fsm.whoseTurn.location())).build());
         }
-        if (fsm.whoseTurn.equals(fsm.inFrontOfWhom)) {
+        if (fsm.whoseTurn == fsm.inFrontOfWhom) {
             fsm.whoseTurn.draw(2);
         } else {
             fsm.whoseTurn.draw(1);

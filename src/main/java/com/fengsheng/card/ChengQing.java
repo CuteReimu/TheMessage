@@ -105,7 +105,7 @@ public class ChengQing extends AbstractCard {
         List<PlayerAndCard> playerAndCards = new ArrayList<>();
         var identity = player.getIdentity();
         for (Player p : player.getGame().getPlayers()) {
-            if ((p.equals(player) || identity != Common.color.Black && identity == p.getIdentity()) && p.isAlive()) {
+            if ((p == player || identity != Common.color.Black && identity == p.getIdentity()) && p.isAlive()) {
                 for (Card c : p.getMessageCards().values()) {
                     if (c.getColors().contains(Common.color.Black))
                         playerAndCards.add(new PlayerAndCard(p, c));

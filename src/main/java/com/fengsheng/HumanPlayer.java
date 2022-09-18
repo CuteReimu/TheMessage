@@ -369,14 +369,4 @@ public class HumanPlayer extends AbstractPlayer {
     public int getWaitSeconds(int seconds) {
         return isActive() ? seconds : 5;
     }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
 }

@@ -27,7 +27,7 @@ public class ChengZhi extends AbstractSkill implements TriggeredSkill {
 
     @Override
     public ResolveResult execute(Game g) {
-        if (!(g.getFsm() instanceof DieSkill fsm) || fsm.askWhom.equals(fsm.diedQueue.get(fsm.diedIndex)) || fsm.askWhom.findSkill(getSkillId()) == null)
+        if (!(g.getFsm() instanceof DieSkill fsm) || fsm.askWhom == fsm.diedQueue.get(fsm.diedIndex) || fsm.askWhom.findSkill(getSkillId()) == null)
             return null;
         if (!fsm.askWhom.isRoleFaceUp())
             return null;
@@ -52,7 +52,7 @@ public class ChengZhi extends AbstractSkill implements TriggeredSkill {
                     var builder = Role.skill_wait_for_cheng_zhi_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location())).setWaitingSecond(20);
                     builder.setDiePlayerId(p.getAlternativeLocation(whoDie.location()));
-                    if (p.equals(r)) {
+                    if (p == r) {
                         for (Card card : cards) builder.addCards(card.toPbCard());
                         builder.setIdentity(whoDie.getIdentity());
                         builder.setSecretTask(whoDie.getSecretTask());
