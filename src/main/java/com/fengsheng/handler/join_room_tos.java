@@ -28,7 +28,7 @@ public class join_room_tos implements ProtoHandler {
             return;
         }
         String device = pb.getDevice();
-        HumanPlayer oldPlayer = Game.deviceCache.get(device);
+        final HumanPlayer oldPlayer = Game.deviceCache.get(device);
         if (oldPlayer != null && !oldPlayer.isActive() && oldPlayer.getGame() != null && oldPlayer.getGame().isStarted() && !oldPlayer.getGame().isEnd()) { // 断线重连
             CountDownLatch cd = new CountDownLatch(1);
             GameExecutor.post(oldPlayer.getGame(), () -> {
@@ -56,18 +56,25 @@ public class join_room_tos implements ProtoHandler {
                 reply = Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.no_more_room).build();
             } else {
                 player.setDevice(pb.getDevice());
-                Game.deviceCache.putIfAbsent(pb.getDevice(), player);
+                Player oldPlayer2 = Game.deviceCache.putIfAbsent(pb.getDevice(), player);
                 String playerName = pb.getName();
-                player.setPlayerName(playerName.isBlank() ? Player.randPlayerName() : playerName);
-                player.setGame(Game.getInstance());
-                player.getGame().onPlayerJoinRoom(player);
-                var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location());
-                for (Player p : player.getGame().getPlayers()) {
-                    builder.addNames(p != null ? p.getPlayerName() : "");
+                if (oldPlayer2 != null && oldPlayer2.getGame() == Game.getInstance() && playerName.equals(oldPlayer2.getPlayerName())) {
+                    log.warn("怀疑连续发送了两次连接请求。为了游戏体验，拒绝本次连接。想要单设备双开请修改不同的用户名。");
+                    reply = Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.join_room_too_fast).build();
+                } else {
+                    player.setPlayerName(playerName.isBlank() ? Player.randPlayerName() : playerName);
+                    player.setGame(Game.getInstance());
+                    player.getGame().onPlayerJoinRoom(player);
+                    var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location());
+                    for (Player p : player.getGame().getPlayers()) {
+                        builder.addNames(p != null ? p.getPlayerName() : "");
+                    }
+                    reply = builder.build();
                 }
-                reply = builder.build();
             }
         }
         player.send(reply);
+        if (reply instanceof Errcode.error_code_toc)
+            player.getChannel().close();
     }
 }
