@@ -112,6 +112,7 @@ public class LianMin extends AbstractSkill implements TriggeredSkill {
             return false;
         Player p = fsm.fsm().whoseTurn;
         for (Player target : new Player[]{p, fsm.fsm().inFrontOfWhom}) {
+            if (!target.isAlive()) continue;
             for (Card card : target.getMessageCards().values()) {
                 if (card.getColors().contains(Common.color.Black)) {
                     GameExecutor.post(p.getGame(), () ->

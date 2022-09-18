@@ -102,7 +102,8 @@ public class MianLiCangZhen extends AbstractSkill implements TriggeredSkill {
         if (!(fsm0 instanceof executeMianLiCangZhen fsm))
             return false;
         Player p = fsm.fsm().whoseTurn;
-        if (p == fsm.fsm().inFrontOfWhom) return false;
+        Player target = fsm.fsm().inFrontOfWhom;
+        if (p == target || !target.isAlive()) return false;
         for (Card card : p.getCards().values()) {
             if (card.getColors().contains(Common.color.Black)) {
                 GameExecutor.post(p.getGame(), () -> p.getGame().tryContinueResolveProtocol(p, Role.skill_mian_li_cang_zhen_tos.newBuilder().setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
