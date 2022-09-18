@@ -53,8 +53,16 @@ public class YiXin extends AbstractSkill implements TriggeredSkill {
                     p.send(builder.build());
                 }
             }
-            if (r instanceof RobotPlayer)
+            if (r instanceof RobotPlayer) {
+                if (fsm.whoseTurn.isAlive() && r != fsm.whoseTurn) {
+                    for (Card card : r.getCards().values()) {
+                        GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_yi_xin_tos.newBuilder().setEnable(true).setCardId(card.getId())
+                                .setTargetPlayerId(r.getAlternativeLocation(fsm.whoseTurn.location())).build()), 2, TimeUnit.SECONDS);
+                        return null;
+                    }
+                }
                 GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_yi_xin_tos.newBuilder().setEnable(false).build()), 2, TimeUnit.SECONDS);
+            }
             return null;
         }
 
