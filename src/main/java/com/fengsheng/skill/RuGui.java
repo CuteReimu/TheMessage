@@ -30,6 +30,8 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
             return null;
         if (fsm.askWhom == fsm.whoseTurn)
             return null;
+        if (!fsm.whoseTurn.isAlive())
+            return null;
         if (fsm.askWhom.getMessageCards().isEmpty())
             return null;
         if (fsm.askWhom.getSkillUseCount(getSkillId()) > 0)
