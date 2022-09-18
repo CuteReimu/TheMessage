@@ -2,9 +2,7 @@ package com.fengsheng.skill;
 
 import com.fengsheng.protos.Common;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.fengsheng.protos.Common.role.*;
@@ -45,19 +43,12 @@ public final class RoleCache {
     public static RoleSkillsData[] getRandomRoles(int n) {
         RoleSkillsData[] result = new RoleSkillsData[n];
         Random random = ThreadLocalRandom.current();
-        int[] indexArray = new int[Math.max(cache.size(), n)];
+        Integer[] indexArray = new Integer[cache.size()];
         for (int i = 0; i < indexArray.length; i++)
             indexArray[i] = i;
-        for (int i = 0; i < n; i++) {
-            int index = random.nextInt(i, indexArray.length);
-            if (i != index) {
-                int temp = indexArray[i];
-                indexArray[i] = indexArray[index];
-                indexArray[index] = temp;
-            }
-        }
+        Collections.shuffle(Arrays.asList(indexArray), random);
         for (int i = 0; i < n; i++)
-            result[i] = indexArray[i] < cache.size() ? cache.get(indexArray[i]) : new RoleSkillsData();
+            result[i] = i < indexArray.length ? cache.get(indexArray[i]) : new RoleSkillsData();
         return result;
     }
 
