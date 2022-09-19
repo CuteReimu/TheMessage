@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Recorder {
     private static final Logger log = Logger.getLogger(Recorder.class);
-    private static final short initTocId = ProtoServerChannelHandler.stringHash("init_toc");
+    private static final short firstProtoId = ProtoServerChannelHandler.stringHash("wait_for_select_role_toc");
     private static final ExecutorService saveLoadPool = Executors.newSingleThreadExecutor();
 
     private List<Record.recorder_line> list = new ArrayList<>();
@@ -30,7 +30,7 @@ public class Recorder {
     private volatile boolean loading = false;
 
     public void add(short messageId, byte[] messageBuf) {
-        if (!loading && (messageId == initTocId || !list.isEmpty()))
+        if (!loading && (messageId == firstProtoId || !list.isEmpty()))
             list.add(Record.recorder_line.newBuilder().setNanoTime(System.nanoTime()).setMessageId(messageId)
                     .setMessageBuf(ByteString.copyFrom(messageBuf)).build());
     }
