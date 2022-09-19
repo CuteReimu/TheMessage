@@ -12,7 +12,7 @@ public record UseChengQingOnDying(WaitForChengQing waitForChengQing) implements 
     @Override
     public ResolveResult resolve() {
         int count = 0;
-        for (Card card : waitForChengQing.whoDie.getCards().values()) {
+        for (Card card : waitForChengQing.whoDie.getMessageCards().values()) {
             for (Common.color color : card.getColors()) {
                 if (color == Common.color.Black) count++;
             }
