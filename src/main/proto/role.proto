@@ -271,6 +271,6 @@ message skill_yi_xin_tos {
 message skill_yi_xin_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
-  uint32 card_id = 3;
+  card   card = 3;
   bool   enable = 4; // 是否发动
 }

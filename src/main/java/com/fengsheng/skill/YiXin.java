@@ -116,7 +116,7 @@ public class YiXin extends AbstractSkill implements TriggeredSkill {
             log.info(r + "将" + card + "放置在" + target + "面前");
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player1)
-                    player1.send(Role.skill_yi_xin_toc.newBuilder().setEnable(true).setCardId(card.getId())
+                    player1.send(Role.skill_yi_xin_toc.newBuilder().setEnable(true).setCard(card.toPbCard())
                             .setPlayerId(player1.getAlternativeLocation(r.location()))
                             .setTargetPlayerId(player1.getAlternativeLocation(target.location())).build());
             }
