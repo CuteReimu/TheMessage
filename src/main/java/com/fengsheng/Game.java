@@ -180,10 +180,16 @@ public final class Game {
 
     public void playerSetRoleFaceUp(Player player, boolean faceUp) {
         if (faceUp) {
+            if (player.isRoleFaceUp())
+                log.error(player + "本来就是正面朝上的", new RuntimeException());
+            else
+                log.info(player + "将角色翻至正面朝上");
             player.setRoleFaceUp(true);
-            log.info(player + "将角色翻至正面朝上");
         } else {
-            log.info(player + "将角色翻至背面朝上");
+            if (!player.isRoleFaceUp())
+                log.error(player + "本来就是背面朝上的", new RuntimeException());
+            else
+                log.info(player + "将角色翻至背面朝上");
             player.setRoleFaceUp(false);
         }
         for (Player p : players) {
