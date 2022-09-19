@@ -29,6 +29,8 @@ public class ChengZhi extends AbstractSkill implements TriggeredSkill {
     public ResolveResult execute(Game g) {
         if (!(g.getFsm() instanceof DieSkill fsm) || fsm.askWhom == fsm.diedQueue.get(fsm.diedIndex) || fsm.askWhom.findSkill(getSkillId()) == null)
             return null;
+        if (!fsm.askWhom.isAlive())
+            return null;
         if (!fsm.askWhom.isRoleFaceUp())
             return null;
         if (fsm.askWhom.getSkillUseCount(getSkillId()) > 0)
@@ -47,6 +49,8 @@ public class ChengZhi extends AbstractSkill implements TriggeredSkill {
             Card[] cards = whoDie.deleteAllCards();
             r.addCard(cards);
             log.info(r + "发动了[承志]，获得了" + whoDie + "的" + Arrays.toString(cards));
+            if (whoDie.getIdentity() == Common.color.Has_No_Identity)
+                return new ResolveResult(fsm, true);
             for (Player player : r.getGame().getPlayers()) {
                 if (player instanceof HumanPlayer p) {
                     var builder = Role.skill_wait_for_cheng_zhi_toc.newBuilder();
