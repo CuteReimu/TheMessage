@@ -40,12 +40,8 @@ public class WaitForDieGiveCard implements Fsm {
 
     @Override
     public ResolveResult resolve() {
-        if (diedIndex >= diedQueue.size()) {
-            if (receiveOrder.isEmpty())
-                return new ResolveResult(afterDieResolve, true);
-            else
-                return new ResolveResult(new CheckWin(whoseTurn, receiveOrder, afterDieResolve), true);
-        }
+        if (diedIndex >= diedQueue.size())
+            return new ResolveResult(new CheckWin(whoseTurn, receiveOrder, afterDieResolve), true);
         Player whoDie = diedQueue.get(diedIndex);
         if (whoDie.getCards().isEmpty())
             return new ResolveResult(new AfterDieGiveCard(this), true);
