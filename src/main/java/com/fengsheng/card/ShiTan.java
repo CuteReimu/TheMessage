@@ -177,11 +177,11 @@ public class ShiTan extends AbstractCard {
             }
             player.incrSeq();
             if (card.checkDrawCard(target)) {
-                log.info(r + "选择了[摸一张牌]");
+                log.info(target + "选择了[摸一张牌]");
                 card.notifyResult(target, true);
                 target.draw(1);
             } else {
-                log.info(r + "选择了[弃一张牌]");
+                log.info(target + "选择了[弃一张牌]");
                 card.notifyResult(target, false);
                 if (msg.getCardIdCount() > 0)
                     target.getGame().playerDiscardCard(target, target.findCard(msg.getCardId(0)));
