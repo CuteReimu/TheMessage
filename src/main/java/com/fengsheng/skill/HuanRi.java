@@ -31,7 +31,7 @@ public class HuanRi extends AbstractSkill implements TriggeredSkill {
             return null;
         if (fsm.player != fsm.askWhom)
             return null;
-        if (fsm.card.getType() != Common.card_type.Diao_Bao && fsm.card.getType() != Common.card_type.Po_Yi)
+        if (fsm.cardType != Common.card_type.Diao_Bao && fsm.cardType != Common.card_type.Po_Yi)
             return null;
         if (!fsm.player.isRoleFaceUp())
             return null;

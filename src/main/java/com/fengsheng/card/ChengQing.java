@@ -90,9 +90,9 @@ public class ChengQing extends AbstractCard {
                 return new ResolveResult(new UseChengQingOnDying((WaitForChengQing) fsm), true);
         };
         if (fsm instanceof MainPhaseIdle)
-            g.resolve(new OnUseCard(((MainPhaseIdle) fsm).player(), r, target, this, r, resolveFunc));
+            g.resolve(new OnUseCard(((MainPhaseIdle) fsm).player(), r, target, this, Common.card_type.Cheng_Qing, r, resolveFunc));
         else if (fsm instanceof WaitForChengQing)
-            g.resolve(new OnUseCard(((WaitForChengQing) fsm).whoseTurn, r, target, this, r, resolveFunc));
+            g.resolve(new OnUseCard(((WaitForChengQing) fsm).whoseTurn, r, target, this, Common.card_type.Cheng_Qing, r, resolveFunc));
     }
 
     @Override

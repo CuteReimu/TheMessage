@@ -62,7 +62,7 @@ public class WuDao extends AbstractCard {
             }
             return new ResolveResult(fsm, true);
         };
-        g.resolve(new OnUseCard(fsm.whoseTurn, r, null, this, r, resolveFunc));
+        g.resolve(new OnUseCard(fsm.whoseTurn, r, null, this, Common.card_type.Wu_Dao, r, resolveFunc));
     }
 
     @Override

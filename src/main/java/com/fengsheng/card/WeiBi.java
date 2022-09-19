@@ -88,13 +88,15 @@ public class WeiBi extends AbstractCard {
                 }
                 if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
                     target.addSkillUseCount(SkillId.JIU_JI);
-                    target.addCard(card);
-                    log.info(target + "将使用的" + card + "加入了手牌");
-                    for (Player player : g.getPlayers()) {
-                        if (player instanceof HumanPlayer p) {
-                            var builder = Role.skill_jiu_ji_b_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
-                            if (card != null) builder.setCard(card.toPbCard());
-                            p.send(builder.build());
+                    if (card != null) {
+                        target.addCard(card);
+                        log.info(target + "将使用的" + card + "加入了手牌");
+                        for (Player player : g.getPlayers()) {
+                            if (player instanceof HumanPlayer p) {
+                                var builder = Role.skill_jiu_ji_b_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                                builder.setCard(card.toPbCard());
+                                p.send(builder.build());
+                            }
                         }
                     }
                 } else if (card != null) {
@@ -124,10 +126,7 @@ public class WeiBi extends AbstractCard {
                 return new ResolveResult(new MainPhaseIdle(r), true);
             }
         };
-        if (card != null)
-            g.resolve(new OnUseCard(r, r, target, card, r, resolveFunc));
-        else
-            g.resolve(resolveFunc);
+        g.resolve(new OnUseCard(r, r, target, card, Common.card_type.Wei_Bi, r, resolveFunc));
     }
 
     private static boolean hasCard(Player player, Common.card_type cardType) {

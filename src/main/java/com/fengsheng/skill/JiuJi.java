@@ -29,7 +29,7 @@ public class JiuJi extends AbstractSkill implements TriggeredSkill {
     public ResolveResult execute(Game g) {
         if (!(g.getFsm() instanceof OnUseCard fsm) || fsm.askWhom.findSkill(getSkillId()) == null || !fsm.askWhom.isAlive())
             return null;
-        if (fsm.card.getType() != Common.card_type.Shi_Tan && fsm.card.getType() != Common.card_type.Wei_Bi && fsm.card.getType() != Common.card_type.Li_You)
+        if (fsm.cardType != Common.card_type.Shi_Tan && fsm.cardType != Common.card_type.Wei_Bi && fsm.cardType != Common.card_type.Li_You)
             return null;
         if (!fsm.targetPlayer.equals(fsm.askWhom))
             return null;

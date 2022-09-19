@@ -4,6 +4,7 @@ import com.fengsheng.Fsm;
 import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
 import com.fengsheng.card.Card;
+import com.fengsheng.protos.Common;
 
 /**
  * 使用卡牌时，成为卡牌目标时
@@ -22,9 +23,13 @@ public class OnUseCard implements Fsm {
      */
     public Player player;
     /**
-     * 出的牌
+     * 出的牌，有可能没出牌
      */
     public Card card;
+    /**
+     * 出的牌的类型
+     */
+    public Common.card_type cardType;
     /**
      * 遍历到了谁的技能
      */
@@ -34,11 +39,12 @@ public class OnUseCard implements Fsm {
      */
     public Fsm resolveFunc;
 
-    public OnUseCard(Player whoseTurn, Player player, Player targetPlayer, Card card, Player askWhom, Fsm resolveFunc) {
+    public OnUseCard(Player whoseTurn, Player player, Player targetPlayer, Card card, Common.card_type cardType, Player askWhom, Fsm resolveFunc) {
         this.whoseTurn = whoseTurn;
         this.player = player;
         this.targetPlayer = targetPlayer;
         this.card = card;
+        this.cardType = cardType;
         this.askWhom = askWhom;
         this.resolveFunc = resolveFunc;
     }

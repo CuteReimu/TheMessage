@@ -101,7 +101,7 @@ public class ShiTan extends AbstractCard {
             }
             return new ResolveResult(new executeShiTan(r, target, this), true);
         };
-        g.resolve(new OnUseCard(r, r, target, this, r, resolveFunc));
+        g.resolve(new OnUseCard(r, r, target, this, Common.card_type.Shi_Tan, r, resolveFunc));
     }
 
     private boolean checkDrawCard(Player target) {

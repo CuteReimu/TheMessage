@@ -107,7 +107,7 @@ public class LiYou extends AbstractCard {
             return new ResolveResult(new MainPhaseIdle(r), true);
         };
         if (card != null)
-            g.resolve(new OnUseCard(r, r, target, card, r, resolveFunc));
+            g.resolve(new OnUseCard(r, r, target, card, Common.card_type.Li_You, r, resolveFunc));
         else
             g.resolve(resolveFunc);
     }
