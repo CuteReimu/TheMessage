@@ -228,7 +228,8 @@ public class ShiTan extends AbstractCard {
         Player player = e.player();
         List<Player> players = new ArrayList<>();
         for (Player p : player.getGame().getPlayers())
-            if (p != player && p.isAlive()) players.add(p);
+            if (p != player && p.isAlive() && (!p.isRoleFaceUp() || p.findSkill(SkillId.CHENG_FU) == null))
+                players.add(p);
         if (players.isEmpty()) return false;
         Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
         GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p), 2, TimeUnit.SECONDS);

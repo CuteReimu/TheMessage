@@ -53,7 +53,7 @@ public class WeiBi extends AbstractCard {
             log.error("目标已死亡");
             return false;
         }
-        if (wantType != Cheng_Qing && wantType != Jie_Huo && wantType != Diao_Bao && wantType != Wu_Dao) {
+        if (!availableCardType.contains(wantType)) {
             log.error("威逼选择的卡牌类型错误：" + wantType);
             return false;
         }
@@ -225,7 +225,8 @@ public class WeiBi extends AbstractCard {
         var identity = player.getIdentity();
         List<Player> players = new ArrayList<>();
         for (Player p : player.getGame().getPlayers()) {
-            if (p != player && p.isAlive() && !p.getCards().isEmpty() && (identity == Common.color.Black || identity != p.getIdentity())) {
+            if (p != player && p.isAlive() && !p.getCards().isEmpty() && (identity == Common.color.Black || identity != p.getIdentity())
+                    && (!p.isRoleFaceUp() || p.findSkill(SkillId.CHENG_FU) == null)) {
                 for (Card c : p.getCards().values())
                     if (availableCardType.contains(c.getType())) players.add(p);
             }
