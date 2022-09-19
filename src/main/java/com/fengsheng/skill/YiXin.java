@@ -27,6 +27,8 @@ public class YiXin extends AbstractSkill implements TriggeredSkill {
     public ResolveResult execute(Game g) {
         if (!(g.getFsm() instanceof DieSkill fsm) || !fsm.askWhom.equals(fsm.diedQueue.get(fsm.diedIndex)) || fsm.askWhom.findSkill(getSkillId()) == null)
             return null;
+        if (!fsm.askWhom.isRoleFaceUp())
+            return null;
         if (fsm.askWhom.getCards().isEmpty())
             return null;
         if (fsm.askWhom.getSkillUseCount(getSkillId()) > 0)
