@@ -62,7 +62,7 @@ public class ChengZhi extends AbstractSkill implements TriggeredSkill {
                         builder.setSecretTask(whoDie.getSecretTask());
                         final int seq2 = p.getSeq();
                         builder.setSeq(seq2);
-                        GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_cheng_zhi_tos.newBuilder().setEnable(false).setSeq(seq2).build()), p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS);
+                        p.setTimeout(GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_cheng_zhi_tos.newBuilder().setEnable(false).setSeq(seq2).build()), p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
                     }
                     p.send(builder.build());
                 }

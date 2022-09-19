@@ -53,7 +53,7 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
                     if (p == r) {
                         final int seq2 = p.getSeq();
                         builder.setSeq(seq2);
-                        GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(false).setSeq(seq2).build()), p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS);
+                        p.setTimeout(GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(false).setSeq(seq2).build()), p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
                     }
                     p.send(builder.build());
                 }
