@@ -39,9 +39,9 @@ public class HuanRi extends AbstractSkill implements TriggeredSkill {
         log.info(fsm.askWhom + "发动了[换日]");
         for (Player p : g.getPlayers()) {
             if (p instanceof HumanPlayer player)
-                player.send(Role.skill_huan_ri_toc.newBuilder().setPlayerId(player.getAlternativeLocation(fsm.whoseTurn.location())).build());
+                player.send(Role.skill_huan_ri_toc.newBuilder().setPlayerId(player.getAlternativeLocation(fsm.askWhom.location())).build());
         }
-        g.playerSetRoleFaceUp(fsm.whoseTurn, false);
+        g.playerSetRoleFaceUp(fsm.askWhom, false);
         return null;
     }
 }
