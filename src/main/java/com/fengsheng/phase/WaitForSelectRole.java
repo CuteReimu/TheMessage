@@ -60,12 +60,17 @@ public class WaitForSelectRole implements WaitingFsm {
             log.error("正在等待选择角色");
             return null;
         }
+        if (p.getRole() != Common.role.unknown) {
+            log.error("你已经选了角色");
+            return null;
+        }
         Common.role role1 = options[p.location()].getRole();
         Common.role role2 = options[p.location() + game.getPlayers().length].getRole();
         if (pb.getRole() != role1 && pb.getRole() != role2) {
             log.error("你没有这个角色");
             return null;
         }
+        p.incrSeq();
         selected[p.location()] = pb.getRole() == role1 ? options[p.location()] : options[p.location() + game.getPlayers().length];
         p.setRoleSkillsData(selected[p.location()]);
         if (p instanceof HumanPlayer humanPlayer)

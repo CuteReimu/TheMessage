@@ -112,7 +112,6 @@ public class HumanPlayer extends AbstractPlayer {
             l = (l + 1) % game.getPlayers().length;
         } while (l != location);
         send(builder.build());
-        seq++;
     }
 
     @Override
