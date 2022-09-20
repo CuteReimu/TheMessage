@@ -9,6 +9,8 @@ import com.fengsheng.protos.Fengsheng;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class die_give_card_tos extends AbstractProtoHandler<Fengsheng.die_give_card_tos> {
@@ -30,6 +32,10 @@ public class die_give_card_tos extends AbstractProtoHandler<Fengsheng.die_give_c
             return;
         } else if (pb.getTargetPlayerId() < 0 || pb.getTargetPlayerId() >= r.getGame().getPlayers().length) {
             log.error("目标错误: " + pb.getTargetPlayerId());
+            return;
+        }
+        if (new HashSet<>(pb.getCardIdList()).size() != pb.getCardIdList().size()) {
+            log.error("卡牌重复" + Arrays.toString(pb.getCardIdList().toArray(new Integer[0])));
             return;
         }
         if (pb.getCardIdCount() == 0) {
