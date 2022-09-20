@@ -40,6 +40,8 @@ public class FightPhaseIdle implements Fsm {
 
     @Override
     public ResolveResult resolve() {
+        if (!whoseFightTurn.isAlive())
+            return new ResolveResult(new FightPhaseNext(this), true);
         for (Player p : whoseTurn.getGame().getPlayers())
             p.notifyFightPhase(20);
         return null;
