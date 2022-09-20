@@ -10,7 +10,7 @@ import com.fengsheng.protos.Role;
 import org.apache.log4j.Logger;
 
 /**
- * 老汉技能【视死】：你接收黑色情报后，摸两张牌
+ * 老汉技能【视死】：你接收黑色情报后，摸两张牌。
  */
 public class ShiSi extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(ShiSi.class);

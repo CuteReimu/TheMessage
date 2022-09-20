@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 韩梅技能【移花接木】：争夺阶段，你可以翻开此角色牌，然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情牌加入你的手牌。
+ * 韩梅技能【移花接木】：争夺阶段，你可以翻开此角色牌，然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情报加入你的手牌。
  */
 public class YiHuaJieMu extends AbstractSkill implements ActiveSkill {
     private static final Logger log = Logger.getLogger(YiHuaJieMu.class);
