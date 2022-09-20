@@ -25,6 +25,7 @@ public class join_room_tos implements ProtoHandler {
             player.send(Errcode.error_code_toc.newBuilder()
                     .setCode(Errcode.error_code.client_version_not_match)
                     .addIntParams(Config.ClientVersion).build());
+            player.getChannel().close();
             return;
         }
         String device = pb.getDevice();
