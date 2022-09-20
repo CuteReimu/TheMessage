@@ -274,3 +274,35 @@ message skill_yi_xin_toc {
   card   card = 3;
   bool   enable = 4; // 是否发动
 }
+
+// 广播使用【知音】：你接收红色或蓝色情报后，你和传出者各摸一张牌
+message skill_zhi_yin_toc {
+  uint32 player_id = 1;
+}
+
+// 程小蝶【惊梦】A：你接收黑色情报后，可以查看一名角色的手牌。
+message skill_jing_meng_a_tos {
+  uint32 target_player_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【惊梦】A
+message skill_jing_meng_a_toc {
+  uint32        player_id = 1;
+  uint32        target_player_id = 2;
+  repeated card cards = 3; // 目标角色的手牌，只有你能看到这个字段，其他人为空
+  uint32        waiting_second = 4;
+  uint32        seq = 5;
+}
+
+// 程小蝶【惊梦】B：然后从中选择一张弃置。
+message skill_jing_meng_b_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【惊梦】B，弃牌走弃牌协议
+message skill_jing_meng_b_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+}
