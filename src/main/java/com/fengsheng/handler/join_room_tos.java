@@ -35,6 +35,7 @@ public class join_room_tos implements ProtoHandler {
             GameExecutor.post(oldPlayer.getGame(), () -> {
                 ProtoServerChannelHandler.exchangePlayer(oldPlayer, player);
                 cd.countDown();
+                oldPlayer.setAutoPlay(false);
                 oldPlayer.reconnect();
                 log.info(oldPlayer + "断线重连成功");
             });
