@@ -64,6 +64,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
                     game.end();
                 });
             } else {
+                log.info(player.getPlayerName() + "离开了房间");
                 game.getPlayers()[player.location()] = null;
                 Game.deviceCache.remove(player.getDevice(), player);
                 reply = Fengsheng.leave_room_toc.newBuilder().setPosition(player.location()).build();
