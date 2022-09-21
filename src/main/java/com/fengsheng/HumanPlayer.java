@@ -107,6 +107,23 @@ public class HumanPlayer extends AbstractPlayer {
 
     public void setAutoPlay(boolean autoPlay) {
         this.autoPlay = autoPlay;
+        if (autoPlay) {
+            if (timeout != null) {
+                var t = timeout;
+                timeout = null;
+                try {
+                    t.task().run(t);
+                } catch (Exception e) {
+                    log.error("time task exception", e);
+                }
+            }
+        } else {
+            if (timeout != null) {
+                timeout.cancel();
+                int delay = game.getFsm() instanceof MainPhaseIdle ? 31 : 21;
+                timeout = GameExecutor.TimeWheel.newTimeout(timeout.task(), delay, TimeUnit.SECONDS);
+            }
+        }
     }
 
     @Override
@@ -392,6 +409,6 @@ public class HumanPlayer extends AbstractPlayer {
         if (!isActive()) {
             return 5;
         }
-        return autoPlay ? 0 : seconds;
+        return autoPlay ? 1 : seconds;
     }
 }
