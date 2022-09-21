@@ -115,7 +115,7 @@ public class JingMeng extends AbstractSkill implements TriggeredSkill {
                         player1.setTimeout(GameExecutor.post(g, () -> {
                             if (player1.checkSeq(seq2)) {
                                 Card card = null;
-                                for (Card c : r.getCards().values()) {
+                                for (Card c : target.getCards().values()) {
                                     card = c;
                                     break;
                                 }
@@ -131,7 +131,7 @@ public class JingMeng extends AbstractSkill implements TriggeredSkill {
             if (r instanceof RobotPlayer) {
                 GameExecutor.post(g, () -> {
                     Card card = null;
-                    for (Card c : r.getCards().values()) {
+                    for (Card c : target.getCards().values()) {
                         card = c;
                         break;
                     }
