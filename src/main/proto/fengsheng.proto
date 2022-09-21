@@ -2,6 +2,14 @@ syntax = "proto3";
 option java_package = "com.fengsheng.protos";
 import "common.proto";
 
+// 心跳：客户端发给服务器
+message heart_tos {
+}
+
+// 心跳：服务器回复客户端
+message heart_toc {
+}
+
 // 请求房间加一个位置
 message add_one_position_tos {
 }

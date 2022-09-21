@@ -37,9 +37,11 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
     public void channelActive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
         log.info("session connected: " + channel.id().asShortText() + " " + channel.remoteAddress());
-        if (playerCache.putIfAbsent(channel.id().asLongText(), new HumanPlayer(channel)) != null) {
+        HumanPlayer player = new HumanPlayer(channel);
+        if (playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
             log.error("already assigned channel id: " + channel.id().asLongText());
         }
+        player.setHeartTimeout();
     }
 
     @Override
@@ -51,6 +53,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
             log.error("already unassigned channel id: " + channel.id().asLongText());
             return;
         }
+        player.clearHeartTimeout();
         final Game game = player.getGame();
         if (game == null) return;
         GeneratedMessageV3 reply = null;

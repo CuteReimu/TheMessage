@@ -29,6 +29,8 @@ public class HumanPlayer extends AbstractPlayer {
 
     private Timeout timeout;
 
+    private Timeout heartTimeout;
+
     private final Recorder recorder = new Recorder();
 
     private String device;
@@ -346,6 +348,21 @@ public class HumanPlayer extends AbstractPlayer {
      */
     public void setTimeout(Timeout timeout) {
         this.timeout = timeout;
+    }
+
+    /**
+     * 心跳相关计时器
+     */
+    public void setHeartTimeout() {
+        if (heartTimeout != null) heartTimeout.cancel();
+        heartTimeout = GameExecutor.TimeWheel.newTimeout(timeout -> {
+            log.info(this + " heart timeout");
+            if (channel.isActive()) channel.close();
+        }, 30, TimeUnit.SECONDS);
+    }
+
+    public void clearHeartTimeout() {
+        if (heartTimeout != null) heartTimeout.cancel();
     }
 
     public int getSeq() {
