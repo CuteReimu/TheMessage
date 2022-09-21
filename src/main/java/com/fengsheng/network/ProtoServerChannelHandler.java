@@ -33,6 +33,8 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
 
     private static final ConcurrentMap<String, HumanPlayer> playerCache = new ConcurrentHashMap<>();
 
+    private static final short heartMsgId = stringHash("heart_tos");
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
@@ -100,8 +102,10 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         byte[] buf = new byte[msgLen - 2];
         msg.readBytes(buf);
         var message = (GeneratedMessageV3) protoInfo.parser().parseFrom(buf);
-        log.debug("recv@%s len: %d %s | %s".formatted(ctx.channel().id().asShortText(), msgLen - 2, protoInfo.name(),
-                printer.printToString(message).replaceAll("\n *", " ")));
+        if (id != heartMsgId) {
+            log.debug("recv@%s len: %d %s | %s".formatted(ctx.channel().id().asShortText(), msgLen - 2, protoInfo.name(),
+                    printer.printToString(message).replaceAll("\n *", " ")));
+        }
         HumanPlayer player = playerCache.get(ctx.channel().id().asLongText());
         ProtoHandler handler = protoInfo.handler();
         if (handler != null) handler.handle(player, message);
