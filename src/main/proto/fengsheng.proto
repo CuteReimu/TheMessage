@@ -83,6 +83,16 @@ message wait_for_select_role_toc {
   uint32        waiting_second = 5; // 读多少秒
 }
 
+// 托管
+message auto_play_tos {
+  bool enable = 1;
+}
+
+// 托管返回
+message auto_play_toc {
+  bool enable = 1;
+}
+
 // 选角色
 message select_role_tos {
   role role = 1;

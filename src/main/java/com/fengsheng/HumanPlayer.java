@@ -35,6 +35,8 @@ public class HumanPlayer extends AbstractPlayer {
 
     private String device;
 
+    private boolean autoPlay;
+
     public HumanPlayer(Channel channel) {
         this.channel = channel;
     }
@@ -101,6 +103,10 @@ public class HumanPlayer extends AbstractPlayer {
 
     public void setDevice(String device) {
         this.device = device;
+    }
+
+    public void setAutoPlay(boolean autoPlay) {
+        this.autoPlay = autoPlay;
     }
 
     @Override
@@ -383,6 +389,9 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     public int getWaitSeconds(int seconds) {
-        return isActive() ? seconds : 5;
+        if (!isActive()) {
+            return 5;
+        }
+        return autoPlay ? 0 : seconds;
     }
 }

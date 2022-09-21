@@ -35,6 +35,8 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
 
     private static final short heartMsgId = stringHash("heart_tos");
 
+    private static final short autoPlayMsgId = stringHash("auto_play_tos");
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
@@ -102,7 +104,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         byte[] buf = new byte[msgLen - 2];
         msg.readBytes(buf);
         var message = (GeneratedMessageV3) protoInfo.parser().parseFrom(buf);
-        if (id != heartMsgId) {
+        if (id != heartMsgId && id != autoPlayMsgId) {
             log.debug("recv@%s len: %d %s | %s".formatted(ctx.channel().id().asShortText(), msgLen - 2, protoInfo.name(),
                     printer.printToString(message).replaceAll("\n *", " ")));
         }
