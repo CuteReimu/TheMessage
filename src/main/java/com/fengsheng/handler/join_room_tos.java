@@ -34,8 +34,10 @@ public class join_room_tos implements ProtoHandler {
             CountDownLatch cd = new CountDownLatch(1);
             GameExecutor.post(oldPlayer.getGame(), () -> {
                 ProtoServerChannelHandler.exchangePlayer(oldPlayer, player);
+                player.clearHeartTimeout();
                 cd.countDown();
                 oldPlayer.setAutoPlay(false);
+                oldPlayer.setHeartTimeout();
                 oldPlayer.reconnect();
                 log.info(oldPlayer + "断线重连成功");
             });

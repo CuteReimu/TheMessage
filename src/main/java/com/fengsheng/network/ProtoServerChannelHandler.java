@@ -115,7 +115,6 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
     }
 
     public static void exchangePlayer(HumanPlayer oldPlayer, HumanPlayer newPlayer) {
-        oldPlayer.getChannel().close();
         oldPlayer.setChannel(newPlayer.getChannel());
         if (playerCache.put(newPlayer.getChannel().id().asLongText(), oldPlayer) == null) {
             log.error("channel [id: " + newPlayer.getChannel().id().asLongText() + "] not exists");
