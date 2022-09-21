@@ -31,7 +31,7 @@ public class JingMeng extends AbstractSkill implements TriggeredSkill {
             return null;
         if (fsm.inFrontOfWhom().getSkillUseCount(getSkillId()) > 0)
             return null;
-        if (fsm.messageCard().getColors().contains(Common.color.Black))
+        if (!fsm.messageCard().getColors().contains(Common.color.Black))
             return null;
         fsm.inFrontOfWhom().addSkillUseCount(getSkillId());
         return new ResolveResult(new executeJingMengA(fsm), true);
