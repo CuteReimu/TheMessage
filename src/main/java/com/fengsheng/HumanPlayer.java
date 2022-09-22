@@ -29,6 +29,8 @@ public class HumanPlayer extends AbstractPlayer {
 
     private Timeout timeout;
 
+    private int timeoutCount = 0;
+
     private Timeout heartTimeout;
 
     private long lastHeartTime;
@@ -406,9 +408,18 @@ public class HumanPlayer extends AbstractPlayer {
     public void incrSeq() {
         seq++;
         if (timeout != null) {
-            timeout.cancel();
+            if (timeout.isExpired()) {
+                if (++timeoutCount >= 3)
+                    setAutoPlay(true);
+            } else {
+                timeout.cancel();
+            }
             timeout = null;
         }
+    }
+
+    public void clearTimeoutCount() {
+        timeoutCount = 0;
     }
 
     public int getWaitSeconds(int seconds) {
