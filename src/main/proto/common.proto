@@ -6,6 +6,7 @@ enum role {
   cheng_xiao_die = 2; // 程小蝶
   mao_bu_ba = 4; // 毛不拔
   fei_yuan_long_chuan = 7; // 肥圆龙川
+  pei_ling = 8; // 裴玲
   wang_kui = 12; // 王魁
   han_mei = 14; // 韩梅
   zheng_wen_xian = 15; // 鄭文先
@@ -19,6 +20,7 @@ enum role {
   bai_xiao_nian = 25; // 白小年
   lao_bie = 26; // 老鳖
   li_ning_yu = 28; // 李宁玉
+  shang_yu = 30; // 商玉
 }
 
 enum phase {

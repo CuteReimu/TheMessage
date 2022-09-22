@@ -306,3 +306,62 @@ message skill_jing_meng_b_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
 }
+
+// 商玉【借刀杀人】A：争夺阶段，你可以翻开此角色牌，然后抽取另一名角色的一张手牌并展示之。若展示的牌是非黑色，则你摸一张牌。
+message skill_jie_dao_sha_ren_a_tos {
+  uint32 target_player_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【借刀杀人】A
+message skill_jie_dao_sha_ren_a_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  card   card = 3; // 那张抽取的牌，所有人都能看到
+  uint32 waiting_second = 4; // 如果是黑色，则这个也会大于0。如果是非黑色，则这个也会等于0
+  uint32 seq = 5;
+}
+
+// 商玉【借刀杀人】B：若展示的牌是黑色，则你可以将其置入一名角色的情报区，并将你的角色牌翻至面朝下
+message skill_jie_dao_sha_ren_b_tos {
+  bool   enable = 1; // 是否发动
+  uint32 target_player_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【借刀杀人】B
+message skill_jie_dao_sha_ren_b_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  card   card = 3; // 那张贴的牌
+}
+
+// 裴玲【交际】A：出牌阶段限一次，你可以抽取一名角色的最多两张手牌。
+message skill_jiao_ji_a_tos {
+  uint32 target_player_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【交际】A
+message skill_jiao_ji_a_toc {
+  uint32        player_id = 1;
+  uint32        target_player_id = 2;
+  repeated card cards = 3; // 抽到的牌，只有使用者和目标角色能看到这个
+  uint32        unknown_card_count = 4; // 其他人看不到抽到的牌，只有数量
+  uint32        waiting_second = 5; // 如果不需要还，waiting_second就为0
+  uint32        seq = 6;
+}
+
+// 裴玲【交际】B：然后将等量手牌交给该角色。你每收集一张黑色情报，便可以少交一张牌。
+message skill_jiao_ji_b_tos {
+  repeated card cards = 1;
+  uint32        seq = 2;
+}
+
+// 广播使用【交际】B
+message skill_jiao_ji_b_toc {
+  uint32        player_id = 1;
+  uint32        target_player_id = 2;
+  repeated card cards = 3; // 抽到的牌，只有使用者和目标角色能看到这个
+  uint32        unknown_card_count = 4; // 其他人看不到抽到的牌，只有数量
+}
