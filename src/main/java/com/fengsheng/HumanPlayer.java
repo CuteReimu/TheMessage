@@ -129,6 +129,7 @@ public class HumanPlayer extends AbstractPlayer {
                 timeout = GameExecutor.TimeWheel.newTimeout(timeout.task(), delay, TimeUnit.SECONDS);
             }
         }
+        send(ProtoServerChannelHandler.stringHash("auto_play_toc"), Fengsheng.auto_play_toc.newBuilder().setEnable(autoPlay).build().toByteArray(), true);
     }
 
     @Override
