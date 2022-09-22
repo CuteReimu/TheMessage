@@ -111,6 +111,7 @@ public class HumanPlayer extends AbstractPlayer {
 
     public void setAutoPlay(boolean autoPlay) {
         if (this.autoPlay == autoPlay) return;
+        timeoutCount = 0;
         this.autoPlay = autoPlay;
         if (autoPlay) {
             if (timeout != null) {
@@ -412,7 +413,7 @@ public class HumanPlayer extends AbstractPlayer {
         seq++;
         if (timeout != null) {
             if (timeout.isExpired()) {
-                if (++timeoutCount >= 3)
+                if (!autoPlay && ++timeoutCount >= 3)
                     setAutoPlay(true);
             } else {
                 timeout.cancel();
