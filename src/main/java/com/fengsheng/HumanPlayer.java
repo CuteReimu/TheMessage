@@ -382,11 +382,12 @@ public class HumanPlayer extends AbstractPlayer {
      * 心跳相关计时器
      */
     public void setHeartTimeout() {
+        if (Config.IsGmEnable) return;
         if (heartTimeout != null) heartTimeout.cancel();
         heartTimeout = GameExecutor.TimeWheel.newTimeout(timeout -> {
             log.info(this + " heart timeout, duration " + (System.currentTimeMillis() - lastHeartTime) + " ms");
             if (channel.isActive()) channel.close();
-        }, 30, TimeUnit.SECONDS);
+        }, 60, TimeUnit.SECONDS);
         lastHeartTime = System.currentTimeMillis();
     }
 
