@@ -110,6 +110,7 @@ public class HumanPlayer extends AbstractPlayer {
     }
 
     public void setAutoPlay(boolean autoPlay) {
+        if (this.autoPlay == autoPlay) return;
         this.autoPlay = autoPlay;
         if (autoPlay) {
             if (timeout != null) {
