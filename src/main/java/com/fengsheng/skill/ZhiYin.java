@@ -40,8 +40,12 @@ public class ZhiYin extends AbstractSkill implements TriggeredSkill {
             if (p instanceof HumanPlayer player)
                 player.send(Role.skill_zhi_yin_toc.newBuilder().setPlayerId(player.getAlternativeLocation(fsm.inFrontOfWhom().location())).build());
         }
-        fsm.inFrontOfWhom().draw(1);
-        if (fsm.whoseTurn().isAlive()) fsm.whoseTurn().draw(1);
+        if (fsm.inFrontOfWhom() == fsm.whoseTurn()) {
+            fsm.inFrontOfWhom().draw(2);
+        } else {
+            fsm.inFrontOfWhom().draw(1);
+            if (fsm.whoseTurn().isAlive()) fsm.whoseTurn().draw(1);
+        }
         return null;
     }
 }
