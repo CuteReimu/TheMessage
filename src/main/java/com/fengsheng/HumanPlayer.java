@@ -114,18 +114,15 @@ public class HumanPlayer extends AbstractPlayer {
         timeoutCount = 0;
         this.autoPlay = autoPlay;
         if (autoPlay) {
-            if (timeout != null) {
-                var t = timeout;
-                timeout = null;
+            if (timeout != null && timeout.cancel()) {
                 try {
-                    t.task().run(t);
+                    timeout.task().run(timeout);
                 } catch (Exception e) {
                     log.error("time task exception", e);
                 }
             }
         } else {
-            if (timeout != null) {
-                timeout.cancel();
+            if (timeout != null && timeout.cancel()) {
                 int delay = game.getFsm() instanceof MainPhaseIdle ? 31 : 21;
                 timeout = GameExecutor.TimeWheel.newTimeout(timeout.task(), delay, TimeUnit.SECONDS);
             }
