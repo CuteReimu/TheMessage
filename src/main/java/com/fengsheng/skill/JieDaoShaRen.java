@@ -141,10 +141,6 @@ public class JieDaoShaRen extends AbstractSkill implements ActiveSkill {
                 log.error("目标错误");
                 return null;
             }
-            if (pb.getTargetPlayerId() == 0) {
-                log.error("不能以自己为目标");
-                return null;
-            }
             Player target = g.getPlayers()[r.getAbstractLocation(pb.getTargetPlayerId())];
             if (!target.isAlive()) {
                 log.error("目标已死亡");
