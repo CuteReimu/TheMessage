@@ -39,7 +39,7 @@ public class JiSong extends AbstractSkill implements ActiveSkill {
             log.error("操作太晚了, required Seq: " + humanPlayer.getSeq() + ", actual Seq: " + pb.getSeq());
             return;
         }
-        if (pb.getTargetPlayerId() < 0 || pb.getTargetPlayerId() > g.getPlayers().length) {
+        if (pb.getTargetPlayerId() < 0 || pb.getTargetPlayerId() >= g.getPlayers().length) {
             log.error("目标错误");
             return;
         }
