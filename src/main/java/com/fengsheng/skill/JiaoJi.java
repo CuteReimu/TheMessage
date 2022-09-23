@@ -33,7 +33,7 @@ public class JiaoJi extends AbstractSkill implements ActiveSkill {
             return;
         }
         if (r.getSkillUseCount(getSkillId()) > 0) {
-            log.error("交际]一回合只能发动一次");
+            log.error("[交际]一回合只能发动一次");
             return;
         }
         var pb = (Role.skill_jiao_ji_a_tos) message;
