@@ -20,14 +20,14 @@ public abstract class AbstractPlayer implements Player {
     protected final Map<Integer, Card> messageCards;
     protected Common.color identity;
     protected Common.secret_task secretTask;
-    protected final AliveInfo aliveInfo;
+    boolean alive = true;
+    boolean lose = false;
     protected RoleSkillsData roleSkillsData;
     protected final EnumMap<SkillId, Integer> skillUseCount;
 
     protected AbstractPlayer() {
         cards = new HashMap<>();
         messageCards = new HashMap<>();
-        aliveInfo = new AliveInfo();
         roleSkillsData = new RoleSkillsData();
         skillUseCount = new EnumMap<>(SkillId.class);
     }
@@ -192,22 +192,22 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public void setAlive(boolean alive) {
-        this.aliveInfo.alive = alive;
+        this.alive = alive;
     }
 
     @Override
     public boolean isAlive() {
-        return aliveInfo.alive;
+        return alive;
     }
 
     @Override
     public void setLose(boolean lose) {
-        this.aliveInfo.lose = lose;
+        this.lose = lose;
     }
 
     @Override
     public boolean isLose() {
-        return aliveInfo.lose;
+        return lose;
     }
 
     @Override
@@ -316,10 +316,5 @@ public abstract class AbstractPlayer implements Player {
     @Override
     public String toString() {
         return location + "号[" + getRoleName() + (isRoleFaceUp() ? "" : "(隐)") + "]";
-    }
-
-    private static class AliveInfo {
-        boolean alive = true;
-        boolean lose = false;
     }
 }

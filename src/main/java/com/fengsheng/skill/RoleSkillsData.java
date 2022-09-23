@@ -56,7 +56,7 @@ public class RoleSkillsData {
      * 获取角色是否是女性角色
      */
     public boolean isFemale() {
-        return isFemale;
+        return faceUp && isFemale;
     }
 
     /**
