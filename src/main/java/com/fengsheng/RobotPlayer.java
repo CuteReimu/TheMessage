@@ -218,6 +218,7 @@ public class RobotPlayer extends AbstractPlayer {
     static {
         aiSkillMainPhase.put(SkillId.XIN_SI_CHAO, XinSiChao::ai);
         aiSkillMainPhase.put(SkillId.GUI_ZHA, GuiZha::ai);
+        aiSkillMainPhase.put(SkillId.JIAO_JI, JiaoJi::ai);
         aiSkillFightPhase.put(SkillId.TOU_TIAN, TouTian::ai);
         aiSkillFightPhase.put(SkillId.JI_ZHI, JiZhi::ai);
         aiSkillFightPhase.put(SkillId.YI_HUA_JIE_MU, YiHuaJieMu::ai);

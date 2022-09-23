@@ -26,7 +26,8 @@ public final class RoleCache {
             new RoleSkillsData("顾小梦", gu_xiao_meng, true, false, new JiZhi(), new ChengZhi(), new WeiSheng()),
             new RoleSkillsData("李宁玉", li_ning_yu, true, false, new JiuJi(), new ChengFu(), new YiXin()),
             new RoleSkillsData("程小蝶", cheng_xiao_die, false, true, new ZhiYin(), new JingMeng()),
-            new RoleSkillsData("商玉", shang_yu, true, false, new JieDaoShaRen())
+            new RoleSkillsData("商玉", shang_yu, true, false, new JieDaoShaRen()),
+            new RoleSkillsData("裴玲", pei_ling, true, true, new JiaoJi())
     );
 
     private static final EnumMap<Common.role, RoleSkillsData> mapCache = new EnumMap<>(Common.role.class);

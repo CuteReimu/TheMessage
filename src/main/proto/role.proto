@@ -354,8 +354,8 @@ message skill_jiao_ji_a_toc {
 
 // 裴玲【交际】B：然后将等量手牌交给该角色。你每收集一张黑色情报，便可以少交一张牌。
 message skill_jiao_ji_b_tos {
-  repeated card cards = 1;
-  uint32        seq = 2;
+  repeated uint32 card_ids = 1;
+  uint32          seq = 2;
 }
 
 // 广播使用【交际】B
