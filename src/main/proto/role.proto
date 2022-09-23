@@ -322,7 +322,7 @@ message skill_jie_dao_sha_ren_a_toc {
   uint32 seq = 5;
 }
 
-// 商玉【借刀杀人】B：若展示的牌是黑色，则你可以将其置入一名角色的情报区，并将你的角色牌翻至面朝下
+// 商玉【借刀杀人】B：若展示的牌是黑色，则你可以将其置入一名角色的情报区，并将你的角色牌翻至面朝下。
 message skill_jie_dao_sha_ren_b_tos {
   bool   enable = 1; // 是否发动
   uint32 target_player_id = 2;

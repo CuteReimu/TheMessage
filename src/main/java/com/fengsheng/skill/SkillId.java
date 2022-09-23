@@ -6,7 +6,7 @@ public enum SkillId {
     TOU_TIAN("偷天"), HUAN_RI("换日"), YI_HUA_JIE_MU("移花接木"), LIAN_MIN("怜悯"),
     FU_HEI("腹黑"), SHI_SI("视死"), RU_GUI("如归"), JI_ZHI("集智"), CHENG_ZHI("承志"),
     WEI_SHENG("尾声"), JIU_JI("就计"), CHENG_FU("城府"), YI_XIN("遗信"), ZHI_YIN("知音"),
-    JING_MENG("惊梦");
+    JING_MENG("惊梦"), JIE_DAO_SHA_REN("借刀杀人"), JIAO_JI("交际"), JI_SONG("急送"), ZHUAN_JIAO("转交");
 
     private final String name;
 
