@@ -23,7 +23,7 @@ public class JiaoJi extends AbstractSkill implements ActiveSkill {
 
     @Override
     public SkillId getSkillId() {
-        return SkillId.XIN_SI_CHAO;
+        return SkillId.JIAO_JI;
     }
 
     @Override
@@ -207,7 +207,7 @@ public class JiaoJi extends AbstractSkill implements ActiveSkill {
             return false;
         Player target = players.get(ThreadLocalRandom.current().nextInt(players.size()));
         GameExecutor.post(player.getGame(), () -> skill.executeProtocol(
-                player.getGame(), player, Role.skill_jie_dao_sha_ren_a_tos.newBuilder()
+                player.getGame(), player, Role.skill_jiao_ji_a_tos.newBuilder()
                         .setTargetPlayerId(player.getAlternativeLocation(target.location())).build()
         ), 2, TimeUnit.SECONDS);
         return true;
