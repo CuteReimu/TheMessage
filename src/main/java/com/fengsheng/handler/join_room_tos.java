@@ -66,7 +66,7 @@ public class join_room_tos implements ProtoHandler {
                     log.warn("怀疑连续发送了两次连接请求。为了游戏体验，拒绝本次连接。想要单设备双开请修改不同的用户名。");
                     reply = Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.join_room_too_fast).build();
                 } else {
-                    player.setPlayerName(playerName.isBlank() ? Player.randPlayerName() : playerName);
+                    player.setPlayerName(playerName.isBlank() ? "没起名字的玩家" : playerName);
                     player.setGame(Game.getInstance());
                     player.getGame().onPlayerJoinRoom(player);
                     var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location());

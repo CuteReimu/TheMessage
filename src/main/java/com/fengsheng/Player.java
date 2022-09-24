@@ -2,7 +2,6 @@ package com.fengsheng;
 
 import com.fengsheng.card.Card;
 import com.fengsheng.protos.Common;
-import com.fengsheng.skill.RoleCache;
 import com.fengsheng.skill.RoleSkillsData;
 import com.fengsheng.skill.Skill;
 import com.fengsheng.skill.SkillId;
@@ -328,9 +327,6 @@ public interface Player {
     }
 
     static String randPlayerName() {
-        final String[] nameAdj = new String[]{"开心", "高兴", "愉悦", "幸福", "得意", "欢乐", "快活", "陶醉", "甜美", "兴奋", "失落", "委屈", "绝望", "哭泣", "伤心", "沮丧", "落魄", "躁郁", "无聊"};
-        String adj = nameAdj[ThreadLocalRandom.current().nextInt(nameAdj.length)];
-        String name = RoleCache.randName();
-        return adj + "的" + name;
+        return Integer.toString(ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
     }
 }
