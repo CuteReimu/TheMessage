@@ -48,6 +48,10 @@ public class JiSong extends AbstractSkill implements ActiveSkill {
             log.error("目标已死亡");
             return;
         }
+        if (target == fsm.inFrontOfWhom) {
+            log.error("情报本来就在他面前");
+            return;
+        }
         Card messageCard = null;
         Card[] cards = new Card[2];
         if (pb.getCardIdsCount() == 0 && pb.getMessageCard() != 0) {
