@@ -19,7 +19,7 @@ public class add_robot_tos extends AbstractProtoHandler<Fengsheng.add_robot_tos>
                 return;
             }
             if (player.getGame().getPlayers().length > 5) {
-                player.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allows).build());
+                player.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build());
                 return;
             }
             Player robotPlayer = new RobotPlayer();
