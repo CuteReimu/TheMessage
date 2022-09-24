@@ -183,7 +183,7 @@ public class JingMeng extends AbstractSkill implements TriggeredSkill {
             return false;
         Player p = fsm.fsm().inFrontOfWhom();
         Player target = fsm.fsm().whoseTurn();
-        if (!target.isAlive() || target.getCards().isEmpty())
+        if (p == target || !target.isAlive() || target.getCards().isEmpty())
             return false;
         GameExecutor.post(p.getGame(), () -> p.getGame().tryContinueResolveProtocol(p, Role.skill_jing_meng_a_tos.newBuilder()
                 .setTargetPlayerId(p.getAlternativeLocation(target.location())).build()), 2, TimeUnit.SECONDS);
