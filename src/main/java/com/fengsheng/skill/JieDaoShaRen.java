@@ -62,13 +62,12 @@ public class JieDaoShaRen extends AbstractSkill implements ActiveSkill {
         g.playerSetRoleFaceUp(r, true);
         Card[] cards = target.getCards().values().toArray(new Card[0]);
         Card card = cards[ThreadLocalRandom.current().nextInt(cards.length)];
-        g.resolve(new excuteJieDaoShaRen(fsm, target, card));
+        g.resolve(new excuteJieDaoShaRen(fsm, r, target, card));
     }
 
-    private record excuteJieDaoShaRen(FightPhaseIdle fsm, Player target, Card card) implements WaitingFsm {
+    private record excuteJieDaoShaRen(FightPhaseIdle fsm, Player r, Player target, Card card) implements WaitingFsm {
         @Override
         public ResolveResult resolve() {
-            final Player r = fsm.whoseFightTurn;
             final Game g = r.getGame();
             target.deleteCard(card.getId());
             r.addCard(card);
@@ -119,7 +118,7 @@ public class JieDaoShaRen extends AbstractSkill implements ActiveSkill {
 
         @Override
         public ResolveResult resolveProtocol(Player player, GeneratedMessageV3 message) {
-            if (player != fsm.whoseFightTurn) {
+            if (player != r) {
                 log.error("不是你发技能的时机");
                 return null;
             }
@@ -127,7 +126,6 @@ public class JieDaoShaRen extends AbstractSkill implements ActiveSkill {
                 log.error("错误的协议");
                 return null;
             }
-            Player r = fsm.whoseFightTurn;
             Game g = r.getGame();
             if (r instanceof HumanPlayer humanPlayer && !humanPlayer.checkSeq(pb.getSeq())) {
                 log.error("操作太晚了, required Seq: " + humanPlayer.getSeq() + ", actual Seq: " + pb.getSeq());
