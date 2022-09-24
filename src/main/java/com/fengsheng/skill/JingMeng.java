@@ -169,6 +169,7 @@ public class JingMeng extends AbstractSkill implements TriggeredSkill {
                     var builder = Role.skill_jing_meng_b_toc.newBuilder();
                     builder.setPlayerId(player1.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(player1.getAlternativeLocation(target.location()));
+                    builder.setCard(card.toPbCard());
                     player1.send(builder.build());
                 }
             }

@@ -305,6 +305,7 @@ message skill_jing_meng_b_tos {
 message skill_jing_meng_b_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
+  card   card = 3; // 用于客户端战报显示，弃牌走弃牌协议
 }
 
 // 商玉【借刀杀人】A：争夺阶段，你可以翻开此角色牌，然后抽取另一名角色的一张手牌并展示之。若展示的牌是非黑色，则你摸一张牌。
