@@ -43,9 +43,10 @@ public class ZhuanJiao extends AbstractSkill implements TriggeredSkill {
         if (fsm.askWhom.getSkillUseCount(getSkillId()) > 0)
             return null;
         fsm.askWhom.addSkillUseCount(getSkillId());
+        final Fsm oldResolveFunc = fsm.resolveFunc;
         fsm.resolveFunc = () -> {
             fsm.askWhom.resetSkillUseCount(getSkillId());
-            return fsm.resolveFunc.resolve();
+            return oldResolveFunc.resolve();
         };
         return new ResolveResult(new executeZhuanJiao(fsm), true);
     }
@@ -82,6 +83,8 @@ public class ZhuanJiao extends AbstractSkill implements TriggeredSkill {
                     Common.color identity = r.getIdentity();
                     Common.color color = messageCard.getColors().get(0);
                     for (Player p : r.getGame().getPlayers()) {
+                        if (p == r)
+                            continue;
                         if (identity == Common.color.Black) {
                             if (color == p.getIdentity())
                                 continue;
