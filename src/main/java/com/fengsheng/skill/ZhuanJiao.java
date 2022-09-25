@@ -83,7 +83,7 @@ public class ZhuanJiao extends AbstractSkill implements TriggeredSkill {
                     Common.color identity = r.getIdentity();
                     Common.color color = messageCard.getColors().get(0);
                     for (Player p : r.getGame().getPlayers()) {
-                        if (p == r)
+                        if (p == r || !p.isAlive())
                             continue;
                         if (identity == Common.color.Black) {
                             if (color == p.getIdentity())
