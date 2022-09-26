@@ -91,6 +91,18 @@ public final class Game {
         Random random = ThreadLocalRandom.current();
         List<Common.color> identities = new ArrayList<>();
         switch (players.length) {
+            case 2:
+                identities = switch (random.nextInt(4)) {
+                    case 0 -> Arrays.asList(Common.color.Red, Common.color.Blue);
+                    case 1 -> Arrays.asList(Common.color.Red, Common.color.Black);
+                    case 2 -> Arrays.asList(Common.color.Blue, Common.color.Black);
+                    default -> Arrays.asList(Common.color.Black, Common.color.Black);
+                };
+                break;
+            case 9:
+                identities.add(Common.color.Red);
+                identities.add(Common.color.Blue);
+                identities.add(Common.color.Black);
             case 4:
                 identities.add(Common.color.Red);
                 identities.add(Common.color.Blue);

@@ -18,7 +18,7 @@ public class add_one_position_tos extends AbstractProtoHandler<Fengsheng.add_one
                 return;
             }
             Player[] players = player.getGame().getPlayers();
-            if (players.length >= 8) return;
+            if (players.length >= 9) return;
             Player[] newPlayers = new Player[players.length + 1];
             System.arraycopy(players, 0, newPlayers, 0, players.length);
             player.getGame().setPlayers(newPlayers);

@@ -18,7 +18,7 @@ public class remove_one_position_tos extends AbstractProtoHandler<Fengsheng.remo
                 return;
             }
             Player[] oldPlayers = player.getGame().getPlayers();
-            if (oldPlayers.length <= 3) return;
+            if (oldPlayers.length <= 2) return;
             int i = oldPlayers.length - 1;
             for (; i >= 0; i--)
                 if (oldPlayers[i] == null) break;
