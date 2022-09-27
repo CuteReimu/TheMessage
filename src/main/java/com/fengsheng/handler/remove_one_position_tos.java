@@ -25,6 +25,10 @@ public class remove_one_position_tos extends AbstractProtoHandler<Fengsheng.remo
             Player[] players = new Player[oldPlayers.length - 1];
             System.arraycopy(oldPlayers, 0, players, 0, i);
             System.arraycopy(oldPlayers, i + 1, players, i, oldPlayers.length - i - 1);
+            for (i = 0; i < players.length; i++) {
+                if (players[i] != null)
+                    players[i].setLocation(i);
+            }
             player.getGame().setPlayers(players);
             for (Player p : players) {
                 if (p instanceof HumanPlayer)
