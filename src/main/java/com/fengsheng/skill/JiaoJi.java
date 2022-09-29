@@ -97,14 +97,12 @@ public class JiaoJi extends AbstractSkill implements ActiveSkill {
                         player.setTimeout(GameExecutor.post(g, () -> {
                             if (player.checkSeq(seq2)) {
                                 var builder2 = Role.skill_jiao_ji_b_tos.newBuilder().setSeq(seq2);
-                                for (int i = 0; i < needReturnCount; i++) {
-                                    Card card = null;
-                                    for (Card c : r.getCards().values()) {
-                                        card = c;
+                                int i = 0;
+                                for (Card c : r.getCards().values()) {
+                                    if (i >= needReturnCount)
                                         break;
-                                    }
-                                    assert card != null;
-                                    builder2.addCardIds(card.getId());
+                                    builder2.addCardIds(c.getId());
+                                    i++;
                                 }
                                 g.tryContinueResolveProtocol(r, builder2.build());
                             }
