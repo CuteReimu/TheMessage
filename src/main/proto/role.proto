@@ -366,3 +366,160 @@ message skill_jiao_ji_b_toc {
   repeated card cards = 3; // 抽到的牌，只有使用者和目标角色能看到这个
   uint32        unknown_card_count = 4; // 其他人看不到抽到的牌，只有数量
 }
+
+// 连鸢【妙笔巧辩】A：争夺阶段，你可以翻开此角色牌，然后从所有角色的情报区选择合计至多两张不含有相同颜色的情报，将其加入你的手牌。
+message skill_miao_bi_qiao_bian_a_tos {
+  uint32 target_player_id = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【妙笔巧辩】A，广播选择第一张牌，并等待选择第二张牌
+message skill_miao_bi_qiao_bian_a_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  card   card = 3;
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// 连鸢【妙笔巧辩】B，选择第二张牌
+message skill_miao_bi_qiao_bian_b_tos {
+  uint32 target_player_id = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【妙笔巧辩】B，广播选择第二张牌
+message skill_miao_bi_qiao_bian_b_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  card   card = 3;
+}
+
+// 王田香【禁闭】A：出牌阶段限一次，你可以指定一名角色。
+message skill_jin_bi_a_tos {
+  uint32 target_player_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【禁闭】A，如果他不够两张手牌，会直接不发这条协议，直接发【禁闭】B协议
+message skill_jin_bi_a_toc {
+  uint32 player_id = 1; // 王田香的ID
+  uint32 target_player_id = 2; // 被禁闭的人的ID
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// 王田香【禁闭】B：除非其交给你两张手牌，否则其本回合不能使用手牌，且所有角色技能无效。
+message skill_jin_bi_b_tos {
+  repeated uint32 card_id = 1;
+  uint32          seq = 2;
+}
+
+// 广播使用【禁闭】B
+message skill_jin_bi_b_toc {
+  uint32        player_id = 1; // 王田香的ID
+  uint32        target_player_id = 2; // 被禁闭的人的ID
+  repeated card cards = 3; // 交出的牌，只有王田香和被禁闭的人能看到
+  uint32        unknown_card_count = 4; // 其他人看不到交出的牌，只有数量
+  uint32        seq = 5;
+}
+
+// 阿芙罗拉【妙手】A：争夺阶段，你可以翻开此角色牌，然后弃置待接收情报，并查看一名角色的手牌和情报区。
+message skill_miao_shou_a_tos {
+  uint32 target_player_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【妙手】A
+message skill_miao_shou_a_toc {
+  uint32        player_id = 1;
+  uint32        target_player_id = 2;
+  repeated card cards = 3; // 他的手牌，只有阿芙罗拉能看见
+  uint32        waiting_second = 4;
+  uint32        seq = 5;
+}
+
+// 阿芙罗拉【妙手】B：从中选择一张牌作为待收情报，面朝上移至一名角色的面前。
+message skill_miao_shou_b_tos {
+  uint32 card_id = 1; // 手牌ID，和下面的情报ID二选一
+  uint32 message_card_id = 2; // 情报ID，和上面的手牌ID二选一
+  uint32 target_player_id = 3; // 移至谁的面前
+  uint32 seq = 4;
+}
+
+// 广播使用【妙手】B
+message skill_miao_shou_b_toc {
+  uint32 player_id = 1; // 阿芙罗拉的ID
+  uint32 from_player_id = 2; // 那张牌本来是谁的
+  card   card = 3; // 选的那张手牌，和下面的情报二选一
+  card   message_card = 4; // 选的那张情报，和上面的手牌二选一
+  uint32 target_player_id = 5; // 移至谁的面前
+}
+
+// 玄青子【金口一开】A：你的回合的争夺阶段限一次，你可以查看牌堆顶的一张牌。
+message skill_jin_kou_yi_kai_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【金口一开】A
+message skill_jin_kou_yi_kai_a_toc {
+  uint32 player_id = 1;
+  card card = 2; // 那张牌，只有玄青子能看见
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// 玄青子【金口一开】B：然后选择一项：
+// ♦ 你摸一张牌。
+// ♦ 将牌堆顶的一张牌和待接收情报面朝下互换
+message skill_jin_kou_yi_kai_b_tos {
+  bool exchange = 1; // false-摸一张牌，true-互换
+  uint32 seq = 2;
+}
+
+// 广播使用【金口一开】B
+message skill_jin_kou_yi_kai_b_toc {
+  uint32 player_id = 1;
+  bool exchange = 2; // false-摸一张牌，true-互换。摸牌走摸牌协议，互换由客户端自行处理。
+}
+
+// 广播询问客户端使用【江湖令】A
+message skill_wait_for_jiang_hu_ling_a_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 王富贵【江湖令】A：你传出情报后，可以宣言一个颜色。
+message skill_jiang_hu_ling_a_tos {
+  color color = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【江湖令】A
+message skill_jiang_hu_ling_a_toc {
+  uint32 player_id = 1;
+  color color = 2;
+}
+
+// 广播询问客户端使用【江湖令】B
+message skill_wait_for_jiang_hu_ling_b_toc {
+  uint32 player_id = 1;
+  color color = 2;
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// 王富贵【江湖令】B：本回合，当情报被接收后，你可以从接收者的情报区弃置一张被宣言颜色的情报，若弃置的是黑色情报，则你摸一张牌。
+// 如果不发动，则直接发 end_receive_phase_toc 即可
+message skill_jiang_hu_ling_b_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【江湖令】B，摸牌走摸牌协议
+message skill_jiang_hu_ling_b_toc {
+  uint32 card_id = 1;
+}
