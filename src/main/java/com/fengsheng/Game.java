@@ -28,7 +28,7 @@ public final class Game {
     private volatile boolean started;
     private volatile boolean ended;
     private Player[] players;
-    private final Deck deck = new Deck(this);
+    private Deck deck;
     private Fsm fsm;
     private final List<TriggeredSkill> listeningSkills = new ArrayList<>();
 
@@ -167,6 +167,10 @@ public final class Game {
 
     public Deck getDeck() {
         return deck;
+    }
+
+    public void setDeck(Deck deck) {
+        this.deck = deck;
     }
 
     /**
