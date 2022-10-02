@@ -385,9 +385,10 @@ message skill_miao_bi_qiao_bian_a_toc {
 
 // 连鸢【妙笔巧辩】B，选择第二张牌
 message skill_miao_bi_qiao_bian_b_tos {
-  uint32 target_player_id = 1;
-  uint32 card_id = 2;
-  uint32 seq = 3;
+  bool   enable = 1; // 不选第二张牌的话，enable填false
+  uint32 target_player_id = 2;
+  uint32 card_id = 3;
+  uint32 seq = 4;
 }
 
 // 广播使用【妙笔巧辩】B，广播选择第二张牌

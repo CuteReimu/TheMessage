@@ -117,8 +117,4 @@ public class ChengQing extends AbstractCard {
         GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p.player(), p.card().getId()), 2, TimeUnit.SECONDS);
         return true;
     }
-
-    private record PlayerAndCard(Player player, Card card) {
-
-    }
 }
