@@ -25,7 +25,7 @@ public class Deck {
             Collections.shuffle(cards.subList(0, 18));
             cards.subList(0, removeShiTan * 6).clear();
         }
-        this.nextId = cards.size() - 1;
+        this.nextId = DefaultDeck.size();
         Collections.shuffle(cards);
     }
 
