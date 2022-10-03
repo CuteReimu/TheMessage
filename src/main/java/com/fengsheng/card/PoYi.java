@@ -29,6 +29,10 @@ public class PoYi extends AbstractCard {
 
     @Override
     public boolean canUse(final Game g, final Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         if (!(g.getFsm() instanceof SendPhaseIdle fsm) || r != fsm.inFrontOfWhom) {
             log.error("破译的使用时机不对");
             return false;

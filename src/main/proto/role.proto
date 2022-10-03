@@ -424,7 +424,6 @@ message skill_jin_bi_b_toc {
   uint32        target_player_id = 2; // 被禁闭的人的ID
   repeated card cards = 3; // 交出的牌，只有王田香和被禁闭的人能看到
   uint32        unknown_card_count = 4; // 其他人看不到交出的牌，只有数量
-  uint32        seq = 5;
 }
 
 // 阿芙罗拉【妙手】A：争夺阶段，你可以翻开此角色牌，然后弃置待接收情报，并查看一名角色的手牌和情报区。

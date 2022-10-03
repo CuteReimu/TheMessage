@@ -33,8 +33,7 @@ public class RobotPlayer extends AbstractPlayer {
     @Override
     public void notifyMainPhase(int waitSecond) {
         var fsm = (MainPhaseIdle) game.getFsm();
-        Player player = fsm.player();
-        if (location != player.location()) return;
+        if (this != fsm.player()) return;
         for (Skill skill : getSkills()) {
             var ai = aiSkillMainPhase.get(skill.getSkillId());
             if (ai != null && ai.test(fsm, (ActiveSkill) skill)) return;
@@ -63,9 +62,11 @@ public class RobotPlayer extends AbstractPlayer {
     public void notifySendPhase(int waitSecond) {
         final var fsm = (SendPhaseIdle) game.getFsm();
         if (this != fsm.inFrontOfWhom) return;
-        for (Card card : cards.values()) {
-            var ai = aiSendPhase.get(card.getType());
-            if (ai != null && ai.test(fsm, card)) return;
+        if (this != game.getJinBiPlayer()) {
+            for (Card card : cards.values()) {
+                var ai = aiSendPhase.get(card.getType());
+                if (ai != null && ai.test(fsm, card)) return;
+            }
         }
         GameExecutor.post(game, () -> {
             var colors = fsm.messageCard.getColors();
@@ -219,6 +220,7 @@ public class RobotPlayer extends AbstractPlayer {
         aiSkillMainPhase.put(SkillId.XIN_SI_CHAO, XinSiChao::ai);
         aiSkillMainPhase.put(SkillId.GUI_ZHA, GuiZha::ai);
         aiSkillMainPhase.put(SkillId.JIAO_JI, JiaoJi::ai);
+        aiSkillMainPhase.put(SkillId.JIN_BI, JinBi::ai);
         aiSkillFightPhase.put(SkillId.TOU_TIAN, TouTian::ai);
         aiSkillFightPhase.put(SkillId.JI_ZHI, JiZhi::ai);
         aiSkillFightPhase.put(SkillId.YI_HUA_JIE_MU, YiHuaJieMu::ai);

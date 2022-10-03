@@ -32,6 +32,11 @@ public final class Game {
     private Fsm fsm;
     private final List<TriggeredSkill> listeningSkills = new ArrayList<>();
 
+    /**
+     * 用于王田香技能禁闭
+     */
+    private Player jinBiPlayer;
+
     private Game(int totalPlayerCount) {
         // 调用构造函数时加锁了，所以increaseId无需加锁
         id = ++increaseId;
@@ -171,6 +176,20 @@ public final class Game {
 
     public void setDeck(Deck deck) {
         this.deck = deck;
+    }
+
+    /**
+     * 用于王田香技能禁闭
+     */
+    public Player getJinBiPlayer() {
+        return jinBiPlayer;
+    }
+
+    /**
+     * 用于王田香技能禁闭
+     */
+    public void setJinBiPlayer(Player jinBiPlayer) {
+        this.jinBiPlayer = jinBiPlayer;
     }
 
     /**

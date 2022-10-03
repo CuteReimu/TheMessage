@@ -4,6 +4,7 @@ import com.fengsheng.Fsm;
 import com.fengsheng.Game;
 import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
+import com.fengsheng.skill.JinBi;
 
 /**
  * 即将跳转到下一回合时
@@ -22,6 +23,7 @@ public record NextTurn(Player player) implements Fsm {
                 for (Player p : game.getPlayers()) {
                     p.resetSkillUseCount();
                 }
+                JinBi.resetJinBi(game);
                 return new ResolveResult(new DrawPhase(player), true);
             }
         }
