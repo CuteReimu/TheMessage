@@ -30,7 +30,12 @@ public class join_room_tos implements ProtoHandler {
         }
         String device = pb.getDevice();
         final HumanPlayer oldPlayer = Game.deviceCache.get(device);
-        if (oldPlayer != null && !oldPlayer.isActive() && oldPlayer.getGame() != null && oldPlayer.getGame().isStarted() && !oldPlayer.getGame().isEnd()) { // 断线重连
+        if (oldPlayer != null && oldPlayer.getGame() != null && oldPlayer.getGame().isStarted() && !oldPlayer.getGame().isEnd()) { // 断线重连
+            if (oldPlayer.isActive()) {
+                player.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.join_room_too_fast).build());
+                player.getChannel().close();
+                return;
+            }
             CountDownLatch cd = new CountDownLatch(1);
             GameExecutor.post(oldPlayer.getGame(), () -> {
                 ProtoServerChannelHandler.exchangePlayer(oldPlayer, player);
