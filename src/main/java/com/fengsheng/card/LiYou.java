@@ -5,6 +5,8 @@ import com.fengsheng.phase.MainPhaseIdle;
 import com.fengsheng.phase.OnUseCard;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
+import com.fengsheng.protos.Role;
+import com.fengsheng.skill.SkillId;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -31,6 +33,10 @@ public class LiYou extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         Player target = (Player) args[0];
         return LiYou.canUse(g, r, target);
     }
@@ -86,11 +92,26 @@ public class LiYou extends AbstractCard {
                     p.send(builder.build());
                 }
             }
-            if (card != null) g.getDeck().discard(card);
+            if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                target.addSkillUseCount(SkillId.JIU_JI);
+                if (card != null) {
+                    target.addCard(card);
+                    log.info(target + "将使用的" + card + "加入了手牌");
+                    for (Player player : g.getPlayers()) {
+                        if (player instanceof HumanPlayer p) {
+                            var builder = Role.skill_jiu_ji_b_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                            builder.setCard(card.toPbCard());
+                            p.send(builder.build());
+                        }
+                    }
+                }
+            } else {
+                if (card != null) g.getDeck().discard(card);
+            }
             return new ResolveResult(new MainPhaseIdle(r), true);
         };
         if (card != null)
-            g.resolve(new OnUseCard(r, r, card, r, resolveFunc));
+            g.resolve(new OnUseCard(r, r, target, card, Common.card_type.Li_You, r, resolveFunc));
         else
             g.resolve(resolveFunc);
     }

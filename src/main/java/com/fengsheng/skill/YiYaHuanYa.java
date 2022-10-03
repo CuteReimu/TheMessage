@@ -9,6 +9,9 @@ import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+
 /**
  * 王魁技能【以牙还牙】：你接收黑色情报后，可以将一张黑色手牌置入情报传出者或其相邻角色的情报区，然后摸一张牌。
  */
@@ -105,5 +108,26 @@ public class YiYaHuanYa extends AbstractSkill implements TriggeredSkill {
             r.draw(1);
             return new ResolveResult(fsm, true);
         }
+    }
+
+    public static boolean ai(Fsm fsm0) {
+        if (!(fsm0 instanceof executeYiYaHuanYa fsm))
+            return false;
+        Player p = fsm.fsm().inFrontOfWhom();
+        Player target = fsm.fsm().whoseTurn();
+        if (p == target) {
+            target = ThreadLocalRandom.current().nextBoolean() ? target.getNextLeftAlivePlayer() : target.getNextRightAlivePlayer();
+            if (p == target) return false;
+        }
+        final Player finalTarget = target;
+        for (Card card : p.getCards().values()) {
+            if (card.getColors().contains(Common.color.Black)) {
+                GameExecutor.post(p.getGame(), () ->
+                        p.getGame().tryContinueResolveProtocol(p, Role.skill_yi_ya_huan_ya_tos.newBuilder().setCardId(card.getId())
+                                .setTargetPlayerId(p.getAlternativeLocation(finalTarget.location())).build()), 2, TimeUnit.SECONDS);
+                return true;
+            }
+        }
+        return false;
     }
 }

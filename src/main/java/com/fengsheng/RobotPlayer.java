@@ -10,42 +10,38 @@ import org.apache.log4j.Logger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 public class RobotPlayer extends AbstractPlayer {
     private static final Logger log = Logger.getLogger(RobotPlayer.class);
 
     public RobotPlayer() {
-
-    }
-
-    public RobotPlayer(AbstractPlayer player) {
-        super(player);
+        // Do nothing
     }
 
     @Override
     public void notifyAddHandCard(int location, int unknownCount, Card... cards) {
-
+        // Do nothing
     }
 
     @Override
     public void notifyDrawPhase() {
-
+        // Do nothing
     }
 
     @Override
     public void notifyMainPhase(int waitSecond) {
         var fsm = (MainPhaseIdle) game.getFsm();
-        Player player = fsm.player();
-        if (location != player.location()) return;
+        if (this != fsm.player()) return;
         for (Skill skill : getSkills()) {
             var ai = aiSkillMainPhase.get(skill.getSkillId());
-            if (ai != null && ai.apply(fsm, (ActiveSkill) skill)) return;
+            if (ai != null && ai.test(fsm, (ActiveSkill) skill)) return;
         }
-        if (cards.size() > 1) {
+        if (cards.size() > 1 && findSkill(SkillId.JI_SONG) == null) {
             for (Card card : cards.values()) {
                 var ai = aiMainPhase.get(card.getType());
-                if (ai != null && ai.apply(fsm, card)) return;
+                if (ai != null && ai.test(fsm, card)) return;
             }
         }
         GameExecutor.post(game, () -> game.resolve(new SendPhaseStart(this)), 2, TimeUnit.SECONDS);
@@ -59,16 +55,18 @@ public class RobotPlayer extends AbstractPlayer {
     }
 
     public void notifySendMessageCard(Player player, Player targetPlayer, Player[] lockedPlayers, Card messageCard, Common.direction direction) {
-
+        // Do nothing
     }
 
     @Override
     public void notifySendPhase(int waitSecond) {
         final var fsm = (SendPhaseIdle) game.getFsm();
         if (this != fsm.inFrontOfWhom) return;
-        for (Card card : cards.values()) {
-            var ai = aiSendPhase.get(card.getType());
-            if (ai != null && ai.apply(fsm, card)) return;
+        if (this != game.getJinBiPlayer()) {
+            for (Card card : cards.values()) {
+                var ai = aiSendPhase.get(card.getType());
+                if (ai != null && ai.test(fsm, card)) return;
+            }
         }
         GameExecutor.post(game, () -> {
             var colors = fsm.messageCard.getColors();
@@ -84,7 +82,7 @@ public class RobotPlayer extends AbstractPlayer {
 
     @Override
     public void notifyChooseReceiveCard(Player player) {
-
+        // Do nothing
     }
 
     @Override
@@ -93,30 +91,33 @@ public class RobotPlayer extends AbstractPlayer {
         if (this != fsm.whoseFightTurn) return;
         for (Skill skill : getSkills()) {
             var ai = aiSkillFightPhase.get(skill.getSkillId());
-            if (ai != null && ai.apply(fsm, (ActiveSkill) skill)) return;
+            if (ai != null && ai.test(fsm, (ActiveSkill) skill)) return;
         }
         for (Card card : cards.values()) {
             var ai = aiFightPhase.get(card.getType());
-            if (ai != null && ai.apply(fsm, card)) return;
+            if (ai != null && ai.test(fsm, card)) return;
         }
         GameExecutor.post(game, () -> game.resolve(new FightPhaseNext(fsm)), 2, TimeUnit.SECONDS);
     }
 
     @Override
     public void notifyReceivePhase() {
-
+        // Do nothing
     }
 
     @Override
     public void notifyReceivePhase(Player whoseTurn, Player inFrontOfWhom, Card messageCard, Player waitingPlayer, int waitSecond) {
         if (waitingPlayer != this) return;
-        // TODO 需要增加AI
+        for (Skill skill : getSkills()) {
+            var ai = aiSkillReceivePhase.get(skill.getSkillId());
+            if (ai != null && ai.test(game.getFsm())) return;
+        }
         GameExecutor.TimeWheel.newTimeout(timeout -> game.tryContinueResolveProtocol(this, Fengsheng.end_receive_phase_tos.getDefaultInstance()), 2, TimeUnit.SECONDS);
     }
 
     @Override
     public void notifyWin(Player[] declareWinners, Player[] winners) {
-
+        // Do nothing
     }
 
     @Override
@@ -208,21 +209,30 @@ public class RobotPlayer extends AbstractPlayer {
                 lockedPlayer == null ? new Player[0] : new Player[]{lockedPlayer}));
     }
 
-    @Override
-    public String toString() {
-        return location + "号[" + (isRoleFaceUp() ? getRoleName() : "机器人") + "]";
-    }
-
-    private static final Map<SkillId, BiFunction<MainPhaseIdle, ActiveSkill, Boolean>> aiSkillMainPhase = new HashMap<>();
-    private static final Map<Common.card_type, BiFunction<MainPhaseIdle, Card, Boolean>> aiMainPhase = new HashMap<>();
-    private static final Map<Common.card_type, BiFunction<SendPhaseIdle, Card, Boolean>> aiSendPhase = new HashMap<>();
-    private static final Map<SkillId, BiFunction<FightPhaseIdle, ActiveSkill, Boolean>> aiSkillFightPhase = new HashMap<>();
-    private static final Map<Common.card_type, BiFunction<FightPhaseIdle, Card, Boolean>> aiFightPhase = new HashMap<>();
+    private static final EnumMap<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>> aiSkillMainPhase = new EnumMap<>(SkillId.class);
+    private static final EnumMap<Common.card_type, BiPredicate<MainPhaseIdle, Card>> aiMainPhase = new EnumMap<>(Common.card_type.class);
+    private static final EnumMap<Common.card_type, BiPredicate<SendPhaseIdle, Card>> aiSendPhase = new EnumMap<>(Common.card_type.class);
+    private static final EnumMap<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>> aiSkillFightPhase = new EnumMap<>(SkillId.class);
+    private static final EnumMap<Common.card_type, BiPredicate<FightPhaseIdle, Card>> aiFightPhase = new EnumMap<>(Common.card_type.class);
+    private static final EnumMap<SkillId, Predicate<Fsm>> aiSkillReceivePhase = new EnumMap<>(SkillId.class);
 
     static {
         aiSkillMainPhase.put(SkillId.XIN_SI_CHAO, XinSiChao::ai);
         aiSkillMainPhase.put(SkillId.GUI_ZHA, GuiZha::ai);
+        aiSkillMainPhase.put(SkillId.JIAO_JI, JiaoJi::ai);
+        aiSkillMainPhase.put(SkillId.JIN_BI, JinBi::ai);
         aiSkillFightPhase.put(SkillId.TOU_TIAN, TouTian::ai);
+        aiSkillFightPhase.put(SkillId.JI_ZHI, JiZhi::ai);
+        aiSkillFightPhase.put(SkillId.YI_HUA_JIE_MU, YiHuaJieMu::ai);
+        aiSkillFightPhase.put(SkillId.JIE_DAO_SHA_REN, JieDaoShaRen::ai);
+        aiSkillFightPhase.put(SkillId.JI_SONG, JiSong::ai);
+        aiSkillFightPhase.put(SkillId.MIAO_BI_QIAO_BIAN, MiaoBiQiaoBian::ai);
+        aiSkillReceivePhase.put(SkillId.JIN_SHEN, JinShen::ai);
+        aiSkillReceivePhase.put(SkillId.LIAN_MIN, LianMin::ai);
+        aiSkillReceivePhase.put(SkillId.MIAN_LI_CANG_ZHEN, MianLiCangZhen::ai);
+        aiSkillReceivePhase.put(SkillId.QI_HUO_KE_JU, QiHuoKeJu::ai);
+        aiSkillReceivePhase.put(SkillId.YI_YA_HUAN_YA, YiYaHuanYa::ai);
+        aiSkillReceivePhase.put(SkillId.JING_MENG, JingMeng::ai);
         aiMainPhase.put(Common.card_type.Cheng_Qing, ChengQing::ai);
         aiMainPhase.put(Common.card_type.Li_You, LiYou::ai);
         aiMainPhase.put(Common.card_type.Ping_Heng, PingHeng::ai);

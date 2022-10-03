@@ -2,10 +2,7 @@ package com.fengsheng.skill;
 
 import com.fengsheng.protos.Common;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.fengsheng.protos.Common.role.*;
@@ -25,10 +22,19 @@ public final class RoleCache {
             new RoleSkillsData("鄭文先", zheng_wen_xian, false, false, new TouTian(), new HuanRi()),
             new RoleSkillsData("韩梅", han_mei, true, false, new YiHuaJieMu()),
             new RoleSkillsData("白菲菲", bai_fei_fei, true, true, new LianMin(), new FuHei()),
-            new RoleSkillsData("老汉", lao_han, true, true, new ShiSi(), new RuGui())
+            new RoleSkillsData("老汉", lao_han, true, true, new ShiSi(), new RuGui()),
+            new RoleSkillsData("顾小梦", gu_xiao_meng, true, false, new JiZhi(), new ChengZhi(), new WeiSheng()),
+            new RoleSkillsData("李宁玉", li_ning_yu, true, false, new JiuJi(), new ChengFu(), new YiXin()),
+            new RoleSkillsData("程小蝶", cheng_xiao_die, false, true, new ZhiYin(), new JingMeng()),
+            new RoleSkillsData("商玉", shang_yu, true, false, new JieDaoShaRen()),
+            new RoleSkillsData("裴玲", pei_ling, true, true, new JiaoJi()),
+            new RoleSkillsData("鬼脚", gui_jiao, false, true, new JiSong()),
+            new RoleSkillsData("白小年", bai_xiao_nian, false, true, new ZhuanJiao()),
+            new RoleSkillsData("连鸢", lian_yuan, true, false, new MiaoBiQiaoBian()),
+            new RoleSkillsData("王田香", wang_tian_xiang, false, true, new JinBi())
     );
 
-    private static final Map<Common.role, RoleSkillsData> mapCache = new HashMap<>();
+    private static final EnumMap<Common.role, RoleSkillsData> mapCache = new EnumMap<>(Common.role.class);
 
     static {
         for (RoleSkillsData data : cache)
@@ -45,19 +51,12 @@ public final class RoleCache {
     public static RoleSkillsData[] getRandomRoles(int n) {
         RoleSkillsData[] result = new RoleSkillsData[n];
         Random random = ThreadLocalRandom.current();
-        int[] indexArray = new int[Math.max(cache.size(), n)];
+        Integer[] indexArray = new Integer[cache.size()];
         for (int i = 0; i < indexArray.length; i++)
             indexArray[i] = i;
-        for (int i = 0; i < n; i++) {
-            int index = random.nextInt(i, indexArray.length);
-            if (i != index) {
-                int temp = indexArray[i];
-                indexArray[i] = indexArray[index];
-                indexArray[index] = temp;
-            }
-        }
+        Collections.shuffle(Arrays.asList(indexArray), random);
         for (int i = 0; i < n; i++)
-            result[i] = indexArray[i] < cache.size() ? cache.get(indexArray[i]) : new RoleSkillsData();
+            result[i] = i < indexArray.length ? cache.get(indexArray[i]) : new RoleSkillsData();
         return result;
     }
 
@@ -66,18 +65,18 @@ public final class RoleCache {
      * @param roles 返回数组的前几个角色强行指定
      * @return 长度为 {@code n} 的数组
      */
-    public static RoleSkillsData[] getRandomRolesWithSpecific(int n, Common.role... roles) {
+    public static RoleSkillsData[] getRandomRolesWithSpecific(int n, List<Common.role> roles) {
         RoleSkillsData[] roleSkillsDataArray = getRandomRoles(n);
-        for (int roleIndex = 0; roleIndex < roles.length; roleIndex++) {
+        for (int roleIndex = 0; roleIndex < roles.size(); roleIndex++) {
             int index = -1;
             for (int i = 0; i < roleSkillsDataArray.length; i++) {
-                if (roles[roleIndex] == roleSkillsDataArray[i].getRole()) {
+                if (roles.get(roleIndex) == roleSkillsDataArray[i].getRole()) {
                     index = i;
                     break;
                 }
             }
             if (index == -1) {
-                RoleSkillsData data = mapCache.get(roles[roleIndex]);
+                RoleSkillsData data = mapCache.get(roles.get(roleIndex));
                 roleSkillsDataArray[roleIndex] = data != null ? data : new RoleSkillsData();
             } else {
                 RoleSkillsData temp = roleSkillsDataArray[index];

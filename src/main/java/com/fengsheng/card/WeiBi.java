@@ -5,6 +5,8 @@ import com.fengsheng.phase.MainPhaseIdle;
 import com.fengsheng.phase.OnUseCard;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
+import com.fengsheng.protos.Role;
+import com.fengsheng.skill.SkillId;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
@@ -33,6 +35,10 @@ public class WeiBi extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         Player target = (Player) args[0];
         Common.card_type wantType = (Common.card_type) args[1];
         return WeiBi.canUse(g, r, target, wantType);
@@ -43,7 +49,7 @@ public class WeiBi extends AbstractCard {
             log.error("威逼的使用时机不对");
             return false;
         }
-        if (r.equals(target)) {
+        if (r == target) {
             log.error("威逼不能对自己使用");
             return false;
         }
@@ -51,7 +57,7 @@ public class WeiBi extends AbstractCard {
             log.error("目标已死亡");
             return false;
         }
-        if (wantType != Cheng_Qing && wantType != Jie_Huo && wantType != Diao_Bao && wantType != Wu_Dao) {
+        if (!availableCardType.contains(wantType)) {
             log.error("威逼选择的卡牌类型错误：" + wantType);
             return false;
         }
@@ -74,6 +80,34 @@ public class WeiBi extends AbstractCard {
      */
     public static void execute(final WeiBi card, final Game g, final Player r, final Player target, final Common.card_type wantType) {
         Fsm resolveFunc = () -> {
+            if (target.isRoleFaceUp() && target.findSkill(SkillId.CHENG_FU) != null) {
+                log.info(target + "触发了[城府]，威逼无效");
+                for (Player player : g.getPlayers()) {
+                    if (player instanceof HumanPlayer p) {
+                        var builder = Role.skill_cheng_fu_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                        builder.setFromPlayerId(p.getAlternativeLocation(r.location()));
+                        if (card != null) builder.setCard(card.toPbCard());
+                        p.send(builder.build());
+                    }
+                }
+                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                    target.addSkillUseCount(SkillId.JIU_JI);
+                    if (card != null) {
+                        target.addCard(card);
+                        log.info(target + "将使用的" + card + "加入了手牌");
+                        for (Player player : g.getPlayers()) {
+                            if (player instanceof HumanPlayer p) {
+                                var builder = Role.skill_jiu_ji_b_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                                builder.setCard(card.toPbCard());
+                                p.send(builder.build());
+                            }
+                        }
+                    }
+                } else if (card != null) {
+                    g.getDeck().discard(card);
+                }
+                return new ResolveResult(new MainPhaseIdle(r), true);
+            }
             if (hasCard(target, wantType)) {
                 return new ResolveResult(new executeWeiBi(r, target, card, wantType), true);
             } else {
@@ -86,7 +120,7 @@ public class WeiBi extends AbstractCard {
                         builder.setWantType(wantType);
                         builder.setPlayerId(p.getAlternativeLocation(r.location()));
                         builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                        if (p.equals(r)) {
+                        if (p == r) {
                             for (Card c : target.getCards().values())
                                 builder.addCards(c.toPbCard());
                         }
@@ -96,10 +130,7 @@ public class WeiBi extends AbstractCard {
                 return new ResolveResult(new MainPhaseIdle(r), true);
             }
         };
-        if (card != null)
-            g.resolve(new OnUseCard(r, r, card, r, resolveFunc));
-        else
-            g.resolve(resolveFunc);
+        g.resolve(new OnUseCard(r, r, target, card, Common.card_type.Wei_Bi, r, resolveFunc));
     }
 
     private static boolean hasCard(Player player, Common.card_type cardType) {
@@ -120,7 +151,7 @@ public class WeiBi extends AbstractCard {
                     builder.setWantType(wantType).setWaitingSecond(20);
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                    if (p.equals(target)) {
+                    if (p == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);
                         player.setTimeout(GameExecutor.post(r.getGame(), () -> {
@@ -129,7 +160,7 @@ public class WeiBi extends AbstractCard {
                                 autoSelect();
                                 r.getGame().resolve(new MainPhaseIdle(r));
                             }
-                        }, builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
+                        }, player.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
                     }
                     player.send(builder.build());
                 }
@@ -168,7 +199,8 @@ public class WeiBi extends AbstractCard {
                     var builder = Fengsheng.wei_bi_give_card_toc.newBuilder();
                     builder.setPlayerId(player.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(player.getAlternativeLocation(target.location()));
-                    player.send(builder.setCard(c.toPbCard()).build());
+                    if (p == r || p == target) builder.setCard(c.toPbCard());
+                    player.send(builder.build());
                 }
             }
             if (card != null) r.getGame().getDeck().discard(card);
@@ -196,11 +228,10 @@ public class WeiBi extends AbstractCard {
         var identity = player.getIdentity();
         List<Player> players = new ArrayList<>();
         for (Player p : player.getGame().getPlayers()) {
-            if (p != player && p.isAlive() && !p.getCards().isEmpty()) {
-                if (identity == Common.color.Black || identity != p.getIdentity()) {
-                    for (Card c : p.getCards().values())
-                        if (availableCardType.contains(c.getType())) players.add(p);
-                }
+            if (p != player && p.isAlive() && !p.getCards().isEmpty() && (identity == Common.color.Black || identity != p.getIdentity())
+                    && (!p.isRoleFaceUp() || p.findSkill(SkillId.CHENG_FU) == null)) {
+                for (Card c : p.getCards().values())
+                    if (availableCardType.contains(c.getType())) players.add(p);
             }
         }
         if (players.isEmpty()) return false;

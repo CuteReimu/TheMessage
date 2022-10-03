@@ -1,9 +1,11 @@
 package com.fengsheng.phase;
 
 import com.fengsheng.Fsm;
+import com.fengsheng.HumanPlayer;
 import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
 import com.fengsheng.protos.Common;
+import com.fengsheng.protos.Fengsheng;
 import org.apache.log4j.Logger;
 
 /**
@@ -22,7 +24,7 @@ public record MessageMoveNext(SendPhaseIdle sendPhase) implements Fsm {
                 log.info("情报到达" + sendPhase.inFrontOfWhom + "面前");
                 return new ResolveResult(sendPhase, true);
             } else {
-                return new ResolveResult(new NextTurn(sendPhase.whoseTurn), true);
+                return nextTurn();
             }
         } else {
             Player[] players = sendPhase.whoseTurn.getGame().getPlayers();
@@ -37,9 +39,29 @@ public record MessageMoveNext(SendPhaseIdle sendPhase) implements Fsm {
                     log.info("情报到达" + sendPhase.inFrontOfWhom + "面前");
                     return new ResolveResult(sendPhase, true);
                 } else if (sendPhase.whoseTurn == sendPhase.inFrontOfWhom) {
-                    return new ResolveResult(new NextTurn(sendPhase.whoseTurn), true);
+                    return nextTurn();
                 }
             }
         }
+    }
+
+    private ResolveResult nextTurn() {
+        sendPhase.inFrontOfWhom.getGame().getDeck().discard(sendPhase.messageCard);
+        if (!sendPhase.isMessageCardFaceUp) {
+            Player[] players = sendPhase.whoseTurn.getGame().getPlayers();
+            for (Player player : players) {
+                if (player instanceof HumanPlayer p) {
+                    var builder = Fengsheng.notify_phase_toc.newBuilder();
+                    builder.setCurrentPlayerId(p.getAlternativeLocation(sendPhase.whoseTurn.location()));
+                    builder.setCurrentPhase(Common.phase.Send_Phase);
+                    builder.setMessagePlayerId(p.getAlternativeLocation(sendPhase.inFrontOfWhom.location()));
+                    builder.setMessageCardDir(sendPhase.dir);
+                    builder.setMessageCard(sendPhase.messageCard.toPbCard());
+                    builder.setWaitingPlayerId(p.getAlternativeLocation(sendPhase.inFrontOfWhom.location()));
+                    p.send(builder.build());
+                }
+            }
+        }
+        return new ResolveResult(new NextTurn(sendPhase.whoseTurn), true);
     }
 }

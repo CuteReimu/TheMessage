@@ -10,14 +10,14 @@ public abstract class AbstractCard implements Card {
     protected final Common.direction direction;
     protected final boolean lockable;
 
-    public AbstractCard(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
+    protected AbstractCard(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         this.id = id;
         this.colors = List.of(colors);
         this.direction = direction;
         this.lockable = lockable;
     }
 
-    public AbstractCard(int id, AbstractCard card) {
+    protected AbstractCard(int id, AbstractCard card) {
         this.id = id;
         this.colors = card.colors;
         this.direction = card.direction;

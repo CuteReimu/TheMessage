@@ -27,19 +27,21 @@ public class HuanRi extends AbstractSkill implements TriggeredSkill {
 
     @Override
     public ResolveResult execute(Game g) {
-        if (!(g.getFsm() instanceof OnUseCard fsm) || fsm.player.findSkill(getSkillId()) == null || !fsm.player.isAlive())
+        if (!(g.getFsm() instanceof OnUseCard fsm) || fsm.askWhom.findSkill(getSkillId()) == null || !fsm.askWhom.isAlive())
             return null;
-        if (fsm.card.getType() != Common.card_type.Diao_Bao && fsm.card.getType() != Common.card_type.Po_Yi)
+        if (fsm.player != fsm.askWhom)
+            return null;
+        if (fsm.cardType != Common.card_type.Diao_Bao && fsm.cardType != Common.card_type.Po_Yi)
             return null;
         if (!fsm.player.isRoleFaceUp())
             return null;
-        fsm.whoseTurn.addSkillUseCount(getSkillId());
-        log.info(fsm.whoseTurn + "发动了[换日]");
+        fsm.askWhom.addSkillUseCount(getSkillId());
+        log.info(fsm.askWhom + "发动了[换日]");
         for (Player p : g.getPlayers()) {
             if (p instanceof HumanPlayer player)
-                player.send(Role.skill_huan_ri_toc.newBuilder().setPlayerId(player.getAlternativeLocation(fsm.whoseTurn.location())).build());
+                player.send(Role.skill_huan_ri_toc.newBuilder().setPlayerId(player.getAlternativeLocation(fsm.askWhom.location())).build());
         }
-        g.playerSetRoleFaceUp(fsm.whoseTurn, false);
+        g.playerSetRoleFaceUp(fsm.askWhom, false);
         return null;
     }
 }

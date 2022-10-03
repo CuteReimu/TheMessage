@@ -1,6 +1,9 @@
 package com.fengsheng.network;
 
-import com.fengsheng.*;
+import com.fengsheng.Game;
+import com.fengsheng.GameExecutor;
+import com.fengsheng.HumanPlayer;
+import com.fengsheng.Player;
 import com.fengsheng.handler.ProtoHandler;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.protos.Role;
@@ -28,15 +31,21 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
 
     private static final Map<Short, ProtoInfo> ProtoInfoMap = new HashMap<>();
 
-    private final ConcurrentMap<String, HumanPlayer> playerCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, HumanPlayer> playerCache = new ConcurrentHashMap<>();
+
+    private static final short heartMsgId = stringHash("heart_tos");
+
+    private static final short autoPlayMsgId = stringHash("auto_play_tos");
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
         log.info("session connected: " + channel.id().asShortText() + " " + channel.remoteAddress());
-        if (playerCache.putIfAbsent(channel.id().asLongText(), new HumanPlayer(channel)) != null) {
+        HumanPlayer player = new HumanPlayer(channel);
+        if (playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
             log.error("already assigned channel id: " + channel.id().asLongText());
         }
+        player.setHeartTimeout();
     }
 
     @Override
@@ -48,30 +57,33 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
             log.error("already unassigned channel id: " + channel.id().asLongText());
             return;
         }
+        player.clearHeartTimeout();
         final Game game = player.getGame();
         if (game == null) return;
-        GameExecutor.post(game, () -> {
+        GeneratedMessageV3 reply = null;
+        synchronized (Game.class) {
             if (game.isStarted()) {
-                boolean hasHumanPlayer = false;
-                for (Player p : game.getPlayers()) {
-                    if (p != player && p instanceof HumanPlayer) {
-                        hasHumanPlayer = true;
-                        break;
+                GameExecutor.post(game, () -> {
+                    for (Player p : game.getPlayers()) {
+                        if (p instanceof HumanPlayer humanPlayer && humanPlayer.isActive())
+                            return;
                     }
-                }
-                player.saveRecord(false);
-                game.getPlayers()[player.location()] = new RobotPlayer(player);
-                if (!hasHumanPlayer) game.end();
+                    game.end();
+                });
             } else {
+                log.info(player.getPlayerName() + "离开了房间");
                 game.getPlayers()[player.location()] = null;
-                var reply = Fengsheng.leave_room_toc.newBuilder().setPosition(player.location()).build();
-                for (Player p : game.getPlayers()) {
-                    if (p instanceof HumanPlayer) {
-                        ((HumanPlayer) p).send(reply);
-                    }
+                Game.deviceCache.remove(player.getDevice(), player);
+                reply = Fengsheng.leave_room_toc.newBuilder().setPosition(player.location()).build();
+            }
+        }
+        if (reply != null) {
+            for (Player p : game.getPlayers()) {
+                if (p instanceof HumanPlayer) {
+                    ((HumanPlayer) p).send(reply);
                 }
             }
-        });
+        }
     }
 
     @Override
@@ -92,11 +104,25 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         byte[] buf = new byte[msgLen - 2];
         msg.readBytes(buf);
         var message = (GeneratedMessageV3) protoInfo.parser().parseFrom(buf);
-        log.debug("recv@%s len: %d %s | %s".formatted(ctx.channel().id().asShortText(), msgLen - 2, protoInfo.name(),
-                printer.printToString(message).replaceAll("\n *", " ")));
+        if (id != heartMsgId && id != autoPlayMsgId) {
+            log.debug("recv@%s len: %d %s | %s".formatted(ctx.channel().id().asShortText(), msgLen - 2, protoInfo.name(),
+                    printer.printToString(message).replaceAll("\n *", " ")));
+        }
         HumanPlayer player = playerCache.get(ctx.channel().id().asLongText());
         ProtoHandler handler = protoInfo.handler();
-        if (handler != null) handler.handle(player, message);
+        if (handler != null) {
+            player.setHeartTimeout();
+            handler.handle(player, message);
+        } else {
+            log.warn("message: " + protoInfo.name() + " doesn't have a handler");
+        }
+    }
+
+    public static void exchangePlayer(HumanPlayer oldPlayer, HumanPlayer newPlayer) {
+        oldPlayer.setChannel(newPlayer.getChannel());
+        if (playerCache.put(newPlayer.getChannel().id().asLongText(), oldPlayer) == null) {
+            log.error("channel [id: " + newPlayer.getChannel().id().asLongText() + "] not exists");
+        }
     }
 
     static {
@@ -113,6 +139,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
         var descriptor = (Descriptors.FileDescriptor) protoCls.getDeclaredMethod("getDescriptor").invoke(null);
         for (Descriptors.Descriptor d : descriptor.getMessageTypes()) {
             String name = d.getName();
+            if (!name.endsWith("_tos")) continue;
             short id = stringHash(name);
             if (id == 0) {
                 throw new RuntimeException("message meta require 'ID' field: " + name);
@@ -142,13 +169,13 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
     public static short stringHash(String s) {
         int hash = 0;
         for (byte c : s.getBytes()) {
-            int i = c >= 0 ? (int) c : 256 + (int) c;
+            int i = c >= 0 ? (int) c : 256 + c;
             hash = (short) (hash + (hash << 5) + i + (i << 7));
         }
         return (short) hash;
     }
 
-    record ProtoInfo(String name, Parser<?> parser, ProtoHandler handler) {
+    private record ProtoInfo(String name, Parser<?> parser, ProtoHandler handler) {
 
     }
 }

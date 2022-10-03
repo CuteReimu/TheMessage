@@ -9,6 +9,8 @@ import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 邵秀技能【绵里藏针】：你传出的情报被接收后，可以将一张黑色手牌置入接收者的情报区，然后摸一张牌。
  */
@@ -75,11 +77,7 @@ public class MianLiCangZhen extends AbstractSkill implements TriggeredSkill {
                 log.error("你选择的不是黑色手牌");
                 return null;
             }
-            if (pb.getTargetPlayerId() < 0 || pb.getTargetPlayerId() >= r.getGame().getPlayers().length) {
-                log.error("目标错误");
-                return null;
-            }
-            Player target = r.getGame().getPlayers()[r.getAbstractLocation(pb.getTargetPlayerId())];
+            Player target = fsm.inFrontOfWhom;
             if (!target.isAlive()) {
                 log.error("目标已死亡");
                 return null;
@@ -98,5 +96,20 @@ public class MianLiCangZhen extends AbstractSkill implements TriggeredSkill {
             r.draw(1);
             return new ResolveResult(fsm, true);
         }
+    }
+
+    public static boolean ai(Fsm fsm0) {
+        if (!(fsm0 instanceof executeMianLiCangZhen fsm))
+            return false;
+        Player p = fsm.fsm().whoseTurn;
+        Player target = fsm.fsm().inFrontOfWhom;
+        if (p == target || !target.isAlive()) return false;
+        for (Card card : p.getCards().values()) {
+            if (card.getColors().contains(Common.color.Black)) {
+                GameExecutor.post(p.getGame(), () -> p.getGame().tryContinueResolveProtocol(p, Role.skill_mian_li_cang_zhen_tos.newBuilder().setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
+                return true;
+            }
+        }
+        return false;
     }
 }

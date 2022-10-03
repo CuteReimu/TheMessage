@@ -8,56 +8,39 @@ import com.fengsheng.skill.SkillId;
 import com.fengsheng.skill.TriggeredSkill;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class AbstractPlayer implements Player {
     private static final Logger log = Logger.getLogger(AbstractPlayer.class);
 
     protected Game game;
+    protected String playerName;
     protected int location;
     protected final Map<Integer, Card> cards;
     protected final Map<Integer, Card> messageCards;
     protected Common.color identity;
     protected Common.secret_task secretTask;
-    protected final AliveInfo aliveInfo;
+    boolean alive = true;
+    boolean lose = false;
     protected RoleSkillsData roleSkillsData;
-    protected final Map<SkillId, Integer> skillUseCount;
+    protected final EnumMap<SkillId, Integer> skillUseCount;
 
-    public AbstractPlayer() {
+    protected AbstractPlayer() {
         cards = new HashMap<>();
         messageCards = new HashMap<>();
-        aliveInfo = new AliveInfo();
         roleSkillsData = new RoleSkillsData();
-        skillUseCount = new HashMap<>();
+        skillUseCount = new EnumMap<>(SkillId.class);
     }
 
-    public AbstractPlayer(AbstractPlayer player) {
-        game = player.game;
-        cards = player.cards;
-        messageCards = player.messageCards;
-        location = player.location;
-        identity = player.identity;
-        secretTask = player.secretTask;
-        aliveInfo = player.aliveInfo;
-        roleSkillsData = player.roleSkillsData;
-        skillUseCount = player.skillUseCount;
+    public void setRoleSkillsData(RoleSkillsData roleSkillsData) {
+        this.roleSkillsData = roleSkillsData != null ? new RoleSkillsData(roleSkillsData) : new RoleSkillsData();
     }
 
     @Override
-    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray) {
+    public void init() {
         log.info(this + "的身份是" + Player.identityColorToString(identity, secretTask));
-        this.identity = identity;
-        this.secretTask = secretTask;
-        if (roleSkillsData != null) {
-            this.roleSkillsData = new RoleSkillsData(roleSkillsData);
-            for (Skill skill : roleSkillsData.getSkills()) {
-                if (skill instanceof TriggeredSkill s) s.init(game);
-            }
-        } else {
-            this.roleSkillsData = new RoleSkillsData();
+        for (Skill skill : roleSkillsData.getSkills()) {
+            if (skill instanceof TriggeredSkill s) s.init(game);
         }
     }
 
@@ -73,6 +56,16 @@ public abstract class AbstractPlayer implements Player {
     @Override
     public void setGame(Game game) {
         this.game = game;
+    }
+
+    @Override
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    @Override
+    public void setPlayerName(String name) {
+        playerName = name;
     }
 
     @Override
@@ -199,32 +192,22 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public void setAlive(boolean alive) {
-        this.aliveInfo.alive = alive;
+        this.alive = alive;
     }
 
     @Override
     public boolean isAlive() {
-        return aliveInfo.alive;
+        return alive;
     }
 
     @Override
     public void setLose(boolean lose) {
-        this.aliveInfo.lose = lose;
+        this.lose = lose;
     }
 
     @Override
     public boolean isLose() {
-        return aliveInfo.lose;
-    }
-
-    @Override
-    public void setHasNoIdentity(boolean hasNoIdentity) {
-        this.aliveInfo.hasNoIdentity = hasNoIdentity;
-    }
-
-    @Override
-    public boolean hasNoIdentity() {
-        return aliveInfo.hasNoIdentity;
+        return lose;
     }
 
     @Override
@@ -233,8 +216,18 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
+    public void setIdentity(Common.color identity) {
+        this.identity = identity;
+    }
+
+    @Override
     public Common.secret_task getSecretTask() {
         return secretTask;
+    }
+
+    @Override
+    public void setSecretTask(Common.secret_task secretTask) {
+        this.secretTask = secretTask;
     }
 
     @Override
@@ -292,6 +285,14 @@ public abstract class AbstractPlayer implements Player {
         skillUseCount.clear();
     }
 
+    /**
+     * 重置每回合技能使用次数计数
+     */
+    @Override
+    public void resetSkillUseCount(SkillId skillId) {
+        skillUseCount.remove(skillId);
+    }
+
     @Override
     public Player getNextLeftAlivePlayer() {
         int left;
@@ -313,14 +314,7 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Player p)) return false;
-        return game == p.getGame() && location == p.location();
-    }
-
-    private static class AliveInfo {
-        boolean alive = true;
-        boolean lose = false;
-        boolean hasNoIdentity = false;
+    public String toString() {
+        return location + "号[" + getRoleName() + (isRoleFaceUp() ? "" : "(隐)") + "]";
     }
 }

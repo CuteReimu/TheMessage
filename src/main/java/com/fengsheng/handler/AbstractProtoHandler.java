@@ -19,7 +19,10 @@ public abstract class AbstractProtoHandler<T extends GeneratedMessageV3> impleme
         if (game == null) {
             log.error("player didn't not join room, current msg: " + message.getDescriptorForType().getName());
         } else {
-            GameExecutor.post(game, () -> handle0(player, (T) message));
+            GameExecutor.post(game, () -> {
+                player.clearTimeoutCount();
+                handle0(player, (T) message);
+            });
         }
     }
 }

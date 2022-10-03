@@ -58,6 +58,18 @@ public interface Card {
     Common.card toPbCard();
 
     /**
+     * 判断两张牌是否含有相同颜色
+     */
+    default boolean hasSameColor(Card card2) {
+        for (Common.color color1 : this.getColors()) {
+            if (card2.getColors().contains(color1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * （日志用）将颜色转为卡牌的字符串
      */
     static String cardColorToString(List<Common.color> colors) {
@@ -70,11 +82,10 @@ public interface Card {
             }
         }
         switch (colors.size()) {
-            case 1:
-                return sb.append("色").toString();
-            case 2:
-                return sb.append("双色").toString();
+            case 1 -> sb.append("色");
+            case 2 -> sb.append("双色");
+            default -> throw new RuntimeException("unknown color: " + Arrays.toString(colors.toArray()));
         }
-        throw new RuntimeException("unknown color: " + Arrays.toString(colors.toArray()));
+        return sb.toString();
     }
 }

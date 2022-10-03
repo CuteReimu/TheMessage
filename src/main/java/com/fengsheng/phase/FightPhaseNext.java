@@ -1,6 +1,7 @@
 package com.fengsheng.phase;
 
 import com.fengsheng.Fsm;
+import com.fengsheng.Game;
 import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
 
@@ -12,13 +13,14 @@ import com.fengsheng.ResolveResult;
 public record FightPhaseNext(FightPhaseIdle fightPhase) implements Fsm {
     @Override
     public ResolveResult resolve() {
-        Player[] players = fightPhase.whoseFightTurn.getGame().getPlayers();
+        Game game = fightPhase.whoseFightTurn.getGame();
+        Player[] players = game.getPlayers();
         int whoseFightTurn = fightPhase.whoseFightTurn.location();
         while (true) {
             whoseFightTurn = (whoseFightTurn + 1) % players.length;
             if (whoseFightTurn == fightPhase.inFrontOfWhom.location())
                 return new ResolveResult(new ReceivePhase(fightPhase.whoseTurn, fightPhase.messageCard, fightPhase.inFrontOfWhom), true);
-            else if (players[whoseFightTurn].isAlive())
+            else if (players[whoseFightTurn].isAlive() && players[whoseFightTurn] != game.getJinBiPlayer())
                 break;
         }
         fightPhase.whoseFightTurn = players[whoseFightTurn];

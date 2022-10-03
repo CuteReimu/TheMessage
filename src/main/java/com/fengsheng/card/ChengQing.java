@@ -32,6 +32,10 @@ public class ChengQing extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         Player target = (Player) args[0];
         int targetCardId = (Integer) args[1];
         Fsm fsm = g.getFsm();
@@ -90,9 +94,9 @@ public class ChengQing extends AbstractCard {
                 return new ResolveResult(new UseChengQingOnDying((WaitForChengQing) fsm), true);
         };
         if (fsm instanceof MainPhaseIdle)
-            g.resolve(new OnUseCard(((MainPhaseIdle) fsm).player(), r, this, r, resolveFunc));
+            g.resolve(new OnUseCard(((MainPhaseIdle) fsm).player(), r, target, this, Common.card_type.Cheng_Qing, r, resolveFunc));
         else if (fsm instanceof WaitForChengQing)
-            g.resolve(new OnUseCard(((WaitForChengQing) fsm).whoseTurn, r, this, r, resolveFunc));
+            g.resolve(new OnUseCard(((WaitForChengQing) fsm).whoseTurn, r, target, this, Common.card_type.Cheng_Qing, r, resolveFunc));
     }
 
     @Override
@@ -105,7 +109,7 @@ public class ChengQing extends AbstractCard {
         List<PlayerAndCard> playerAndCards = new ArrayList<>();
         var identity = player.getIdentity();
         for (Player p : player.getGame().getPlayers()) {
-            if ((p.equals(player) || identity != Common.color.Black && identity == p.getIdentity()) && p.isAlive()) {
+            if ((p == player || identity != Common.color.Black && identity == p.getIdentity()) && p.isAlive()) {
                 for (Card c : p.getMessageCards().values()) {
                     if (c.getColors().contains(Common.color.Black))
                         playerAndCards.add(new PlayerAndCard(p, c));
@@ -116,9 +120,5 @@ public class ChengQing extends AbstractCard {
         PlayerAndCard p = playerAndCards.get(ThreadLocalRandom.current().nextInt(playerAndCards.size()));
         GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p.player(), p.card().getId()), 2, TimeUnit.SECONDS);
         return true;
-    }
-
-    private record PlayerAndCard(Player player, Card card) {
-
     }
 }

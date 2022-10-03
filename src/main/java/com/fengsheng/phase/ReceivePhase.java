@@ -28,6 +28,9 @@ public record ReceivePhase(Player whoseTurn, Card messageCard, Player inFrontOfW
             next.receiveOrder.addPlayerIfHasThreeBlack(inFrontOfWhom);
             return new ResolveResult(next, true);
         }
+        player.getGame().getDeck().discard(messageCard);
+        for (Player p : player.getGame().getPlayers())
+            p.notifyReceivePhase();
         return new ResolveResult(new NextTurn(whoseTurn), true);
     }
 }

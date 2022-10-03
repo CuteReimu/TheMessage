@@ -1,6 +1,7 @@
 package com.fengsheng.phase;
 
 import com.fengsheng.Fsm;
+import com.fengsheng.Game;
 import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
 import org.apache.log4j.Logger;
@@ -13,7 +14,8 @@ public record WaitNextForChengQing(WaitForChengQing waitForChengQing) implements
 
     @Override
     public ResolveResult resolve() {
-        Player[] players = waitForChengQing.askWhom.getGame().getPlayers();
+        Game game = waitForChengQing.askWhom.getGame();
+        Player[] players = game.getPlayers();
         int askWhom = waitForChengQing.askWhom.location();
         while (true) {
             askWhom = (askWhom + 1) % players.length;
@@ -25,7 +27,7 @@ public record WaitNextForChengQing(WaitForChengQing waitForChengQing) implements
                     p.notifyDying(waitForChengQing.whoDie.location(), false);
                 return new ResolveResult(new StartWaitForChengQing(waitForChengQing.whoseTurn, waitForChengQing.dyingQueue, waitForChengQing.diedQueue, waitForChengQing.afterDieResolve), true);
             }
-            if (players[askWhom].isAlive()) {
+            if (players[askWhom].isAlive() && players[askWhom] != game.getJinBiPlayer()) {
                 waitForChengQing.askWhom = players[askWhom];
                 return new ResolveResult(waitForChengQing, true);
             }

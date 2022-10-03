@@ -29,6 +29,10 @@ public class PoYi extends AbstractCard {
 
     @Override
     public boolean canUse(final Game g, final Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         if (!(g.getFsm() instanceof SendPhaseIdle fsm) || r != fsm.inFrontOfWhom) {
             log.error("破译的使用时机不对");
             return false;
@@ -46,7 +50,7 @@ public class PoYi extends AbstractCard {
         log.info(r + "使用了" + this);
         r.deleteCard(this.id);
         Fsm resolveFunc = () -> new ResolveResult(new executePoYi(this, fsm), true);
-        g.resolve(new OnUseCard(r, r, this, r, resolveFunc));
+        g.resolve(new OnUseCard(r, r, null, this, Common.card_type.Po_Yi, r, resolveFunc));
     }
 
     private record executePoYi(PoYi card, SendPhaseIdle sendPhase) implements WaitingFsm {
@@ -60,7 +64,7 @@ public class PoYi extends AbstractCard {
                     var builder = Fengsheng.use_po_yi_toc.newBuilder();
                     builder.setCard(card.toPbCard()).setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setMessageCard(sendPhase.messageCard.toPbCard()).setWaitingSecond(20);
-                    if (p.equals(r)) {
+                    if (p == r) {
                         final int seq2 = p.getSeq();
                         builder.setSeq(seq2).setCard(card.toPbCard());
                         p.setTimeout(GameExecutor.post(r.getGame(), () -> {
@@ -69,7 +73,7 @@ public class PoYi extends AbstractCard {
                                 showAndDrawCard(false);
                                 r.getGame().resolve(sendPhase);
                             }
-                        }, builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
+                        }, p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
                     }
                     p.send(builder.build());
                 }
@@ -128,7 +132,7 @@ public class PoYi extends AbstractCard {
 
     public static boolean ai(SendPhaseIdle e, Card card) {
         Player player = e.inFrontOfWhom;
-        if (player.equals(e.whoseTurn) || e.isMessageCardFaceUp) return false;
+        if (player == e.whoseTurn || e.isMessageCardFaceUp) return false;
         if (ThreadLocalRandom.current().nextBoolean()) return false;
         GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player), 2, TimeUnit.SECONDS);
         return true;

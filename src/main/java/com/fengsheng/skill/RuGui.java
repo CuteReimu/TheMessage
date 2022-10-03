@@ -3,6 +3,7 @@ package com.fengsheng.skill;
 import com.fengsheng.*;
 import com.fengsheng.card.Card;
 import com.fengsheng.phase.DieSkill;
+import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
@@ -25,9 +26,13 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
 
     @Override
     public ResolveResult execute(Game g) {
-        if (!(g.getFsm() instanceof DieSkill fsm) || !fsm.askWhom.equals(fsm.diedQueue.get(fsm.diedIndex)) || fsm.askWhom.findSkill(getSkillId()) == null)
+        if (!(g.getFsm() instanceof DieSkill fsm) || fsm.askWhom != fsm.diedQueue.get(fsm.diedIndex) || fsm.askWhom.findSkill(getSkillId()) == null)
             return null;
-        if (fsm.askWhom.equals(fsm.whoseTurn))
+        if (fsm.askWhom == fsm.whoseTurn)
+            return null;
+        if (!fsm.whoseTurn.isAlive())
+            return null;
+        if (fsm.askWhom.getMessageCards().isEmpty())
             return null;
         if (fsm.askWhom.getSkillUseCount(getSkillId()) > 0)
             return null;
@@ -45,16 +50,23 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
                 if (player instanceof HumanPlayer p) {
                     var builder = Role.skill_wait_for_ru_gui_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location())).setWaitingSecond(20);
-                    if (p.equals(r)) {
+                    if (p == r) {
                         final int seq2 = p.getSeq();
                         builder.setSeq(seq2);
-                        GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(false).setSeq(seq2).build()), builder.getWaitingSecond() + 2, TimeUnit.SECONDS);
+                        p.setTimeout(GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(false).setSeq(seq2).build()), p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
                     }
                     p.send(builder.build());
                 }
             }
-            if (r instanceof RobotPlayer)
+            if (r instanceof RobotPlayer) {
+                for (Card card : r.getMessageCards().values()) {
+                    if (card.getColors().contains(Common.color.Black)) {
+                        GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(true).setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
+                        return null;
+                    }
+                }
                 GameExecutor.post(r.getGame(), () -> r.getGame().tryContinueResolveProtocol(r, Role.skill_ru_gui_tos.newBuilder().setEnable(false).build()), 2, TimeUnit.SECONDS);
+            }
             return null;
         }
 
@@ -76,6 +88,10 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
             }
             if (!pb.getEnable()) {
                 r.incrSeq();
+                for (Player p : g.getPlayers()) {
+                    if (p instanceof HumanPlayer player1)
+                        player1.send(Role.skill_ru_gui_toc.newBuilder().setEnable(false).build());
+                }
                 return new ResolveResult(fsm, true);
             }
             Card card = r.findMessageCard(pb.getCardId());
@@ -96,7 +112,7 @@ public class RuGui extends AbstractSkill implements TriggeredSkill {
             log.info(r + "面前的" + card + "移到了" + target + "面前");
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player1)
-                    player1.send(Role.skill_ru_gui_toc.newBuilder().setCardId(card.getId())
+                    player1.send(Role.skill_ru_gui_toc.newBuilder().setEnable(true).setCardId(card.getId())
                             .setPlayerId(player1.getAlternativeLocation(r.location())).build());
             }
             return new ResolveResult(fsm, true);

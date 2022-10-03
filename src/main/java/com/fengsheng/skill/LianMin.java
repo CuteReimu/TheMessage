@@ -9,6 +9,8 @@ import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 白菲菲技能【怜悯】：你传出的非黑色情报被接收后，可以从你或接收者的情报区选择一张黑色情报加入你的手牌。
  */
@@ -103,5 +105,23 @@ public class LianMin extends AbstractSkill implements TriggeredSkill {
             }
             return new ResolveResult(fsm, true);
         }
+    }
+
+    public static boolean ai(Fsm fsm0) {
+        if (!(fsm0 instanceof executeLianMin fsm))
+            return false;
+        Player p = fsm.fsm().whoseTurn;
+        for (Player target : new Player[]{p, fsm.fsm().inFrontOfWhom}) {
+            if (!target.isAlive()) continue;
+            for (Card card : target.getMessageCards().values()) {
+                if (card.getColors().contains(Common.color.Black)) {
+                    GameExecutor.post(p.getGame(), () ->
+                            p.getGame().tryContinueResolveProtocol(p, Role.skill_lian_min_tos.newBuilder().setCardId(card.getId())
+                                    .setTargetPlayerId(p.getAlternativeLocation(target.location())).build()), 2, TimeUnit.SECONDS);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

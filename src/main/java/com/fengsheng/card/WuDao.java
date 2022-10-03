@@ -28,6 +28,10 @@ public class WuDao extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         Player target = (Player) args[0];
         if (!(g.getFsm() instanceof FightPhaseIdle fsm)) {
             log.error("误导的使用时机不对");
@@ -35,7 +39,7 @@ public class WuDao extends AbstractCard {
         }
         Player left = fsm.inFrontOfWhom.getNextLeftAlivePlayer();
         Player right = fsm.inFrontOfWhom.getNextRightAlivePlayer();
-        if (target.equals(fsm.inFrontOfWhom) || (target != left && target != right)) {
+        if (target == fsm.inFrontOfWhom || (target != left && target != right)) {
             log.error("误导只能选择情报当前人左右两边的人作为目标");
             return false;
         }
@@ -62,7 +66,7 @@ public class WuDao extends AbstractCard {
             }
             return new ResolveResult(fsm, true);
         };
-        g.resolve(new OnUseCard(fsm.whoseTurn, r, this, r, resolveFunc));
+        g.resolve(new OnUseCard(fsm.whoseTurn, r, null, this, Common.card_type.Wu_Dao, r, resolveFunc));
     }
 
     @Override
@@ -73,7 +77,7 @@ public class WuDao extends AbstractCard {
     public static boolean ai(FightPhaseIdle e, Card card) {
         Player player = e.whoseFightTurn;
         var colors = e.messageCard.getColors();
-        if (e.inFrontOfWhom.equals(player) && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
+        if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
             return false;
         Player target = switch (ThreadLocalRandom.current().nextInt(4)) {
             case 0 -> e.inFrontOfWhom.getNextLeftAlivePlayer();

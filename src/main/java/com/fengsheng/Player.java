@@ -7,9 +7,12 @@ import com.fengsheng.skill.Skill;
 import com.fengsheng.skill.SkillId;
 
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public interface Player {
-    void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray);
+    void setRoleSkillsData(RoleSkillsData roleSkillsData);
+
+    void init();
 
     /**
      * 玩家停止计时器，并且seq值加一
@@ -19,6 +22,13 @@ public interface Player {
     Game getGame();
 
     void setGame(Game game);
+
+    /**
+     * 获取玩家的名字
+     */
+    String getPlayerName();
+
+    void setPlayerName(String name);
 
     /**
      * 玩家在服务器上的座位号，也就是在数组中的index
@@ -220,21 +230,18 @@ public interface Player {
     boolean isLose();
 
     /**
-     * 设置玩家是否已经失去了身份牌
-     */
-    void setHasNoIdentity(boolean hasNoIdentity);
-
-    /**
-     * 获取玩家是否已经失去了身份牌
-     */
-    boolean hasNoIdentity();
-
-    /**
-     * 获得玩家的初始身份。调用 {@link #hasNoIdentity} 可以判断他是否已经失去了身份
+     * 获得玩家的身份。
      */
     Common.color getIdentity();
 
+    /**
+     * 设置玩家的身份
+     */
+    void setIdentity(Common.color color);
+
     Common.secret_task getSecretTask();
+
+    void setSecretTask(Common.secret_task secretTask);
 
     void setSkills(Skill[] skills);
 
@@ -275,6 +282,11 @@ public interface Player {
     void resetSkillUseCount();
 
     /**
+     * 重置每回合技能使用次数计数
+     */
+    void resetSkillUseCount(SkillId skillId);
+
+    /**
      * 获取左手边下一个存活的玩家
      */
     Player getNextLeftAlivePlayer();
@@ -309,7 +321,12 @@ public interface Player {
                 case Collector -> "神秘人[双重间谍]";
                 default -> throw new RuntimeException("unknown secret task: " + task);
             };
+            case Has_No_Identity -> "无身份";
             default -> throw new RuntimeException("unknown color: " + color);
         };
+    }
+
+    static String randPlayerName() {
+        return Integer.toString(ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
     }
 }

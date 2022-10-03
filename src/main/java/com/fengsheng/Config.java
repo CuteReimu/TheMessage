@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Properties;
 
 public final class Config {
@@ -17,13 +18,13 @@ public final class Config {
     public static final int GmListenPort;
     public static final int ClientVersion;
     public static final int MaxRoomCount;
-    public static final Common.role[] DebugRoles;
+    public static final List<Common.role> DebugRoles;
 
     static {
         Properties pps = new Properties();
         try (InputStream in = new FileInputStream("application.properties")) {
             pps.load(in);
-        } catch (Throwable ignored) {
+        } catch (Exception ignored) {
         }
         pps.putIfAbsent("listen_port", "9091");
         pps.putIfAbsent("player.total_count", "5");
@@ -43,18 +44,26 @@ public final class Config {
         ClientVersion = Integer.parseInt(pps.getProperty("client_version"));
         MaxRoomCount = Integer.parseInt(pps.getProperty("room_count"));
         String debugRoleStr = pps.getProperty("gm.debug_roles");
+        Common.role[] debugRolesArr;
         if (debugRoleStr.isBlank()) {
-            DebugRoles = new Common.role[0];
+            debugRolesArr = new Common.role[0];
         } else {
             String[] debugRoles = debugRoleStr.split(",");
-            DebugRoles = new Common.role[debugRoles.length];
-            for (int i = 0; i < DebugRoles.length; i++)
-                DebugRoles[i] = Common.role.forNumber(Integer.parseInt(debugRoles[i]));
+            debugRolesArr = new Common.role[debugRoles.length];
+            for (int i = 0; i < debugRolesArr.length; i++) {
+                debugRolesArr[i] = Common.role.forNumber(Integer.parseInt(debugRoles[i]));
+                if (debugRolesArr[i] == null) debugRolesArr[i] = Common.role.unknown;
+            }
         }
+        DebugRoles = List.of(debugRolesArr);
         try (OutputStream out = new FileOutputStream("application.properties")) {
             pps.store(out, "application.properties");
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Config() {
+
     }
 }

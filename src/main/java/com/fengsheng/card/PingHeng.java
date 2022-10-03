@@ -30,12 +30,16 @@ public class PingHeng extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         if (!(g.getFsm() instanceof MainPhaseIdle fsm) || r != fsm.player()) {
             log.error("平衡的使用时机不对");
             return false;
         }
         Player target = (Player) args[0];
-        if (r.equals(target)) {
+        if (r == target) {
             log.error("平衡不能对自己使用");
             return false;
         }
@@ -66,7 +70,7 @@ public class PingHeng extends AbstractCard {
             g.getDeck().discard(this);
             return new ResolveResult(new MainPhaseIdle(r), true);
         };
-        g.resolve(new OnUseCard(r, r, this, r, resolveFunc));
+        g.resolve(new OnUseCard(r, r, target, this, Common.card_type.Ping_Heng, r, resolveFunc));
     }
 
     @Override
@@ -76,6 +80,7 @@ public class PingHeng extends AbstractCard {
 
     public static boolean ai(MainPhaseIdle e, Card card) {
         Player player = e.player();
+        if (player.getCards().size() > 3) return false;
         List<Player> players = new ArrayList<>();
         for (Player p : player.getGame().getPlayers())
             if (p != player && p.isAlive()) players.add(p);

@@ -28,6 +28,10 @@ public class JieHuo extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         return JieHuo.canUse(g, r);
     }
 
@@ -36,7 +40,7 @@ public class JieHuo extends AbstractCard {
             log.error("截获的使用时机不对");
             return false;
         }
-        if (r.equals(fsm.inFrontOfWhom)) {
+        if (r == fsm.inFrontOfWhom) {
             log.error("情报在自己面前不能使用截获");
             return false;
         }
@@ -72,7 +76,7 @@ public class JieHuo extends AbstractCard {
             return new ResolveResult(fsm, true);
         };
         if (card != null)
-            g.resolve(new OnUseCard(fsm.whoseTurn, r, card, r, resolveFunc));
+            g.resolve(new OnUseCard(fsm.whoseTurn, r, null, card, Common.card_type.Jie_Huo, r, resolveFunc));
         else
             g.resolve(resolveFunc);
     }
@@ -85,7 +89,7 @@ public class JieHuo extends AbstractCard {
     public static boolean ai(FightPhaseIdle e, Card card) {
         Player player = e.whoseFightTurn;
         var colors = e.messageCard.getColors();
-        if (e.inFrontOfWhom.equals(player) || (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) == Common.color.Black)
+        if (e.inFrontOfWhom == player || (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) == Common.color.Black)
             return false;
         if (ThreadLocalRandom.current().nextBoolean())
             return false;

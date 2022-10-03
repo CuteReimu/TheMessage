@@ -5,7 +5,6 @@ import com.fengsheng.network.ProtoServerChannelHandler;
 import com.fengsheng.phase.*;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
-import com.fengsheng.skill.RoleSkillsData;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
@@ -24,13 +23,23 @@ public class HumanPlayer extends AbstractPlayer {
     private static final Logger log = Logger.getLogger(HumanPlayer.class);
     private static final TextFormat.Printer printer = TextFormat.printer().escapingNonAscii(false);
 
-    private final Channel channel;
+    private Channel channel;
 
     private int seq;
 
     private Timeout timeout;
 
+    private int timeoutCount = 0;
+
+    private Timeout heartTimeout;
+
+    private long lastHeartTime;
+
     private final Recorder recorder = new Recorder();
+
+    private String device;
+
+    private boolean autoPlay;
 
     public HumanPlayer(Channel channel) {
         this.channel = channel;
@@ -43,25 +52,26 @@ public class HumanPlayer extends AbstractPlayer {
         byte[] buf = message.toByteArray();
         final String name = message.getDescriptorForType().getName();
         short id = ProtoServerChannelHandler.stringHash(name);
-        send(id, buf);
         recorder.add(id, buf);
+        if (isActive()) send(id, buf, true);
         log.debug("send@%s len: %d %s | %s".formatted(channel.id().asShortText(), buf.length, name,
                 printer.printToString(message).replaceAll("\n *", " ")));
     }
 
-    public void send(short id, byte[] buf) {
+    public void send(short id, byte[] buf, boolean flush) {
         ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.ioBuffer(buf.length + 4, buf.length + 4);
         byteBuf.writeShortLE(buf.length + 2);
         byteBuf.writeShortLE(id);
         byteBuf.writeBytes(buf);
-        channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) future -> {
+        var f = flush ? channel.writeAndFlush(byteBuf) : channel.write(byteBuf);
+        f.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess())
                 log.error("send@%s failed, id: %d, len: %d".formatted(channel.id().asShortText(), id, buf.length));
         });
     }
 
-    public void saveRecord(boolean notify) {
-        recorder.save(game, this, notify);
+    public void saveRecord() {
+        recorder.save(game, this, channel.isActive());
     }
 
     public void loadRecord(int version, String recordId) {
@@ -72,6 +82,10 @@ public class HumanPlayer extends AbstractPlayer {
         return recorder.loading();
     }
 
+    public void reconnect() {
+        recorder.reconnect(this);
+    }
+
     /**
      * Return {@code true} if the {@link Channel} of the {@code HumanPlayer} is active and so connected.
      */
@@ -79,17 +93,54 @@ public class HumanPlayer extends AbstractPlayer {
         return channel.isActive();
     }
 
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public String getDevice() {
+        return device;
+    }
+
+    public void setDevice(String device) {
+        this.device = device;
+    }
+
+    public void setAutoPlay(boolean autoPlay) {
+        if (this.autoPlay == autoPlay) return;
+        timeoutCount = 0;
+        this.autoPlay = autoPlay;
+        if (autoPlay) {
+            if (timeout != null && timeout.cancel()) {
+                try {
+                    timeout.task().run(timeout);
+                } catch (Exception e) {
+                    log.error("time task exception", e);
+                }
+            }
+        } else {
+            if (timeout != null && timeout.cancel()) {
+                int delay = game.getFsm() instanceof MainPhaseIdle ? 31 : 21;
+                timeout = GameExecutor.TimeWheel.newTimeout(timeout.task(), delay, TimeUnit.SECONDS);
+            }
+        }
+        send(ProtoServerChannelHandler.stringHash("auto_play_toc"), Fengsheng.auto_play_toc.newBuilder().setEnable(autoPlay).build().toByteArray(), true);
+    }
+
     @Override
-    public void init(Common.color identity, Common.secret_task secretTask, RoleSkillsData roleSkillsData, RoleSkillsData[] roleSkillsDataArray) {
-        super.init(identity, secretTask, roleSkillsData, roleSkillsDataArray);
+    public void init() {
+        super.init();
         var builder = Fengsheng.init_toc.newBuilder().setPlayerCount(game.getPlayers().length).setIdentity(identity).setSecretTask(secretTask);
         int l = location;
         do {
-            builder.addRoles(roleSkillsDataArray[l].isFaceUp() || l == location ? roleSkillsDataArray[l].getRole() : Common.role.unknown);
+            builder.addRoles(game.getPlayers()[l].isRoleFaceUp() || l == location ? game.getPlayers()[l].getRole() : Common.role.unknown);
+            builder.addNames(game.getPlayers()[l].getPlayerName());
             l = (l + 1) % game.getPlayers().length;
         } while (l != location);
         send(builder.build());
-        seq++;
     }
 
     @Override
@@ -125,7 +176,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     game.resolve(new SendPhaseStart(player));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -145,7 +196,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     RobotPlayer.autoSendMessageCard(this, false);
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -189,7 +240,7 @@ public class HumanPlayer extends AbstractPlayer {
                     else
                         game.resolve(new MessageMoveNext(fsm));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -216,7 +267,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     game.resolve(new FightPhaseNext(fsm));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -245,7 +296,7 @@ public class HumanPlayer extends AbstractPlayer {
             timeout = GameExecutor.post(game, () -> {
                 if (checkSeq(seq2))
                     game.tryContinueResolveProtocol(this, Fengsheng.end_receive_phase_tos.newBuilder().setSeq(seq2).build());
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -296,7 +347,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     game.resolve(new WaitNextForChengQing((WaitForChengQing) game.getFsm()));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -314,7 +365,7 @@ public class HumanPlayer extends AbstractPlayer {
                     incrSeq();
                     game.resolve(new AfterDieGiveCard((WaitForDieGiveCard) game.getFsm()));
                 }
-            }, waitSecond + 2, TimeUnit.SECONDS);
+            }, getWaitSeconds(waitSecond + 2), TimeUnit.SECONDS);
         }
         send(builder.build());
     }
@@ -324,6 +375,26 @@ public class HumanPlayer extends AbstractPlayer {
      */
     public void setTimeout(Timeout timeout) {
         this.timeout = timeout;
+    }
+
+    /**
+     * 心跳相关计时器
+     */
+    public void setHeartTimeout() {
+        if (Config.IsGmEnable) return;
+        if (heartTimeout != null) heartTimeout.cancel();
+        heartTimeout = GameExecutor.TimeWheel.newTimeout(timeout -> {
+            log.info(this + " heart timeout, duration " + (System.currentTimeMillis() - lastHeartTime) + " ms");
+            if (channel.isActive()) channel.close();
+        }, 60, TimeUnit.SECONDS);
+        lastHeartTime = System.currentTimeMillis();
+    }
+
+    public void clearHeartTimeout() {
+        if (heartTimeout != null) {
+            heartTimeout.cancel();
+            heartTimeout = null;
+        }
     }
 
     public int getSeq() {
@@ -338,13 +409,24 @@ public class HumanPlayer extends AbstractPlayer {
     public void incrSeq() {
         seq++;
         if (timeout != null) {
-            timeout.cancel();
+            if (timeout.isExpired()) {
+                if (!autoPlay && ++timeoutCount >= 3)
+                    setAutoPlay(true);
+            } else {
+                timeout.cancel();
+            }
             timeout = null;
         }
     }
 
-    @Override
-    public String toString() {
-        return location + "号[" + (isRoleFaceUp() ? getRoleName() : "玩家") + "]";
+    public void clearTimeoutCount() {
+        timeoutCount = 0;
+    }
+
+    public int getWaitSeconds(int seconds) {
+        if (!isActive()) {
+            return 5;
+        }
+        return autoPlay ? 1 : seconds;
     }
 }

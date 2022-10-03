@@ -5,6 +5,8 @@ import com.fengsheng.phase.MainPhaseIdle;
 import com.fengsheng.phase.OnUseCard;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
+import com.fengsheng.protos.Role;
+import com.fengsheng.skill.SkillId;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
@@ -34,12 +36,16 @@ public class ShiTan extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         Player target = (Player) args[0];
         if (!(g.getFsm() instanceof MainPhaseIdle fsm) || r != fsm.player()) {
             log.error("试探的使用时机不对");
             return false;
         }
-        if (r.equals(target)) {
+        if (r == target) {
             log.error("试探不能对自己使用");
             return false;
         }
@@ -56,18 +62,50 @@ public class ShiTan extends AbstractCard {
         log.info(r + "对" + target + "使用了" + this);
         r.deleteCard(this.id);
         Fsm resolveFunc = () -> {
+            if (target.isRoleFaceUp() && target.findSkill(SkillId.CHENG_FU) != null) {
+                log.info(target + "触发了[城府]，试探无效");
+                for (Player player : g.getPlayers()) {
+                    if (player instanceof HumanPlayer p) {
+                        var builder = Role.skill_cheng_fu_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                        builder.setFromPlayerId(p.getAlternativeLocation(r.location()));
+                        if (p.equals(r) || p.equals(target) || target.getSkillUseCount(SkillId.JIU_JI) != 1)
+                            builder.setCard(this.toPbCard());
+                        else
+                            builder.setUnknownCardCount(1);
+                        p.send(builder.build());
+                    }
+                }
+                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                    target.addSkillUseCount(SkillId.JIU_JI);
+                    target.addCard(this);
+                    log.info(target + "将使用的" + this + "加入了手牌");
+                    for (Player player : g.getPlayers()) {
+                        if (player instanceof HumanPlayer p) {
+                            var builder = Role.skill_jiu_ji_b_toc.newBuilder().setPlayerId(p.getAlternativeLocation(target.location()));
+                            if (p.equals(r) || p.equals(target))
+                                builder.setCard(this.toPbCard());
+                            else
+                                builder.setUnknownCardCount(1);
+                            p.send(builder.build());
+                        }
+                    }
+                } else {
+                    g.getDeck().discard(this);
+                }
+                return new ResolveResult(new MainPhaseIdle(r), true);
+            }
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player) {
                     var builder = Fengsheng.use_shi_tan_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                    if (p.equals(r)) builder.setCardId(this.id);
+                    if (p == r) builder.setCardId(this.id);
                     player.send(builder.build());
                 }
             }
             return new ResolveResult(new executeShiTan(r, target, this), true);
         };
-        g.resolve(new OnUseCard(r, r, this, r, resolveFunc));
+        g.resolve(new OnUseCard(r, r, target, this, Common.card_type.Shi_Tan, r, resolveFunc));
     }
 
     private boolean checkDrawCard(Player target) {
@@ -95,7 +133,7 @@ public class ShiTan extends AbstractCard {
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
                     builder.setWaitingSecond(20);
-                    if (p.equals(target)) {
+                    if (p == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2).setCard(card.toPbCard());
                         player.setTimeout(GameExecutor.post(r.getGame(), () -> {
@@ -104,8 +142,8 @@ public class ShiTan extends AbstractCard {
                                 autoSelect();
                                 r.getGame().resolve(new MainPhaseIdle(r));
                             }
-                        }, builder.getWaitingSecond() + 2, TimeUnit.SECONDS));
-                    } else if (p.equals(r)) {
+                        }, player.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
+                    } else if (p == r) {
                         builder.setCard(card.toPbCard());
                     }
                     player.send(builder.build());
@@ -143,11 +181,11 @@ public class ShiTan extends AbstractCard {
             }
             player.incrSeq();
             if (card.checkDrawCard(target)) {
-                log.info(r + "选择了[摸一张牌]");
+                log.info(target + "选择了[摸一张牌]");
                 card.notifyResult(target, true);
                 target.draw(1);
             } else {
-                log.info(r + "选择了[弃一张牌]");
+                log.info(target + "选择了[弃一张牌]");
                 card.notifyResult(target, false);
                 if (msg.getCardIdCount() > 0)
                     target.getGame().playerDiscardCard(target, target.findCard(msg.getCardId(0)));
@@ -194,7 +232,8 @@ public class ShiTan extends AbstractCard {
         Player player = e.player();
         List<Player> players = new ArrayList<>();
         for (Player p : player.getGame().getPlayers())
-            if (p != player && p.isAlive()) players.add(p);
+            if (p != player && p.isAlive() && (!p.isRoleFaceUp() || p.findSkill(SkillId.CHENG_FU) == null))
+                players.add(p);
         if (players.isEmpty()) return false;
         Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
         GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, p), 2, TimeUnit.SECONDS);

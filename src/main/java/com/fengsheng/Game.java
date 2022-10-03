@@ -3,7 +3,7 @@ package com.fengsheng;
 import com.fengsheng.card.Card;
 import com.fengsheng.card.Deck;
 import com.fengsheng.network.Network;
-import com.fengsheng.phase.DrawPhase;
+import com.fengsheng.phase.WaitForSelectRole;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.RoleCache;
@@ -16,21 +16,26 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 
 public final class Game {
     private static final Logger log = Logger.getLogger(Game.class);
     public static final ConcurrentMap<Integer, Game> GameCache = new ConcurrentHashMap<>();
+    public static final ConcurrentMap<String, HumanPlayer> deviceCache = new ConcurrentHashMap<>();
     private static int increaseId = 0;
     private static Game newGame;
 
     private final int id;
     private volatile boolean started;
-    private boolean ended;
-    private final Player[] players;
-    private final Deck deck = new Deck(this);
+    private volatile boolean ended;
+    private Player[] players;
+    private Deck deck;
     private Fsm fsm;
     private final List<TriggeredSkill> listeningSkills = new ArrayList<>();
+
+    /**
+     * 用于王田香技能禁闭
+     */
+    private Player jinBiPlayer;
 
     private Game(int totalPlayerCount) {
         // 调用构造函数时加锁了，所以increaseId无需加锁
@@ -41,8 +46,8 @@ public final class Game {
     /**
      * 不是线程安全的
      */
-    private static void newInstance() {
-        newGame = new Game(Config.TotalPlayerCount);
+    public static void newInstance() {
+        newGame = new Game(Math.max(newGame != null ? newGame.getPlayers().length : 0, Config.TotalPlayerCount));
     }
 
     /**
@@ -63,19 +68,19 @@ public final class Game {
                 player.setLocation(index);
             }
         }
-        var msg = Fengsheng.join_room_toc.newBuilder().setName(player.toString()).setPosition(player.location()).build();
+        var msg = Fengsheng.join_room_toc.newBuilder().setName(player.getPlayerName()).setPosition(player.location()).build();
         for (Player p : players) {
             if (p != player && p instanceof HumanPlayer) {
                 ((HumanPlayer) p).send(msg);
             }
         }
         if (unready == 0) {
-            log.info(player + "加入了。已加入" + players.length + "个人，游戏开始。。。");
+            log.info(player.getPlayerName() + "加入了。已加入" + players.length + "个人，游戏开始。。。");
             started = true;
             GameExecutor.post(this, this::start);
             newInstance();
         } else {
-            log.info(player + "加入了。已加入" + (players.length - unready) + "个人，等待" + unready + "人加入。。。");
+            log.info(player.getPlayerName() + "加入了。已加入" + (players.length - unready) + "个人，等待" + unready + "人加入。。。");
         }
     }
 
@@ -83,33 +88,59 @@ public final class Game {
         return started;
     }
 
-    private void start() {
+    public void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    public void start() {
         Random random = ThreadLocalRandom.current();
         List<Common.color> identities = new ArrayList<>();
-        for (int i = 0; i < (players.length - 1) / 2; i++) {
-            identities.add(Common.color.Red);
-            identities.add(Common.color.Blue);
+        switch (players.length) {
+            case 2:
+                identities = switch (random.nextInt(4)) {
+                    case 0 -> Arrays.asList(Common.color.Red, Common.color.Blue);
+                    case 1 -> Arrays.asList(Common.color.Red, Common.color.Black);
+                    case 2 -> Arrays.asList(Common.color.Blue, Common.color.Black);
+                    default -> Arrays.asList(Common.color.Black, Common.color.Black);
+                };
+                break;
+            case 9:
+                identities.add(Common.color.Red);
+                identities.add(Common.color.Blue);
+                identities.add(Common.color.Black);
+            case 4:
+                identities.add(Common.color.Red);
+                identities.add(Common.color.Blue);
+            case 3:
+                identities.add(Common.color.Red);
+                identities.add(Common.color.Blue);
+                identities.add(Common.color.Black);
+                identities.add(Common.color.Black);
+                while (identities.size() > players.length)
+                    identities.remove(random.nextInt(identities.size()));
+                break;
+            default:
+                for (int i = 0; i < (players.length - 1) / 2; i++) {
+                    identities.add(Common.color.Red);
+                    identities.add(Common.color.Blue);
+                }
+                identities.add(Common.color.Black);
+                if (players.length % 2 == 0) identities.add(Common.color.Black);
         }
-        identities.add(Common.color.Black);
-        if (players.length % 2 == 0) identities.add(Common.color.Black);
         Collections.shuffle(identities, random);
-        List<Common.secret_task> tasks = new ArrayList<>(List.of(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector));
+        List<Common.secret_task> tasks = Arrays.asList(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector);
         Collections.shuffle(tasks, random);
-        RoleSkillsData[] roleSkillsDataArray = Config.IsGmEnable
-                ? RoleCache.getRandomRolesWithSpecific(players.length, Config.DebugRoles)
-                : RoleCache.getRandomRoles(players.length);
         int secretIndex = 0;
         for (int i = 0; i < players.length; i++) {
             var identity = identities.get(i);
             var task = identity == Common.color.Black ? tasks.get(secretIndex++) : Common.secret_task.forNumber(0);
-            players[i].init(identity, task, roleSkillsDataArray[i], roleSkillsDataArray);
+            players[i].setIdentity(identity);
+            players[i].setSecretTask(task);
         }
-        GameCache.put(id, this);
-        final int whoseTurn = random.nextInt(players.length);
-        for (int i = 0; i < players.length; i++) {
-            players[(whoseTurn + i) % players.length].draw(Config.HandCardCountBegin);
-        }
-        GameExecutor.post(this, () -> resolve(new DrawPhase(players[whoseTurn])), 1, TimeUnit.SECONDS);
+        RoleSkillsData[] roleSkillsDataArray = Config.IsGmEnable
+                ? RoleCache.getRandomRolesWithSpecific(players.length * 2, Config.DebugRoles)
+                : RoleCache.getRandomRoles(players.length * 2);
+        resolve(new WaitForSelectRole(this, roleSkillsDataArray));
     }
 
     public boolean isEnd() {
@@ -119,11 +150,15 @@ public final class Game {
     public void end() {
         ended = true;
         GameCache.remove(id);
-        for (Player p : players)
-            if (p instanceof HumanPlayer) ((HumanPlayer) p).saveRecord(true);
+        for (Player p : players) {
+            if (p instanceof HumanPlayer humanPlayer) {
+                humanPlayer.saveRecord();
+                deviceCache.remove(humanPlayer.getDevice());
+            }
+        }
     }
 
-    int getId() {
+    public int getId() {
         return id;
     }
 
@@ -131,8 +166,30 @@ public final class Game {
         return players;
     }
 
+    public void setPlayers(Player[] players) {
+        this.players = players;
+    }
+
     public Deck getDeck() {
         return deck;
+    }
+
+    public void setDeck(Deck deck) {
+        this.deck = deck;
+    }
+
+    /**
+     * 用于王田香技能禁闭
+     */
+    public Player getJinBiPlayer() {
+        return jinBiPlayer;
+    }
+
+    /**
+     * 用于王田香技能禁闭
+     */
+    public void setJinBiPlayer(Player jinBiPlayer) {
+        this.jinBiPlayer = jinBiPlayer;
     }
 
     /**
@@ -158,10 +215,16 @@ public final class Game {
 
     public void playerSetRoleFaceUp(Player player, boolean faceUp) {
         if (faceUp) {
+            if (player.isRoleFaceUp())
+                log.error(player + "本来就是正面朝上的", new RuntimeException());
+            else
+                log.info(player + "将角色翻至正面朝上");
             player.setRoleFaceUp(true);
-            log.info(player + "将角色翻至正面朝上");
         } else {
-            log.info(player + "将角色翻至背面朝上");
+            if (!player.isRoleFaceUp())
+                log.error(player + "本来就是背面朝上的", new RuntimeException());
+            else
+                log.info(player + "将角色翻至背面朝上");
             player.setRoleFaceUp(false);
         }
         for (Player p : players) {

@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * 判断是否需要濒死求澄清
@@ -16,7 +17,7 @@ import java.util.List;
  * @param diedQueue       接收第三张黑色情报的顺序，也就是后续结算濒死的顺序
  * @param afterDieResolve 濒死结算后的下一个动作
  */
-record StartWaitForChengQing(Player whoseTurn, LinkedList<Player> dyingQueue, List<Player> diedQueue,
+record StartWaitForChengQing(Player whoseTurn, Queue<Player> dyingQueue, List<Player> diedQueue,
                              Fsm afterDieResolve) implements Fsm {
     private static final Logger log = Logger.getLogger(StartWaitForChengQing.class);
 
@@ -28,7 +29,7 @@ record StartWaitForChengQing(Player whoseTurn, LinkedList<Player> dyingQueue, Li
     public ResolveResult resolve() {
         if (dyingQueue.isEmpty())
             return new ResolveResult(new CheckKillerWin(whoseTurn, diedQueue, afterDieResolve), true);
-        Player whoDie = dyingQueue.removeFirst();
+        Player whoDie = dyingQueue.poll();
         log.info(whoDie + "濒死");
         var next = new WaitForChengQing(whoseTurn, whoDie, whoseTurn, dyingQueue, diedQueue, afterDieResolve);
         return new ResolveResult(whoDie.isAlive() ? next : new WaitNextForChengQing(next), true);

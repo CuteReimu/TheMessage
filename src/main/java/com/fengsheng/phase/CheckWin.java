@@ -6,6 +6,7 @@ import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
 import com.fengsheng.card.Card;
 import com.fengsheng.protos.Common;
+import com.fengsheng.skill.SkillId;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -47,8 +48,10 @@ public class CheckWin implements Fsm {
     public ResolveResult resolve() {
         Game game = whoseTurn.getGame();
         Player stealer = null; // 簒夺者
-        List<Player> redPlayers = new ArrayList<>(), bluePlayers = new ArrayList<>();
+        List<Player> redPlayers = new ArrayList<>();
+        List<Player> bluePlayers = new ArrayList<>();
         for (Player p : game.getPlayers()) {
+            if (p.isLose()) continue;
             switch (p.getIdentity()) {
                 case Black -> {
                     if (p.getSecretTask() == Common.secret_task.Stealer) stealer = p;
@@ -57,16 +60,18 @@ public class CheckWin implements Fsm {
                 case Blue -> bluePlayers.add(p);
             }
         }
-        List<Player> declareWinner = new ArrayList<>(), winner = new ArrayList<>();
-        boolean redWin = false, blueWin = false;
+        List<Player> declareWinner = new ArrayList<>();
+        List<Player> winner = new ArrayList<>();
+        boolean redWin = false;
+        boolean blueWin = false;
         for (Player player : game.getPlayers()) {
-            int red = 0, blue = 0;
+            if (player.isLose()) continue;
+            int red = 0;
+            int blue = 0;
             for (Card card : player.getMessageCards().values()) {
                 for (Common.color color : card.getColors()) {
-                    switch (color) {
-                        case Red -> red++;
-                        case Blue -> blue++;
-                    }
+                    if (color == Common.color.Red) red++;
+                    else if (color == Common.color.Blue) blue++;
                 }
             }
             switch (player.getIdentity()) {
@@ -91,9 +96,25 @@ public class CheckWin implements Fsm {
         }
         if (redWin) winner.addAll(redPlayers);
         if (blueWin) winner.addAll(bluePlayers);
-        if (!declareWinner.isEmpty() && stealer != null && stealer.equals(whoseTurn))
-            declareWinner = winner = List.of(stealer);
+        if (!declareWinner.isEmpty() && stealer != null && stealer == whoseTurn) {
+            declareWinner = List.of(stealer);
+            winner = new ArrayList<>(declareWinner);
+        }
         if (!declareWinner.isEmpty()) {
+            boolean hasGuXiaoMeng = false;
+            for (Player p : winner) {
+                if (p.findSkill(SkillId.WEI_SHENG) != null && p.isRoleFaceUp()) {
+                    hasGuXiaoMeng = true;
+                    break;
+                }
+            }
+            if (hasGuXiaoMeng) {
+                for (Player p : game.getPlayers()) {
+                    if (!p.isLose() && p.getIdentity() == Common.color.Has_No_Identity) {
+                        winner.add(p);
+                    }
+                }
+            }
             var declareWinners = declareWinner.toArray(new Player[0]);
             var winners = winner.toArray(new Player[0]);
             log.info(Arrays.toString(declareWinners) + "宣告胜利，胜利者有" + Arrays.toString(winners));

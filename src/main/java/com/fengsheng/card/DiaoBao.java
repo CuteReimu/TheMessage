@@ -28,6 +28,10 @@ public class DiaoBao extends AbstractCard {
 
     @Override
     public boolean canUse(Game g, Player r, Object... args) {
+        if (r == g.getJinBiPlayer()) {
+            log.error("你被禁闭了，不能出牌");
+            return false;
+        }
         if (!(g.getFsm() instanceof FightPhaseIdle fsm) || r != fsm.whoseFightTurn) {
             log.error("调包的使用时机不对");
             return false;
@@ -50,13 +54,13 @@ public class DiaoBao extends AbstractCard {
                 if (player instanceof HumanPlayer p) {
                     var builder = Fengsheng.use_diao_bao_toc.newBuilder();
                     builder.setOldMessageCard(oldCard.toPbCard()).setPlayerId(p.getAlternativeLocation(r.location()));
-                    if (p.equals(r)) builder.setCardId(this.id);
+                    if (p == r) builder.setCardId(this.id);
                     p.send(builder.build());
                 }
             }
             return new ResolveResult(fsm, true);
         };
-        g.resolve(new OnUseCard(fsm.whoseTurn, r, this, r, resolveFunc));
+        g.resolve(new OnUseCard(fsm.whoseTurn, r, null, this, Common.card_type.Diao_Bao, r, resolveFunc));
     }
 
     @Override
@@ -67,7 +71,7 @@ public class DiaoBao extends AbstractCard {
     public static boolean ai(FightPhaseIdle e, Card card) {
         Player player = e.whoseFightTurn;
         var colors = e.messageCard.getColors();
-        if (e.inFrontOfWhom.equals(player) && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
+        if (e.inFrontOfWhom == player && (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) != Common.color.Black)
             return false;
         if (ThreadLocalRandom.current().nextInt(4) != 0)
             return false;
