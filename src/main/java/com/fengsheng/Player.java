@@ -41,12 +41,12 @@ public interface Player {
     void setLocation(int location);
 
     /**
-     * 根据玩家在服务器上的座位号获取玩家的相对座位号
+     * 根据玩家的相对座位号获取玩家在服务器上的座位号
      */
     int getAbstractLocation(int location);
 
     /**
-     * 根据玩家的相对座位号获取玩家在服务器上的座位号
+     * 根据玩家在服务器上的座位号获取玩家的相对座位号
      */
     int getAlternativeLocation(int location);
 
