@@ -32,7 +32,7 @@ public class join_room_tos implements ProtoHandler {
         final HumanPlayer oldPlayer = Game.deviceCache.get(device);
         if (oldPlayer != null && oldPlayer.getGame() != null && oldPlayer.getGame().isStarted() && !oldPlayer.getGame().isEnd()) { // 断线重连
             if (oldPlayer.isActive()) {
-                player.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.join_room_too_fast).build());
+                player.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.already_online).build());
                 player.getChannel().close();
                 return;
             }
@@ -74,7 +74,7 @@ public class join_room_tos implements ProtoHandler {
                     player.setPlayerName(playerName.isBlank() ? "没起名字的玩家" : playerName);
                     player.setGame(Game.getInstance());
                     player.getGame().onPlayerJoinRoom(player);
-                    var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location());
+                    var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location()).setOnlineCount(Game.deviceCache.size());
                     for (Player p : player.getGame().getPlayers()) {
                         builder.addNames(p != null ? p.getPlayerName() : "");
                     }

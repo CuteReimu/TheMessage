@@ -53,6 +53,7 @@ message join_room_tos {
 message get_room_info_toc {
   repeated string names = 1; // 其它所有人的名字
   uint32          my_position = 2;
+  uint32          online_count = 3; // 当前在线人数
 }
 
 // 请求加一个机器人
