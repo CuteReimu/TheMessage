@@ -195,7 +195,7 @@ public class JinBi extends AbstractSkill implements ActiveSkill {
             return false;
         final Player player = players.get(ThreadLocalRandom.current().nextInt(players.size()));
         GameExecutor.post(e.player().getGame(), () -> skill.executeProtocol(
-                e.player().getGame(), e.player(), Role.skill_jin_bi_a_tos.newBuilder().setTargetPlayerId(player.location()).build()
+                e.player().getGame(), e.player(), Role.skill_jin_bi_a_tos.newBuilder().setTargetPlayerId(e.player().getAlternativeLocation(player.location())).build()
         ), 2, TimeUnit.SECONDS);
         return true;
     }
