@@ -129,10 +129,10 @@ public class JiaoJi extends AbstractSkill implements ActiveSkill {
                 g.tryContinueResolveProtocol(r, builder2.build());
             }, 2, TimeUnit.SECONDS);
         }
-        g.resolve(new excuteJiaoJi(fsm, target, needReturnCount));
+        g.resolve(new executeJiaoJi(fsm, target, needReturnCount));
     }
 
-    private record excuteJiaoJi(MainPhaseIdle fsm, Player target, int needReturnCount) implements WaitingFsm {
+    private record executeJiaoJi(MainPhaseIdle fsm, Player target, int needReturnCount) implements WaitingFsm {
         @Override
         public ResolveResult resolve() {
             return null;

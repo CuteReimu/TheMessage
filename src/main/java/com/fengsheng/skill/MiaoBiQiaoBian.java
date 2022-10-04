@@ -56,11 +56,11 @@ public class MiaoBiQiaoBian extends AbstractSkill implements ActiveSkill {
         r.incrSeq();
         r.addSkillUseCount(getSkillId());
         g.playerSetRoleFaceUp(r, true);
-        g.resolve(new excuteMiaoBiQiaoBian(fsm, r, target, card));
+        g.resolve(new executeMiaoBiQiaoBian(fsm, r, target, card));
     }
 
-    private record excuteMiaoBiQiaoBian(FightPhaseIdle fsm, Player r, Player target1,
-                                        Card card1) implements WaitingFsm {
+    private record executeMiaoBiQiaoBian(FightPhaseIdle fsm, Player r, Player target1,
+                                         Card card1) implements WaitingFsm {
         @Override
         public ResolveResult resolve() {
             final Game g = r.getGame();

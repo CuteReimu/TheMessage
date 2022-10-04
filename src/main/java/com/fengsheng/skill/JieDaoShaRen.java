@@ -62,10 +62,10 @@ public class JieDaoShaRen extends AbstractSkill implements ActiveSkill {
         g.playerSetRoleFaceUp(r, true);
         Card[] cards = target.getCards().values().toArray(new Card[0]);
         Card card = cards[ThreadLocalRandom.current().nextInt(cards.length)];
-        g.resolve(new excuteJieDaoShaRen(fsm, r, target, card));
+        g.resolve(new executeJieDaoShaRen(fsm, r, target, card));
     }
 
-    private record excuteJieDaoShaRen(FightPhaseIdle fsm, Player r, Player target, Card card) implements WaitingFsm {
+    private record executeJieDaoShaRen(FightPhaseIdle fsm, Player r, Player target, Card card) implements WaitingFsm {
         @Override
         public ResolveResult resolve() {
             final Game g = r.getGame();
