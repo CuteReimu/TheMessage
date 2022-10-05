@@ -72,7 +72,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
                     alivePlayer = p;
                 } else {
                     // 至少有2个人存活，游戏继续
-                    return new ResolveResult(new DieSkill(whoseTurn, diedQueue, diedQueue.get(0), afterDieResolve), true);
+                    return new ResolveResult(new DieSkill(whoseTurn, diedQueue, whoseTurn, afterDieResolve), true);
                 }
             }
         }

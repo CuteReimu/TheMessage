@@ -45,6 +45,8 @@ public class DieSkill implements Fsm {
 
     @Override
     public ResolveResult resolve() {
+        if (askWhom != diedQueue.get(diedIndex) && !askWhom.isAlive())
+            return new ResolveResult(new DieSkillNext(this), true);
         ResolveResult result = askWhom.getGame().dealListeningSkill();
         return result != null ? result : new ResolveResult(new DieSkillNext(this), true);
     }
@@ -60,14 +62,14 @@ public class DieSkill implements Fsm {
             int askWhom = dieSkill.askWhom.location();
             while (true) {
                 askWhom = (askWhom + 1) % players.length;
-                if (askWhom == dieSkill.diedQueue.get(dieSkill.diedIndex).location()) {
+                if (askWhom == dieSkill.whoseTurn.location()) {
                     dieSkill.diedIndex++;
                     if (dieSkill.diedIndex >= dieSkill.diedQueue.size())
                         return new ResolveResult(new WaitForDieGiveCard(dieSkill.whoseTurn, dieSkill.diedQueue, dieSkill.receiveOrder, dieSkill.afterDieResolve), true);
-                    dieSkill.askWhom = dieSkill.diedQueue.get(dieSkill.diedIndex);
+                    dieSkill.askWhom = dieSkill.whoseTurn;
                     return new ResolveResult(dieSkill, true);
                 }
-                if (players[askWhom].isAlive()) {
+                if (players[askWhom] == dieSkill.diedQueue.get(dieSkill.diedIndex) || players[askWhom].isAlive()) {
                     dieSkill.askWhom = players[askWhom];
                     return new ResolveResult(dieSkill, true);
                 }
