@@ -43,9 +43,10 @@ public class ZhuanJiao extends AbstractSkill implements TriggeredSkill {
         if (fsm.askWhom.getSkillUseCount(getSkillId()) > 0)
             return null;
         fsm.askWhom.addSkillUseCount(getSkillId());
+        final Player r = fsm.askWhom;
         final Fsm oldResolveFunc = fsm.resolveFunc;
         fsm.resolveFunc = () -> {
-            fsm.askWhom.resetSkillUseCount(getSkillId());
+            r.resetSkillUseCount(getSkillId());
             return oldResolveFunc.resolve();
         };
         return new ResolveResult(new executeZhuanJiao(fsm), true);
