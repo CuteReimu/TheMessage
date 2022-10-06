@@ -31,7 +31,7 @@ public class use_wu_dao_tos extends AbstractProtoHandler<Fengsheng.use_wu_dao_to
             return;
         }
         Player target = r.getGame().getPlayers()[r.getAbstractLocation(pb.getTargetPlayerId())];
-        if (card.getType() != Common.card_type.Jie_Huo)
+        if (card.getType() != Common.card_type.Wu_Dao)
             card = Card.falseCard(Common.card_type.Wu_Dao, card);
         if (card.canUse(r.getGame(), r, target)) {
             r.incrSeq();
