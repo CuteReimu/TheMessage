@@ -37,7 +37,7 @@ public class YouDao extends AbstractSkill implements TriggeredSkill {
             if (p instanceof HumanPlayer player)
                 player.send(Role.skill_you_dao_toc.newBuilder().setPlayerId(p.getAlternativeLocation(r.location())).build());
         }
-        r.draw(2);
+        r.draw(1);
         final Fsm oldResolveFunc = fsm.resolveFunc;
         fsm.resolveFunc = () -> {
             r.resetSkillUseCount(getSkillId());
