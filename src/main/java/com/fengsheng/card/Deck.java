@@ -60,6 +60,22 @@ public class Deck {
     }
 
     /**
+     * 查看牌堆顶的n张牌
+     *
+     * @return 返回查看的牌，它是牌堆的一个 {@code sublist} ，其中 {@code cards.get(0)} 是观看的最后一张牌，
+     * {@code cards.get(cards.length() - 1)} 是牌堆顶第一张牌。
+     */
+    public List<Card> peek(int n) {
+        if (n > cards.size()) {
+            shuffle();
+        }
+        if (n > cards.size()) {
+            n = cards.size();
+        }
+        return cards.subList(cards.size() - n, cards.size());
+    }
+
+    /**
      * 弃牌
      */
     public void discard(Card... cards) {
