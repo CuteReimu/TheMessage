@@ -523,3 +523,35 @@ message skill_jiang_hu_ling_b_tos {
 message skill_jiang_hu_ling_b_toc {
   uint32 card_id = 1;
 }
+
+// SP顾小梦【羁绊】A：出牌阶段限一次，可以摸两张牌。
+message skill_ji_ban_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【羁绊】A，摸牌走摸牌协议，并等待给牌（摸牌协议会在这个协议之前发）
+message skill_ji_ban_a_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// SP顾小梦【羁绊】B：然后将至少一张手牌交给另一名角色。
+message skill_ji_ban_b_tos {
+  uint32          target_player_id = 1;
+  repeated uint32 card_ids = 2;
+  uint32          seq = 3;
+}
+
+// 广播使用【羁绊】B
+message skill_ji_ban_b_toc {
+  uint32        player_id = 1;
+  uint32        target_player_id = 2;
+  repeated card cards = 3; // 给的牌，只有顾小梦和给的那个人能看到
+  uint32        unknown_card_count = 4; // 其他人看不到给的牌，只有数量
+}
+
+// 广播使用【诱导】：你使用【误导】后，摸一张牌
+message skill_you_dao_toc {
+  uint32 player_id = 1;
+}

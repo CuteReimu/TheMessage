@@ -26,6 +26,8 @@ enum role {
   lao_bie = 26; // 老鳖
   li_ning_yu = 28; // 李宁玉
   shang_yu = 30; // 商玉
+  sp_gu_xiao_meng = 31; // SP顾小梦
+  sp_li_ning_yu = 32; // SP李宁玉
 }
 
 enum phase {
