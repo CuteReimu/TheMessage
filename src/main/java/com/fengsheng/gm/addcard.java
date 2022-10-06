@@ -20,7 +20,7 @@ public class addcard implements Function<Map<String, String>, String> {
     @Override
     public String apply(Map<String, String> form) {
         try {
-            final int playerId = Integer.parseInt(form.get("player"));
+            final int playerId = form.containsKey("player") ? Integer.parseInt(form.get("player")) : 0;
             int cardTypeNum = Integer.parseInt(form.get("card"));
             final Common.card_type cardType = Common.card_type.forNumber(cardTypeNum);
             if (cardType == null || cardType == Common.card_type.UNRECOGNIZED)
