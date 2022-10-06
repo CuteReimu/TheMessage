@@ -164,7 +164,7 @@ public final class Game {
         if (winners != null && isHumanGame && players.length >= 5) {
             List<Statistics.Record> records = new ArrayList<>(players.length);
             for (Player p : players)
-                records.add(new Statistics.Record(p.getRole(), winners.contains(p), p.getOriginIdentity(), p.getOriginSecretTask()));
+                records.add(new Statistics.Record(p.getRole(), winners.contains(p), p.getOriginIdentity(), p.getOriginSecretTask(), players.length));
             Statistics.getInstance().add(records);
         }
     }

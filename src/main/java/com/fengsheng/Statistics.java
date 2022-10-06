@@ -36,6 +36,7 @@ public class Statistics {
                 sb.append(r.isWinner).append(',');
                 sb.append(r.identity).append(',');
                 sb.append(r.task).append(',');
+                sb.append(r.totalPlayerCount).append(',');
                 sb.append(time).append('\n');
             }
             try (FileOutputStream fileOutputStream = new FileOutputStream("stat.csv", true)) {
@@ -51,12 +52,14 @@ public class Statistics {
         private final boolean isWinner;
         private final Common.color identity;
         private final Common.secret_task task;
+        private final int totalPlayerCount;
 
-        public Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task) {
+        public Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task, int totalPlayerCount) {
             this.role = role;
             this.isWinner = isWinner;
             this.identity = identity;
             this.task = task;
+            this.totalPlayerCount = totalPlayerCount;
         }
     }
 }

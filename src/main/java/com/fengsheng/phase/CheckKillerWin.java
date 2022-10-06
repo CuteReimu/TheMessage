@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -82,7 +83,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
             for (Player p : players) {
                 p.notifyWin(new Player[0], new Player[0]);
             }
-            whoseTurn.getGame().end(null);
+            whoseTurn.getGame().end(Collections.emptyList());
             return new ResolveResult(null, false);
         }
         // 只剩1个人存活，游戏结束
