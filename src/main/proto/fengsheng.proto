@@ -8,6 +8,7 @@ message heart_tos {
 
 // 心跳：服务器回复客户端
 message heart_toc {
+  uint32 online_count = 1; // 当前在线人数
 }
 
 // 请求房间加一个位置
