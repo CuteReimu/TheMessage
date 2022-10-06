@@ -6,6 +6,7 @@ enum role {
   cheng_xiao_die = 2; // 程小蝶
   lian_yuan = 3; // 连鸢
   mao_bu_ba = 4; // 毛不拔
+  bai_cang_lang = 6; // 白沧浪
   fei_yuan_long_chuan = 7; // 肥圆龙川
   pei_ling = 8; // 裴玲
   wang_tian_xiang = 10; // 王田香

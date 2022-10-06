@@ -571,7 +571,7 @@ message skill_bo_ai_a_toc {
 // 白沧浪【博爱】B：然后可以将一张手牌交给另一名角色，若交给了女性角色，则你再摸一张牌。
 message skill_bo_ai_b_tos {
   uint32 target_player_id = 1;
-  uint32 card_id = 2;
+  uint32 card_id = 2; // 0表示不给
   uint32 seq = 3;
 }
 
