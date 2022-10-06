@@ -136,6 +136,8 @@ public final class Game {
             var task = identity == Common.color.Black ? tasks.get(secretIndex++) : Common.secret_task.forNumber(0);
             players[i].setIdentity(identity);
             players[i].setSecretTask(task);
+            players[i].setOriginIdentity(identity);
+            players[i].setOriginSecretTask(task);
         }
         RoleSkillsData[] roleSkillsDataArray = Config.IsGmEnable
                 ? RoleCache.getRandomRolesWithSpecific(players.length * 2, Config.DebugRoles)
@@ -147,14 +149,23 @@ public final class Game {
         return ended;
     }
 
-    public void end() {
+    public void end(List<Player> winners) {
         ended = true;
         GameCache.remove(id);
+        boolean isHumanGame = true;
         for (Player p : players) {
             if (p instanceof HumanPlayer humanPlayer) {
                 humanPlayer.saveRecord();
                 deviceCache.remove(humanPlayer.getDevice());
+            } else {
+                isHumanGame = false;
             }
+        }
+        if (winners != null && isHumanGame && players.length >= 5) {
+            List<Statistics.Record> records = new ArrayList<>(players.length);
+            for (Player p : players)
+                records.add(new Statistics.Record(p.getRole(), winners.contains(p), p.getOriginIdentity(), p.getOriginSecretTask()));
+            Statistics.getInstance().add(records);
         }
     }
 

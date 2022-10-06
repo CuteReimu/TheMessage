@@ -20,6 +20,8 @@ public abstract class AbstractPlayer implements Player {
     protected final Map<Integer, Card> messageCards;
     protected Common.color identity;
     protected Common.secret_task secretTask;
+    private Common.color originIdentity;
+    private Common.secret_task originSecretTask;
     boolean alive = true;
     boolean lose = false;
     protected RoleSkillsData roleSkillsData;
@@ -221,6 +223,16 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
+    public Common.color getOriginIdentity() {
+        return originIdentity;
+    }
+
+    @Override
+    public void setOriginIdentity(Common.color identity) {
+        originIdentity = identity;
+    }
+
+    @Override
     public Common.secret_task getSecretTask() {
         return secretTask;
     }
@@ -228,6 +240,16 @@ public abstract class AbstractPlayer implements Player {
     @Override
     public void setSecretTask(Common.secret_task secretTask) {
         this.secretTask = secretTask;
+    }
+
+    @Override
+    public Common.secret_task getOriginSecretTask() {
+        return originSecretTask;
+    }
+
+    @Override
+    public void setOriginSecretTask(Common.secret_task secretTask) {
+        originSecretTask = secretTask;
     }
 
     @Override

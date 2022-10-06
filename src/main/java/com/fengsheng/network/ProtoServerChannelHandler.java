@@ -68,7 +68,7 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
                         if (p instanceof HumanPlayer humanPlayer && humanPlayer.isActive())
                             return;
                     }
-                    game.end();
+                    game.end(null);
                 });
             } else {
                 log.info(player.getPlayerName() + "离开了房间");

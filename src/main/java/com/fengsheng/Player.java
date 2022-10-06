@@ -244,9 +244,35 @@ public interface Player {
      */
     void setIdentity(Common.color color);
 
+    /**
+     * 获得玩家的初始身份（不受换身份的影响）
+     */
+    Common.color getOriginIdentity();
+
+    /**
+     * 设置玩家的初始身份（不受换身份的影响）
+     */
+    void setOriginIdentity(Common.color color);
+
+    /**
+     * 获得玩家的机密任务
+     */
     Common.secret_task getSecretTask();
 
+    /**
+     * 设置玩家的机密任务
+     */
     void setSecretTask(Common.secret_task secretTask);
+
+    /**
+     * 获得玩家的初始机密任务（不受换身份的影响）
+     */
+    Common.secret_task getOriginSecretTask();
+
+    /**
+     * 设置玩家的初始机密任务（不受换身份的影响）
+     */
+    void setOriginSecretTask(Common.secret_task secretTask);
 
     void setSkills(Skill[] skills);
 
