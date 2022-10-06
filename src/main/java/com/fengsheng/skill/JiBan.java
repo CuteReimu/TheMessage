@@ -114,6 +114,7 @@ public class JiBan extends AbstractSkill implements ActiveSkill {
                 }
                 cards[i] = card;
             }
+            r.incrSeq();
             log.info(r + "将" + Arrays.toString(cards) + "交给" + target);
             for (Card card : cards)
                 r.deleteCard(card.getId());
