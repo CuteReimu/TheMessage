@@ -551,7 +551,7 @@ message skill_ji_ban_b_toc {
   uint32        unknown_card_count = 4; // 其他人看不到给的牌，只有数量
 }
 
-// 广播使用【诱导】：你使用【误导】后，摸一张牌
+// 广播使用【诱导】：你使用【误导】后，摸一张牌。
 message skill_you_dao_toc {
   uint32 player_id = 1;
 }

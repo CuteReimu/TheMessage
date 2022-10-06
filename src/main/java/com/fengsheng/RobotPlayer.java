@@ -94,7 +94,10 @@ public class RobotPlayer extends AbstractPlayer {
             if (ai != null && ai.test(fsm, (ActiveSkill) skill)) return;
         }
         for (Card card : cards.values()) {
-            var ai = aiFightPhase.get(card.getType());
+            Common.card_type cardType = card.getType();
+            if (findSkill(SkillId.YING_BIAN) != null && cardType == Common.card_type.Jie_Huo)
+                cardType = Common.card_type.Wu_Dao;
+            var ai = aiFightPhase.get(cardType);
             if (ai != null && ai.test(fsm, card)) return;
         }
         GameExecutor.post(game, () -> game.resolve(new FightPhaseNext(fsm)), 2, TimeUnit.SECONDS);
@@ -221,6 +224,7 @@ public class RobotPlayer extends AbstractPlayer {
         aiSkillMainPhase.put(SkillId.GUI_ZHA, GuiZha::ai);
         aiSkillMainPhase.put(SkillId.JIAO_JI, JiaoJi::ai);
         aiSkillMainPhase.put(SkillId.JIN_BI, JinBi::ai);
+        aiSkillMainPhase.put(SkillId.JI_BAN, JiBan::ai);
         aiSkillFightPhase.put(SkillId.TOU_TIAN, TouTian::ai);
         aiSkillFightPhase.put(SkillId.JI_ZHI, JiZhi::ai);
         aiSkillFightPhase.put(SkillId.YI_HUA_JIE_MU, YiHuaJieMu::ai);

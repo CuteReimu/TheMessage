@@ -5,6 +5,7 @@ import com.fengsheng.Player;
 import com.fengsheng.card.Card;
 import com.fengsheng.protos.Common;
 import com.fengsheng.protos.Fengsheng;
+import com.fengsheng.skill.SkillId;
 import org.apache.log4j.Logger;
 
 public class use_wu_dao_tos extends AbstractProtoHandler<Fengsheng.use_wu_dao_tos> {
@@ -21,7 +22,7 @@ public class use_wu_dao_tos extends AbstractProtoHandler<Fengsheng.use_wu_dao_to
             log.error("没有这张牌");
             return;
         }
-        if (card.getType() != Common.card_type.Wu_Dao) {
+        if (card.getType() != Common.card_type.Wu_Dao && (card.getType() != Common.card_type.Jie_Huo || r.findSkill(SkillId.YING_BIAN) == null)) {
             log.error("这张牌不是误导，而是" + card);
             return;
         }
