@@ -31,7 +31,5 @@ jobs:
         
     - name: Build with Gradle
       uses: gradle/gradle-build-action@v2
-        
-    - run: chmod -R 777 *
-    
-    - run: ./gradlew build
+      with:
+        arguments: build
