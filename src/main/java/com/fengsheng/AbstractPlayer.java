@@ -266,8 +266,14 @@ public abstract class AbstractPlayer implements Player {
         return roleSkillsData.isFaceUp();
     }
 
+    @Override
     public void setRoleFaceUp(boolean faceUp) {
         roleSkillsData.setFaceUp(faceUp);
+    }
+
+    @Override
+    public boolean isFemale() {
+        return roleSkillsData.isFemale();
     }
 
     @Override

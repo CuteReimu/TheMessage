@@ -182,6 +182,11 @@ public interface Player {
     void notifyReceivePhase(Player whoseTurn, Player inFrontOfWhom, Card messageCard, Player waitingPlayer, int waitSecond);
 
     /**
+     * 获取是否是女性角色
+     */
+    boolean isFemale();
+
+    /**
      * 通知某名玩家已确定死亡（用于通知客户端把头像置灰）
      *
      * @param location 死亡的玩家在服务器上的座位号
