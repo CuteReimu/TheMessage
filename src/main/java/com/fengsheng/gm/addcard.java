@@ -35,7 +35,7 @@ public class addcard implements Function<Map<String, String>, String> {
                     if (playerId < g.getPlayers().length && playerId >= 0 && g.getPlayers()[playerId].isAlive()) {
                         List<Card> cardList = new ArrayList<>();
                         for (int i = 0; i < finalCount; i++) {
-                            AbstractCard c = (AbstractCard) availableCards.get(ThreadLocalRandom.current().nextInt(availableCards.size()));
+                            Card c = availableCards.get(ThreadLocalRandom.current().nextInt(availableCards.size()));
                             cardList.add(switch (cardType) {
                                 case Cheng_Qing -> new ChengQing(g.getDeck().getNextId(), c);
                                 case Shi_Tan -> new ShiTan(g.getDeck().getNextId(), (ShiTan) c);

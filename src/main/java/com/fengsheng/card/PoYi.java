@@ -11,15 +11,22 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class PoYi extends AbstractCard {
+public class PoYi extends Card {
     private static final Logger log = Logger.getLogger(PoYi.class);
 
     public PoYi(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         super(id, colors, direction, lockable);
     }
 
-    public PoYi(int id, AbstractCard card) {
+    public PoYi(int id, Card card) {
         super(id, card);
+    }
+
+    /**
+     * 仅用于“作为破译使用”
+     */
+    PoYi(Card originCard) {
+        super(originCard);
     }
 
     @Override
@@ -121,7 +128,7 @@ public class PoYi extends AbstractCard {
                     p.send(builder.build());
                 }
             }
-            r.getGame().getDeck().discard(card);
+            r.getGame().getDeck().discard(card.getOriginCard());
         }
     }
 

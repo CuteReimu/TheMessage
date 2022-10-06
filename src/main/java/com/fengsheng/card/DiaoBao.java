@@ -10,15 +10,22 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class DiaoBao extends AbstractCard {
+public class DiaoBao extends Card {
     private static final Logger log = Logger.getLogger(DiaoBao.class);
 
     public DiaoBao(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         super(id, colors, direction, lockable);
     }
 
-    public DiaoBao(int id, AbstractCard card) {
+    public DiaoBao(int id, Card card) {
         super(id, card);
+    }
+
+    /**
+     * 仅用于“作为调包使用”
+     */
+    DiaoBao(Card originCard) {
+        super(originCard);
     }
 
     @Override
@@ -47,7 +54,7 @@ public class DiaoBao extends AbstractCard {
         Fsm resolveFunc = () -> {
             Card oldCard = fsm.messageCard;
             g.getDeck().discard(oldCard);
-            fsm.messageCard = this;
+            fsm.messageCard = this.getOriginCard();
             fsm.isMessageCardFaceUp = false;
             fsm.whoseFightTurn = fsm.inFrontOfWhom;
             for (Player player : g.getPlayers()) {

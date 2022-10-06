@@ -17,15 +17,22 @@ import java.util.concurrent.TimeUnit;
 
 import static com.fengsheng.protos.Common.card_type.*;
 
-public class WeiBi extends AbstractCard {
+public class WeiBi extends Card {
     private static final Logger log = Logger.getLogger(WeiBi.class);
 
     public WeiBi(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         super(id, colors, direction, lockable);
     }
 
-    public WeiBi(int id, AbstractCard card) {
+    public WeiBi(int id, Card card) {
         super(id, card);
+    }
+
+    /**
+     * 仅用于“作为威逼使用”
+     */
+    WeiBi(Card originCard) {
+        super(originCard);
     }
 
     @Override
@@ -104,7 +111,7 @@ public class WeiBi extends AbstractCard {
                         }
                     }
                 } else if (card != null) {
-                    g.getDeck().discard(card);
+                    g.getDeck().discard(card.getOriginCard());
                 }
                 return new ResolveResult(new MainPhaseIdle(r), true);
             }
@@ -203,7 +210,7 @@ public class WeiBi extends AbstractCard {
                     player.send(builder.build());
                 }
             }
-            if (card != null) r.getGame().getDeck().discard(card);
+            if (card != null) r.getGame().getDeck().discard(card.getOriginCard());
             return new ResolveResult(new MainPhaseIdle(r), true);
         }
 

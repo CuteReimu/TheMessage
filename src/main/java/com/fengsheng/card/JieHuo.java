@@ -10,15 +10,22 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class JieHuo extends AbstractCard {
+public class JieHuo extends Card {
     private static final Logger log = Logger.getLogger(JieHuo.class);
 
     public JieHuo(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         super(id, colors, direction, lockable);
     }
 
-    public JieHuo(int id, AbstractCard card) {
+    public JieHuo(int id, Card card) {
         super(id, card);
+    }
+
+    /**
+     * 仅用于“作为截获使用”
+     */
+    JieHuo(Card originCard) {
+        super(originCard);
     }
 
     @Override
@@ -64,7 +71,7 @@ public class JieHuo extends AbstractCard {
         Fsm resolveFunc = () -> {
             fsm.inFrontOfWhom = r;
             fsm.whoseFightTurn = fsm.inFrontOfWhom;
-            if (card != null) g.getDeck().discard(card);
+            if (card != null) g.getDeck().discard(card.getOriginCard());
             for (Player player : g.getPlayers()) {
                 if (player instanceof HumanPlayer p) {
                     var builder = Fengsheng.use_jie_huo_toc.newBuilder();

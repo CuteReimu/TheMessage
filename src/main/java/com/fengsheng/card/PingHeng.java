@@ -12,15 +12,22 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class PingHeng extends AbstractCard {
+public class PingHeng extends Card {
     private static final Logger log = Logger.getLogger(PingHeng.class);
 
     public PingHeng(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         super(id, colors, direction, lockable);
     }
 
-    public PingHeng(int id, AbstractCard card) {
+    public PingHeng(int id, Card card) {
         super(id, card);
+    }
+
+    /**
+     * 仅用于“作为平衡使用”
+     */
+    PingHeng(Card originCard) {
+        super(originCard);
     }
 
     @Override
@@ -67,7 +74,7 @@ public class PingHeng extends AbstractCard {
             g.playerDiscardCard(target, target.getCards().values().toArray(new Card[0]));
             r.draw(3);
             target.draw(3);
-            g.getDeck().discard(this);
+            g.getDeck().discard(this.getOriginCard());
             return new ResolveResult(new MainPhaseIdle(r), true);
         };
         g.resolve(new OnUseCard(r, r, target, this, Common.card_type.Ping_Heng, r, resolveFunc));

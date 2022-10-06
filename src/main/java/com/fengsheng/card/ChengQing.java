@@ -14,16 +14,24 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class ChengQing extends AbstractCard {
+public class ChengQing extends Card {
     private static final Logger log = Logger.getLogger(ChengQing.class);
 
     public ChengQing(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         super(id, colors, direction, lockable);
     }
 
-    public ChengQing(int id, AbstractCard card) {
+    public ChengQing(int id, Card card) {
         super(id, card);
     }
+
+    /**
+     * 仅用于“作为澄清使用”
+     */
+    ChengQing(Card originCard) {
+        super(originCard);
+    }
+
 
     @Override
     public Common.card_type getType() {
@@ -87,7 +95,7 @@ public class ChengQing extends AbstractCard {
                             .setTargetPlayerId(p.getAlternativeLocation(target.location())).setTargetCardId(targetCardId).build());
                 }
             }
-            g.getDeck().discard(this);
+            g.getDeck().discard(this.getOriginCard());
             if (fsm instanceof MainPhaseIdle)
                 return new ResolveResult(fsm, true);
             else

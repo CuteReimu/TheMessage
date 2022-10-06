@@ -10,15 +10,22 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class WuDao extends AbstractCard {
+public class WuDao extends Card {
     private static final Logger log = Logger.getLogger(WuDao.class);
 
     public WuDao(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         super(id, colors, direction, lockable);
     }
 
-    public WuDao(int id, AbstractCard card) {
+    public WuDao(int id, Card card) {
         super(id, card);
+    }
+
+    /**
+     * 仅用于“作为误导使用”
+     */
+    WuDao(Card originCard) {
+        super(originCard);
     }
 
     @Override
@@ -55,7 +62,7 @@ public class WuDao extends AbstractCard {
         Fsm resolveFunc = () -> {
             fsm.inFrontOfWhom = target;
             fsm.whoseFightTurn = fsm.inFrontOfWhom;
-            g.getDeck().discard(this);
+            g.getDeck().discard(this.getOriginCard());
             for (Player player : g.getPlayers()) {
                 if (player instanceof HumanPlayer p) {
                     var builder = Fengsheng.use_wu_dao_toc.newBuilder().setCard(this.toPbCard());
@@ -86,7 +93,10 @@ public class WuDao extends AbstractCard {
         };
         if (target == null) return false;
         final Player finalTarget = target;
-        GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player, finalTarget), 2, TimeUnit.SECONDS);
+        GameExecutor.post(player.getGame(), () -> {
+            Card card0 = card.getType() == Common.card_type.Wu_Dao ? card : Card.falseCard(Common.card_type.Wu_Dao, card);
+            card0.execute(player.getGame(), player, finalTarget);
+        }, 2, TimeUnit.SECONDS);
         return true;
     }
 }

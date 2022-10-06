@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class ShiTan extends AbstractCard {
+public class ShiTan extends Card {
     private static final Logger log = Logger.getLogger(ShiTan.class);
 
     private final Common.color[] whoDrawCard;

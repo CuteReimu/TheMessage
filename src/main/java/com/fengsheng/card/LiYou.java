@@ -15,15 +15,22 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class LiYou extends AbstractCard {
+public class LiYou extends Card {
     private static final Logger log = Logger.getLogger(LiYou.class);
 
     public LiYou(int id, Common.color[] colors, Common.direction direction, boolean lockable) {
         super(id, colors, direction, lockable);
     }
 
-    public LiYou(int id, AbstractCard card) {
+    public LiYou(int id, Card card) {
         super(id, card);
+    }
+
+    /**
+     * 仅用于“作为利诱使用”
+     */
+    LiYou(Card originCard) {
+        super(originCard);
     }
 
     @Override
@@ -106,7 +113,7 @@ public class LiYou extends AbstractCard {
                     }
                 }
             } else {
-                if (card != null) g.getDeck().discard(card);
+                if (card != null) g.getDeck().discard(card.getOriginCard());
             }
             return new ResolveResult(new MainPhaseIdle(r), true);
         };
