@@ -35,7 +35,7 @@ public class Statistics {
                 sb.append(r.role).append(',');
                 sb.append(r.isWinner).append(',');
                 sb.append(r.identity).append(',');
-                sb.append(r.task).append(',');
+                sb.append(r.identity == Common.color.Black ? r.task.toString() : "").append(',');
                 sb.append(r.totalPlayerCount).append(',');
                 sb.append(time).append('\n');
             }
