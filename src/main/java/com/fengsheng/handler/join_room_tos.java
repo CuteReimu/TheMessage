@@ -73,10 +73,18 @@ public class join_room_tos implements ProtoHandler {
                 } else {
                     player.setPlayerName(playerName.isBlank() ? "没起名字的玩家" : playerName);
                     player.setGame(Game.getInstance());
-                    player.getGame().onPlayerJoinRoom(player);
+                    Statistics.PlayerGameCount count = Statistics.getInstance().getPlayerGameCount(player.getDevice());
+                    player.getGame().onPlayerJoinRoom(player, count);
                     var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location()).setOnlineCount(Game.deviceCache.size());
                     for (Player p : player.getGame().getPlayers()) {
                         builder.addNames(p != null ? p.getPlayerName() : "");
+                        Statistics.PlayerGameCount count1;
+                        if (p instanceof HumanPlayer humanPlayer)
+                            count1 = Statistics.getInstance().getPlayerGameCount(humanPlayer.getDevice());
+                        else
+                            count1 = Statistics.getInstance().getTotalPlayerGameCount();
+                        builder.addWinCounts(count1 == null ? 0 : count1.winCount());
+                        builder.addGameCounts(count1 == null ? 0 : count1.gameCount());
                     }
                     reply = builder.build();
                 }

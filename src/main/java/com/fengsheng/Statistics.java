@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Statistics {
     private static final Statistics instance = new Statistics();
@@ -23,6 +24,8 @@ public class Statistics {
     private final ExecutorService pool = Executors.newSingleThreadExecutor();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private final Map<String, PlayerGameCount> playerGameCount = new ConcurrentHashMap<>();
+    private final AtomicInteger totalWinCount = new AtomicInteger();
+    private final AtomicInteger totalGameCount = new AtomicInteger();
 
     private Statistics() {
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
@@ -50,7 +53,11 @@ public class Statistics {
 
     public void addPlayerGameCount(List<PlayerGameResult> playerGameResultList) {
         pool.submit(() -> {
+            int win = 0;
+            int game = 0;
             for (PlayerGameResult count : playerGameResultList) {
+                if (count.isWin) win++;
+                game++;
                 playerGameCount.compute(count.deviceId, (k, v) -> {
                     int addWin = count.isWin ? 1 : 0;
                     if (v == null)
@@ -58,6 +65,8 @@ public class Statistics {
                     return new PlayerGameCount(v.winCount + addWin, v.gameCount + 1);
                 });
             }
+            totalWinCount.addAndGet(win);
+            totalGameCount.addAndGet(game);
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, PlayerGameCount> entry : playerGameCount.entrySet()) {
                 PlayerGameCount count = entry.getValue();
@@ -77,16 +86,28 @@ public class Statistics {
         return playerGameCount.get(deviceId);
     }
 
+    public PlayerGameCount getTotalPlayerGameCount() {
+        return new PlayerGameCount(totalWinCount.get(), totalGameCount.get());
+    }
+
     public void loadPlayerGameCount() throws IOException {
+        int winCount = 0;
+        int gameCount = 0;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("player.csv")))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] a = line.split(",", 3);
                 String deviceId = a[2];
-                playerGameCount.put(deviceId, new PlayerGameCount(Integer.parseInt(a[0]), Integer.parseInt(a[1])));
+                int win = Integer.parseInt(a[0]);
+                int game = Integer.parseInt(a[1]);
+                playerGameCount.put(deviceId, new PlayerGameCount(win, game));
+                winCount += win;
+                gameCount += game;
             }
         } catch (FileNotFoundException ignored) {
         }
+        totalWinCount.set(winCount);
+        totalGameCount.set(gameCount);
     }
 
     public record Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task,

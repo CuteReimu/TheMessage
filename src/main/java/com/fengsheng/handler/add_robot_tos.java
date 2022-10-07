@@ -1,9 +1,6 @@
 package com.fengsheng.handler;
 
-import com.fengsheng.Game;
-import com.fengsheng.HumanPlayer;
-import com.fengsheng.Player;
-import com.fengsheng.RobotPlayer;
+import com.fengsheng.*;
 import com.fengsheng.protos.Errcode;
 import com.fengsheng.protos.Fengsheng;
 import org.apache.log4j.Logger;
@@ -25,7 +22,7 @@ public class add_robot_tos extends AbstractProtoHandler<Fengsheng.add_robot_tos>
             Player robotPlayer = new RobotPlayer();
             robotPlayer.setPlayerName(Player.randPlayerName());
             robotPlayer.setGame(player.getGame());
-            robotPlayer.getGame().onPlayerJoinRoom(robotPlayer);
+            robotPlayer.getGame().onPlayerJoinRoom(robotPlayer, Statistics.getInstance().getTotalPlayerGameCount());
         }
     }
 }

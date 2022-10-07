@@ -61,7 +61,7 @@ public final class Game {
     /**
      * 玩家进入房间时调用
      */
-    public void onPlayerJoinRoom(Player player) {
+    public void onPlayerJoinRoom(Player player, Statistics.PlayerGameCount count) {
         int unready = -1;
         for (int index = 0; index < players.length; index++) {
             if (players[index] == null && ++unready == 0) {
@@ -69,7 +69,12 @@ public final class Game {
                 player.setLocation(index);
             }
         }
-        var msg = Fengsheng.join_room_toc.newBuilder().setName(player.getPlayerName()).setPosition(player.location()).build();
+        var builder = Fengsheng.join_room_toc.newBuilder().setName(player.getPlayerName()).setPosition(player.location());
+        if (count != null) {
+            builder.setWinCount(count.winCount());
+            builder.setGameCount(count.gameCount());
+        }
+        var msg = builder.build();
         for (Player p : players) {
             if (p != player && p instanceof HumanPlayer) {
                 ((HumanPlayer) p).send(msg);
