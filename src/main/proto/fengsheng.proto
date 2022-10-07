@@ -55,6 +55,8 @@ message get_room_info_toc {
   repeated string names = 1; // 其它所有人的名字
   uint32          my_position = 2;
   uint32          online_count = 3; // 当前在线人数
+  uint32          my_win_count = 4; // 我的胜场数
+  uint32          my_game_count = 5; // 我的总场数
 }
 
 // 请求加一个机器人

@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,15 +20,16 @@ public class Statistics {
         return instance;
     }
 
-    private final ExecutorService saveLoadPool = Executors.newSingleThreadExecutor();
+    private final ExecutorService pool = Executors.newSingleThreadExecutor();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final Map<String, PlayerGameCount> playerGameCount = new ConcurrentHashMap<>();
 
     private Statistics() {
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
     }
 
     public void add(List<Record> records) {
-        saveLoadPool.submit(() -> {
+        pool.submit(() -> {
             String time = dateFormat.format(new Date());
             StringBuilder sb = new StringBuilder();
             for (Record r : records) {
@@ -46,20 +48,58 @@ public class Statistics {
         });
     }
 
-    public static class Record {
-        private final Common.role role;
-        private final boolean isWinner;
-        private final Common.color identity;
-        private final Common.secret_task task;
-        private final int totalPlayerCount;
+    public void addPlayerGameCount(List<PlayerGameResult> playerGameResultList) {
+        pool.submit(() -> {
+            for (PlayerGameResult count : playerGameResultList) {
+                playerGameCount.compute(count.deviceId, (k, v) -> {
+                    int addWin = count.isWin ? 1 : 0;
+                    if (v == null)
+                        return new PlayerGameCount(addWin, 1);
+                    return new PlayerGameCount(v.winCount + addWin, v.gameCount + 1);
+                });
+            }
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, PlayerGameCount> entry : playerGameCount.entrySet()) {
+                PlayerGameCount count = entry.getValue();
+                sb.append(count.winCount).append(',');
+                sb.append(count.gameCount).append(',');
+                sb.append(entry.getKey()).append('\n');
+            }
+            try (FileOutputStream fileOutputStream = new FileOutputStream("player.csv", true)) {
+                fileOutputStream.write(sb.toString().getBytes());
+            } catch (IOException e) {
+                log.error("write file failed", e);
+            }
+        });
+    }
 
-        public Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task, int totalPlayerCount) {
-            this.role = role;
-            this.isWinner = isWinner;
-            this.identity = identity;
-            this.task = task;
-            this.totalPlayerCount = totalPlayerCount;
+    public PlayerGameCount getPlayerGameCount(String deviceId) {
+        return playerGameCount.get(deviceId);
+    }
+
+    public void loadPlayerGameCount() throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("player.csv")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] a = line.split(",", 3);
+                String deviceId = a[2];
+                playerGameCount.put(deviceId, new PlayerGameCount(Integer.parseInt(a[0]), Integer.parseInt(a[1])));
+            }
+        } catch (FileNotFoundException ignored) {
         }
+    }
+
+    public record Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task,
+                         int totalPlayerCount) {
+
+    }
+
+    public record PlayerGameResult(String deviceId, boolean isWin) {
+
+    }
+
+    public record PlayerGameCount(int winCount, int gameCount) {
+
     }
 
     public static void main(String[] args) throws IOException {

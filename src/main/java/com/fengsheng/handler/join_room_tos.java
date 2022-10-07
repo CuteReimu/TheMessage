@@ -78,6 +78,9 @@ public class join_room_tos implements ProtoHandler {
                     for (Player p : player.getGame().getPlayers()) {
                         builder.addNames(p != null ? p.getPlayerName() : "");
                     }
+                    Statistics.PlayerGameCount playerGameCount = Statistics.getInstance().getPlayerGameCount(player.getDevice());
+                    if (playerGameCount != null)
+                        builder.setMyWinCount(playerGameCount.winCount()).setMyGameCount(playerGameCount.gameCount());
                     reply = builder.build();
                 }
             }

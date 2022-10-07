@@ -12,6 +12,7 @@ import com.fengsheng.skill.TriggeredSkill;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -165,9 +166,15 @@ public final class Game {
         }
         if (winners != null && isHumanGame && players.length >= 5) {
             List<Statistics.Record> records = new ArrayList<>(players.length);
-            for (Player p : players)
-                records.add(new Statistics.Record(p.getRole(), winners.contains(p), p.getOriginIdentity(), p.getOriginSecretTask(), players.length));
+            List<Statistics.PlayerGameResult> playerGameResultList = new ArrayList<>();
+            for (Player p : players) {
+                boolean win = winners.contains(p);
+                records.add(new Statistics.Record(p.getRole(), win, p.getOriginIdentity(), p.getOriginSecretTask(), players.length));
+                if (p instanceof HumanPlayer humanPlayer)
+                    playerGameResultList.add(new Statistics.PlayerGameResult(humanPlayer.getDevice(), win));
+            }
             Statistics.getInstance().add(records);
+            Statistics.getInstance().addPlayerGameCount(playerGameResultList);
         }
     }
 
@@ -313,7 +320,8 @@ public final class Game {
         return null;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        Statistics.getInstance().loadPlayerGameCount();
         synchronized (Game.class) {
             newInstance();
         }
