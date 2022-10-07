@@ -72,7 +72,7 @@ message join_room_toc {
   string name = 1;
   uint32 position = 2;
   uint32 win_count = 3;
-  uint32 game_counts = 4;
+  uint32 game_count = 4;
 }
 
 // 通知谁离开的房间
