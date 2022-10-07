@@ -14,7 +14,7 @@ public record StartGame(Game game) implements Fsm {
     public ResolveResult resolve() {
         Game.GameCache.put(game.getId(), game);
         Player[] players = game.getPlayers();
-        game.setDeck(new Deck(game, 5 - players.length));
+        game.setDeck(new Deck(game, players.length < 5));
         final int whoseTurn = ThreadLocalRandom.current().nextInt(players.length);
         for (int i = 0; i < players.length; i++)
             players[(whoseTurn + i) % players.length].init();

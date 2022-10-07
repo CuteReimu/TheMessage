@@ -108,16 +108,18 @@ public final class Game {
                 identities.add(Common.color.Red);
                 identities.add(Common.color.Blue);
                 identities.add(Common.color.Black);
+                identities.add(Common.color.Black);
+                identities.add(Common.color.Black);
             case 4:
                 identities.add(Common.color.Red);
+                identities.add(Common.color.Red);
                 identities.add(Common.color.Blue);
+                identities.add(Common.color.Blue);
+                break;
             case 3:
                 identities.add(Common.color.Red);
                 identities.add(Common.color.Blue);
                 identities.add(Common.color.Black);
-                identities.add(Common.color.Black);
-                while (identities.size() > players.length)
-                    identities.remove(random.nextInt(identities.size()));
                 break;
             default:
                 for (int i = 0; i < (players.length - 1) / 2; i++) {

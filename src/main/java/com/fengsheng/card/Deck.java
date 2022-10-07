@@ -16,15 +16,11 @@ public class Deck {
     private final List<Card> cards = new ArrayList<>();
     private final List<Card> discardPile = new ArrayList<>();
 
-    public Deck(Game game, int removeShiTan) {
+    public Deck(Game game, boolean removeShiTan) {
         this.game = game;
         cards.addAll(DefaultDeck);
-        if (removeShiTan >= 3) {
+        if (removeShiTan)
             cards.subList(0, 18).clear();
-        } else if (removeShiTan > 0) {
-            Collections.shuffle(cards.subList(0, 18));
-            cards.subList(0, removeShiTan * 6).clear();
-        }
         this.nextId = DefaultDeck.size();
         Collections.shuffle(cards);
     }
