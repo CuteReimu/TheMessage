@@ -88,4 +88,9 @@ public final class RoleCache {
         }
         return roleSkillsDataArray;
     }
+
+    public static String getRoleName(Common.role role) {
+        RoleSkillsData roleSkillsData = mapCache.get(role);
+        return roleSkillsData == null ? null : roleSkillsData.getName();
+    }
 }

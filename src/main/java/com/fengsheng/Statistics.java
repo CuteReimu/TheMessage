@@ -1,14 +1,13 @@
 package com.fengsheng;
 
+import com.fengsheng.phase.WaitForSelectRole;
 import com.fengsheng.protos.Common;
+import com.fengsheng.skill.RoleCache;
 import org.apache.log4j.Logger;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -60,6 +59,41 @@ public class Statistics {
             this.identity = identity;
             this.task = task;
             this.totalPlayerCount = totalPlayerCount;
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        EnumMap<Common.role, Integer> appearCount = new EnumMap<>(Common.role.class);
+        EnumMap<Common.role, Integer> winCount = new EnumMap<>(Common.role.class);
+        int totalCount = 0;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("stat.csv")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] a = line.split(",");
+                var role = Common.role.valueOf(a[0]);
+                appearCount.compute(role, (k, v) -> v == null ? 1 : v + 1);
+                if (Boolean.parseBoolean(a[1]))
+                    winCount.compute(role, (k, v) -> v == null ? 1 : v + 1);
+                totalCount++;
+            }
+        }
+        if (totalCount == 0)
+            return;
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("stat0.csv")))) {
+            writer.write("角色,出场率,胜率");
+            writer.newLine();
+            for (Map.Entry<Common.role, Integer> entry : appearCount.entrySet()) {
+                Common.role key = entry.getKey();
+                float value = entry.getValue();
+                String roleName = RoleCache.getRoleName(key);
+                roleName = roleName == null ? WaitForSelectRole.getRoleName(key) : roleName;
+                writer.write(Objects.requireNonNullElse(roleName, ""));
+                writer.write(',');
+                writer.write("%.1f%%".formatted(value * 100 / totalCount));
+                writer.write(',');
+                writer.write("%.1f%%".formatted(winCount.getOrDefault(key, 0) * 100 / value));
+                writer.newLine();
+            }
         }
     }
 }

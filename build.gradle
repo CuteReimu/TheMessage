@@ -40,3 +40,8 @@ task run(dependsOn: classes, type: JavaExec) {
     main("com.fengsheng.Game")
     classpath(sourceSets.main.runtimeClasspath)
 }
+
+task stat(dependsOn: classes, type: JavaExec) {
+    main("com.fengsheng.Statistics")
+    classpath(sourceSets.main.runtimeClasspath)
+}

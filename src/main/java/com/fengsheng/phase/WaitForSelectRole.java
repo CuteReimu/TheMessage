@@ -115,4 +115,12 @@ public class WaitForSelectRole implements WaitingFsm {
         spMap.put(Common.role.gu_xiao_meng, new RoleSkillsData("SP顾小梦", Common.role.sp_gu_xiao_meng, true, true, new JiBan()));
         spMap.put(Common.role.li_ning_yu, new RoleSkillsData("SP李宁玉", Common.role.sp_li_ning_yu, true, true, new YingBian(), new YouDao()));
     }
+
+    public static String getRoleName(Common.role role) {
+        for (RoleSkillsData roleSkillsData : spMap.values()) {
+            if (roleSkillsData.getRole() == role)
+                return roleSkillsData.getName();
+        }
+        return null;
+    }
 }
