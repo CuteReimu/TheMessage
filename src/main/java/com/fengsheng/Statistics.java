@@ -74,7 +74,7 @@ public class Statistics {
                 sb.append(count.gameCount).append(',');
                 sb.append(entry.getKey()).append('\n');
             }
-            try (FileOutputStream fileOutputStream = new FileOutputStream("player.csv", true)) {
+            try (FileOutputStream fileOutputStream = new FileOutputStream("player.csv")) {
                 fileOutputStream.write(sb.toString().getBytes());
             } catch (IOException e) {
                 log.error("write file failed", e);
@@ -100,9 +100,9 @@ public class Statistics {
                 String deviceId = a[2];
                 int win = Integer.parseInt(a[0]);
                 int game = Integer.parseInt(a[1]);
-                playerGameCount.put(deviceId, new PlayerGameCount(win, game));
-                winCount += win;
-                gameCount += game;
+                PlayerGameCount oldCount = playerGameCount.put(deviceId, new PlayerGameCount(win, game));
+                winCount += oldCount == null ? win : win - oldCount.winCount;
+                gameCount += oldCount == null ? game : game - oldCount.gameCount;
             }
         } catch (FileNotFoundException ignored) {
         }
