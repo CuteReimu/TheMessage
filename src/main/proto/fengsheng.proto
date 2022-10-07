@@ -52,11 +52,11 @@ message join_room_tos {
 
 // 返回房间所有人的信息
 message get_room_info_toc {
-  repeated string names = 1; // 其它所有人的名字
+  repeated string names = 1; // 所有人的名字
   uint32          my_position = 2;
   uint32          online_count = 3; // 当前在线人数
-  uint32          my_win_count = 4; // 我的胜场数
-  uint32          my_game_count = 5; // 我的总场数
+  repeated uint32 win_counts = 4; // 所有人的胜场数
+  repeated uint32 game_counts = 5; // 所有人的总场数
 }
 
 // 请求加一个机器人
@@ -71,6 +71,8 @@ message remove_robot_tos {
 message join_room_toc {
   string name = 1;
   uint32 position = 2;
+  uint32 win_count = 3;
+  uint32 game_counts = 4;
 }
 
 // 通知谁离开的房间
