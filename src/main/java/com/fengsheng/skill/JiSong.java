@@ -34,6 +34,10 @@ public class JiSong extends AbstractSkill implements ActiveSkill {
             log.error("现在不是发动[急送]的时机");
             return;
         }
+        if (r.getSkillUseCount(getSkillId()) > 0) {
+            log.error("[急送]一回合只能发动一次");
+            return;
+        }
         var pb = (Role.skill_ji_song_tos) message;
         if ((r instanceof HumanPlayer humanPlayer) && !humanPlayer.checkSeq(pb.getSeq())) {
             log.error("操作太晚了, required Seq: " + humanPlayer.getSeq() + ", actual Seq: " + pb.getSeq());
