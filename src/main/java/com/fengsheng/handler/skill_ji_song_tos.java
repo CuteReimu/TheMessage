@@ -19,7 +19,7 @@ public class skill_ji_song_tos extends AbstractProtoHandler<Role.skill_ji_song_t
             log.error("你没有这个技能");
             return;
         }
-        if (new HashSet<>(pb.getCardIdsList()).size() != pb.getCardIdsList().size()) {
+        if (new HashSet<>(pb.getCardIdsList()).size() != pb.getCardIdsCount()) {
             log.error("卡牌重复" + Arrays.toString(pb.getCardIdsList().toArray(new Integer[0])));
             return;
         }

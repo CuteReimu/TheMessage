@@ -6,6 +6,9 @@ import com.fengsheng.skill.Skill;
 import com.fengsheng.skill.SkillId;
 import org.apache.log4j.Logger;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 public class skill_ji_ban_b_tos extends AbstractProtoHandler<Role.skill_ji_ban_b_tos> {
     private static final Logger log = Logger.getLogger(skill_ji_ban_b_tos.class);
 
@@ -14,6 +17,10 @@ public class skill_ji_ban_b_tos extends AbstractProtoHandler<Role.skill_ji_ban_b
         Skill skill = r.findSkill(SkillId.JI_BAN);
         if (skill == null) {
             log.error("你没有这个技能");
+            return;
+        }
+        if (new HashSet<>(pb.getCardIdsList()).size() != pb.getCardIdsCount()) {
+            log.error("卡牌重复" + Arrays.toString(pb.getCardIdsList().toArray(new Integer[0])));
             return;
         }
         r.getGame().tryContinueResolveProtocol(r, pb);
