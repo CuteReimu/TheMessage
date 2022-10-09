@@ -126,7 +126,7 @@ public class Statistics {
     public static void main(String[] args) throws IOException {
         EnumMap<Common.role, Integer> appearCount = new EnumMap<>(Common.role.class);
         EnumMap<Common.role, Integer> winCount = new EnumMap<>(Common.role.class);
-        int totalCount = 0;
+        Set<String> timeSet = new HashSet<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("stat.csv")))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -135,13 +135,13 @@ public class Statistics {
                 appearCount.compute(role, (k, v) -> v == null ? 1 : v + 1);
                 if (Boolean.parseBoolean(a[1]))
                     winCount.compute(role, (k, v) -> v == null ? 1 : v + 1);
-                totalCount++;
+                timeSet.add(a[5]);
             }
         }
-        if (totalCount == 0)
+        if (timeSet.isEmpty())
             return;
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("stat0.csv")))) {
-            writer.write("角色,出场率,胜率");
+            writer.write("角色,热度,胜率");
             writer.newLine();
             for (Map.Entry<Common.role, Integer> entry : appearCount.entrySet()) {
                 Common.role key = entry.getKey();
@@ -150,7 +150,7 @@ public class Statistics {
                 roleName = roleName == null ? WaitForSelectRole.getRoleName(key) : roleName;
                 writer.write(Objects.requireNonNullElse(roleName, ""));
                 writer.write(',');
-                writer.write("%.1f%%".formatted(value * 100 / totalCount));
+                writer.write("%.1f%%".formatted(value * 100 / timeSet.size()));
                 writer.write(',');
                 writer.write("%.1f%%".formatted(winCount.getOrDefault(key, 0) * 100 / value));
                 writer.newLine();
