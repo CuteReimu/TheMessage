@@ -102,6 +102,8 @@ public class JiSong extends AbstractSkill implements ActiveSkill {
 
     public static boolean ai(FightPhaseIdle e, final ActiveSkill skill) {
         final Player player = e.whoseFightTurn;
+        if (player.getSkillUseCount(SkillId.JI_SONG) > 0)
+            return false;
         if (player.getCards().size() < 2)
             return false;
         var colors = e.messageCard.getColors();
