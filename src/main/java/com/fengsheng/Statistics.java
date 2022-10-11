@@ -125,7 +125,9 @@ public class Statistics {
 
     public static void main(String[] args) throws IOException {
         EnumMap<Common.role, Integer> appearCount = new EnumMap<>(Common.role.class);
+        EnumMap<Common.role, Integer> blackAppearCount = new EnumMap<>(Common.role.class);
         EnumMap<Common.role, Integer> winCount = new EnumMap<>(Common.role.class);
+        EnumMap<Common.role, Integer> blackWinCount = new EnumMap<>(Common.role.class);
         Set<String> timeSet = new HashSet<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("stat.csv")))) {
             String line;
@@ -135,24 +137,41 @@ public class Statistics {
                 appearCount.compute(role, (k, v) -> v == null ? 1 : v + 1);
                 if (Boolean.parseBoolean(a[1]))
                     winCount.compute(role, (k, v) -> v == null ? 1 : v + 1);
+                if ("Black".equals(a[2])) {
+                    blackAppearCount.compute(role, (k, v) -> v == null ? 1 : v + 1);
+                    if (Boolean.parseBoolean(a[1]))
+                        blackWinCount.compute(role, (k, v) -> v == null ? 1 : v + 1);
+                }
                 timeSet.add(a[5]);
             }
         }
         if (timeSet.isEmpty())
             return;
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("stat0.csv")))) {
-            writer.write("角色,热度,胜率");
+            writer.write("角色,场次,胜率,军潜胜率,神秘人胜率");
             writer.newLine();
             for (Map.Entry<Common.role, Integer> entry : appearCount.entrySet()) {
                 Common.role key = entry.getKey();
-                float value = entry.getValue();
+                int value = entry.getValue();
                 String roleName = RoleCache.getRoleName(key);
                 roleName = roleName == null ? WaitForSelectRole.getRoleName(key) : roleName;
                 writer.write(Objects.requireNonNullElse(roleName, ""));
                 writer.write(',');
-                writer.write("%.1f%%".formatted(value * 100 / timeSet.size()));
+                writer.write(Integer.toString(value));
                 writer.write(',');
-                writer.write("%.1f%%".formatted(winCount.getOrDefault(key, 0) * 100 / value));
+                writer.write("%.2f%%".formatted(winCount.getOrDefault(key, 0) * 100.0 / value));
+                writer.write(',');
+                int blackAppear = blackAppearCount.getOrDefault(key, 0);
+                int nonBlackAppear = value - blackAppear;
+                if (nonBlackAppear > 0)
+                    writer.write("%.2f%%".formatted((winCount.getOrDefault(key, 0) - blackWinCount.getOrDefault(key, 0)) * 100.0 / nonBlackAppear));
+                else
+                    writer.write("0.00%");
+                writer.write(',');
+                if (blackAppear > 0)
+                    writer.write("%.2f%%".formatted(blackWinCount.getOrDefault(key, 0) * 100.0 / blackAppearCount.get(key)));
+                else
+                    writer.write("0.00%");
                 writer.newLine();
             }
         }
