@@ -19,9 +19,9 @@ public class Deck {
     public Deck(Game game, int totalPlayerCount) {
         this.game = game;
         cards.addAll(DefaultDeck);
-        if (totalPlayerCount < 5) {
+        if (totalPlayerCount < 4) {
             cards.subList(0, 18).clear();
-        } else if (totalPlayerCount == 5) {
+        } else if (totalPlayerCount == 4 || totalPlayerCount == 5) {
             cards.remove(16);
             cards.remove(13);
             cards.remove(11);

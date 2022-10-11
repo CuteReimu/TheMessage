@@ -112,15 +112,15 @@ public final class Game {
                 break;
             case 9:
                 identities.add(Common.color.Red);
+                identities.add(Common.color.Red);
                 identities.add(Common.color.Blue);
-                identities.add(Common.color.Black);
-                identities.add(Common.color.Black);
+                identities.add(Common.color.Blue);
                 identities.add(Common.color.Black);
             case 4:
                 identities.add(Common.color.Red);
-                identities.add(Common.color.Red);
                 identities.add(Common.color.Blue);
-                identities.add(Common.color.Blue);
+                identities.add(Common.color.Black);
+                identities.add(Common.color.Black);
                 break;
             case 3:
                 identities.add(Common.color.Red);
