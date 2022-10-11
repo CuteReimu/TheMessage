@@ -13,8 +13,8 @@ import java.util.List;
 public class Deck {
     private int nextId;
     private final Game game;
-    private final List<Card> cards = new ArrayList<>();
-    private final List<Card> discardPile = new ArrayList<>();
+    private List<Card> cards = new ArrayList<>();
+    private List<Card> discardPile = new ArrayList<>();
 
     public Deck(Game game, boolean removeShiTan) {
         this.game = game;
@@ -29,9 +29,10 @@ public class Deck {
      * 洗牌
      */
     public void shuffle() {
-        cards.addAll(discardPile);
-        discardPile.clear();
-        Collections.shuffle(cards);
+        Collections.shuffle(discardPile);
+        discardPile.addAll(cards);
+        cards = discardPile;
+        discardPile = new ArrayList<>();
         notifyDeckCount(true);
     }
 
