@@ -19,6 +19,16 @@ public class add_robot_tos extends AbstractProtoHandler<Fengsheng.add_robot_tos>
                 player.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build());
                 return;
             }
+            Statistics.PlayerGameCount count = Statistics.getInstance().getPlayerGameCount(player.getDevice());
+            if (count.winCount() <= 0) {
+                long now = System.currentTimeMillis();
+                long startTrialTime = Statistics.getInstance().getTrialStartTime(player.getDevice());
+                if (startTrialTime != 0 && now - 5 * 24 * 3600 * 1000 >= startTrialTime) {
+                    player.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build());
+                    return;
+                }
+                Statistics.getInstance().setTrialStartTime(player.getDevice(), now);
+            }
             Player robotPlayer = new RobotPlayer();
             robotPlayer.setPlayerName(Player.randPlayerName());
             robotPlayer.setGame(player.getGame());

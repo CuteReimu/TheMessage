@@ -26,6 +26,7 @@ public class Statistics {
     private final Map<String, PlayerGameCount> playerGameCount = new ConcurrentHashMap<>();
     private final AtomicInteger totalWinCount = new AtomicInteger();
     private final AtomicInteger totalGameCount = new AtomicInteger();
+    private final Map<String, Long> trialStartTime = new ConcurrentHashMap<>();
 
     private Statistics() {
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
@@ -55,8 +56,13 @@ public class Statistics {
         pool.submit(() -> {
             int win = 0;
             int game = 0;
+            boolean updateTrial = false;
             for (PlayerGameResult count : playerGameResultList) {
-                if (count.isWin) win++;
+                if (count.isWin) {
+                    win++;
+                    if (trialStartTime.remove(count.deviceId) != null)
+                        updateTrial = true;
+                }
                 game++;
                 playerGameCount.compute(count.deviceId, (k, v) -> {
                     int addWin = count.isWin ? 1 : 0;
@@ -78,6 +84,18 @@ public class Statistics {
                 fileOutputStream.write(sb.toString().getBytes());
             } catch (IOException e) {
                 log.error("write file failed", e);
+            }
+            if (updateTrial) {
+                sb = new StringBuilder();
+                for (Map.Entry<String, Long> entry : trialStartTime.entrySet()) {
+                    sb.append(entry.getValue()).append(',');
+                    sb.append(entry.getKey()).append('\n');
+                }
+                try (FileOutputStream fileOutputStream = new FileOutputStream("trial.csv")) {
+                    fileOutputStream.write(sb.toString().getBytes());
+                } catch (IOException e) {
+                    log.error("write file failed", e);
+                }
             }
         });
     }
@@ -108,6 +126,34 @@ public class Statistics {
         }
         totalWinCount.set(winCount);
         totalGameCount.set(gameCount);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("trial.csv")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] a = line.split(",", 2);
+                trialStartTime.put(a[1], Long.parseLong(a[0]));
+            }
+        } catch (FileNotFoundException ignored) {
+        }
+    }
+
+    public long getTrialStartTime(String deviceId) {
+        return trialStartTime.getOrDefault(deviceId, 0L);
+    }
+
+    public void setTrialStartTime(String device, long time) {
+        pool.submit(() -> {
+            trialStartTime.put(device, time);
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, Long> entry : trialStartTime.entrySet()) {
+                sb.append(entry.getValue()).append(',');
+                sb.append(entry.getKey()).append('\n');
+            }
+            try (FileOutputStream fileOutputStream = new FileOutputStream("trial.csv")) {
+                fileOutputStream.write(sb.toString().getBytes());
+            } catch (IOException e) {
+                log.error("write file failed", e);
+            }
+        });
     }
 
     public record Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task,
