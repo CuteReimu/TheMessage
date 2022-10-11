@@ -19,7 +19,7 @@ public record StartGame(Game game) implements Fsm {
         Game.GameCache.put(game.getId(), game);
         Player[] players = game.getPlayers();
         log.info("游戏开始了，场上的角色依次是：" + Arrays.toString(players));
-        game.setDeck(new Deck(game, players.length < 5));
+        game.setDeck(new Deck(game, players.length));
         final int whoseTurn = ThreadLocalRandom.current().nextInt(players.length);
         for (int i = 0; i < players.length; i++)
             players[(whoseTurn + i) % players.length].init();
