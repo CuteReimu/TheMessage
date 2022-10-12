@@ -20,7 +20,7 @@ public class add_robot_tos extends AbstractProtoHandler<Fengsheng.add_robot_tos>
                 return;
             }
             Statistics.PlayerGameCount count = Statistics.getInstance().getPlayerGameCount(player.getDevice());
-            if (count.winCount() <= 0) {
+            if (count == null || count.winCount() <= 0) {
                 long now = System.currentTimeMillis();
                 long startTrialTime = Statistics.getInstance().getTrialStartTime(player.getDevice());
                 if (startTrialTime != 0 && now - 5 * 24 * 3600 * 1000 >= startTrialTime) {
