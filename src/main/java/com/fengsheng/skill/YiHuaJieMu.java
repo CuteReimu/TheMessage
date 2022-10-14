@@ -71,14 +71,13 @@ public class YiHuaJieMu extends AbstractSkill implements ActiveSkill {
         g.playerSetRoleFaceUp(r, true);
         log.info(r + "发动了[移花接木]");
         fromPlayer.deleteMessageCard(card.getId());
-        toPlayer.addMessageCard(card);
         boolean joinIntoHand = false;
         if (toPlayer.checkThreeSameMessageCard(card)) {
-            toPlayer.deleteMessageCard(card.getId());
             joinIntoHand = true;
             r.addCard(card);
             log.info(fromPlayer + "面前的" + card + "加入了" + r + "的手牌");
         } else {
+            toPlayer.addMessageCard(card);
             log.info(fromPlayer + "面前的" + card + "加入了" + toPlayer + "的情报区");
         }
         for (Player p : g.getPlayers()) {
