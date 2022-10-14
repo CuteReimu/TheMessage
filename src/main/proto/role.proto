@@ -581,3 +581,36 @@ message skill_bo_ai_b_toc {
   uint32 target_player_id = 2;
   card card = 3; // 给的牌，只有白沧浪和给的那个人能看到
 }
+
+// 小九【广发报】A：争夺阶段，你可以翻开此角色牌，然后摸三张牌。
+message skill_guang_fa_bao_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【广发报】A
+message skill_guang_fa_bao_a_toc {
+  uint32 player_id = 1;
+}
+
+// 广播询问客户端使用【广发报】B
+message skill_wait_for_guang_fa_bao_b_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 小九【广发报】B：并且你可以将你的任意张手牌置入任意名角色的情报区。你不能通过此技能让任何角色收集三张或更多的同色情报。
+message skill_guang_fa_bao_b_tos {
+  bool            enable = 1; // true-发，还能继续，false-不发，就不继续了
+  uint32          target_player_id = 2;
+  repeated uint32 card_ids = 3;
+  uint32          seq = 4;
+}
+
+// 广播使用【广发报】B
+message skill_guang_fa_bao_b_toc {
+  uint32        player_id = 1;
+  bool          enable = 2; // true-发，还能继续，false-不发，就不继续了。如果发完没牌了，这里还是true但不继续。如果继续就会接着发上面的wait，不继续就不再发wait了。
+  uint32        target_player_id = 3;
+  repeated card cards = 4; // 给的牌
+}

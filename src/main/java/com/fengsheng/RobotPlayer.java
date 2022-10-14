@@ -38,7 +38,7 @@ public class RobotPlayer extends AbstractPlayer {
             var ai = aiSkillMainPhase.get(skill.getSkillId());
             if (ai != null && ai.test(fsm, (ActiveSkill) skill)) return;
         }
-        if (cards.size() > 1 && findSkill(SkillId.JI_SONG) == null) {
+        if (cards.size() > 1 && findSkill(SkillId.JI_SONG) == null && (findSkill(SkillId.GUANG_FA_BAO) == null || isRoleFaceUp())) {
             for (Card card : cards.values()) {
                 var ai = aiMainPhase.get(card.getType());
                 if (ai != null && ai.test(fsm, card)) return;
@@ -230,6 +230,7 @@ public class RobotPlayer extends AbstractPlayer {
         aiSkillFightPhase.put(SkillId.JI_ZHI, JiZhi::ai);
         aiSkillFightPhase.put(SkillId.YI_HUA_JIE_MU, YiHuaJieMu::ai);
         aiSkillFightPhase.put(SkillId.JIE_DAO_SHA_REN, JieDaoShaRen::ai);
+        aiSkillFightPhase.put(SkillId.GUANG_FA_BAO, GuangFaBao::ai);
         aiSkillFightPhase.put(SkillId.JI_SONG, JiSong::ai);
         aiSkillFightPhase.put(SkillId.MIAO_BI_QIAO_BIAN, MiaoBiQiaoBian::ai);
         aiSkillFightPhase.put(SkillId.JIN_KOU_YI_KAI, JinKouYiKai::ai);
