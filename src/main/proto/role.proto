@@ -614,3 +614,23 @@ message skill_guang_fa_bao_b_toc {
   uint32        target_player_id = 3;
   repeated card cards = 4; // 给的牌
 }
+
+// 广播询问客户端使用【强令】
+message skill_wait_for_qiang_ling_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 张一挺【强令】：你传出情报后，或你决定接收情报后，可以宣言至多两个卡牌名称。本回合中，所有角色均不能使用被宣言的卡牌。
+message skill_qiang_ling_tos {
+  bool               enable = 1;
+  repeated card_type types = 2;
+  uint32             seq = 3;
+}
+
+// 广播使用【强令】，不发动就没有这条协议
+message skill_qiang_ling_toc {
+  uint32             player_id = 1;
+  repeated card_type types = 2;
+}
