@@ -164,7 +164,7 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
         Player player = e.whoseFightTurn;
         if (player.isRoleFaceUp())
             return false;
-        if (player.getCards().size() < 6)
+        if (player.getCards().size() < 5)
             return false;
         GameExecutor.post(player.getGame(), () -> skill.executeProtocol(
                 player.getGame(), player, Role.skill_guang_fa_bao_a_tos.newBuilder().build()
