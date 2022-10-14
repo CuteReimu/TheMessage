@@ -13,7 +13,7 @@ message add_order_toc {
 
 message pb_order {
   uint32 id = 1;
-  uint32 time = 2;
+  uint64 time = 2;
   string name = 3;
   bool is_mine = 4; // 是不是我的，是就可以删除
 }
