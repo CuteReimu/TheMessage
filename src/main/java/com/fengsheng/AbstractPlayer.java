@@ -191,7 +191,7 @@ public abstract class AbstractPlayer implements Player {
                 }
             }
         }
-        return (!hasRed || red < 3) && (!hasBlue || blue < 3) && (!hasBlack || black < 3);
+        return hasRed && red >= 3 || hasBlue && blue >= 3 || hasBlack && black >= 3;
     }
 
     @Override

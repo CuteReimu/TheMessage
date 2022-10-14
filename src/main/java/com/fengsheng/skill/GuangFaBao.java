@@ -76,9 +76,9 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
                         for (Card card : r.getCards().values()) {
                             cards.add(card);
                             if (p.checkThreeSameMessageCard(cards.toArray(new Card[0])))
-                                cardIds.add(card.getId());
-                            else
                                 cards.remove(card);
+                            else
+                                cardIds.add(card.getId());
                         }
                         if (!cardIds.isEmpty()) {
                             g.tryContinueResolveProtocol(r, Role.skill_guang_fa_bao_b_tos.newBuilder().setEnable(true)
@@ -138,7 +138,7 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
                 }
                 cards[i] = card;
             }
-            if (!target.checkThreeSameMessageCard(cards)) {
+            if (target.checkThreeSameMessageCard(cards)) {
                 log.error("你不能通过此技能让任何角色收集三张或更多的同色情报");
                 return null;
             }

@@ -156,7 +156,7 @@ public class ZhuanJiao extends AbstractSkill implements TriggeredSkill {
                 log.error("目标已死亡");
                 return null;
             }
-            if (!target.checkThreeSameMessageCard(card)) {
+            if (target.checkThreeSameMessageCard(card)) {
                 log.error("你不能通过此技能让任何角色收集三张或更多同色情报");
                 return null;
             }
