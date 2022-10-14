@@ -72,9 +72,13 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
                 GameExecutor.post(g, () -> {
                     for (Player p : g.getPlayers()) {
                         List<Integer> cardIds = new ArrayList<>();
+                        List<Card> cards = new ArrayList<>();
                         for (Card card : r.getCards().values()) {
-                            if (p.checkThreeSameMessageCard(card))
+                            cards.add(card);
+                            if (p.checkThreeSameMessageCard(cards.toArray(new Card[0])))
                                 cardIds.add(card.getId());
+                            else
+                                cards.remove(card);
                         }
                         if (!cardIds.isEmpty()) {
                             g.tryContinueResolveProtocol(r, Role.skill_guang_fa_bao_b_tos.newBuilder().setEnable(true)
