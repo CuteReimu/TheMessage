@@ -66,6 +66,8 @@ public class JieDaoShaRen extends AbstractSkill implements ActiveSkill {
     }
 
     private record executeJieDaoShaRen(FightPhaseIdle fsm, Player r, Player target, Card card) implements WaitingFsm {
+        private static final Logger log = Logger.getLogger(executeJieDaoShaRen.class);
+
         @Override
         public ResolveResult resolve() {
             final Game g = r.getGame();
