@@ -73,7 +73,7 @@ public class YiHuaJieMu extends AbstractSkill implements ActiveSkill {
         fromPlayer.deleteMessageCard(card.getId());
         toPlayer.addMessageCard(card);
         boolean joinIntoHand = false;
-        if (toPlayer.checkThreeSameMessageCard(card.getColors().toArray(new Common.color[0]))) {
+        if (toPlayer.checkThreeSameMessageCard(card)) {
             toPlayer.deleteMessageCard(card.getId());
             joinIntoHand = true;
             r.addCard(card);

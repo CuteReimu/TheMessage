@@ -79,7 +79,7 @@ public class LiYou extends Card {
             boolean joinIntoHand = false;
             if (deckCards.length > 0) {
                 target.addMessageCard(deckCards);
-                if (target.checkThreeSameMessageCard(deckCards[0].getColors().toArray(new Common.color[0]))) {
+                if (target.checkThreeSameMessageCard(deckCards[0])) {
                     target.deleteMessageCard(deckCards[0].getId());
                     joinIntoHand = true;
                     r.addCard(deckCards);

@@ -166,17 +166,32 @@ public abstract class AbstractPlayer implements Player {
     }
 
     @Override
-    public boolean checkThreeSameMessageCard(Common.color... colors) {
-        for (Common.color color : colors) {
-            int count = 0;
-            for (Card card : messageCards.values()) {
-                if (card.getColors().contains(color)) {
-                    count++;
+    public boolean checkThreeSameMessageCard(Card... cards) {
+        int red = 0;
+        int blue = 0;
+        int black = 0;
+        for (Card card : cards) {
+            for (Common.color c : card.getColors()) {
+                switch (c) {
+                    case Red -> red++;
+                    case Blue -> blue++;
+                    case Black -> black++;
                 }
             }
-            if (count >= 3) return true;
         }
-        return false;
+        boolean hasRed = red > 0;
+        boolean hasBlue = blue > 0;
+        boolean hasBlack = black > 0;
+        for (Card card : messageCards.values()) {
+            for (Common.color c : card.getColors()) {
+                switch (c) {
+                    case Red -> red++;
+                    case Blue -> blue++;
+                    case Black -> black++;
+                }
+            }
+        }
+        return (!hasRed || red < 3) && (!hasBlue || blue < 3) && (!hasBlack || black < 3);
     }
 
     @Override

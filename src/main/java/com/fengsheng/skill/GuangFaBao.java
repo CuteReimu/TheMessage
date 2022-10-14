@@ -7,7 +7,9 @@ import com.fengsheng.protos.Role;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,14 +70,15 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
             }
             if (r instanceof RobotPlayer) {
                 GameExecutor.post(g, () -> {
-                    for (Card card : r.getCards().values()) {
-                        for (Player p : g.getPlayers()) {
-                            p.addMessageCard(card);
-                            boolean same = p.checkThreeSameMessageCard();
-                            p.deleteMessageCard(card.getId());
-                            if (same) continue;
+                    for (Player p : g.getPlayers()) {
+                        List<Integer> cardIds = new ArrayList<>();
+                        for (Card card : r.getCards().values()) {
+                            if (p.checkThreeSameMessageCard(card))
+                                cardIds.add(card.getId());
+                        }
+                        if (!cardIds.isEmpty()) {
                             g.tryContinueResolveProtocol(r, Role.skill_guang_fa_bao_b_tos.newBuilder().setEnable(true)
-                                    .setTargetPlayerId(r.getAlternativeLocation(p.location())).addCardIds(card.getId()).build());
+                                    .setTargetPlayerId(r.getAlternativeLocation(p.location())).addAllCardIds(cardIds).build());
                             return;
                         }
                     }
@@ -130,6 +133,10 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
                     return null;
                 }
                 cards[i] = card;
+            }
+            if (!target.checkThreeSameMessageCard(cards)) {
+                log.error("你不能通过此技能让任何角色收集三张或更多的同色情报");
+                return null;
             }
             r.incrSeq();
             log.info(r + "将" + Arrays.toString(cards) + "置于" + target + "的情报区");

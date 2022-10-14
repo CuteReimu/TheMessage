@@ -121,9 +121,9 @@ public interface Player {
     /**
      * 判断玩家是否有三张同色的情报
      *
-     * @param colors 需要判断的颜色
+     * @param cards 将要增加的牌
      */
-    boolean checkThreeSameMessageCard(Common.color... colors);
+    boolean checkThreeSameMessageCard(Card... cards);
 
     /**
      * 通知进入了某名玩家的摸牌阶段
