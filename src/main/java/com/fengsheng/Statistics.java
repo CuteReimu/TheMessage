@@ -142,10 +142,8 @@ public class Statistics {
             var playerOrders = com.fengsheng.protos.Record.player_orders.parseFrom(is.readAllBytes());
             orderMap.putAll(playerOrders.getOrdersMap());
             orderId = playerOrders.getOrderId();
-            for (var order : playerOrders.getOrdersMap().values()) {
-                var list = deviceOrderMap.computeIfAbsent(order.getDevice(), k -> new ArrayList<>());
-                list.add(order);
-            }
+            for (var order : playerOrders.getOrdersMap().values())
+                deviceOrderMap.computeIfAbsent(order.getDevice(), k -> new ArrayList<>()).add(order);
         } catch (FileNotFoundException ignored) {
         }
     }
@@ -171,14 +169,23 @@ public class Statistics {
     }
 
     public List<Fengsheng.pb_order> getOrders(String deviceId) {
+        final long now = System.currentTimeMillis() / 1000;
         final Set<com.fengsheng.protos.Record.player_order> set = new TreeSet<>((o1, o2) -> {
             if (o1.getTime() == o2.getTime()) return Integer.compare(o1.getId(), o2.getId());
             return o1.getTime() < o2.getTime() ? -1 : 1;
         });
         var myOrders = deviceOrderMap.get(deviceId);
-        if (myOrders != null)
+        if (myOrders != null) {
+            myOrders.forEach(o -> {
+                if (o.getTime() > now - 1800)
+                    set.add(o);
+            });
             set.addAll(myOrders);
-        set.addAll(orderMap.values());
+        }
+        orderMap.forEach((k, o) -> {
+            if (o.getTime() > now - 1800)
+                set.add(o);
+        });
         List<Fengsheng.pb_order> list = new ArrayList<>();
         for (var o : set) {
             list.add(playerOrderToPbOrder(deviceId, o));
@@ -187,19 +194,33 @@ public class Statistics {
         return list;
     }
 
-    public boolean addOrder(String device, String name, long time) {
-        var orders = deviceOrderMap.get(device);
-        if (orders != null && orders.size() >= 3)
-            return false;
+    public void addOrder(String device, String name, long time) {
+        final long now = System.currentTimeMillis() / 1000;
+        if (time <= now - 1800)
+            return;
         pool.submit(() -> {
             var orders1 = deviceOrderMap.get(device);
-            if (orders != null && orders.size() >= 3)
-                return;
             orders1 = orders1 == null ? new ArrayList<>() : new ArrayList<>(orders1);
             var order = com.fengsheng.protos.Record.player_order.newBuilder().setId(++orderId).setDevice(device).setName(name).setTime(time).build();
             orders1.add(order);
+            var it = orders1.iterator();
+            int i = 0;
+            while (it.hasNext()) {
+                if (i >= 3 || it.next().getTime() <= now - 1800) {
+                    it.remove();
+                } else {
+                    i++;
+                    it.next();
+                }
+            }
             deviceOrderMap.put(device, orders1);
             orderMap.put(order.getId(), order);
+            List<Integer> removeList = new ArrayList<>();
+            for (var entry : orderMap.entrySet()) {
+                if (entry.getValue().getTime() <= now - 1800)
+                    removeList.add(entry.getKey());
+            }
+            removeList.forEach(orderMap::remove);
             var buf = com.fengsheng.protos.Record.player_orders.newBuilder().setOrderId(orderId).putAllOrders(orderMap).build().toByteArray();
             try (FileOutputStream fileOutputStream = new FileOutputStream("order.dat")) {
                 fileOutputStream.write(buf);
@@ -207,29 +228,6 @@ public class Statistics {
                 log.error("write file failed", e);
             }
         });
-        return true;
-    }
-
-    public boolean removeOrder(String device, int id) {
-        var orders = deviceOrderMap.get(device);
-        if (orders == null || orders.stream().noneMatch(o -> o.getId() == id))
-            return false;
-        pool.submit(() -> {
-            var orders1 = deviceOrderMap.get(device);
-            orders1 = orders1.stream().filter(o -> o.getId() != id).toList();
-            if (orders1.isEmpty())
-                deviceOrderMap.remove(device);
-            else
-                deviceOrderMap.put(device, orders1);
-            orderMap.remove(id);
-            var buf = com.fengsheng.protos.Record.player_orders.newBuilder().setOrderId(orderId).putAllOrders(orderMap).build().toByteArray();
-            try (FileOutputStream fileOutputStream = new FileOutputStream("order.dat")) {
-                fileOutputStream.write(buf);
-            } catch (IOException e) {
-                log.error("write file failed", e);
-            }
-        });
-        return true;
     }
 
     private static Fengsheng.pb_order playerOrderToPbOrder(String deviceId, com.fengsheng.protos.Record.player_order order) {

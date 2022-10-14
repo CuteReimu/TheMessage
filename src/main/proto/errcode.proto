@@ -17,5 +17,4 @@ enum error_code {
   join_room_too_fast = 6; // 加入房间的请求太快了
   robot_not_allowed = 7; // 禁止添加机器人
   already_online = 8; // 你已经在线，不能重复登录
-  too_many_orders = 9; // 你的预约太多了
 }
