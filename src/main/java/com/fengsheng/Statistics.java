@@ -38,68 +38,64 @@ public class Statistics {
 
     public void add(List<Record> records) {
         pool.submit(() -> {
-            String time = dateFormat.format(new Date());
-            StringBuilder sb = new StringBuilder();
-            for (Record r : records) {
-                sb.append(r.role).append(',');
-                sb.append(r.isWinner).append(',');
-                sb.append(r.identity).append(',');
-                sb.append(r.identity == Common.color.Black ? r.task.toString() : "").append(',');
-                sb.append(r.totalPlayerCount).append(',');
-                sb.append(time).append('\n');
-            }
-            try (FileOutputStream fileOutputStream = new FileOutputStream("stat.csv", true)) {
-                fileOutputStream.write(sb.toString().getBytes());
-            } catch (IOException e) {
-                log.error("write file failed", e);
+            try {
+                String time = dateFormat.format(new Date());
+                StringBuilder sb = new StringBuilder();
+                for (Record r : records) {
+                    sb.append(r.role).append(',');
+                    sb.append(r.isWinner).append(',');
+                    sb.append(r.identity).append(',');
+                    sb.append(r.identity == Common.color.Black ? r.task.toString() : "").append(',');
+                    sb.append(r.totalPlayerCount).append(',');
+                    sb.append(time).append('\n');
+                }
+                writeFile("stat.csv", sb.toString().getBytes());
+            } catch (Exception e) {
+                log.error("execute task failed", e);
             }
         });
     }
 
     public void addPlayerGameCount(List<PlayerGameResult> playerGameResultList) {
         pool.submit(() -> {
-            int win = 0;
-            int game = 0;
-            boolean updateTrial = false;
-            for (PlayerGameResult count : playerGameResultList) {
-                if (count.isWin) {
-                    win++;
-                    if (trialStartTime.remove(count.deviceId) != null)
-                        updateTrial = true;
+            try {
+                int win = 0;
+                int game = 0;
+                boolean updateTrial = false;
+                for (PlayerGameResult count : playerGameResultList) {
+                    if (count.isWin) {
+                        win++;
+                        if (trialStartTime.remove(count.deviceId) != null)
+                            updateTrial = true;
+                    }
+                    game++;
+                    playerGameCount.compute(count.deviceId, (k, v) -> {
+                        int addWin = count.isWin ? 1 : 0;
+                        if (v == null)
+                            return new PlayerGameCount(addWin, 1);
+                        return new PlayerGameCount(v.winCount + addWin, v.gameCount + 1);
+                    });
                 }
-                game++;
-                playerGameCount.compute(count.deviceId, (k, v) -> {
-                    int addWin = count.isWin ? 1 : 0;
-                    if (v == null)
-                        return new PlayerGameCount(addWin, 1);
-                    return new PlayerGameCount(v.winCount + addWin, v.gameCount + 1);
-                });
-            }
-            totalWinCount.addAndGet(win);
-            totalGameCount.addAndGet(game);
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, PlayerGameCount> entry : playerGameCount.entrySet()) {
-                PlayerGameCount count = entry.getValue();
-                sb.append(count.winCount).append(',');
-                sb.append(count.gameCount).append(',');
-                sb.append(entry.getKey()).append('\n');
-            }
-            try (FileOutputStream fileOutputStream = new FileOutputStream("player.csv")) {
-                fileOutputStream.write(sb.toString().getBytes());
-            } catch (IOException e) {
-                log.error("write file failed", e);
-            }
-            if (updateTrial) {
-                sb = new StringBuilder();
-                for (Map.Entry<String, Long> entry : trialStartTime.entrySet()) {
-                    sb.append(entry.getValue()).append(',');
+                totalWinCount.addAndGet(win);
+                totalGameCount.addAndGet(game);
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<String, PlayerGameCount> entry : playerGameCount.entrySet()) {
+                    PlayerGameCount count = entry.getValue();
+                    sb.append(count.winCount).append(',');
+                    sb.append(count.gameCount).append(',');
                     sb.append(entry.getKey()).append('\n');
                 }
-                try (FileOutputStream fileOutputStream = new FileOutputStream("trial.csv")) {
-                    fileOutputStream.write(sb.toString().getBytes());
-                } catch (IOException e) {
-                    log.error("write file failed", e);
+                writeFile("player.csv", sb.toString().getBytes());
+                if (updateTrial) {
+                    sb = new StringBuilder();
+                    for (Map.Entry<String, Long> entry : trialStartTime.entrySet()) {
+                        sb.append(entry.getValue()).append(',');
+                        sb.append(entry.getKey()).append('\n');
+                    }
+                    writeFile("trial.csv", sb.toString().getBytes());
                 }
+            } catch (Exception e) {
+                log.error("execute task failed", e);
             }
         });
     }
@@ -154,22 +150,22 @@ public class Statistics {
 
     public void setTrialStartTime(String device, long time) {
         pool.submit(() -> {
-            trialStartTime.put(device, time);
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, Long> entry : trialStartTime.entrySet()) {
-                sb.append(entry.getValue()).append(',');
-                sb.append(entry.getKey()).append('\n');
-            }
-            try (FileOutputStream fileOutputStream = new FileOutputStream("trial.csv")) {
-                fileOutputStream.write(sb.toString().getBytes());
-            } catch (IOException e) {
-                log.error("write file failed", e);
+            try {
+                trialStartTime.put(device, time);
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<String, Long> entry : trialStartTime.entrySet()) {
+                    sb.append(entry.getValue()).append(',');
+                    sb.append(entry.getKey()).append('\n');
+                }
+                writeFile("trial.csv", sb.toString().getBytes());
+            } catch (Exception e) {
+                log.error("execute task failed", e);
             }
         });
     }
 
     public List<Fengsheng.pb_order> getOrders(String deviceId) {
-        final long now = System.currentTimeMillis() / 1000;
+        final long now = System.currentTimeMillis() / 1000 + 8 * 3600;
         final Set<com.fengsheng.protos.Record.player_order> set = new TreeSet<>((o1, o2) -> {
             if (o1.getTime() == o2.getTime()) return Integer.compare(o1.getId(), o2.getId());
             return o1.getTime() < o2.getTime() ? -1 : 1;
@@ -180,7 +176,6 @@ public class Statistics {
                 if (o.getTime() > now - 1800)
                     set.add(o);
             });
-            set.addAll(myOrders);
         }
         orderMap.forEach((k, o) -> {
             if (o.getTime() > now - 1800)
@@ -195,43 +190,58 @@ public class Statistics {
     }
 
     public void addOrder(String device, String name, long time) {
-        final long now = System.currentTimeMillis() / 1000;
+        final long now = System.currentTimeMillis() / 1000 + 8 * 3600;
         if (time <= now - 1800)
             return;
         pool.submit(() -> {
-            var orders1 = deviceOrderMap.get(device);
-            orders1 = orders1 == null ? new ArrayList<>() : new ArrayList<>(orders1);
-            var order = com.fengsheng.protos.Record.player_order.newBuilder().setId(++orderId).setDevice(device).setName(name).setTime(time).build();
-            orders1.add(order);
-            var it = orders1.iterator();
-            int i = 0;
-            while (it.hasNext()) {
-                if (i >= 3 || it.next().getTime() <= now - 1800) {
-                    it.remove();
-                } else {
-                    i++;
-                    it.next();
+            try {
+                var orders1 = deviceOrderMap.get(device);
+                orders1 = orders1 == null ? new ArrayList<>() : new ArrayList<>(orders1);
+                var order = com.fengsheng.protos.Record.player_order.newBuilder().setId(++orderId).setDevice(device).setName(name).setTime(time).build();
+                orders1.add(order);
+                orders1.removeIf(o -> {
+                    if (o.getTime() <= now - 1800) {
+                        orderMap.remove(o.getId());
+                        return true;
+                    }
+                    return false;
+                });
+                orders1.stream().limit(orders1.size() - 3L).forEach(o -> orderMap.remove(o.getId()));
+                orders1.subList(0, orders1.size() - 3).clear();
+                deviceOrderMap.put(device, orders1);
+                orderMap.put(order.getId(), order);
+                List<Integer> removeList = new ArrayList<>();
+                for (var entry : orderMap.entrySet()) {
+                    var o = entry.getValue();
+                    if (o.getTime() <= now - 1800) {
+                        removeList.add(entry.getKey());
+                        List<com.fengsheng.protos.Record.player_order> orders2 = new ArrayList<>();
+                        for (var o2 : deviceOrderMap.get(o.getDevice())) {
+                            if (o2.getId() != o.getId())
+                                orders2.add(o2);
+                        }
+                        deviceOrderMap.put(o.getDevice(), orders2);
+                    }
                 }
-            }
-            deviceOrderMap.put(device, orders1);
-            orderMap.put(order.getId(), order);
-            List<Integer> removeList = new ArrayList<>();
-            for (var entry : orderMap.entrySet()) {
-                if (entry.getValue().getTime() <= now - 1800)
-                    removeList.add(entry.getKey());
-            }
-            removeList.forEach(orderMap::remove);
-            var buf = com.fengsheng.protos.Record.player_orders.newBuilder().setOrderId(orderId).putAllOrders(orderMap).build().toByteArray();
-            try (FileOutputStream fileOutputStream = new FileOutputStream("order.dat")) {
-                fileOutputStream.write(buf);
-            } catch (IOException e) {
-                log.error("write file failed", e);
+                removeList.forEach(orderMap::remove);
+                var buf = com.fengsheng.protos.Record.player_orders.newBuilder().setOrderId(orderId).putAllOrders(orderMap).build().toByteArray();
+                writeFile("order.dat", buf);
+            } catch (Exception e) {
+                log.error("execute task failed", e);
             }
         });
     }
 
     private static Fengsheng.pb_order playerOrderToPbOrder(String deviceId, com.fengsheng.protos.Record.player_order order) {
         return Fengsheng.pb_order.newBuilder().setId(order.getId()).setName(order.getName()).setTime(order.getTime()).setIsMine(deviceId.equals(order.getDevice())).build();
+    }
+
+    private static void writeFile(String fileName, byte[] buf) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(fileName)) {
+            fileOutputStream.write(buf);
+        } catch (IOException e) {
+            log.error("write file failed", e);
+        }
     }
 
     public record Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task,
