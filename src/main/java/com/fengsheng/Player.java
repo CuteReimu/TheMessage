@@ -119,7 +119,7 @@ public interface Player {
     Card[] deleteAllMessageCards();
 
     /**
-     * 判断玩家是否有三张同色的情报
+     * 判断新增的情报是否会导致玩家有三张同色
      *
      * @param cards 将要增加的牌
      */
