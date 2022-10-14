@@ -78,13 +78,12 @@ public class LiYou extends Card {
             Card[] deckCards = g.getDeck().draw(1);
             boolean joinIntoHand = false;
             if (deckCards.length > 0) {
-                target.addMessageCard(deckCards);
                 if (target.checkThreeSameMessageCard(deckCards[0])) {
-                    target.deleteMessageCard(deckCards[0].getId());
                     joinIntoHand = true;
                     r.addCard(deckCards);
                     log.info(Arrays.toString(deckCards) + "加入了" + r + "的手牌");
                 } else {
+                    target.addMessageCard(deckCards);
                     log.info(Arrays.toString(deckCards) + "加入了" + target + "的情报区");
                 }
             }
