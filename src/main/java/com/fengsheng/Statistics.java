@@ -2,6 +2,7 @@ package com.fengsheng;
 
 import com.fengsheng.phase.WaitForSelectRole;
 import com.fengsheng.protos.Common;
+import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.skill.RoleCache;
 import org.apache.log4j.Logger;
 
@@ -27,6 +28,9 @@ public class Statistics {
     private final AtomicInteger totalWinCount = new AtomicInteger();
     private final AtomicInteger totalGameCount = new AtomicInteger();
     private final Map<String, Long> trialStartTime = new ConcurrentHashMap<>();
+    private final Map<Integer, com.fengsheng.protos.Record.player_order> orderMap = new HashMap<>();
+    private final Map<String, List<com.fengsheng.protos.Record.player_order>> deviceOrderMap = new ConcurrentHashMap<>();
+    private int orderId;
 
     private Statistics() {
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
@@ -108,7 +112,7 @@ public class Statistics {
         return new PlayerGameCount(totalWinCount.get(), totalGameCount.get());
     }
 
-    public void loadPlayerGameCount() throws IOException {
+    public void load() throws IOException {
         int winCount = 0;
         int gameCount = 0;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("player.csv")))) {
@@ -134,6 +138,16 @@ public class Statistics {
             }
         } catch (FileNotFoundException ignored) {
         }
+        try (FileInputStream is = new FileInputStream("order.dat")) {
+            var playerOrders = com.fengsheng.protos.Record.player_orders.parseFrom(is.readAllBytes());
+            orderMap.putAll(playerOrders.getOrdersMap());
+            orderId = playerOrders.getOrderId();
+            for (var order : playerOrders.getOrdersMap().values()) {
+                var list = deviceOrderMap.computeIfAbsent(order.getDevice(), k -> new ArrayList<>());
+                list.add(order);
+            }
+        } catch (FileNotFoundException ignored) {
+        }
     }
 
     public long getTrialStartTime(String deviceId) {
@@ -154,6 +168,72 @@ public class Statistics {
                 log.error("write file failed", e);
             }
         });
+    }
+
+    public List<Fengsheng.pb_order> getOrders(String deviceId) {
+        final Set<com.fengsheng.protos.Record.player_order> set = new TreeSet<>((o1, o2) -> {
+            if (o1.getTime() == o2.getTime()) return Integer.compare(o1.getId(), o2.getId());
+            return o1.getTime() < o2.getTime() ? -1 : 1;
+        });
+        var myOrders = deviceOrderMap.get(deviceId);
+        if (myOrders != null)
+            set.addAll(myOrders);
+        set.addAll(orderMap.values());
+        List<Fengsheng.pb_order> list = new ArrayList<>();
+        for (var o : set) {
+            list.add(playerOrderToPbOrder(deviceId, o));
+            if (list.size() >= 20) break;
+        }
+        return list;
+    }
+
+    public boolean addOrder(String device, String name, long time) {
+        var orders = deviceOrderMap.get(device);
+        if (orders != null && orders.size() >= 3)
+            return false;
+        pool.submit(() -> {
+            var orders1 = deviceOrderMap.get(device);
+            if (orders != null && orders.size() >= 3)
+                return;
+            orders1 = orders1 == null ? new ArrayList<>() : new ArrayList<>(orders1);
+            var order = com.fengsheng.protos.Record.player_order.newBuilder().setId(++orderId).setDevice(device).setName(name).setTime(time).build();
+            orders1.add(order);
+            deviceOrderMap.put(device, orders1);
+            orderMap.put(order.getId(), order);
+            var buf = com.fengsheng.protos.Record.player_orders.newBuilder().setOrderId(orderId).putAllOrders(orderMap).build().toByteArray();
+            try (FileOutputStream fileOutputStream = new FileOutputStream("order.dat")) {
+                fileOutputStream.write(buf);
+            } catch (IOException e) {
+                log.error("write file failed", e);
+            }
+        });
+        return true;
+    }
+
+    public boolean removeOrder(String device, int id) {
+        var orders = deviceOrderMap.get(device);
+        if (orders == null || orders.stream().noneMatch(o -> o.getId() == id))
+            return false;
+        pool.submit(() -> {
+            var orders1 = deviceOrderMap.get(device);
+            orders1 = orders1.stream().filter(o -> o.getId() != id).toList();
+            if (orders1.isEmpty())
+                deviceOrderMap.remove(device);
+            else
+                deviceOrderMap.put(device, orders1);
+            orderMap.remove(id);
+            var buf = com.fengsheng.protos.Record.player_orders.newBuilder().setOrderId(orderId).putAllOrders(orderMap).build().toByteArray();
+            try (FileOutputStream fileOutputStream = new FileOutputStream("order.dat")) {
+                fileOutputStream.write(buf);
+            } catch (IOException e) {
+                log.error("write file failed", e);
+            }
+        });
+        return true;
+    }
+
+    private static Fengsheng.pb_order playerOrderToPbOrder(String deviceId, com.fengsheng.protos.Record.player_order order) {
+        return Fengsheng.pb_order.newBuilder().setId(order.getId()).setName(order.getName()).setTime(order.getTime()).setIsMine(deviceId.equals(order.getDevice())).build();
     }
 
     public record Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task,

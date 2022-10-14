@@ -11,3 +11,15 @@ message recorder_line {
   uint32 message_id = 2;
   bytes  message_buf = 3;
 }
+
+message player_order {
+  uint32 id = 1;
+  string device = 2;
+  string name = 3;
+  uint64 time = 4;
+}
+
+message player_orders {
+  map<uint32, player_order> orders = 1;
+  uint32 order_id = 2;
+}

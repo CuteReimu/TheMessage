@@ -326,7 +326,7 @@ public final class Game {
     }
 
     public static void main(String[] args) throws IOException {
-        Statistics.getInstance().loadPlayerGameCount();
+        Statistics.getInstance().load();
         synchronized (Game.class) {
             newInstance();
         }
