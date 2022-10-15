@@ -206,7 +206,6 @@ public class Statistics {
                     }
                     return false;
                 });
-                orders1.stream().limit(orders1.size() - 3L).forEach(o -> orderMap.remove(o.getId()));
                 orders1.subList(0, orders1.size() - 3).clear();
                 deviceOrderMap.put(device, orders1);
                 orderMap.put(order.getId(), order);
