@@ -16,11 +16,6 @@ public class ShiSi extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(ShiSi.class);
 
     @Override
-    public void init(Game g) {
-        g.addListeningSkill(this);
-    }
-
-    @Override
     public SkillId getSkillId() {
         return SkillId.SHI_SI;
     }

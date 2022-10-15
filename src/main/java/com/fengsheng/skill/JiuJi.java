@@ -16,11 +16,6 @@ public class JiuJi extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(JiuJi.class);
 
     @Override
-    public void init(Game g) {
-        g.addListeningSkill(this);
-    }
-
-    @Override
     public SkillId getSkillId() {
         return SkillId.JIU_JI;
     }

@@ -11,7 +11,9 @@ public interface TriggeredSkill extends Skill {
     /**
      * 初始化一场游戏时调用
      */
-    void init(Game g);
+    default void init(Game g) {
+        g.addListeningSkill(this);
+    }
 
     /**
      * <li>对于自动发动的技能，判断并发动这个技能时会调用这个函数</li>

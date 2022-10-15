@@ -16,11 +16,6 @@ public class MingEr extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(MingEr.class);
 
     @Override
-    public void init(Game g) {
-        g.addListeningSkill(this);
-    }
-
-    @Override
     public SkillId getSkillId() {
         return SkillId.MING_ER;
     }

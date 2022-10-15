@@ -16,11 +16,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class JingMeng extends AbstractSkill implements TriggeredSkill {
     @Override
-    public void init(Game g) {
-        g.addListeningSkill(this);
-    }
-
-    @Override
     public SkillId getSkillId() {
         return SkillId.JING_MENG;
     }

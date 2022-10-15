@@ -16,11 +16,6 @@ public class ZhiYin extends AbstractSkill implements TriggeredSkill {
     private static final Logger log = Logger.getLogger(ZhiYin.class);
 
     @Override
-    public void init(Game g) {
-        g.addListeningSkill(this);
-    }
-
-    @Override
     public SkillId getSkillId() {
         return SkillId.ZHI_YIN;
     }
