@@ -206,7 +206,8 @@ public class Statistics {
                     }
                     return false;
                 });
-                orders1.subList(0, orders1.size() - 3).clear();
+                if (orders1.size() > 3)
+                    orders1.subList(0, orders1.size() - 3).clear();
                 deviceOrderMap.put(device, orders1);
                 orderMap.put(order.getId(), order);
                 List<Integer> removeList = new ArrayList<>();
