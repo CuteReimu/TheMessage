@@ -49,7 +49,7 @@ public class Statistics {
                     sb.append(r.totalPlayerCount).append(',');
                     sb.append(time).append('\n');
                 }
-                writeFile("stat.csv", sb.toString().getBytes());
+                writeFile("stat.csv", sb.toString().getBytes(), true);
             } catch (Exception e) {
                 log.error("execute task failed", e);
             }
@@ -237,7 +237,11 @@ public class Statistics {
     }
 
     private static void writeFile(String fileName, byte[] buf) {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(fileName)) {
+        writeFile(fileName, buf, false);
+    }
+
+    private static void writeFile(String fileName, byte[] buf, boolean append) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(fileName, append)) {
             fileOutputStream.write(buf);
         } catch (IOException e) {
             log.error("write file failed", e);
