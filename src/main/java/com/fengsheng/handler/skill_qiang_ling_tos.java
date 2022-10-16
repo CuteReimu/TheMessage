@@ -19,7 +19,7 @@ public class skill_qiang_ling_tos extends AbstractProtoHandler<Role.skill_qiang_
             log.error("你没有这个技能");
             return;
         }
-        if (EnumSet.copyOf(pb.getTypesList()).size() != pb.getTypesCount()) {
+        if (pb.getTypesCount() != 0 && EnumSet.copyOf(pb.getTypesList()).size() != pb.getTypesCount()) {
             log.error("宣言的卡牌类型重复" + Arrays.toString(pb.getTypesValueList().toArray(new Integer[0])));
             return;
         }
