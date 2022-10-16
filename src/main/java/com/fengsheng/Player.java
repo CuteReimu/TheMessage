@@ -303,6 +303,11 @@ public interface Player {
     void addSkillUseCount(SkillId skillId);
 
     /**
+     * 增加每回合技能使用次数计数
+     */
+    void addSkillUseCount(SkillId skillId, int count);
+
+    /**
      * 获取每回合技能使用次数计数
      */
     int getSkillUseCount(SkillId skillId);

@@ -24,6 +24,9 @@ public record OnSendCard(Player whoseTurn, Card messageCard, Common.direction di
 
     @Override
     public ResolveResult resolve() {
+        ResolveResult result = whoseTurn.getGame().dealListeningSkill();
+        if (result != null)
+            return result;
         String s = whoseTurn + "传出了" + messageCard + "，方向是" + dir + "，传给了" + targetPlayer;
         if (lockedPlayers.length > 0) s += "，并锁定了" + Arrays.toString(lockedPlayers);
         log.info(s);

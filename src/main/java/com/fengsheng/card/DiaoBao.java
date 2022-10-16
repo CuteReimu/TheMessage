@@ -39,6 +39,10 @@ public class DiaoBao extends Card {
             log.error("你被禁闭了，不能出牌");
             return false;
         }
+        if (g.getQiangLingTypes().contains(getType())) {
+            log.error("调包被禁止使用了");
+            return false;
+        }
         if (!(g.getFsm() instanceof FightPhaseIdle fsm) || r != fsm.whoseFightTurn) {
             log.error("调包的使用时机不对");
             return false;

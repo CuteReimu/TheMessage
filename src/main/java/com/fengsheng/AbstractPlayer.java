@@ -315,7 +315,12 @@ public abstract class AbstractPlayer implements Player {
 
     @Override
     public void addSkillUseCount(SkillId skillId) {
-        skillUseCount.compute(skillId, (k, v) -> v == null ? 1 : v + 1);
+        addSkillUseCount(skillId, 1);
+    }
+
+    @Override
+    public void addSkillUseCount(SkillId skillId, int count) {
+        skillUseCount.compute(skillId, (k, v) -> v == null ? count : v + count);
     }
 
     @Override

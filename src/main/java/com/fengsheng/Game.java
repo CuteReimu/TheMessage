@@ -38,6 +38,11 @@ public final class Game {
      */
     private Player jinBiPlayer;
 
+    /**
+     * 用于张一挺技能强令
+     */
+    private final Set<Common.card_type> qiangLingTypes = EnumSet.noneOf(Common.card_type.class);
+
     private Game(int totalPlayerCount) {
         // 调用构造函数时加锁了，所以increaseId无需加锁
         id = ++increaseId;
@@ -215,6 +220,13 @@ public final class Game {
      */
     public void setJinBiPlayer(Player jinBiPlayer) {
         this.jinBiPlayer = jinBiPlayer;
+    }
+
+    /**
+     * 用于张一挺技能强令
+     */
+    public Set<Common.card_type> getQiangLingTypes() {
+        return qiangLingTypes;
     }
 
     /**

@@ -40,6 +40,10 @@ public class ShiTan extends Card {
             log.error("你被禁闭了，不能出牌");
             return false;
         }
+        if (g.getQiangLingTypes().contains(getType())) {
+            log.error("试探被禁止使用了");
+            return false;
+        }
         Player target = (Player) args[0];
         if (!(g.getFsm() instanceof MainPhaseIdle fsm) || r != fsm.player()) {
             log.error("试探的使用时机不对");

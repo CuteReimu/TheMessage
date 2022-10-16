@@ -46,6 +46,10 @@ public class WeiBi extends Card {
             log.error("你被禁闭了，不能出牌");
             return false;
         }
+        if (g.getQiangLingTypes().contains(getType())) {
+            log.error("威逼被禁止使用了");
+            return false;
+        }
         Player target = (Player) args[0];
         Common.card_type wantType = (Common.card_type) args[1];
         return WeiBi.canUse(g, r, target, wantType);

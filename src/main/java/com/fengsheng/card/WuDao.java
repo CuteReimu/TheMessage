@@ -39,6 +39,10 @@ public class WuDao extends Card {
             log.error("你被禁闭了，不能出牌");
             return false;
         }
+        if (g.getQiangLingTypes().contains(getType())) {
+            log.error("误导被禁止使用了");
+            return false;
+        }
         Player target = (Player) args[0];
         if (!(g.getFsm() instanceof FightPhaseIdle fsm)) {
             log.error("误导的使用时机不对");

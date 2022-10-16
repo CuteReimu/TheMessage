@@ -20,6 +20,9 @@ public record OnChooseReceiveCard(Player whoseTurn, Card messageCard, Player inF
 
     @Override
     public ResolveResult resolve() {
+        ResolveResult result = inFrontOfWhom.getGame().dealListeningSkill();
+        if (result != null)
+            return result;
         log.info(inFrontOfWhom + "选择接收情报");
         for (Player p : whoseTurn.getGame().getPlayers())
             p.notifyChooseReceiveCard(inFrontOfWhom);

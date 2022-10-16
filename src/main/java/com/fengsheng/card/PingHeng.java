@@ -41,6 +41,10 @@ public class PingHeng extends Card {
             log.error("你被禁闭了，不能出牌");
             return false;
         }
+        if (g.getQiangLingTypes().contains(getType())) {
+            log.error("平衡被禁止使用了");
+            return false;
+        }
         if (!(g.getFsm() instanceof MainPhaseIdle fsm) || r != fsm.player()) {
             log.error("平衡的使用时机不对");
             return false;

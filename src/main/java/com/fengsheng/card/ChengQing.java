@@ -44,6 +44,10 @@ public class ChengQing extends Card {
             log.error("你被禁闭了，不能出牌");
             return false;
         }
+        if (g.getQiangLingTypes().contains(getType())) {
+            log.error("澄清被禁止使用了");
+            return false;
+        }
         Player target = (Player) args[0];
         int targetCardId = (Integer) args[1];
         Fsm fsm = g.getFsm();
