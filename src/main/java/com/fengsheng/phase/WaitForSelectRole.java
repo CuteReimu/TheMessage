@@ -46,7 +46,7 @@ public class WaitForSelectRole implements WaitingFsm {
                     builderAddRole(builder, role1);
                     if (role2 != Common.role.unknown) builderAddRole(builder, role2);
                 }
-                builder.setWaitingSecond(20);
+                builder.setWaitingSecond(30);
                 p.send(builder.build());
                 p.setTimeout(GameExecutor.post(game, () -> game.tryContinueResolveProtocol(p, Fengsheng.select_role_tos.newBuilder().setRole(builder.getRoles(0)).build()), p.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
             } else {
