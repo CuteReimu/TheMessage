@@ -14,7 +14,7 @@ public record MainPhaseIdle(Player player) implements Fsm {
             return new ResolveResult(new NextTurn(player), true);
         }
         for (Player p : player.getGame().getPlayers()) {
-            p.notifyMainPhase(30);
+            p.notifyMainPhase(20);
         }
         return null;
     }

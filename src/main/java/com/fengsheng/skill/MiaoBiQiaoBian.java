@@ -73,7 +73,7 @@ public class MiaoBiQiaoBian extends AbstractSkill implements ActiveSkill {
                     builder.setPlayerId(player.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(player.getAlternativeLocation(target1.location()));
                     builder.setCardId(card1.getId());
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (player == r) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);

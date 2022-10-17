@@ -43,7 +43,7 @@ public class FightPhaseIdle implements Fsm {
         if (!whoseFightTurn.isAlive() || whoseFightTurn.getGame().getJinBiPlayer() == whoseFightTurn)
             return new ResolveResult(new FightPhaseNext(this), true);
         for (Player p : whoseTurn.getGame().getPlayers())
-            p.notifyFightPhase(20);
+            p.notifyFightPhase(15);
         return null;
     }
 

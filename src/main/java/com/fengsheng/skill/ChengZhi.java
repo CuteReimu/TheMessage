@@ -49,7 +49,7 @@ public class ChengZhi extends AbstractSkill implements TriggeredSkill {
             for (Player player : r.getGame().getPlayers()) {
                 if (player instanceof HumanPlayer p) {
                     var builder = Role.skill_wait_for_cheng_zhi_toc.newBuilder();
-                    builder.setPlayerId(p.getAlternativeLocation(r.location())).setWaitingSecond(20);
+                    builder.setPlayerId(p.getAlternativeLocation(r.location())).setWaitingSecond(15);
                     builder.setDiePlayerId(p.getAlternativeLocation(whoDie.location()));
                     if (p == r) {
                         for (Card card : cards) builder.addCards(card.toPbCard());

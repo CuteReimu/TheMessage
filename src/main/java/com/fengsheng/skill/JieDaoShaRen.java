@@ -81,7 +81,7 @@ public class JieDaoShaRen extends AbstractSkill implements ActiveSkill {
                     builder.setTargetPlayerId(player.getAlternativeLocation(target.location()));
                     builder.setCard(card.toPbCard());
                     if (card.getColors().contains(Common.color.Black)) {
-                        builder.setWaitingSecond(20);
+                        builder.setWaitingSecond(15);
                         if (player == r) {
                             final int seq2 = player.getSeq();
                             builder.setSeq(seq2);

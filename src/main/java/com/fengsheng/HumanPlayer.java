@@ -123,7 +123,8 @@ public class HumanPlayer extends AbstractPlayer {
             }
         } else {
             if (timeout != null && timeout.cancel()) {
-                int delay = game.getFsm() instanceof MainPhaseIdle ? 31 : 21;
+                int delay = game.getFsm() instanceof MainPhaseIdle || game.getFsm() instanceof WaitForSelectRole ||
+                        game.getFsm() instanceof WaitForDieGiveCard ? 21 : 16;
                 timeout = GameExecutor.TimeWheel.newTimeout(timeout.task(), delay, TimeUnit.SECONDS);
             }
         }

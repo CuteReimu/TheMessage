@@ -44,7 +44,7 @@ public class SendPhaseIdle implements Fsm {
     @Override
     public ResolveResult resolve() {
         for (Player p : whoseTurn.getGame().getPlayers()) {
-            p.notifySendPhase(20);
+            p.notifySendPhase(15);
         }
         return null;
     }

@@ -90,7 +90,7 @@ public class JiaoJi extends AbstractSkill implements ActiveSkill {
                     builder.setUnknownCardCount(cards.length);
                 }
                 if (needReturnCount > 0) {
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (player == r) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);

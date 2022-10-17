@@ -55,7 +55,7 @@ public class QiangLing implements TriggeredSkill {
                 if (player instanceof HumanPlayer p) {
                     var builder = Role.skill_wait_for_qiang_ling_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (p == r) {
                         final int seq2 = p.getSeq();
                         builder.setSeq(seq2);

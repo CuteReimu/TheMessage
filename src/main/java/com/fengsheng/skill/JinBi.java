@@ -72,7 +72,7 @@ public class JinBi extends AbstractSkill implements ActiveSkill {
                     var builder = Role.skill_jin_bi_a_toc.newBuilder();
                     builder.setPlayerId(player.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(player.getAlternativeLocation(target.location()));
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (player == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);

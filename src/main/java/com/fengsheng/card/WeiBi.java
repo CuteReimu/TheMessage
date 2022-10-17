@@ -159,7 +159,7 @@ public class WeiBi extends Card {
                 if (p instanceof HumanPlayer player) {
                     var builder = Fengsheng.wei_bi_wait_for_give_card_toc.newBuilder();
                     if (card != null) builder.setCard(card.toPbCard());
-                    builder.setWantType(wantType).setWaitingSecond(20);
+                    builder.setWantType(wantType).setWaitingSecond(15);
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
                     if (p == target) {

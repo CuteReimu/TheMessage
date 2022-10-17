@@ -57,7 +57,7 @@ public class JinKouYiKai extends AbstractSkill implements ActiveSkill {
                 if (p instanceof HumanPlayer player) {
                     var builder = Role.skill_jin_kou_yi_kai_a_toc.newBuilder();
                     builder.setPlayerId(player.getAlternativeLocation(r.location()));
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (player == r) {
                         builder.setCard(cards.get(0).toPbCard());
                         final int seq2 = player.getSeq();

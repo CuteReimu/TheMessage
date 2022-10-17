@@ -136,7 +136,7 @@ public class ShiTan extends Card {
                     var builder = Fengsheng.show_shi_tan_toc.newBuilder();
                     builder.setPlayerId(p.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(target.location()));
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (p == target) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2).setCard(card.toPbCard());

@@ -38,7 +38,7 @@ public class JingMeng extends AbstractSkill implements TriggeredSkill {
         @Override
         public ResolveResult resolve() {
             for (Player p : fsm.whoseTurn().getGame().getPlayers())
-                p.notifyReceivePhase(fsm.whoseTurn(), fsm.inFrontOfWhom(), fsm.messageCard(), fsm.inFrontOfWhom(), 20);
+                p.notifyReceivePhase(fsm.whoseTurn(), fsm.inFrontOfWhom(), fsm.messageCard(), fsm.inFrontOfWhom(), 15);
             return null;
         }
 
@@ -101,7 +101,7 @@ public class JingMeng extends AbstractSkill implements TriggeredSkill {
                     var builder = Role.skill_jing_meng_a_toc.newBuilder();
                     builder.setPlayerId(player1.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(player1.getAlternativeLocation(target.location()));
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (player1 == r) {
                         for (Card card : target.getCards().values())
                             builder.addCards(card.toPbCard());

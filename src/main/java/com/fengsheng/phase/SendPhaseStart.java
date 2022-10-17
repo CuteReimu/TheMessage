@@ -34,7 +34,7 @@ public record SendPhaseStart(Player player) implements Fsm {
             return new ResolveResult(new NextTurn(player), true);
         }
         for (Player p : game.getPlayers()) {
-            p.notifySendPhaseStart(20);
+            p.notifySendPhaseStart(15);
         }
         return null;
     }

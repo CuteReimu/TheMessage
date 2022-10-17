@@ -39,7 +39,7 @@ public class YiYaHuanYa extends AbstractSkill implements TriggeredSkill {
         @Override
         public ResolveResult resolve() {
             for (Player p : fsm.whoseTurn().getGame().getPlayers())
-                p.notifyReceivePhase(fsm.whoseTurn(), fsm.inFrontOfWhom(), fsm.messageCard(), fsm.inFrontOfWhom(), 20);
+                p.notifyReceivePhase(fsm.whoseTurn(), fsm.inFrontOfWhom(), fsm.messageCard(), fsm.inFrontOfWhom(), 15);
             return null;
         }
 

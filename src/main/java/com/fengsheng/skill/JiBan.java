@@ -56,7 +56,7 @@ public class JiBan extends AbstractSkill implements ActiveSkill {
                 if (p instanceof HumanPlayer player) {
                     var builder = Role.skill_ji_ban_a_toc.newBuilder();
                     builder.setPlayerId(player.getAlternativeLocation(r.location()));
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (player == r) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);

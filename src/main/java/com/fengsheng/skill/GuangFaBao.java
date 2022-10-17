@@ -54,7 +54,7 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
                 if (p instanceof HumanPlayer player) {
                     var builder = Role.skill_wait_for_guang_fa_bao_b_toc.newBuilder();
                     builder.setPlayerId(player.getAlternativeLocation(r.location()));
-                    builder.setWaitingSecond(20);
+                    builder.setWaitingSecond(15);
                     if (player == r) {
                         final int seq2 = player.getSeq();
                         builder.setSeq(seq2);

@@ -36,7 +36,7 @@ public class MianLiCangZhen extends AbstractSkill implements TriggeredSkill {
         @Override
         public ResolveResult resolve() {
             for (Player p : fsm.whoseTurn.getGame().getPlayers())
-                p.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.whoseTurn, 20);
+                p.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.whoseTurn, 15);
             return null;
         }
 
