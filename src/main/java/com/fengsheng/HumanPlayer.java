@@ -37,6 +37,8 @@ public class HumanPlayer extends AbstractPlayer {
 
     private boolean autoPlay;
 
+    private final Limiter limiter = new Limiter(10, 100, TimeUnit.MILLISECONDS);
+
     public HumanPlayer(Channel channel) {
         this.channel = channel;
     }
@@ -408,5 +410,9 @@ public class HumanPlayer extends AbstractPlayer {
             return 5;
         }
         return autoPlay ? 1 : seconds;
+    }
+
+    public Limiter getLimiter() {
+        return limiter;
     }
 }

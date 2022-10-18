@@ -107,6 +107,11 @@ public class ProtoServerChannelHandler extends SimpleChannelInboundHandler<ByteB
                     printer.printToString(message).replaceAll("\n *", " ")));
         }
         HumanPlayer player = playerCache.get(ctx.channel().id().asLongText());
+        if (!player.getLimiter().allow()) {
+            log.error("recv msg too fast: " + ctx.channel().id().asShortText());
+            ctx.close();
+            return;
+        }
         ProtoHandler handler = protoInfo.handler();
         if (handler != null) {
             handler.handle(player, message);
