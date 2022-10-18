@@ -634,3 +634,30 @@ message skill_qiang_ling_toc {
   uint32             player_id = 1;
   repeated card_type types = 2;
 }
+
+// 吴志国【坚韧】A：你接收黑色情报后，可以展示牌堆顶的一张牌，若是黑色牌，则将展示的牌加入你的手牌。
+message skill_jian_ren_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【坚韧】A，若是黑色牌则等待使用坚韧B，加入手牌由客户端自己处理。
+message skill_jian_ren_a_toc {
+  uint32 player_id = 1;
+  card card = 2; // 展示的牌
+  uint32 waiting_second = 3; // 若是黑色牌，则有等待时间
+  uint32 seq = 4;
+}
+
+// 吴志国【坚韧】B：并从一名角色的情报区弃置一张黑色情报。
+message skill_jian_ren_b_tos {
+  uint32 target_player_id = 1; // 目标角色，必须弃，不能不弃
+  uint32 card_id = 2; // 弃的牌，必须弃，不能不弃
+  uint32 seq = 3;
+}
+
+// 广播使用【坚韧】B
+message skill_jian_ren_b_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2; // 目标角色
+  uint32 card_id = 3; // 弃的牌
+}
