@@ -162,6 +162,7 @@ public class JianRen extends AbstractSkill implements TriggeredSkill {
             log.info(r + "弃掉了" + target + "面前的" + messageCard);
             target.deleteMessageCard(messageCard.getId());
             fsm.receiveOrder().removePlayerIfNotHaveThreeBlack(target);
+            g.getDeck().discard(messageCard);
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player1) {
                     var builder = Role.skill_jian_ren_b_toc.newBuilder();
@@ -171,7 +172,6 @@ public class JianRen extends AbstractSkill implements TriggeredSkill {
                     player1.send(builder.build());
                 }
             }
-            g.playerDiscardCard(target, messageCard);
             return new ResolveResult(fsm, true);
         }
     }
