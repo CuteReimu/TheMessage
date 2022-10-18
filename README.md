@@ -9,7 +9,17 @@
 - 由于本项目的特殊性，可能随时停止开发或删档
 - 本项目为开源项目，不接受任何的催单和索取行为
 
+## 运行
+
+```shell
+./gradlew run
+```
+
 ## 配置
+
+**游戏配置**
+
+第一次运行会在根目录下生成一个`application.properties`，如下：
 
 ```properties
 # 服务端监听端口
@@ -29,6 +39,10 @@ gm.debug_roles=22,26
 gm.enable=false
 gm.listen_port=9092
 ```
+
+**log4j配置**
+
+见`src/main/resources/log4j.properties`
 
 ## 游戏步骤
 
