@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 程小蝶技能【惊梦】A：你接收黑色情报后，可以查看一名角色的手牌。
+ * 程小蝶技能【惊梦】：你接收黑色情报后，可以查看一名角色的手牌。
  */
 public class JingMeng extends AbstractSkill implements TriggeredSkill {
     @Override
