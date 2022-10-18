@@ -3,6 +3,7 @@ option java_package = "com.fengsheng.protos";
 
 enum role {
   unknown = 0; // 未知角色
+  wu_zhi_guo = 1; // 吴志国
   cheng_xiao_die = 2; // 程小蝶
   lian_yuan = 3; // 连鸢
   mao_bu_ba = 4; // 毛不拔
