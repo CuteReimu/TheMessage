@@ -11,7 +11,6 @@ public class heart_tos implements ProtoHandler {
 
     @Override
     public void handle(HumanPlayer player, GeneratedMessageV3 message) {
-        player.setHeartTimeout();
         byte[] buf = Fengsheng.heart_toc.newBuilder().setOnlineCount(Game.deviceCache.size()).build().toByteArray();
         player.send(msgId, buf, true);
     }
