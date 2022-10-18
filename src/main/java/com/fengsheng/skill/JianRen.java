@@ -121,7 +121,7 @@ public class JianRen extends AbstractSkill implements TriggeredSkill {
                 GameExecutor.post(g, () -> r.getGame().tryContinueResolveProtocol(r,
                         Role.skill_jian_ren_b_tos.newBuilder().setTargetPlayerId(r.getAlternativeLocation(autoChoose.player().location())).setCardId(autoChoose.card().getId()).build()), 2, TimeUnit.SECONDS);
             }
-            return isBlack ? null : new ResolveResult(fsm, true);
+            return isBlack && autoChoose != null ? null : new ResolveResult(fsm, true);
         }
 
         @Override
