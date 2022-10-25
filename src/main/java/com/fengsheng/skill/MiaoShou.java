@@ -157,6 +157,7 @@ public class MiaoShou extends AbstractSkill implements ActiveSkill {
             r.incrSeq();
             log.info(r + "将" + card + "作为情报，面朝上移至" + target2 + "的面前");
             fsm.messageCard = card;
+            fsm.inFrontOfWhom = target2;
             fsm.whoseFightTurn = fsm.inFrontOfWhom;
             fsm.isMessageCardFaceUp = true;
             for (Player p : g.getPlayers()) {
