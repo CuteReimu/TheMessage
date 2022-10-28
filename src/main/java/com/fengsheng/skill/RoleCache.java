@@ -37,15 +37,16 @@ public final class RoleCache {
             new RoleSkillsData("小九", xiao_jiu, false, false, new GuangFaBao()),
             new RoleSkillsData("张一挺", zhang_yi_ting, false, true, new QiangLing()),
             new RoleSkillsData("吴志国", wu_zhi_guo, false, true, new JianRen()),
-            new RoleSkillsData("王田香", wang_tian_xiang, false, true, new JinBi()),
             new RoleSkillsData("阿芙罗拉", a_fu_luo_la, true, false, new MiaoShou())
     );
 
     private static final EnumMap<Common.role, RoleSkillsData> mapCache = new EnumMap<>(Common.role.class);
 
     static {
-        for (RoleSkillsData data : cache)
-            mapCache.put(data.getRole(), data);
+        for (RoleSkillsData data : cache) {
+            if (mapCache.put(data.getRole(), data) != null)
+                throw new RuntimeException("重复的角色：" + data.getRole());
+        }
     }
 
     private RoleCache() {

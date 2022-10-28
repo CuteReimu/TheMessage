@@ -337,7 +337,8 @@ public final class Game {
         return null;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        Class.forName("com.fengsheng.skill.RoleCache");
         Statistics.getInstance().load();
         synchronized (Game.class) {
             newInstance();
