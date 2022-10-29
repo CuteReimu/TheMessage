@@ -522,7 +522,8 @@ message skill_jiang_hu_ling_b_tos {
 
 // 广播使用【江湖令】B，摸牌走摸牌协议
 message skill_jiang_hu_ling_b_toc {
-  uint32 card_id = 1;
+  uint32 player_id = 1;
+  uint32 card_id = 2;
 }
 
 // SP顾小梦【羁绊】A：出牌阶段限一次，可以摸两张牌。
