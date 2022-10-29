@@ -4,6 +4,7 @@ import com.fengsheng.Fsm;
 import com.fengsheng.Game;
 import com.fengsheng.Player;
 import com.fengsheng.ResolveResult;
+import com.fengsheng.skill.JiangHuLing;
 import com.fengsheng.skill.JinBi;
 import com.fengsheng.skill.QiangLing;
 
@@ -26,6 +27,7 @@ public record NextTurn(Player player) implements Fsm {
                 }
                 JinBi.resetJinBi(game);
                 QiangLing.resetQiangLing(game);
+                JiangHuLing.resetJiangHuLing(game);
                 return new ResolveResult(new DrawPhase(player), true);
             }
         }
