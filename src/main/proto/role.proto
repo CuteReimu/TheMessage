@@ -494,8 +494,9 @@ message skill_wait_for_jiang_hu_ling_a_toc {
 
 // 王富贵【江湖令】A：你传出情报后，可以宣言一个颜色。
 message skill_jiang_hu_ling_a_tos {
-  color color = 1;
-  uint32 seq = 2;
+  bool enable = 1;
+  color color = 2;
+  uint32 seq = 3;
 }
 
 // 广播使用【江湖令】A
@@ -512,7 +513,7 @@ message skill_wait_for_jiang_hu_ling_b_toc {
   uint32 seq = 4;
 }
 
-// 王富贵【江湖令】B：本回合，当情报被接收后，你可以从接收者的情报区弃置一张被宣言颜色的情报，若弃置的是黑色情报，则你摸一张牌。
+// 王富贵【江湖令】B：本回合中，当情报被接收后，你可以从接收者的情报区弃置一张被宣言颜色的情报，若弃置的是黑色情报，则你摸一张牌。
 // 如果不发动，则直接发 end_receive_phase_toc 即可
 message skill_jiang_hu_ling_b_tos {
   uint32 card_id = 1;
