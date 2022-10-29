@@ -12,6 +12,7 @@ enum role {
   fei_yuan_long_chuan = 7; // 肥圆龙川
   pei_ling = 8; // 裴玲
   wang_tian_xiang = 10; // 王田香
+  li_xing = 11; // 李醒
   wang_kui = 12; // 王魁
   a_fu_luo_la = 13; // 阿芙罗拉
   han_mei = 14; // 韩梅
