@@ -118,7 +118,7 @@ public class SouJi extends AbstractSkill implements ActiveSkill {
             }
             Card[] cards = new Card[pb.getCardIdsCount()];
             for (int i = 0; i < cards.length; i++) {
-                Card card = target.findMessageCard(pb.getCardIds(i));
+                Card card = target.findCard(pb.getCardIds(i));
                 if (card == null) {
                     log.error("没有这张牌");
                     return null;
