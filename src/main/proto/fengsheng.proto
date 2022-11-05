@@ -2,6 +2,14 @@ syntax = "proto3";
 option java_package = "com.fengsheng.protos";
 import "common.proto";
 
+message get_record_list_tos {
+  uint32 version = 1; // 客户端版本号
+}
+
+message get_record_list_toc {
+  repeated string records = 1;
+}
+
 // 增加一个预约
 message add_order_tos {
   uint32 time = 1; // 时间戳

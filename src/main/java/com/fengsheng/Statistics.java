@@ -248,6 +248,26 @@ public class Statistics {
         }
     }
 
+    public void displayRecordList(HumanPlayer player) {
+        pool.submit(() -> {
+            var builder = Fengsheng.get_record_list_toc.newBuilder();
+            File dir = new File("records");
+            String[] files = dir.list();
+            if (files != null) {
+                String lastFileName = null;
+                int j = 0;
+                for (int i = files.length - 1; i >= 0; i--) {
+                    if (!files[i].equals(lastFileName)) {
+                        if (++j > 20) break;
+                        lastFileName = files[i];
+                    }
+                    builder.addRecords(files[i]);
+                }
+            }
+            player.send(builder.build());
+        });
+    }
+
     public record Record(Common.role role, boolean isWinner, Common.color identity, Common.secret_task task,
                          int totalPlayerCount) {
 
