@@ -162,6 +162,18 @@ public class JiangHuLing implements TriggeredSkill {
                     humanPlayer.send(builder.build());
                 }
             }
+            if (fsm.whoseTurn instanceof RobotPlayer p) {
+                Player target = fsm.inFrontOfWhom;
+                if (target.isAlive()) {
+                    for (Card card : target.getMessageCards().values()) {
+                        if (card.getColors().contains(color) && !(p == target && color != Common.color.Black && card.getColors().size() == 1)) {
+                            GameExecutor.post(p.getGame(), () -> p.getGame().tryContinueResolveProtocol(p, Role.skill_jiang_hu_ling_b_tos.newBuilder().setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
+                            return null;
+                        }
+                    }
+                }
+                GameExecutor.TimeWheel.newTimeout(timeout -> p.getGame().tryContinueResolveProtocol(p, Fengsheng.end_receive_phase_tos.getDefaultInstance()), 2, TimeUnit.SECONDS);
+            }
             return null;
         }
 
@@ -243,21 +255,5 @@ public class JiangHuLing implements TriggeredSkill {
                 }
             }
         }
-    }
-
-    public static boolean ai(Fsm fsm0) {
-        if (!(fsm0 instanceof executeJiangHuLingB fsm))
-            return false;
-        Player p = fsm.fsm().whoseTurn;
-        Player target = fsm.fsm().inFrontOfWhom;
-        if (!target.isAlive()) return false;
-        for (Card card : target.getMessageCards().values()) {
-            if (card.getColors().contains(fsm.color) && !(
-                    p == target && card.getColors().size() == 1 && card.getColors().get(0) != Common.color.Black)) {
-                GameExecutor.post(p.getGame(), () -> p.getGame().tryContinueResolveProtocol(p, Role.skill_jiang_hu_ling_b_tos.newBuilder().setCardId(card.getId()).build()), 2, TimeUnit.SECONDS);
-                return true;
-            }
-        }
-        return false;
     }
 }
