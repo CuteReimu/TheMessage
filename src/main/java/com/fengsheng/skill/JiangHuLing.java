@@ -145,8 +145,23 @@ public class JiangHuLing implements TriggeredSkill {
 
         @Override
         public ResolveResult resolve() {
-            for (Player p : fsm.whoseTurn.getGame().getPlayers())
-                p.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.whoseTurn, 15);
+            for (Player p : fsm.whoseTurn.getGame().getPlayers()) {
+                if (p instanceof HumanPlayer humanPlayer) {
+                    var builder = Role.skill_wait_for_jiang_hu_ling_b_toc.newBuilder();
+                    builder.setPlayerId(p.getAlternativeLocation(fsm.whoseTurn.location()));
+                    builder.setColor(color);
+                    builder.setWaitingSecond(15);
+                    if (humanPlayer == fsm.whoseTurn) {
+                        final int seq2 = humanPlayer.getSeq();
+                        builder.setSeq(seq2);
+                        humanPlayer.setTimeout(GameExecutor.post(humanPlayer.getGame(), () -> {
+                            if (humanPlayer.checkSeq(seq2))
+                                humanPlayer.getGame().tryContinueResolveProtocol(humanPlayer, Fengsheng.end_receive_phase_tos.newBuilder().setSeq(seq2).build());
+                        }, humanPlayer.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
+                    }
+                    humanPlayer.send(builder.build());
+                }
+            }
             return null;
         }
 
