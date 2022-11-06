@@ -327,6 +327,13 @@ public final class Game {
     }
 
     /**
+     * 获取监听技能的列表
+     */
+    public List<TriggeredSkill> getListeningSkills() {
+        return listeningSkills;
+    }
+
+    /**
      * 遍历监听列表，结算技能
      */
     public ResolveResult dealListeningSkill() {

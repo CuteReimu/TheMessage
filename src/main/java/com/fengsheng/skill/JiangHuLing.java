@@ -95,7 +95,9 @@ public class JiangHuLing implements TriggeredSkill {
             Skill[] skills = r.getSkills();
             Skill[] skills2 = new Skill[skills.length + 1];
             System.arraycopy(skills, 0, skills2, 0, skills.length);
-            skills2[skills2.length - 1] = new JiangHuLing2(pb.getColor());
+            JiangHuLing2 skill = new JiangHuLing2(pb.getColor());
+            skills2[skills2.length - 1] = skill;
+            skill.init(r.getGame());
             r.setSkills(skills2);
             log.info(r + "发动了[江湖令]，宣言了" + pb.getColor());
             for (Player p : r.getGame().getPlayers()) {
@@ -109,11 +111,6 @@ public class JiangHuLing implements TriggeredSkill {
     }
 
     private record JiangHuLing2(Common.color color) implements TriggeredSkill {
-        @Override
-        public void init(Game g) {
-            // Do nothing
-        }
-
         @Override
         public SkillId getSkillId() {
             return SkillId.JIANG_HU_LING2;
@@ -222,6 +219,13 @@ public class JiangHuLing implements TriggeredSkill {
                         skills2.add(skill);
                 }
                 p.setSkills(skills2.toArray(new Skill[0]));
+                List<TriggeredSkill> listeningSkills = game.getListeningSkills();
+                for (int i = listeningSkills.size() - 1; i >= 0; i--) {
+                    if (listeningSkills.get(i) instanceof JiangHuLing2) {
+                        listeningSkills.remove(i);
+                        break;
+                    }
+                }
             }
         }
     }
