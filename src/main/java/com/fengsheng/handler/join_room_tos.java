@@ -76,10 +76,10 @@ public class join_room_tos implements ProtoHandler {
                     var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location()).setOnlineCount(Game.deviceCache.size());
                     for (Player p : player.getGame().getPlayers()) {
                         builder.addNames(p != null ? p.getPlayerName() : "");
-                        Statistics.PlayerGameCount count1;
+                        Statistics.PlayerGameCount count1 = null;
                         if (p instanceof HumanPlayer humanPlayer)
                             count1 = Statistics.getInstance().getPlayerGameCount(humanPlayer.getDevice());
-                        else
+                        else if (p instanceof RobotPlayer)
                             count1 = Statistics.getInstance().getTotalPlayerGameCount();
                         builder.addWinCounts(count1 == null ? 0 : count1.winCount());
                     }
