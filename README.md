@@ -75,3 +75,24 @@ graph TD;
 |-----------|-------------------------|---------------------------------------------------------------------|
 | /addcard  | player=0&card=1&count=1 | 其中player参数对应**服务器中的**玩家Id，card参数对应协议中的卡牌类型，count参数（非必填，默认1）为增加卡牌的个数 |
 | /addrobot | count=1                 | 其中count参数对应想要增加机器人的个数，不填表示加满                                        |
+
+## 开发相关
+
+如遇IDEA提示“代码洞察功能不可用”，是因为role.proto生成的协议文件太大导致的，在帮助菜单中编辑一下IDEA的自定义属性`idea.properties`即可：
+
+```properties
+#---------------------------------------------------------------------
+# Maximum file size (kilobytes) IDE should provide code assistance for.
+# The larger file is the slower its editor works and higher overall system memory requests
+# if code assistance is enabled. Remove this property or set to very large number if your
+# code assistance for any files available regardless their size.
+#---------------------------------------------------------------------
+idea.max.intellisense.filesize=2500
+
+#---------------------------------------------------------------------
+# Maximum file size (kilobytes) IDE is able to open.
+#---------------------------------------------------------------------
+idea.max.content.load.filesize=20000
+```
+
+将`idea.max.intellisense.filesize`的值改大。若没有这个属性，自行添加即可。
