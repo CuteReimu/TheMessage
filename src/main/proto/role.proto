@@ -694,3 +694,98 @@ message skill_sou_ji_b_toc {
   repeated card cards = 3; // 展示并拿走的手牌
   card message_card = 4; // 展示并拿走的待收情报，没拿就是null
 }
+
+// 黄济仁【对症下药】A：争夺阶段，你可以翻开此角色牌，然后摸三张牌。
+message skill_dui_zheng_xia_yao_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【对症下药】A
+message skill_dui_zheng_xia_yao_a_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 黄济仁【对症下药】B：并且你可以展示两张含有相同颜色的手牌。
+message skill_dui_zheng_xia_yao_b_tos {
+  bool enable = 1;
+  repeated uint32 card_ids = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【对症下药】B
+message skill_dui_zheng_xia_yao_b_toc {
+  uint32 player_id = 1;
+  bool enable = 2;
+  repeated card cards = 3;
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// 黄济仁【对症下药】C：然后从一名角色的情报区，弃置一张对应颜色情报。
+message skill_dui_zheng_xia_yao_c_tos {
+  uint32 target_player_id = 1;
+  uint32 message_card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【对症下药】C
+message skill_dui_zheng_xia_yao_c_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  uint32 message_card_id = 3;
+}
+
+// 白昆山【毒计】A：争夺阶段，你可以翻开此角色牌，然后指定两名角色，令他们相互抽取对方的一张手牌并展示之，你将展示的牌加入你的手牌。
+message skill_du_ji_a_tos {
+  repeated uint32 target_player_ids = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【毒计】A
+message skill_du_ji_a_toc {
+  uint32 player_id = 1;
+  repeated uint32 target_player_ids = 2;
+  repeated card cards = 3;
+}
+
+// 广播询问客户端使用【毒计】B
+message skill_wait_for_du_ji_b_tos {
+  uint32 player_id = 1;
+  repeated uint32 target_player_ids = 2;
+  repeated uint32 card_ids = 3; // 能选的卡牌ID，只有白昆山能看见，上面的target_player_ids对应的是这张牌会给谁选择
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// 白昆山【毒计】B：若展示的是黑色牌，你可以改为令抽取者选择一项。
+message skill_du_ji_b_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【毒计】B
+message skill_du_ji_b_toc {
+  uint32 player_id = 1; // 白昆山的ID
+  uint32 waiting_player_id = 2; // 读秒的玩家ID
+  card card = 3; // 做选择的卡牌的ID
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// 白昆山【毒计】C：
+// ♦ 将其置入自己的情报区
+// ♦ 将其置入对方的情报区
+message skill_du_ji_c_tos {
+  bool in_front_of_me = 1; // true-放入自己的情报区，false-放入对方的情报区
+  uint32 seq = 2;
+}
+
+// 广播使用【毒计】C
+message skill_du_ji_c_toc {
+  uint32 player_id = 1; // 白昆山的ID
+  uint32 waiting_player_id = 2; // 做选择的玩家的ID
+  uint32 target_player_id = 3; // 放在谁的面前
+  card card = 4;
+}

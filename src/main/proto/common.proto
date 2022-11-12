@@ -11,6 +11,7 @@ enum role {
   bai_cang_lang = 6; // 白沧浪
   fei_yuan_long_chuan = 7; // 肥圆龙川
   pei_ling = 8; // 裴玲
+  huang_ji_ren = 9; // 黄济仁
   wang_tian_xiang = 10; // 王田香
   li_xing = 11; // 李醒
   wang_kui = 12; // 王魁
@@ -30,6 +31,7 @@ enum role {
   lao_bie = 26; // 老鳖
   xiao_jiu = 27; // 小九
   li_ning_yu = 28; // 李宁玉
+  bai_kun_shan = 29; // 白昆山
   shang_yu = 30; // 商玉
   sp_gu_xiao_meng = 1020; // SP顾小梦
   sp_li_ning_yu = 1028; // SP李宁玉
