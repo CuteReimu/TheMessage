@@ -761,17 +761,19 @@ message skill_wait_for_du_ji_b_tos {
 
 // 白昆山【毒计】B：若展示的是黑色牌，你可以改为令抽取者选择一项。
 message skill_du_ji_b_tos {
-  uint32 card_id = 1;
-  uint32 seq = 2;
+  bool enable = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
 }
 
 // 广播使用【毒计】B
 message skill_du_ji_b_toc {
   uint32 player_id = 1; // 白昆山的ID
-  uint32 waiting_player_id = 2; // 读秒的玩家ID
-  card card = 3; // 做选择的卡牌的ID
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
+  bool enable = 2;
+  uint32 waiting_player_id = 3; // 读秒的玩家ID
+  card card = 4; // 做选择的卡牌的ID
+  uint32 waiting_second = 5;
+  uint32 seq = 6;
 }
 
 // 白昆山【毒计】C：
