@@ -42,6 +42,10 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
         r.addSkillUseCount(getSkillId());
         g.playerSetRoleFaceUp(r, true);
         log.info(r + "发动了[广发报]");
+        for (Player p : g.getPlayers()) {
+            if (p instanceof HumanPlayer player)
+                player.send(Role.skill_guang_fa_bao_a_toc.newBuilder().setPlayerId(player.getAlternativeLocation(r.location())).build());
+        }
         r.draw(3);
         g.resolve(new executeGuangFaBao(fsm, r));
     }
