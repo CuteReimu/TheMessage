@@ -78,7 +78,7 @@ public final class RoleCache {
      */
     public static RoleSkillsData[] getRandomRolesWithSpecific(int n, List<Common.role> roles) {
         RoleSkillsData[] roleSkillsDataArray = getRandomRoles(n);
-        for (int roleIndex = 0; roleIndex < roles.size(); roleIndex++) {
+        for (int roleIndex = 0; roleIndex < roles.size() && roleIndex < n; roleIndex++) {
             int index = -1;
             for (int i = 0; i < roleSkillsDataArray.length; i++) {
                 if (roles.get(roleIndex) == roleSkillsDataArray[i].getRole()) {
