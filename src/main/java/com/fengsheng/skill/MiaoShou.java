@@ -59,6 +59,8 @@ public class MiaoShou extends AbstractSkill implements ActiveSkill {
     }
 
     private record executeMiaoShou(FightPhaseIdle fsm, Player r, Player target) implements WaitingFsm {
+        private static final Logger log = Logger.getLogger(executeMiaoShou.class);
+
         @Override
         public ResolveResult resolve() {
             final Game g = r.getGame();

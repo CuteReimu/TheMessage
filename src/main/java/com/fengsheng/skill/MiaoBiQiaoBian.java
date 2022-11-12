@@ -61,6 +61,8 @@ public class MiaoBiQiaoBian extends AbstractSkill implements ActiveSkill {
 
     private record executeMiaoBiQiaoBian(FightPhaseIdle fsm, Player r, Player target1,
                                          Card card1) implements WaitingFsm {
+        private static final Logger log = Logger.getLogger(executeMiaoBiQiaoBian.class);
+
         @Override
         public ResolveResult resolve() {
             final Game g = r.getGame();

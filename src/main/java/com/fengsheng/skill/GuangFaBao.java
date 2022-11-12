@@ -51,6 +51,8 @@ public class GuangFaBao extends AbstractSkill implements ActiveSkill {
     }
 
     private record executeGuangFaBao(FightPhaseIdle fsm, Player r) implements WaitingFsm {
+        private static final Logger log = Logger.getLogger(executeGuangFaBao.class);
+
         @Override
         public ResolveResult resolve() {
             final Game g = r.getGame();

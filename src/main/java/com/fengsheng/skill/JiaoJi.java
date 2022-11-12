@@ -133,6 +133,8 @@ public class JiaoJi extends AbstractSkill implements ActiveSkill {
     }
 
     private record executeJiaoJi(MainPhaseIdle fsm, Player target, int needReturnCount) implements WaitingFsm {
+        private static final Logger log = Logger.getLogger(executeJiaoJi.class);
+
         @Override
         public ResolveResult resolve() {
             return null;

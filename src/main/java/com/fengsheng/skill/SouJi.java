@@ -62,6 +62,8 @@ public class SouJi extends AbstractSkill implements ActiveSkill {
     }
 
     private record executeSouJi(FightPhaseIdle fsm, Player r, Player target) implements WaitingFsm {
+        private static final Logger log = Logger.getLogger(executeSouJi.class);
+
         @Override
         public ResolveResult resolve() {
             final Game g = r.getGame();

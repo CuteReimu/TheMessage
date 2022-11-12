@@ -49,6 +49,8 @@ public class JinKouYiKai extends AbstractSkill implements ActiveSkill {
     }
 
     private record executeJinKouYiKai(FightPhaseIdle fsm, Player r, List<Card> cards) implements WaitingFsm {
+        private static final Logger log = Logger.getLogger(executeJinKouYiKai.class);
+
         @Override
         public ResolveResult resolve() {
             final Game g = r.getGame();
