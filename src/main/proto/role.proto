@@ -737,7 +737,7 @@ message skill_dui_zheng_xia_yao_c_toc {
   uint32 message_card_id = 3;
 }
 
-// 白昆山【毒计】A：争夺阶段，你可以翻开此角色牌，然后指定两名角色，令他们相互抽取对方的一张手牌并展示之，你将展示的牌加入你的手牌。
+// 白昆山【毒计】A：争夺阶段，你可以翻开此角色牌，然后指定两名其他角色，令他们相互抽取对方的一张手牌并展示之，你将展示的牌加入你的手牌。
 message skill_du_ji_a_tos {
   repeated uint32 target_player_ids = 1;
   uint32 seq = 2;
@@ -771,9 +771,10 @@ message skill_du_ji_b_toc {
   uint32 player_id = 1; // 白昆山的ID
   bool enable = 2;
   uint32 waiting_player_id = 3; // 读秒的玩家ID
-  card card = 4; // 做选择的卡牌的ID
-  uint32 waiting_second = 5;
-  uint32 seq = 6;
+  uint32 target_player_id = 4; // 对方的玩家ID
+  card card = 5; // 做选择的卡牌
+  uint32 waiting_second = 6;
+  uint32 seq = 7;
 }
 
 // 白昆山【毒计】C：

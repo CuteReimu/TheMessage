@@ -40,7 +40,8 @@ public final class RoleCache {
             new RoleSkillsData("阿芙罗拉", a_fu_luo_la, true, false, new MiaoShou()),
             new RoleSkillsData("李醒", li_xing, false, false, new SouJi()),
             new RoleSkillsData("王富贵", wang_fu_gui, false, true, new JiangHuLing()),
-            new RoleSkillsData("黄济仁", huang_ji_ren, false, false, new DuiZhengXiaYao())
+            new RoleSkillsData("黄济仁", huang_ji_ren, false, false, new DuiZhengXiaYao()),
+            new RoleSkillsData("白昆山", bai_kun_shan, false, false, new DuJi())
     );
 
     private static final EnumMap<Common.role, RoleSkillsData> mapCache = new EnumMap<>(Common.role.class);
