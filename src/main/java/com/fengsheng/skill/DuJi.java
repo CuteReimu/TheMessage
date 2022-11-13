@@ -164,9 +164,11 @@ public class DuJi extends AbstractSkill implements ActiveSkill {
                 return new ResolveResult(fsm, true);
             }
             TwoPlayersAndCard selection = null;
-            for (TwoPlayersAndCard twoPlayersAndCard : playerAndCards) {
+            for (var it = playerAndCards.iterator(); it.hasNext(); ) {
+                TwoPlayersAndCard twoPlayersAndCard = it.next();
                 if (twoPlayersAndCard.card().getId() == pb.getCardId()) {
                     selection = twoPlayersAndCard;
+                    it.remove();
                     break;
                 }
             }
