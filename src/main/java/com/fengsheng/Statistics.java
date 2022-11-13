@@ -254,12 +254,15 @@ public class Statistics {
             File dir = new File("records");
             String[] files = dir.list();
             if (files != null) {
-                String lastFileName = null;
+                Arrays.sort(files);
+                String lastPrefix = null;
                 int j = 0;
                 for (int i = files.length - 1; i >= 0; i--) {
-                    if (!files[i].equals(lastFileName)) {
+                    if (files[i].length() < 19)
+                        continue;
+                    if (lastPrefix == null || !files[i].startsWith(lastPrefix)) {
                         if (++j > 20) break;
-                        lastFileName = files[i];
+                        lastPrefix = files[i].substring(0, 19);
                     }
                     builder.addRecords(files[i]);
                 }
