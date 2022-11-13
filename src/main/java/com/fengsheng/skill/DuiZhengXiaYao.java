@@ -99,7 +99,7 @@ public class DuiZhengXiaYao extends AbstractSkill implements ActiveSkill {
                         }
                     }
                     g.tryContinueResolveProtocol(r, Role.skill_dui_zheng_xia_yao_b_tos.newBuilder().setEnable(false).build());
-                }, 1, TimeUnit.SECONDS);
+                }, 2, TimeUnit.SECONDS);
             }
             return null;
         }
@@ -189,7 +189,7 @@ public class DuiZhengXiaYao extends AbstractSkill implements ActiveSkill {
             if (r instanceof RobotPlayer) {
                 GameExecutor.post(g, () -> g.tryContinueResolveProtocol(r, Role.skill_dui_zheng_xia_yao_c_tos.newBuilder()
                         .setTargetPlayerId(r.getAlternativeLocation(defaultSelection.player().location()))
-                        .setMessageCardId(defaultSelection.card().getId()).build()), 1, TimeUnit.SECONDS);
+                        .setMessageCardId(defaultSelection.card().getId()).build()), 2, TimeUnit.SECONDS);
             }
             return null;
         }
