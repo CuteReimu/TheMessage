@@ -124,6 +124,7 @@ public class CheckWin implements Fsm {
             var declareWinners = declareWinner.toArray(new Player[0]);
             var winners = winner.toArray(new Player[0]);
             log.info(Arrays.toString(declareWinners) + "宣告胜利，胜利者有" + Arrays.toString(winners));
+            game.allPlayerSetRoleFaceUp();
             for (Player p : game.getPlayers())
                 p.notifyWin(declareWinners, winners);
             whoseTurn.getGame().end(winner);

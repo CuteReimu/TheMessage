@@ -273,6 +273,13 @@ public final class Game {
         }
     }
 
+    public void allPlayerSetRoleFaceUp() {
+        for (Player p : players) {
+            if (!p.isRoleFaceUp())
+                playerSetRoleFaceUp(p, true);
+        }
+    }
+
     /**
      * 继续处理当前状态机
      */

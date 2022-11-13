@@ -59,6 +59,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
                     }
                     Player[] winners = winner.toArray(new Player[0]);
                     log.info(killer + "宣告胜利，胜利者有" + Arrays.toString(winners));
+                    whoseTurn.getGame().allPlayerSetRoleFaceUp();
                     for (Player p : players)
                         p.notifyWin(new Player[]{killer}, winners);
                     whoseTurn.getGame().end(winner);
@@ -80,6 +81,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
         if (alivePlayer == null) {
             // 全部死亡，游戏结束
             log.info("全部死亡，游戏结束");
+            whoseTurn.getGame().allPlayerSetRoleFaceUp();
             for (Player p : players) {
                 p.notifyWin(new Player[0], new Player[0]);
             }
@@ -123,6 +125,7 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
         }
         Player[] winners = winner.toArray(new Player[0]);
         log.info("只剩下" + alivePlayer + "存活，胜利者有" + Arrays.toString(winners));
+        g.allPlayerSetRoleFaceUp();
         for (Player p : players) {
             p.notifyWin(new Player[0], winners);
         }
