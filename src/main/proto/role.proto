@@ -751,7 +751,7 @@ message skill_du_ji_a_toc {
 }
 
 // 广播询问客户端使用【毒计】B
-message skill_wait_for_du_ji_b_tos {
+message skill_wait_for_du_ji_b_toc {
   uint32 player_id = 1;
   repeated uint32 target_player_ids = 2;
   repeated uint32 card_ids = 3; // 能选的卡牌ID，只有白昆山能看见，上面的target_player_ids对应的是这张牌会给谁选择
