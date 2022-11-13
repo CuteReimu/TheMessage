@@ -184,13 +184,12 @@ public class DuJi extends AbstractSkill implements ActiveSkill {
 
         @Override
         public ResolveResult resolve() {
-            Player r = fsm.r();
             log.info("等待" + selection.waitingPlayer() + "对" + selection.card() + "进行选择");
-            Game g = r.getGame();
+            Game g = selection.waitingPlayer().getGame();
             for (Player p : g.getPlayers()) {
                 if (p instanceof HumanPlayer player1) {
                     var builder = Role.skill_du_ji_b_toc.newBuilder().setEnable(true);
-                    builder.setPlayerId(p.getAlternativeLocation(r.location()));
+                    builder.setPlayerId(p.getAlternativeLocation(fsm.r().location()));
                     builder.setWaitingPlayerId(p.getAlternativeLocation(selection.waitingPlayer().location()));
                     builder.setTargetPlayerId(p.getAlternativeLocation(selection.fromPlayer().location()));
                     builder.setCard(selection.card().toPbCard());
@@ -200,15 +199,15 @@ public class DuJi extends AbstractSkill implements ActiveSkill {
                         builder.setSeq(seq2);
                         player1.setTimeout(GameExecutor.post(g, () -> {
                             if (player1.checkSeq(seq2))
-                                g.tryContinueResolveProtocol(r, Role.skill_du_ji_c_tos.newBuilder()
+                                g.tryContinueResolveProtocol(selection.waitingPlayer(), Role.skill_du_ji_c_tos.newBuilder()
                                         .setInFrontOfMe(false).setSeq(seq2).build());
                         }, player1.getWaitSeconds(builder.getWaitingSecond() + 2), TimeUnit.SECONDS));
                     }
                     player1.send(builder.build());
                 }
             }
-            if (r instanceof RobotPlayer) {
-                GameExecutor.post(g, () -> g.tryContinueResolveProtocol(r, Role.skill_du_ji_c_tos.newBuilder()
+            if (selection.waitingPlayer() instanceof RobotPlayer) {
+                GameExecutor.post(g, () -> g.tryContinueResolveProtocol(selection.waitingPlayer(), Role.skill_du_ji_c_tos.newBuilder()
                         .setInFrontOfMe(false).build()), 2, TimeUnit.SECONDS);
             }
             return null;
