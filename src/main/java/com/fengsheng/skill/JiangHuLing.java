@@ -218,6 +218,7 @@ public class JiangHuLing implements TriggeredSkill {
             log.info(r + "发动了[江湖令]，弃掉了" + target + "面前的" + card);
             target.deleteMessageCard(card.getId());
             r.getGame().getDeck().discard(card);
+            fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target);
             for (Player p : r.getGame().getPlayers()) {
                 if (p instanceof HumanPlayer player1)
                     player1.send(Role.skill_jiang_hu_ling_b_toc.newBuilder().setCardId(card.getId())
