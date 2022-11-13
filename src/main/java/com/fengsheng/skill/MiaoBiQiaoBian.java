@@ -172,8 +172,10 @@ public class MiaoBiQiaoBian extends AbstractSkill implements ActiveSkill {
         int playerCount = player.getGame().getPlayers().length;
         List<PlayerAndCard> playerAndCards = new ArrayList<>();
         for (Player p : player.getGame().getPlayers()) {
-            for (Card c : p.getMessageCards().values())
-                playerAndCards.add(new PlayerAndCard(p, c));
+            if (p.isAlive()) {
+                for (Card c : p.getMessageCards().values())
+                    playerAndCards.add(new PlayerAndCard(p, c));
+            }
         }
         if (playerAndCards.size() < playerCount) return false;
         if (ThreadLocalRandom.current().nextInt(playerCount * playerCount) != 0)
