@@ -261,7 +261,7 @@ public class Statistics {
                     if (files[i].length() < 19)
                         continue;
                     if (lastPrefix == null || !files[i].startsWith(lastPrefix)) {
-                        if (++j > 20) break;
+                        if (++j > 5) break;
                         lastPrefix = files[i].substring(0, 19);
                     }
                     builder.addRecords(files[i]);
