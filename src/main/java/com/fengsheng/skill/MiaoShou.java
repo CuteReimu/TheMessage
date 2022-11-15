@@ -71,6 +71,7 @@ public class MiaoShou extends AbstractSkill implements ActiveSkill {
                     builder.setPlayerId(player.getAlternativeLocation(r.location()));
                     builder.setTargetPlayerId(player.getAlternativeLocation(target.location()));
                     builder.setWaitingSecond(20);
+                    builder.setMessageCard(fsm.messageCard.toPbCard());
                     if (player == r) {
                         for (Card card : target.getCards().values())
                             builder.addCards(card.toPbCard());

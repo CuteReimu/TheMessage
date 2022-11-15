@@ -439,6 +439,7 @@ message skill_miao_shou_a_toc {
   repeated card cards = 3; // 他的手牌，只有阿芙罗拉能看见
   uint32        waiting_second = 4;
   uint32        seq = 5;
+  card          message_card = 6; // 被弃掉的待收情报，所有人都能看见
 }
 
 // 阿芙罗拉【妙手】B：从中选择一张牌作为待收情报，面朝上移至一名角色的面前。
