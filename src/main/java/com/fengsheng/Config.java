@@ -2,10 +2,7 @@ package com.fengsheng;
 
 import com.fengsheng.protos.Common;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.List;
 import java.util.Properties;
 
@@ -19,12 +16,15 @@ public final class Config {
     public static final int ClientVersion;
     public static final int MaxRoomCount;
     public static final List<Common.role> DebugRoles;
+    public static final int RecordListSize;
 
     static {
         Properties pps = new Properties();
         try (InputStream in = new FileInputStream("application.properties")) {
             pps.load(in);
-        } catch (Exception ignored) {
+        } catch (FileNotFoundException ignored) {
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         pps.putIfAbsent("listen_port", "9091");
         pps.putIfAbsent("player.total_count", "5");
@@ -35,6 +35,7 @@ public final class Config {
         pps.putIfAbsent("client_version", "1");
         pps.putIfAbsent("room_count", "200");
         pps.putIfAbsent("gm.debug_roles", "22,26");
+        pps.putIfAbsent("record_list_size", "20");
         ListenPort = Integer.parseInt(pps.getProperty("listen_port"));
         TotalPlayerCount = Integer.parseInt(pps.getProperty("player.total_count"));
         HandCardCountBegin = Integer.parseInt(pps.getProperty("rule.hand_card_count_begin"));
@@ -56,6 +57,7 @@ public final class Config {
             }
         }
         DebugRoles = List.of(debugRolesArr);
+        RecordListSize = Integer.parseInt(pps.getProperty("record_list_size"));
         try (OutputStream out = new FileOutputStream("application.properties")) {
             pps.store(out, "application.properties");
         } catch (Exception e) {
