@@ -2,6 +2,14 @@ syntax = "proto3";
 option java_package = "com.fengsheng.protos";
 import "common.proto";
 
+message pause_record_tos {
+  bool pause = 1; // true-暂停，false-继续
+}
+
+message pause_record_toc {
+  bool pause = 1; // true-成功进入暂停，false-成功继续
+}
+
 message get_record_list_tos {
   uint32 version = 1; // 客户端版本号
 }
