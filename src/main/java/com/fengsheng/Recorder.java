@@ -29,6 +29,8 @@ public class Recorder {
 
     private volatile boolean loading = false;
 
+    private volatile boolean pausing = false;
+
     public void add(short messageId, byte[] messageBuf) {
         if (!loading && (messageId == firstProtoId || !list.isEmpty()))
             list.add(Record.recorder_line.newBuilder().setNanoTime(System.nanoTime()).setMessageId(messageId)
@@ -104,8 +106,20 @@ public class Recorder {
         });
     }
 
+    public void pause(boolean pause) {
+        pausing = pause;
+    }
+
     private void displayNext(final HumanPlayer player) {
-        while (player.isActive()) {
+        while (true) {
+            if (!player.isActive()) {
+                loading = false;
+                return;
+            }
+            if (pausing) {
+                GameExecutor.TimeWheel.newTimeout(timeout -> displayNext(player), 2, TimeUnit.SECONDS);
+                return;
+            }
             if (currentIndex >= list.size()) {
                 player.send(Fengsheng.display_record_end_toc.getDefaultInstance());
                 list = new ArrayList<>();

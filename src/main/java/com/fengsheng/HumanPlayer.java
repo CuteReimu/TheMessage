@@ -80,6 +80,10 @@ public class HumanPlayer extends AbstractPlayer {
         return recorder.loading();
     }
 
+    public void pauseRecord(boolean pause) {
+        recorder.pause(pause);
+    }
+
     public void reconnect() {
         recorder.reconnect(this);
     }
