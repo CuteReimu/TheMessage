@@ -1,6 +1,8 @@
 package com.fengsheng;
 
 import com.fengsheng.network.ProtoServerChannelHandler;
+import com.fengsheng.phase.StartGame;
+import com.fengsheng.phase.WaitForSelectRole;
 import com.fengsheng.protos.Errcode;
 import com.fengsheng.protos.Fengsheng;
 import com.fengsheng.protos.Record;
@@ -38,7 +40,7 @@ public class Recorder {
     }
 
     public void save(Game g, final HumanPlayer p, final boolean notify) {
-        if (list.isEmpty()) return;
+        if (list.isEmpty() || g.getFsm() instanceof StartGame || g.getFsm() instanceof WaitForSelectRole) return;
         Date now = new Date();
         LocalDateTime localDateTime = now.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         String timeStr = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
