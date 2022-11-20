@@ -10,10 +10,6 @@ public class add_robot_tos extends AbstractProtoHandler<Fengsheng.add_robot_tos>
 
     @Override
     protected void handle0(HumanPlayer player, Fengsheng.add_robot_tos pb) {
-        if (!Config.IsGmEnable) {
-            player.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build());
-            return;
-        }
         synchronized (Game.class) {
             if (player.getGame().isStarted()) {
                 log.error("room is already full");
