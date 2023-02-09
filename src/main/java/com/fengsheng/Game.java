@@ -141,7 +141,7 @@ public final class Game {
                 if (players.length % 2 == 0) identities.add(Common.color.Black);
         }
         Collections.shuffle(identities, random);
-        List<Common.secret_task> tasks = Arrays.asList(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector);
+        List<Common.secret_task> tasks = Arrays.asList(Common.secret_task.Killer, Common.secret_task.Stealer, Common.secret_task.Collector, Common.secret_task.Mutator);
         Collections.shuffle(tasks, random);
         int secretIndex = 0;
         for (int i = 0; i < players.length; i++) {

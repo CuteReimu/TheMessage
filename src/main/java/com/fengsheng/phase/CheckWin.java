@@ -48,6 +48,7 @@ public class CheckWin implements Fsm {
     public ResolveResult resolve() {
         Game game = whoseTurn.getGame();
         Player stealer = null; // 簒夺者
+        Player mutator = null; // 诱变者
         List<Player> redPlayers = new ArrayList<>();
         List<Player> bluePlayers = new ArrayList<>();
         for (Player p : game.getPlayers()) {
@@ -55,6 +56,7 @@ public class CheckWin implements Fsm {
             switch (p.getIdentity()) {
                 case Black -> {
                     if (p.getSecretTask() == Common.secret_task.Stealer) stealer = p;
+                    else if (p.getSecretTask() == Common.secret_task.Mutator) mutator = p;
                 }
                 case Red -> redPlayers.add(p);
                 case Blue -> bluePlayers.add(p);
@@ -64,6 +66,7 @@ public class CheckWin implements Fsm {
         List<Player> winner = new ArrayList<>();
         boolean redWin = false;
         boolean blueWin = false;
+        boolean mutatorMayWin = false;
         for (Player player : game.getPlayers()) {
             if (player.isLose()) continue;
             int red = 0;
@@ -74,24 +77,28 @@ public class CheckWin implements Fsm {
                     else if (color == Common.color.Blue) blue++;
                 }
             }
+            if (red >= 3 && blue >= 3) {
+                mutatorMayWin = true;
+            }
             switch (player.getIdentity()) {
-                case Black:
+                case Black -> {
                     if (player.getSecretTask() == Common.secret_task.Collector && (red >= 3 || blue >= 3)) {
                         declareWinner.add(player);
                         winner.add(player);
                     }
-                    break;
-                case Red:
+                }
+                case Red -> {
                     if (red >= 3) {
                         declareWinner.add(player);
                         redWin = true;
                     }
-                    break;
-                case Blue:
+                }
+                case Blue -> {
                     if (blue >= 3) {
                         declareWinner.add(player);
                         blueWin = true;
                     }
+                }
             }
         }
         if (redWin) {
@@ -101,6 +108,10 @@ public class CheckWin implements Fsm {
         if (blueWin) {
             winner.addAll(bluePlayers);
             if (game.getPlayers().length == 4) winner.addAll(redPlayers);
+        }
+        if (declareWinner.isEmpty() && mutator != null && mutatorMayWin) {
+            declareWinner.add(mutator);
+            winner.add(mutator);
         }
         if (!declareWinner.isEmpty() && stealer != null && stealer == whoseTurn) {
             declareWinner = List.of(stealer);
