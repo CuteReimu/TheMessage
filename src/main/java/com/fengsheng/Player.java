@@ -356,6 +356,7 @@ public interface Player {
                 case Stealer -> "神秘人[簒夺者]";
                 case Collector -> "神秘人[双重间谍]";
                 case Mutator -> "神秘人[诱变者]";
+                case Pioneer -> "神秘人[先行者]";
                 default -> throw new RuntimeException("unknown secret task: " + task);
             };
             case Has_No_Identity -> "无身份";

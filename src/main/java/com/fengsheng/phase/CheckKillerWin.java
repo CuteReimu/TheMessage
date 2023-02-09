@@ -36,6 +36,8 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
                 break;
             }
         }
+        List<Player> declaredWinner = new ArrayList<>();
+        List<Player> winner = new ArrayList<>();
         if (whoseTurn == killer) {
             for (Player whoDie : diedQueue) {
                 int count = 0;
@@ -48,24 +50,52 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
                     }
                 }
                 if (count >= 2) {
-                    List<Player> winner = new ArrayList<>();
+                    declaredWinner.add(killer);
                     winner.add(killer);
-                    if (killer.findSkill(SkillId.WEI_SHENG) != null && killer.isRoleFaceUp()) {
-                        for (Player p : players) {
-                            if (!p.isLose() && p.getIdentity() == Common.color.Has_No_Identity) {
-                                winner.add(p);
-                            }
-                        }
-                    }
-                    Player[] winners = winner.toArray(new Player[0]);
-                    log.info(killer + "宣告胜利，胜利者有" + Arrays.toString(winners));
-                    whoseTurn.getGame().allPlayerSetRoleFaceUp();
-                    for (Player p : players)
-                        p.notifyWin(new Player[]{killer}, winners);
-                    whoseTurn.getGame().end(winner);
-                    return new ResolveResult(null, false);
                 }
             }
+        }
+        for (Player whoDie : diedQueue) {
+            if (whoDie.getIdentity() == Common.color.Black && whoDie.getSecretTask() == Common.secret_task.Pioneer) {
+                int count = 0;
+                for (Card card : whoDie.getMessageCards().values()) {
+                    for (Common.color color : card.getColors()) {
+                        if (color != Common.color.Black) {
+                            count++;
+                            break;
+                        }
+                    }
+                }
+                if (count >= 1) {
+                    declaredWinner.add(whoDie);
+                    winner.add(whoDie);
+                }
+                break;
+            }
+        }
+        if (!declaredWinner.isEmpty()) {
+            boolean hasGuXiaoMeng = false;
+            for (Player p : winner) {
+                if (p.findSkill(SkillId.WEI_SHENG) != null && p.isRoleFaceUp()) {
+                    hasGuXiaoMeng = true;
+                    break;
+                }
+            }
+            if (hasGuXiaoMeng) {
+                for (Player p : players) {
+                    if (!p.isLose() && p.getIdentity() == Common.color.Has_No_Identity) {
+                        winner.add(p);
+                    }
+                }
+            }
+            Player[] declaredWinners = declaredWinner.toArray(new Player[0]);
+            Player[] winners = winner.toArray(new Player[0]);
+            log.info(Arrays.toString(declaredWinners) + "宣告胜利，胜利者有" + Arrays.toString(winners));
+            whoseTurn.getGame().allPlayerSetRoleFaceUp();
+            for (Player p : players)
+                p.notifyWin(declaredWinners, winners);
+            whoseTurn.getGame().end(winner);
+            return new ResolveResult(null, false);
         }
         Player alivePlayer = null;
         for (Player p : players) {
