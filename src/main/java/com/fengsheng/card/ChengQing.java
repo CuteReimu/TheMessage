@@ -118,6 +118,8 @@ public class ChengQing extends Card {
 
     public static boolean ai(MainPhaseIdle e, Card card) {
         Player player = e.player();
+        if (player.getGame().getQiangLingTypes().contains(Common.card_type.Cheng_Qing))
+            return false;
         List<PlayerAndCard> playerAndCards = new ArrayList<>();
         var identity = player.getIdentity();
         for (Player p : player.getGame().getPlayers()) {

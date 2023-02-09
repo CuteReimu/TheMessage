@@ -99,6 +99,8 @@ public class JieHuo extends Card {
 
     public static boolean ai(FightPhaseIdle e, Card card) {
         Player player = e.whoseFightTurn;
+        if (player.getGame().getQiangLingTypes().contains(Common.card_type.Jie_Huo))
+            return false;
         var colors = e.messageCard.getColors();
         if (e.inFrontOfWhom == player || (e.isMessageCardFaceUp || player == e.whoseTurn) && colors.size() == 1 && colors.get(0) == Common.color.Black)
             return false;

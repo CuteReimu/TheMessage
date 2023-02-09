@@ -143,6 +143,8 @@ public class PoYi extends Card {
 
     public static boolean ai(SendPhaseIdle e, Card card) {
         Player player = e.inFrontOfWhom;
+        if (player.getGame().getQiangLingTypes().contains(Common.card_type.Po_Yi))
+            return false;
         if (player == e.whoseTurn || e.isMessageCardFaceUp) return false;
         if (ThreadLocalRandom.current().nextBoolean()) return false;
         GameExecutor.post(player.getGame(), () -> card.execute(player.getGame(), player), 2, TimeUnit.SECONDS);
