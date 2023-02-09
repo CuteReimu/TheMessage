@@ -478,3 +478,37 @@ message use_wu_dao_toc {
 message end_receive_phase_tos {
   uint32 seq = 1;
 }
+
+// 使用风云变幻
+message use_feng_yun_bian_huan_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 通知所有人使用风云变幻，并翻牌
+message use_feng_yun_bian_huan_toc {
+  card          card = 1; // 用的那张风云变幻牌
+  uint32        player_id = 2; // 使用者
+  repeated card show_cards = 3; // 翻开的牌
+}
+
+// 通知客户端，风云变幻轮到谁选牌了
+message notify_feng_yun_bian_huan_choose_card_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 风云变幻选牌
+message feng_yun_bian_huan_choose_card_tos {
+  uint32 card_id = 1; // 选的牌
+  bool   as_message_card = 2; // 是否作为情报牌
+  uint32 seq = 3;
+}
+
+// 通知客户端，风云变幻谁选了什么牌
+message feng_yun_bian_huan_choose_card_toc {
+  uint32 player_id = 1;
+  uint32 card_id = 2;
+  bool   as_message_card = 3; // 是否作为情报牌
+}
