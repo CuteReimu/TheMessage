@@ -258,7 +258,7 @@ public class DuJi extends AbstractSkill implements ActiveSkill {
             return false;
         List<Player> players = new ArrayList<>();
         for (Player p : player.getGame().getPlayers()) {
-            if (p != player && p.isAlive())
+            if (p != player && p.isAlive() && !p.getCards().isEmpty())
                 players.add(p);
         }
         int playerCount = players.size();

@@ -179,7 +179,7 @@ public class SouJi extends AbstractSkill implements ActiveSkill {
             return false;
         Player p = players.get(ThreadLocalRandom.current().nextInt(players.size()));
         GameExecutor.post(player.getGame(), () -> skill.executeProtocol(
-                player.getGame(), player, Role.skill_sou_ji_a_tos.newBuilder().setTargetPlayerId(p.location()).build()
+                player.getGame(), player, Role.skill_sou_ji_a_tos.newBuilder().setTargetPlayerId(player.getAlternativeLocation(p.location())).build()
         ), 2, TimeUnit.SECONDS);
         return true;
     }
