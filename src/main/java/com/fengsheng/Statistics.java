@@ -7,6 +7,9 @@ import com.fengsheng.skill.RoleCache;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +28,7 @@ public class Statistics {
     private final ExecutorService pool = Executors.newSingleThreadExecutor();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private final Map<String, PlayerGameCount> playerGameCount = new ConcurrentHashMap<>();
+    private final Map<String, PlayerInfo> playerInfoMap = new ConcurrentHashMap<>();
     private final AtomicInteger totalWinCount = new AtomicInteger();
     private final AtomicInteger totalGameCount = new AtomicInteger();
     private final Map<String, Long> trialStartTime = new ConcurrentHashMap<>();
@@ -65,27 +69,27 @@ public class Statistics {
                 for (PlayerGameResult count : playerGameResultList) {
                     if (count.isWin) {
                         win++;
-                        if (trialStartTime.remove(count.deviceId) != null)
+                        if (trialStartTime.remove(count.player.getDevice()) != null)
                             updateTrial = true;
                     }
                     game++;
-                    playerGameCount.compute(count.deviceId, (k, v) -> {
+                    playerInfoMap.computeIfPresent(count.player.getPlayerName(), (k, v) -> {
                         int addWin = count.isWin ? 1 : 0;
-                        if (v == null)
-                            return new PlayerGameCount(addWin, 1);
-                        return new PlayerGameCount(v.winCount + addWin, v.gameCount + 1);
+                        return new PlayerInfo(v.name, v.deviceId, v.password, v.winCount + addWin, v.gameCount + 1);
                     });
                 }
                 totalWinCount.addAndGet(win);
                 totalGameCount.addAndGet(game);
                 StringBuilder sb = new StringBuilder();
-                for (Map.Entry<String, PlayerGameCount> entry : playerGameCount.entrySet()) {
-                    PlayerGameCount count = entry.getValue();
-                    sb.append(count.winCount).append(',');
-                    sb.append(count.gameCount).append(',');
-                    sb.append(entry.getKey()).append('\n');
+                for (Map.Entry<String, PlayerInfo> entry : playerInfoMap.entrySet()) {
+                    PlayerInfo info = entry.getValue();
+                    sb.append(info.winCount).append(',');
+                    sb.append(info.gameCount).append(',');
+                    sb.append(info.name).append(',');
+                    sb.append(info.deviceId).append(',');
+                    sb.append(info.password).append('\n');
                 }
-                writeFile("player.csv", sb.toString().getBytes());
+                writeFile("playerInfo.csv", sb.toString().getBytes());
                 if (updateTrial) {
                     sb = new StringBuilder();
                     for (Map.Entry<String, Long> entry : trialStartTime.entrySet()) {
@@ -100,8 +104,62 @@ public class Statistics {
         });
     }
 
-    public PlayerGameCount getPlayerGameCount(String deviceId) {
-        return playerGameCount.get(deviceId);
+    public PlayerInfo login(String name, String deviceId, String pwd) {
+        final String password;
+        try {
+            password = pwd == null || pwd.isEmpty() ? "" : md5(name + pwd);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("md5加密失败", e);
+            return null;
+        }
+        PlayerInfo playerInfo = playerInfoMap.get(name);
+        if (playerInfo == null) {
+            playerInfo = new PlayerInfo(name, deviceId, password, 0, 0);
+            PlayerInfo playerInfo2 = playerInfoMap.putIfAbsent(name, playerInfo);
+            if (playerInfo2 != null) playerInfo = playerInfo2;
+        }
+        if (playerInfo.password == null || playerInfo.password.isEmpty())
+            playerInfo = new PlayerInfo(playerInfo.name, playerInfo.deviceId, password, playerInfo.winCount, playerInfo.gameCount);
+        if (!password.equals(playerInfo.password))
+            return null;
+        // 对旧数据进行兼容
+        final PlayerInfo[] finalPlayerInfo = {playerInfo};
+        playerGameCount.computeIfPresent(deviceId, (k, v) -> {
+            int gameCount = finalPlayerInfo[0].gameCount + v.gameCount;
+            int winCount = finalPlayerInfo[0].winCount + v.winCount;
+            finalPlayerInfo[0] = new PlayerInfo(name, deviceId, password, gameCount, winCount);
+            return null;
+        });
+        if (finalPlayerInfo[0] != playerInfo) {
+            playerInfoMap.put(name, finalPlayerInfo[0]);
+            pool.submit(() -> {
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<String, PlayerInfo> entry : playerInfoMap.entrySet()) {
+                    PlayerInfo info = entry.getValue();
+                    sb.append(info.winCount).append(',');
+                    sb.append(info.gameCount).append(',');
+                    sb.append(info.name).append(',');
+                    sb.append(info.deviceId).append(',');
+                    sb.append(info.password).append('\n');
+                }
+                writeFile("playerInfo.csv", sb.toString().getBytes());
+                sb = new StringBuilder();
+                for (Map.Entry<String, PlayerGameCount> entry : playerGameCount.entrySet()) {
+                    PlayerGameCount count = entry.getValue();
+                    sb.append(count.winCount).append(',');
+                    sb.append(count.gameCount).append(',');
+                    sb.append(entry.getKey()).append('\n');
+                }
+                writeFile("player.csv", sb.toString().getBytes());
+            });
+        }
+        return playerInfo;
+    }
+
+    public PlayerGameCount getPlayerGameCount(String name) {
+        PlayerInfo playerInfo = playerInfoMap.get(name);
+        if (playerInfo == null) return null;
+        return new PlayerGameCount(playerInfo.winCount, playerInfo.gameCount);
     }
 
     public PlayerGameCount getTotalPlayerGameCount() {
@@ -109,8 +167,6 @@ public class Statistics {
     }
 
     public void load() throws IOException {
-        int winCount = 0;
-        int gameCount = 0;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("player.csv")))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -118,9 +174,25 @@ public class Statistics {
                 String deviceId = a[2];
                 int win = Integer.parseInt(a[0]);
                 int game = Integer.parseInt(a[1]);
-                PlayerGameCount oldCount = playerGameCount.put(deviceId, new PlayerGameCount(win, game));
-                winCount += oldCount == null ? win : win - oldCount.winCount;
-                gameCount += oldCount == null ? game : game - oldCount.gameCount;
+                playerGameCount.put(deviceId, new PlayerGameCount(win, game));
+            }
+        } catch (FileNotFoundException ignored) {
+        }
+        int winCount = 0;
+        int gameCount = 0;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("playerInfo.csv")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] a = line.split(",", 5);
+                String password = a[4];
+                String deviceId = a[3];
+                String name = a[2];
+                int win = Integer.parseInt(a[0]);
+                int game = Integer.parseInt(a[1]);
+                if (playerInfoMap.put(name, new PlayerInfo(name, deviceId, password, win, game)) != null)
+                    throw new RuntimeException("数据错误，有重复的玩家name");
+                winCount += win;
+                gameCount += game;
             }
         } catch (FileNotFoundException ignored) {
         }
@@ -276,11 +348,15 @@ public class Statistics {
 
     }
 
-    public record PlayerGameResult(String deviceId, boolean isWin) {
+    public record PlayerGameResult(HumanPlayer player, boolean isWin) {
 
     }
 
     public record PlayerGameCount(int winCount, int gameCount) {
+
+    }
+
+    public record PlayerInfo(String name, String deviceId, String password, int winCount, int gameCount) {
 
     }
 
@@ -336,5 +412,24 @@ public class Statistics {
                 writer.newLine();
             }
         }
+    }
+
+    private final static char[] hexDigests = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    private static String md5(String s) throws NoSuchAlgorithmException {
+        byte[] in = s.getBytes(StandardCharsets.UTF_8);
+        MessageDigest messageDigest = MessageDigest.getInstance("md5");
+        messageDigest.update(in);
+        // 获得密文
+        byte[] md = messageDigest.digest();
+        // 将密文转换成16进制字符串形式
+        int j = md.length;
+        char[] str = new char[j * 2];
+        int k = 0;
+        for (byte b : md) {
+            str[k++] = hexDigests[b >>> 4 & 0xf]; // 高4位
+            str[k++] = hexDigests[b & 0xf]; // 低4位
+        }
+        return new String(str);
     }
 }

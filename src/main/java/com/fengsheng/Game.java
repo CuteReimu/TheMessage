@@ -181,7 +181,7 @@ public final class Game {
                 boolean win = winners.contains(p);
                 records.add(new Statistics.Record(p.getRole(), win, p.getOriginIdentity(), p.getOriginSecretTask(), players.length));
                 if (p instanceof HumanPlayer humanPlayer)
-                    playerGameResultList.add(new Statistics.PlayerGameResult(humanPlayer.getDevice(), win));
+                    playerGameResultList.add(new Statistics.PlayerGameResult(humanPlayer, win));
             }
             Statistics.getInstance().add(records);
             Statistics.getInstance().addPlayerGameCount(playerGameResultList);

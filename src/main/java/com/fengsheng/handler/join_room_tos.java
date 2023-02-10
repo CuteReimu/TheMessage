@@ -68,22 +68,29 @@ public class join_room_tos implements ProtoHandler {
                 if (oldPlayer2 != null && oldPlayer2.getGame() == Game.getInstance() && playerName.equals(oldPlayer2.getPlayerName())) {
                     log.warn("怀疑连续发送了两次连接请求。为了游戏体验，拒绝本次连接。想要单设备双开请修改不同的用户名。");
                     reply = Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.join_room_too_fast).build();
+                } else if (playerName.isBlank() || playerName.contains(",") || playerName.contains("\n") || playerName.contains("\r")) {
+                    reply = Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.login_failed).build();
                 } else {
-                    player.setPlayerName(playerName.isBlank() ? "没起名字的玩家" : playerName);
-                    player.setGame(Game.getInstance());
-                    Statistics.PlayerGameCount count = Statistics.getInstance().getPlayerGameCount(player.getDevice());
-                    player.getGame().onPlayerJoinRoom(player, count);
-                    var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location()).setOnlineCount(Game.deviceCache.size());
-                    for (Player p : player.getGame().getPlayers()) {
-                        builder.addNames(p != null ? p.getPlayerName() : "");
-                        Statistics.PlayerGameCount count1 = null;
-                        if (p instanceof HumanPlayer humanPlayer)
-                            count1 = Statistics.getInstance().getPlayerGameCount(humanPlayer.getDevice());
-                        else if (p instanceof RobotPlayer)
-                            count1 = Statistics.getInstance().getTotalPlayerGameCount();
-                        builder.addWinCounts(count1 == null ? 0 : count1.winCount());
+                    Statistics.PlayerInfo playerInfo = Statistics.getInstance().login(playerName, pb.getDevice(), pb.getPassword());
+                    if (playerInfo == null) {
+                        reply = Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.login_failed).build();
+                    } else {
+                        player.setPlayerName(playerName);
+                        player.setGame(Game.getInstance());
+                        Statistics.PlayerGameCount count = new Statistics.PlayerGameCount(playerInfo.winCount(), playerInfo.gameCount());
+                        player.getGame().onPlayerJoinRoom(player, count);
+                        var builder = Fengsheng.get_room_info_toc.newBuilder().setMyPosition(player.location()).setOnlineCount(Game.deviceCache.size());
+                        for (Player p : player.getGame().getPlayers()) {
+                            builder.addNames(p != null ? p.getPlayerName() : "");
+                            Statistics.PlayerGameCount count1 = null;
+                            if (p instanceof HumanPlayer humanPlayer)
+                                count1 = Statistics.getInstance().getPlayerGameCount(humanPlayer.getPlayerName());
+                            else if (p instanceof RobotPlayer)
+                                count1 = Statistics.getInstance().getTotalPlayerGameCount();
+                            builder.addWinCounts(count1 == null ? 0 : count1.winCount());
+                        }
+                        reply = builder.build();
                     }
-                    reply = builder.build();
                 }
             }
         }

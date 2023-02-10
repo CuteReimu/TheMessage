@@ -18,4 +18,5 @@ enum error_code {
   robot_not_allowed = 7; // 禁止添加机器人
   already_online = 8; // 你已经在线，不能重复登录
   no_color_message_card = 9; // 场上没有这种颜色的情报
+  login_failed = 10; // 登录失败
 }
