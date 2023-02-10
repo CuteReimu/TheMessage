@@ -493,7 +493,7 @@ message use_feng_yun_bian_huan_toc {
 }
 
 // 通知客户端，风云变幻轮到谁选牌了
-message notify_feng_yun_bian_huan_choose_card_toc {
+message wait_for_feng_yun_bian_huan_choose_card_toc {
   uint32 player_id = 1;
   uint32 waiting_second = 2;
   uint32 seq = 3;
