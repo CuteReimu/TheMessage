@@ -56,6 +56,7 @@ enum card_type {
   Jie_Huo = 6; // 截获
   Diao_Bao = 7; // 调包
   Wu_Dao = 8; // 误导
+  Feng_Yun_Bian_Huan = 9;
 }
 
 enum color {
