@@ -77,7 +77,7 @@ public class CheckWin implements Fsm {
                     else if (color == Common.color.Blue) blue++;
                 }
             }
-            if (red >= 3 && blue >= 3) {
+            if (red >= 3 || blue >= 3) {
                 mutatorMayWin = true;
             }
             switch (player.getIdentity()) {
