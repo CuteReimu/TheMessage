@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'io.netty', name: 'netty-all', version: '4.1.87.Final'
+    implementation group: 'io.netty', name: 'netty-all', version: '4.1.88.Final'
     implementation 'com.google.protobuf:protobuf-java:3.21.12'
     implementation 'log4j:log4j:1.2.17'
 }
