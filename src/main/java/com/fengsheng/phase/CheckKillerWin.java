@@ -29,12 +29,11 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
         if (diedQueue.isEmpty())
             return new ResolveResult(afterDieResolve, true);
         Player[] players = whoseTurn.getGame().getPlayers();
-        Player killer = null;
+        Player killer = null, stealer = null;
         for (Player p : players) {
-            if (p.getIdentity() == Common.color.Black && p.getSecretTask() == Common.secret_task.Killer) {
-                if (!p.isLose()) killer = p;
-                break;
-            }
+            if (p.isLose() || p.getIdentity() != Common.color.Black) continue;
+            if (p.getSecretTask() == Common.secret_task.Killer) killer = p;
+            else if (p.getSecretTask() == Common.secret_task.Stealer) stealer = p;
         }
         List<Player> declaredWinner = new ArrayList<>();
         List<Player> winner = new ArrayList<>();
@@ -72,6 +71,10 @@ public record CheckKillerWin(Player whoseTurn, List<Player> diedQueue, Fsm after
                 }
                 break;
             }
+        }
+        if (!declaredWinner.isEmpty() && stealer != null && stealer == whoseTurn) {
+            declaredWinner = List.of(stealer);
+            winner = new ArrayList<>(declaredWinner);
         }
         if (!declaredWinner.isEmpty()) {
             boolean hasGuXiaoMeng = false;
