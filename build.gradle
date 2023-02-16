@@ -11,6 +11,7 @@ plugins {
     id 'java'
     id 'idea'
     id 'com.google.protobuf' version "0.9.2"
+    id 'com.github.johnrengelman.shadow' version "7.1.2"
 }
 
 group 'com.fengsheng'
@@ -46,20 +47,14 @@ task stat(dependsOn: classes, type: JavaExec) {
     classpath(sourceSets.main.runtimeClasspath)
 }
 
-tasks.withType(Jar) {
-    // Otherwise you'll get a "No main manifest attribute" error
+jar {
     manifest {
-        attributes["Main-Class"] = "com.fengsheng.Game"
+        attributes 'Main-Class': 'com.fengsheng.Game'
     }
+}
 
-    // To avoid the duplicate handling strategy error
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    // To add all of the dependencies otherwise a "NoClassDefFoundError" error
-    from(sourceSets.main.output)
-
-    dependsOn(configurations.runtimeClasspath)
-    from({
-        configurations.runtimeClasspath.filter { it.name.endsWith("jar") }.forEach { zipTree(it) }
-    })
+shadowJar {
+    minimize {
+        exclude("*.proto")
+    }
 }
