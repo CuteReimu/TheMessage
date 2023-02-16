@@ -11,6 +11,7 @@ plugins {
     id 'java'
     id 'idea'
     id 'com.google.protobuf' version "0.9.2"
+    id 'com.github.johnrengelman.shadow' version "7.1.2"
 }
 
 group 'com.fengsheng'
@@ -44,4 +45,10 @@ task run(dependsOn: classes, type: JavaExec) {
 task stat(dependsOn: classes, type: JavaExec) {
     main("com.fengsheng.Statistics")
     classpath(sourceSets.main.runtimeClasspath)
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.fengsheng.Game'
+    }
 }
