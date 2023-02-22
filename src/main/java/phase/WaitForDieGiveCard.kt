@@ -1,8 +1,8 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Fsmimport
-
-com.fengsheng.Playerimport com.fengsheng.ResolveResult
+import com.fengsheng.Fsm
+import com.fengsheng.Player
+import com.fengsheng.ResolveResult
 /**
  * 等待死亡角色给三张牌
  */
@@ -32,8 +32,8 @@ class WaitForDieGiveCard(
         if (diedIndex >= diedQueue.size) return ResolveResult(CheckWin(whoseTurn, receiveOrder, afterDieResolve), true)
         val whoDie = diedQueue[diedIndex]
         if (whoDie!!.cards.isEmpty()) return ResolveResult(AfterDieGiveCard(this), true)
-        for (p in whoDie.game.players) {
-            p.waitForDieGiveCard(whoDie, 20)
+        for (p in whoDie.game!!.players) {
+            p!!.waitForDieGiveCard(whoDie, 20)
         }
         return null
     }

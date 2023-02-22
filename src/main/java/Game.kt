@@ -1,10 +1,10 @@
 package com.fengsheng
 
-import com.fengsheng.*
 import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.Statistics.PlayerGameResult
-import com.fengsheng.card.*
-import com.fengsheng.network.*
+import com.fengsheng.card.Card
+import com.fengsheng.card.Deck
+import com.fengsheng.networkimport.Network
 import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
@@ -13,12 +13,14 @@ import com.fengsheng.skill.TriggeredSkill
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.io.IOException
-import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
+import kotlin.math.max
+import kotlin.random.Random
 
 class Game private constructor(totalPlayerCount: Int) {
 
-    val id: Int
+    val id: Int = ++increaseId
 
     @Volatile
     var isStarted = false
@@ -30,7 +32,7 @@ class Game private constructor(totalPlayerCount: Int) {
     var deck: Deck? = null
     var fsm: Fsm? = null
         private set
-    private val listeningSkills: MutableList<TriggeredSkill> = ArrayList()
+    private val listeningSkills = ArrayList<TriggeredSkill>()
 
     /**
      * 用于王田香技能禁闭
@@ -42,11 +44,10 @@ class Game private constructor(totalPlayerCount: Int) {
     /**
      * 用于张一挺技能强令
      */
-    val qiangLingTypes: Set<card_type> = EnumSet.noneOf<card_type>(card_type::class.java)
+    val qiangLingTypes = HashSet<card_type>()
 
     init {
         // 调用构造函数时加锁了，所以increaseId无需加锁
-        id = ++Game.Companion.increaseId
         players = arrayOfNulls(totalPlayerCount)
     }
 
@@ -58,10 +59,10 @@ class Game private constructor(totalPlayerCount: Int) {
         for (index in players.indices) {
             if (players[index] == null && ++unready == 0) {
                 players[index] = player
-                player.setLocation(index)
+                player.location = index
             }
         }
-        val builder = join_room_toc.newBuilder().setName(player.playerName).setPosition(player.location())
+        val builder = join_room_toc.newBuilder().setName(player.playerName).setPosition(player.location)
         if (count != null) {
             builder.winCount = count.winCount
             builder.gameCount = count.gameCount
@@ -75,22 +76,21 @@ class Game private constructor(totalPlayerCount: Int) {
         if (unready == 0) {
             log.info(player.playerName + "加入了。已加入" + players.size + "个人，游戏开始。。。")
             isStarted = true
-            GameExecutor.post(this, Runnable { start() })
-            newInstance()
+            GameExecutor.post(this) { start() }
+            newGame = newInstance()
         } else {
             log.info(player.playerName + "加入了。已加入" + (players.size - unready) + "个人，等待" + unready + "人加入。。。")
         }
     }
 
     fun start() {
-        val random: Random = ThreadLocalRandom.current()
-        var identities: MutableList<color?> = ArrayList()
+        var identities = ArrayList<color>()
         when (players.size) {
-            2 -> identities = when (random.nextInt(4)) {
-                0 -> listOf(color.Red, color.Blue)
-                1 -> listOf(color.Red, color.Black)
-                2 -> listOf(color.Blue, color.Black)
-                else -> listOf(color.Black, color.Black)
+            2 -> identities = when (Random.nextInt(4)) {
+                0 -> arrayListOf(color.Red, color.Blue)
+                1 -> arrayListOf(color.Red, color.Black)
+                2 -> arrayListOf(color.Blue, color.Black)
+                else -> arrayListOf(color.Black, color.Black)
             }
 
             9 -> {
@@ -129,15 +129,14 @@ class Game private constructor(totalPlayerCount: Int) {
                 if (players.size % 2 == 0) identities.add(color.Black)
             }
         }
-        Collections.shuffle(identities, random)
-        val tasks = Arrays.asList(
+        identities.shuffle()
+        val tasks = listOf(
             secret_task.Killer,
             secret_task.Stealer,
             secret_task.Collector,
             secret_task.Mutator,
             secret_task.Pioneer
-        )
-        Collections.shuffle(tasks, random)
+        ).shuffled()
         var secretIndex = 0
         for (i in players.indices) {
             val identity = identities[i]
@@ -156,26 +155,26 @@ class Game private constructor(totalPlayerCount: Int) {
 
     fun end(winners: List<Player?>?) {
         isEnd = true
-        Game.Companion.GameCache.remove(id)
+        GameCache.remove(id)
         var isHumanGame = true
         for (p in players) {
             if (p is HumanPlayer) {
                 p.saveRecord()
-                Game.Companion.deviceCache.remove(p.device)
+                deviceCache.remove(p.device)
             } else {
                 isHumanGame = false
             }
         }
         if (winners != null && isHumanGame && players.size >= 5) {
-            val records: MutableList<Statistics.Record> = ArrayList(players.size)
-            val playerGameResultList: MutableList<PlayerGameResult> = ArrayList()
+            val records = ArrayList<Statistics.Record>(players.size)
+            val playerGameResultList = ArrayList<PlayerGameResult>()
             for (p in players) {
-                val win = winners.contains(p)
-                records.add(Statistics.Record(p!!.role, win, p.originIdentity, p.originSecretTask, players.size))
+                val win = winners.contains(p!!)
+                records.add(Statistics.Record(p.role, win, p.originIdentity, p.originSecretTask, players.size))
                 if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p, win))
             }
-            Statistics.Companion.getInstance().add(records)
-            Statistics.Companion.getInstance().addPlayerGameCount(playerGameResultList)
+            Statistics.add(records)
+            Statistics.addPlayerGameCount(playerGameResultList)
         }
     }
 
@@ -183,15 +182,13 @@ class Game private constructor(totalPlayerCount: Int) {
      * 玩家弃牌
      */
     fun playerDiscardCard(player: Player, vararg cards: Card) {
-        if (cards.size == 0) return
-        for (card in cards) {
-            player.deleteCard(card.id)
-        }
-        Game.Companion.log.info(player.toString() + "弃掉了" + Arrays.toString(cards) + "，剩余手牌" + player.cards.size + "张")
+        if (cards.isEmpty()) return
+        player.cards.removeAll(cards.toSet())
+        log.info("${player}弃掉了${cards.contentToString()}，剩余手牌${player.cards.size}张")
         deck!!.discard(*cards)
         for (p in players) {
             if (p is HumanPlayer) {
-                val builder = discard_card_toc.newBuilder().setPlayerId(p.getAlternativeLocation(player.location()))
+                val builder = discard_card_toc.newBuilder().setPlayerId(p.getAlternativeLocation(player.location))
                 for (card in cards) {
                     builder.addCards(card.toPbCard())
                 }
@@ -202,26 +199,18 @@ class Game private constructor(totalPlayerCount: Int) {
 
     fun playerSetRoleFaceUp(player: Player?, faceUp: Boolean) {
         if (faceUp) {
-            if (player!!.isRoleFaceUp) Game.Companion.log.error(
-                player.toString() + "本来就是正面朝上的",
-                RuntimeException()
-            ) else Game.Companion.log.info(player.toString() + "将角色翻至正面朝上")
-            player.isRoleFaceUp = true
+            log.error(if (player!!.roleFaceUp) "${player}本来就是正面朝上的" else "${player}将角色翻至正面朝上")
+            player.roleFaceUp = true
         } else {
-            if (!player!!.isRoleFaceUp) Game.Companion.log.error(
-                player.toString() + "本来就是背面朝上的",
-                RuntimeException()
-            ) else Game.Companion.log.info(player.toString() + "将角色翻至背面朝上")
-            player.isRoleFaceUp = false
+            log.error(if (player!!.roleFaceUp) "${player}本来就是背面朝上的" else "${player}将角色翻至背面朝上")
+            player.roleFaceUp = false
         }
         for (p in players) {
             if (p is HumanPlayer) {
                 val builder = notify_role_update_toc.newBuilder().setPlayerId(
-                    p.getAlternativeLocation(
-                        player.location()
-                    )
+                    p.getAlternativeLocation(player.location)
                 )
-                builder.role = if (player.isRoleFaceUp) player.role else role.unknown
+                builder.role = if (player.roleFaceUp) player.role else role.unknown
                 p.send(builder.build())
             }
         }
@@ -229,7 +218,7 @@ class Game private constructor(totalPlayerCount: Int) {
 
     fun allPlayerSetRoleFaceUp() {
         for (p in players) {
-            if (!p!!.isRoleFaceUp) playerSetRoleFaceUp(p, true)
+            if (!p!!.roleFaceUp) playerSetRoleFaceUp(p, true)
         }
     }
 
@@ -251,10 +240,10 @@ class Game private constructor(totalPlayerCount: Int) {
     /**
      * 对于[WaitingFsm]，当收到玩家协议时，继续处理当前状态机
      */
-    fun tryContinueResolveProtocol(player: Player?, pb: GeneratedMessageV3?) {
-        GameExecutor.Companion.post(this, Runnable {
+    fun tryContinueResolveProtocol(player: Player, pb: GeneratedMessageV3) {
+        GameExecutor.post(this) {
             if (fsm !is WaitingFsm) {
-                Game.Companion.log.error("时机错误，当前时点为：$fsm")
+                log.error("时机错误，当前时点为：$fsm")
                 return@post
             }
             val result = (fsm as WaitingFsm).resolveProtocol(player, pb)
@@ -264,7 +253,7 @@ class Game private constructor(totalPlayerCount: Int) {
                     continueResolve()
                 }
             }
-        })
+        }
     }
 
     /**
@@ -304,33 +293,21 @@ class Game private constructor(totalPlayerCount: Int) {
         private val log = Logger.getLogger(Game::class.java)
         val GameCache: ConcurrentMap<Int, Game> = ConcurrentHashMap()
         val deviceCache: ConcurrentMap<String, HumanPlayer> = ConcurrentHashMap()
-        private const val increaseId = 0
-        private val newGame: Game? = null
+        private var increaseId = 0
+        var newGame = newInstance()
 
         /**
          * 不是线程安全的
          */
-        fun newInstance() {
-            Game.Companion.newGame = Game(
-                Math.max(
-                    if (Game.Companion.newGame != null) Game.Companion.newGame.getPlayers().size else 0,
-                    Config.TotalPlayerCount
-                )
-            )
+        fun newInstance(): Game {
+            return Game(max(newGame.players.size, Config.TotalPlayerCount))
         }
-
-        val instance: Game
-            /**
-             * 不是线程安全的
-             */
-            get() = Game.Companion.newGame
 
         @Throws(IOException::class, ClassNotFoundException::class)
         @JvmStatic
         fun main(args: Array<String>) {
             Class.forName("com.fengsheng.skill.RoleCache")
-            Statistics.Companion.getInstance().load()
-            synchronized(Game::class.java) { Game.Companion.newInstance() }
+            Statistics.load()
             Network.init()
         }
     }

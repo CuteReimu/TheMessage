@@ -1,11 +1,14 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.card.WuDaoimport
+import com.fengsheng.card.WuDao
+import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnUseCard
+import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
+import org.apache.log4j.Logger
+import java.util.concurrent.*
 
-com.fengsheng.phase.FightPhaseIdleimport com.fengsheng.phase.OnUseCardimport com.fengsheng.protos.Common.*import com.fengsheng.protos.Fengsheng.use_wu_dao_tocimport
-
-org.apache.log4j.Loggerimport java.util.concurrent.*
 class WuDao : Card {
     constructor(id: Int, colors: Array<color>, direction: direction, lockable: Boolean) : super(
         id,

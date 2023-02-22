@@ -2,57 +2,36 @@ package com.fengsheng.skill
 
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.role
-import java.util.*
 
-class RoleSkillsData(
-    /**
-     * 获取角色名
-     */
-    val name: String,
-    /**
-     * 获取角色对应协议中的枚举
-     */
-    val role: role, private val isFemale: Boolean,
-    /**
-     * 设置角色是否面朝上
-     */
-    var isFaceUp: Boolean, vararg skills: Skill
+data class RoleSkillsData(
+    val name: String, // 角色名
+    val role: role, // 角色对应协议中的枚举
+    private val female: Boolean, // 是否是女性角色
+    var isFaceUp: Boolean,// 角色是否面朝上
+    var skills: Array<Skill> // 角色技能
 ) {
-
-    /**
-     * 获取角色是否面朝上
-     */
-    /**
-     * 获取角色技能
-     */
-    /**
-     * 设置角色技能
-     */
-    var skills: Array<Skill>
-
     /**
      * 新建一个名字为“无角色”、没技能的隐藏角色
      */
-    constructor() : this("无角色", Common.role.unknown, false, false)
+    constructor() : this("无角色", Common.role.unknown, false, false, arrayOf())
 
-    /**
-     * 角色技能数据
-     *
-     * @param name   角色名
-     * @param role   角色对应协议中的枚举
-     * @param faceUp 角色是否面朝上
-     * @param skills 角色技能
-     */
-    init {
-        this.skills = Arrays.copyOf(skills, skills.size)
+    val isFemale: Boolean
+        get() {
+            return isFaceUp && female
+        }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RoleSkillsData
+
+        if (role != other.role) return false
+
+        return true
     }
 
-    constructor(data: RoleSkillsData) : this(data.name, data.role, data.isFemale, data.isFaceUp, *data.skills)
-
-    /**
-     * 获取角色是否是女性角色
-     */
-    fun isFemale(): Boolean {
-        return isFaceUp && isFemale
+    override fun hashCode(): Int {
+        return role.hashCode()
     }
 }

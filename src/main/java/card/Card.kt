@@ -97,6 +97,15 @@ abstract class Card {
         return false
     }
 
+    override fun hashCode(): Int {
+        return id
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is Card) return false
+        return other.id == id
+    }
+
     open fun toPbCard(): card? {
         val c = getOriginCard()
         return card.newBuilder().setCardId(c.id).setCardDir(c.direction).setCanLock(c.lockable).setCardType(
