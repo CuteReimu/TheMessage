@@ -1,0 +1,25 @@
+syntax = "proto3";
+option java_package = "com.fengsheng.protos";
+
+message record_file {
+  uint32                 client_version = 1;
+  repeated recorder_line lines = 2;
+}
+
+message recorder_line {
+  uint64 nano_time = 1;
+  string proto_name = 2;
+  bytes  message_buf = 3;
+}
+
+message player_order {
+  uint32 id = 1;
+  string device = 2;
+  string name = 3;
+  uint64 time = 4;
+}
+
+message player_orders {
+  map<uint32, player_order> orders = 1;
+  uint32 order_id = 2;
+}

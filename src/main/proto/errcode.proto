@@ -1,0 +1,22 @@
+syntax = "proto3";
+option java_package = "com.fengsheng.protos";
+
+message error_code_toc {
+  error_code      code = 1;
+  repeated int64  int_params = 2;
+  repeated string str_params = 3;
+}
+
+enum error_code {
+  client_version_not_match = 0; // 客户端版本号不匹配，int_params[0]为服务器版本号
+  no_more_room = 1; // 没有更多的房间了
+  record_not_exists = 2; // 录像不存在
+  load_record_failed = 3; // 读取录像失败了
+  record_version_not_match = 4; // 录像的版本号不匹配，，int_params[0]为录像的版本号
+  name_too_long = 5; // 玩家名字太长了
+  join_room_too_fast = 6; // 加入房间的请求太快了
+  robot_not_allowed = 7; // 禁止添加机器人
+  already_online = 8; // 你已经在线，不能重复登录
+  no_color_message_card = 9; // 场上没有这种颜色的情报
+  login_failed = 10; // 登录失败
+}

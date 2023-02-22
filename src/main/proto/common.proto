@@ -1,0 +1,92 @@
+syntax = "proto3";
+option java_package = "com.fengsheng.protos";
+
+enum role {
+  unknown = 0; // 未知角色
+  wu_zhi_guo = 1; // 吴志国
+  cheng_xiao_die = 2; // 程小蝶
+  lian_yuan = 3; // 连鸢
+  mao_bu_ba = 4; // 毛不拔
+  zhang_yi_ting = 5; // 张一挺
+  bai_cang_lang = 6; // 白沧浪
+  fei_yuan_long_chuan = 7; // 肥圆龙川
+  pei_ling = 8; // 裴玲
+  huang_ji_ren = 9; // 黄济仁
+  wang_tian_xiang = 10; // 王田香
+  li_xing = 11; // 李醒
+  wang_kui = 12; // 王魁
+  a_fu_luo_la = 13; // 阿芙罗拉
+  han_mei = 14; // 韩梅
+  zheng_wen_xian = 15; // 鄭文先
+  xuan_qing_zi = 16; // 玄青子
+  gui_jiao = 17; // 鬼脚
+  shao_xiu = 18; // 邵秀
+  jin_sheng_huo = 19; // 金生火
+  gu_xiao_meng = 20; // 顾小梦
+  bai_fei_fei = 21; // 白菲菲
+  duan_mu_jing = 22; // 端木静
+  wang_fu_gui = 23; // 王富贵
+  lao_han = 24; // 老汉
+  bai_xiao_nian = 25; // 白小年
+  lao_bie = 26; // 老鳖
+  xiao_jiu = 27; // 小九
+  li_ning_yu = 28; // 李宁玉
+  bai_kun_shan = 29; // 白昆山
+  shang_yu = 30; // 商玉
+  sp_gu_xiao_meng = 1020; // SP顾小梦
+  sp_li_ning_yu = 1028; // SP李宁玉
+}
+
+enum phase {
+  Draw_Phase = 0; // 摸牌阶段
+  Main_Phase = 1; // 出牌阶段
+  Send_Start_Phase = 2; // 情报传递阶段开始时
+  Send_Phase = 3; // 传递阶段
+  Fight_Phase = 4; // 争夺阶段
+  Receive_Phase = 5; // 接收阶段
+}
+
+enum card_type {
+  Cheng_Qing = 0; // 澄清
+  Shi_Tan = 1; // 试探
+  Wei_Bi = 2; // 威逼
+  Li_You = 3; // 利诱
+  Ping_Heng = 4; // 平衡
+  Po_Yi = 5; // 破译
+  Jie_Huo = 6; // 截获
+  Diao_Bao = 7; // 调包
+  Wu_Dao = 8; // 误导
+  Feng_Yun_Bian_Huan = 9;
+}
+
+enum color {
+  Black = 0; // 对于身份，则是绿色（神秘人）；对于卡牌，则是黑色
+  Red = 1;   // 红色
+  Blue = 2;  // 蓝色
+  Has_No_Identity = 3; // 失去身份
+}
+
+// 神秘人任务
+enum secret_task {
+  Killer = 0; // 你的回合中，一名红色和蓝色情报合计不少于2张的人死亡
+  Stealer = 1; // 你的回合中，有人宣胜，则你代替他胜利
+  Collector = 2; // 你获得3张红色情报或者3张蓝色情报
+  Mutator = 3; // 当一名角色收集了三张红色情报或三张蓝色情报后，若其没有宣告胜利，则你胜利
+  Pioneer = 4; // 你死亡时，已收集了至少一张红色情报或蓝色情报
+}
+
+enum direction {
+  Up = 0; // 向上
+  Left = 1; // 向左
+  Right = 2; // 向右
+}
+
+// 卡牌的结构体
+message card {
+  uint32         card_id = 1; // 卡牌ID
+  repeated color card_color = 2; // 卡牌颜色（因为可能有双色卡，所以用了repeated）
+  direction      card_dir = 3; // 卡牌上的箭头方向
+  card_type      card_type = 4; // 卡牌类型
+  repeated color who_draw_card = 5; // （试探卡）哪个身份的人摸1张牌（那么另外的身份一定是弃1张牌）
+  bool           can_lock = 6; // 是否有锁定标记
+}
