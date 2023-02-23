@@ -1,24 +1,24 @@
 package com.fengsheng.phase
 
-import com.fengsheng.*
-import com.fengsheng.protos.Common.card
+import com.fengsheng.Fsm
+import com.fengsheng.ResolveResult
+import org.apache.log4j.Logger
 
-org.apache.log4j.Logger
 /**
  * 濒死求澄清时，询问下一个人
  */
-class WaitNextForChengQing(waitForChengQing: WaitForChengQing) : Fsm {
-    override fun resolve(): ResolveResult? {
-        val game = waitForChengQing.askWhom.game
+data class WaitNextForChengQing(val waitForChengQing: WaitForChengQing) : Fsm {
+    override fun resolve(): ResolveResult {
+        val game = waitForChengQing.askWhom.game!!
         val players = game.players
-        var askWhom = waitForChengQing.askWhom.location()
+        var askWhom = waitForChengQing.askWhom.location
         while (true) {
             askWhom = (askWhom + 1) % players.size
-            if (askWhom == waitForChengQing.whoseTurn.location()) {
+            if (askWhom == waitForChengQing.whoseTurn.location) {
                 log.info("无人拯救，" + waitForChengQing.whoDie + "已死亡")
-                waitForChengQing.whoDie.isAlive = false
+                waitForChengQing.whoDie.alive = false
                 waitForChengQing.diedQueue.add(waitForChengQing.whoDie)
-                for (p in players) p.notifyDying(waitForChengQing.whoDie.location(), false)
+                for (p in players) p!!.notifyDying(waitForChengQing.whoDie.location, false)
                 return ResolveResult(
                     StartWaitForChengQing(
                         waitForChengQing.whoseTurn,
@@ -28,58 +28,10 @@ class WaitNextForChengQing(waitForChengQing: WaitForChengQing) : Fsm {
                     ), true
                 )
             }
-            if (players[askWhom].isAlive && players[askWhom] !== game.jinBiPlayer) {
-                waitForChengQing.askWhom = players[askWhom]
-                return ResolveResult(waitForChengQing, true)
+            if (players[askWhom]!!.alive && players[askWhom] !== game.jinBiPlayer) {
+                return ResolveResult(waitForChengQing.copy(askWhom = players[askWhom]!!), true)
             }
         }
-    }
-
-    val waitForChengQing: WaitForChengQing
-
-    init {
-        this.card = card
-        this.sendPhase = sendPhase
-        this.r = r
-        this.target = target
-        this.card = card
-        this.wantType = wantType
-        this.r = r
-        this.target = target
-        this.card = card
-        this.player = player
-        this.card = card
-        this.card = card
-        this.drawCards = drawCards
-        this.players = players
-        this.mainPhaseIdle = mainPhaseIdle
-        this.dieSkill = dieSkill
-        this.player = player
-        this.player = player
-        this.onUseCard = onUseCard
-        this.game = game
-        this.whoseTurn = whoseTurn
-        this.messageCard = messageCard
-        this.dir = dir
-        this.targetPlayer = targetPlayer
-        this.lockedPlayers = lockedPlayers
-        this.whoseTurn = whoseTurn
-        this.messageCard = messageCard
-        this.inFrontOfWhom = inFrontOfWhom
-        this.player = player
-        this.whoseTurn = whoseTurn
-        this.diedQueue = diedQueue
-        this.afterDieResolve = afterDieResolve
-        this.fightPhase = fightPhase
-        this.player = player
-        this.sendPhase = sendPhase
-        this.dieGiveCard = dieGiveCard
-        this.whoseTurn = whoseTurn
-        this.messageCard = messageCard
-        this.inFrontOfWhom = inFrontOfWhom
-        this.isMessageCardFaceUp = isMessageCardFaceUp
-        this.waitForChengQing = waitForChengQing
-        this.waitForChengQing = waitForChengQing
     }
 
     companion object {

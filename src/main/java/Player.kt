@@ -21,11 +21,11 @@ abstract class Player protected constructor() {
     var originSecretTask = secret_task.Killer
     var alive = true
     var lose = false
-    protected var roleSkillsData = RoleSkillsData()
-        set(roleSkillsData: RoleSkillsData) {
-            field = roleSkillsData.copy()
+    var roleSkillsData = RoleSkillsData()
+        set(value) {
+            field = value.copy()
         }
-    protected val skillUseCount = HashMap<SkillId, Int>()
+    val skillUseCount = HashMap<SkillId, Int>()
 
     abstract fun notifyDrawPhase()
     abstract fun notifyMainPhase(waitSecond: Int)
@@ -57,7 +57,7 @@ abstract class Player protected constructor() {
         }
     }
 
-    fun incrSeq() {}
+    open fun incrSeq() {}
 
     fun getAbstractLocation(location: Int): Int {
         return (location + this.location) % game!!.players.size
@@ -135,12 +135,7 @@ abstract class Player protected constructor() {
         }
 
     fun findSkill(skillId: SkillId): Skill? {
-        for (skill in skills) {
-            if (skill.skillId == skillId) {
-                return skill
-            }
-        }
-        return null
+        return skills.find { skill -> skill.skillId == skillId }
     }
 
     val roleName: String get() = roleSkillsData.name
@@ -175,24 +170,24 @@ abstract class Player protected constructor() {
         skillUseCount.remove(skillId)
     }
 
-    fun getNextLeftAlivePlayer(): Player? {
+    fun getNextLeftAlivePlayer(): Player {
         var left = location - 1
         while (left != location) {
             if (left < 0) left += game!!.players.size
             if (game!!.players[left]!!.alive) break
             left--
         }
-        return game!!.players[left]
+        return game!!.players[left]!!
     }
 
-    fun getNextRightAlivePlayer(): Player? {
+    fun getNextRightAlivePlayer(): Player {
         var right = location + 1
         while (right != location) {
             if (right >= game!!.players.size) right -= game!!.players.size
             if (game!!.players[right]!!.alive) break
             right++
         }
-        return game!!.players[right]
+        return game!!.players[right]!!
     }
 
     override fun toString(): String {

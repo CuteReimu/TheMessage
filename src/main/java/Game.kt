@@ -29,7 +29,7 @@ class Game private constructor(totalPlayerCount: Int) {
     var isEnd = false
         private set
     var players: Array<Player?>
-    var deck: Deck? = null
+    var deck: Deck = Deck(this)
     var fsm: Fsm? = null
         private set
     private val listeningSkills = ArrayList<TriggeredSkill>()
@@ -185,7 +185,7 @@ class Game private constructor(totalPlayerCount: Int) {
         if (cards.isEmpty()) return
         player.cards.removeAll(cards.toSet())
         log.info("${player}弃掉了${cards.contentToString()}，剩余手牌${player.cards.size}张")
-        deck!!.discard(*cards)
+        deck.discard(*cards)
         for (p in players) {
             if (p is HumanPlayer) {
                 val builder = discard_card_toc.newBuilder().setPlayerId(p.getAlternativeLocation(player.location))
@@ -226,7 +226,7 @@ class Game private constructor(totalPlayerCount: Int) {
      * 继续处理当前状态机
      */
     fun continueResolve() {
-        GameExecutor.Companion.post(this, Runnable {
+        GameExecutor.post(this) {
             val result = fsm!!.resolve()
             if (result != null) {
                 fsm = result.next
@@ -234,7 +234,7 @@ class Game private constructor(totalPlayerCount: Int) {
                     continueResolve()
                 }
             }
-        })
+        }
     }
 
     /**

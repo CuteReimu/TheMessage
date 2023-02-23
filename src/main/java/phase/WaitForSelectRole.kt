@@ -1,26 +1,32 @@
 package com.fengsheng.phase
 
 import com.fengsheng.*
-import com.fengsheng.protos.Common.roleimport
+import com.fengsheng.protos.Common.role
+import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Fengsheng.wait_for_select_role_toc
+import com.fengsheng.skill.JiBan
+import com.fengsheng.skill.RoleSkillsData
+import com.fengsheng.skill.YingBian
+import com.fengsheng.skill.YouDao
+import com.google.protobuf.GeneratedMessageV3
+import org.apache.log4j.Logger
+import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.TimeUnit
 
-com.fengsheng.protos.Fengshengimport com.fengsheng.protos.Fengsheng.wait_for_select_role_tocimport com.fengsheng.skill.JiBanimport com.fengsheng.skill.RoleSkillsDataimport com.fengsheng.skill.YingBianimport com.fengsheng.skill.YouDaoimport java.util.* com.google.protobuf.GeneratedMessageV3
-import io.netty.util.HashedWheelTimerimport
-
-org.apache.log4j.Loggerimport java.util.concurrent.*
 /**
  * 等待玩家选择角色
  */
-class WaitForSelectRole(private val game: Game, private val options: Array<RoleSkillsData?>?) : WaitingFsm {
-    private val selected: Array<RoleSkillsData?>
+data class WaitForSelectRole(val game: Game, val options: Array<RoleSkillsData>) : WaitingFsm {
+    private val selected: Array<RoleSkillsData?> = arrayOfNulls(game.players.size)
     override fun resolve(): ResolveResult? {
         for (player in game.players) {
             if (player is HumanPlayer) {
                 val builder = wait_for_select_role_toc.newBuilder()
                 builder.playerCount = game.players.size
-                builder.identity = player.getIdentity()
-                builder.secretTask = player.getSecretTask()
-                val role1 = options!![player.location()].getRole()
-                val role2 = options[player.location() + game.players.size].getRole()
+                builder.identity = player.identity
+                builder.secretTask = player.secretTask
+                val role1 = options[player.location].role
+                val role2 = options[player.location + game.players.size].role
                 if (role1 == role.unknown) {
                     builderAddRole(builder, role2)
                 } else {
@@ -29,62 +35,72 @@ class WaitForSelectRole(private val game: Game, private val options: Array<RoleS
                 }
                 builder.waitingSecond = 30
                 player.send(builder.build())
-                player.setTimeout(
-                    GameExecutor.Companion.post(
-                        game,
-                        Runnable {
-                            game.tryContinueResolveProtocol(
-                                player,
-                                Fengsheng.select_role_tos.newBuilder().setRole(builder.getRoles(0)).build()
-                            )
-                        },
-                        player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                        TimeUnit.SECONDS
-                    )
-                )
+                player.timeout =
+                    GameExecutor.post(game, {
+                        game.tryContinueResolveProtocol(
+                            player,
+                            Fengsheng.select_role_tos.newBuilder().setRole(builder.getRoles(0)).build()
+                        )
+                    }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
-                val spRole = spMap[options!![player.location()].getRole()]
-                if (spRole != null && ThreadLocalRandom.current().nextBoolean()) selected[player.location()] =
-                    spRole else selected[player.location()] = options[player.location()]
-                player.setRoleSkillsData(selected[player.location()])
+                val spRole = spMap[options[player!!.location].role]
+                if (spRole != null && ThreadLocalRandom.current().nextBoolean()) selected[player.location] =
+                    spRole else selected[player.location] = options[player.location]
+                player.roleSkillsData = selected[player.location]!!
             }
         }
         for (role in selected) if (role == null) return null
         return ResolveResult(StartGame(game), true)
     }
 
-    override fun resolveProtocol(p: Player, message: GeneratedMessageV3): ResolveResult? {
+    override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
         if (message !is Fengsheng.select_role_tos) {
             log.error("正在等待选择角色")
             return null
         }
-        if (p.role != role.unknown) {
+        if (player.role != role.unknown) {
             log.error("你已经选了角色")
             return null
         }
-        val roleSkillsData = getRole(p.location(), message.role)
+        val roleSkillsData = getRole(player.location, message.role)
         if (roleSkillsData == null) {
             log.error("你没有这个角色")
             return null
         }
-        p.incrSeq()
-        selected[p.location()] = roleSkillsData
-        p.setRoleSkillsData(roleSkillsData)
-        (p as? HumanPlayer)?.send(Fengsheng.select_role_toc.newBuilder().setRole(roleSkillsData.role).build())
+        player.incrSeq()
+        selected[player.location] = roleSkillsData
+        player.roleSkillsData = roleSkillsData
+        (player as? HumanPlayer)?.send(Fengsheng.select_role_toc.newBuilder().setRole(roleSkillsData.role).build())
         for (role in selected) if (role == null) return null
         return ResolveResult(StartGame(game), true)
     }
 
     private fun getRole(location: Int, role: role): RoleSkillsData? {
-        if (options!![location].getRole() == role) return options[location] else if (options[location + options.size / 2].getRole() == role) return options[location + options.size / 2]
-        var spRoleSkillsData = spMap[options[location].getRole()]
+        if (options[location].role == role) return options[location] else if (options[location + options.size / 2].role == role) return options[location + options.size / 2]
+        var spRoleSkillsData = spMap[options[location].role]
         if (spRoleSkillsData != null && spRoleSkillsData.role == role) return spRoleSkillsData
-        spRoleSkillsData = spMap[options[location + options.size / 2].getRole()]
+        spRoleSkillsData = spMap[options[location + options.size / 2].role]
         return if (spRoleSkillsData != null && spRoleSkillsData.role == role) spRoleSkillsData else null
     }
 
-    init {
-        selected = arrayOfNulls(game.players.size)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as WaitForSelectRole
+
+        if (game != other.game) return false
+        if (!options.contentEquals(other.options)) return false
+        if (!selected.contentEquals(other.selected)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = game.hashCode()
+        result = 31 * result + options.contentHashCode()
+        result = 31 * result + selected.contentHashCode()
+        return result
     }
 
     companion object {
@@ -95,14 +111,16 @@ class WaitForSelectRole(private val game: Game, private val options: Array<RoleS
             if (spRoleSkillsData != null) builder.addRoles(spRoleSkillsData.role)
         }
 
-        private val spMap = EnumMap<role?, RoleSkillsData>(role::class.java)
-
-        init {
-            spMap[role.gu_xiao_meng] =
+        private val spMap = hashMapOf(
+            Pair(
+                role.gu_xiao_meng,
                 RoleSkillsData("SP顾小梦", role.sp_gu_xiao_meng, true, true, JiBan())
-            spMap[role.li_ning_yu] =
+            ),
+            Pair(
+                role.li_ning_yu,
                 RoleSkillsData("SP李宁玉", role.sp_li_ning_yu, true, true, YingBian(), YouDao())
-        }
+            )
+        )
 
         fun getRoleName(role: role): String? {
             for (roleSkillsData in spMap.values) {

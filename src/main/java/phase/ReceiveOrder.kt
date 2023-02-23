@@ -7,11 +7,11 @@ import java.util.*
 /**
  * 角色接收第三张黑色情报的顺序
  */
-class ReceiveOrder : LinkedList<Player?>() {
+class ReceiveOrder : LinkedList<Player>() {
     fun addPlayerIfHasThreeBlack(player: Player) {
         if (contains(player)) return
         var count = 0
-        for (card in player.messageCards.values) {
+        for (card in player.messageCards) {
             for (color in card.colors) {
                 if (color == Common.color.Black) count++
             }
@@ -21,7 +21,7 @@ class ReceiveOrder : LinkedList<Player?>() {
 
     fun removePlayerIfNotHaveThreeBlack(player: Player) {
         var count = 0
-        for (card in player.messageCards.values) {
+        for (card in player.messageCards) {
             for (color in card.colors) {
                 if (color == Common.color.Black) count++
             }

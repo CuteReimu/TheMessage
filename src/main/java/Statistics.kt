@@ -375,11 +375,10 @@ object Statistics {
             writer.write("角色,场次,胜率,军潜胜率,神秘人胜率")
             writer.newLine()
             for ((key, value) in appearCount) {
-                var roleName = RoleCache.getRoleName(key)
-                roleName = roleName ?: WaitForSelectRole.Companion.getRoleName(key)
-                writer.write(Objects.requireNonNullElse(roleName, ""))
+                val roleName = RoleCache.getRoleName(key) ?: WaitForSelectRole.getRoleName(key) ?: ""
+                writer.write(roleName)
                 writer.write(','.code)
-                writer.write(Integer.toString(value))
+                writer.write(value.toString())
                 writer.write(','.code)
                 writer.write("%.2f%%".formatted(winCount.getOrDefault(key, 0) * 100.0 / value))
                 writer.write(','.code)

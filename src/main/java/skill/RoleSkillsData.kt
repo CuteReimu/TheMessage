@@ -14,6 +14,9 @@ data class RoleSkillsData(
      * 新建一个名字为“无角色”、没技能的隐藏角色
      */
     constructor() : this("无角色", Common.role.unknown, false, false, arrayOf())
+    
+    constructor(name: String, role: role, female: Boolean, isFaceUp: Boolean, vararg skills: Skill)
+            : this(name, role, female, isFaceUp, arrayOf(*skills))
 
     val isFemale: Boolean
         get() {

@@ -1,52 +1,33 @@
 package com.fengsheng.phase
 
-import com.fengsheng.*
-import com.fengsheng.protos.Common.cardimport
+import com.fengsheng.Fsm
+import com.fengsheng.Player
+import com.fengsheng.ResolveResult
+import com.fengsheng.skill.JiangHuLing
+import com.fengsheng.skill.JinBi
+import com.fengsheng.skill.QiangLing
 
-com.fengsheng.skill.JiangHuLingimport com.fengsheng.skill.JinBiimport com.fengsheng.skill.QiangLing
 /**
  * 即将跳转到下一回合时
  *
  * @param player 当前回合的玩家（不是下回合的玩家）
  */
-class NextTurn(player: Player) : Fsm {
-    override fun resolve(): ResolveResult? {
-        val game = player.game
-        var whoseTurn = player.location()
+data class NextTurn(val player: Player) : Fsm {
+    override fun resolve(): ResolveResult {
+        val game = player.game!!
+        var whoseTurn = player.location
         while (true) {
             whoseTurn = (whoseTurn + 1) % game.players.size
-            val player = game.players[whoseTurn]
-            if (player.isAlive) {
+            val player = game.players[whoseTurn]!!
+            if (player.alive) {
                 for (p in game.players) {
-                    p.resetSkillUseCount()
+                    p!!.resetSkillUseCount()
                 }
-                JinBi.Companion.resetJinBi(game)
-                QiangLing.Companion.resetQiangLing(game)
-                JiangHuLing.Companion.resetJiangHuLing(game)
+                JinBi.resetJinBi(game)
+                QiangLing.resetQiangLing(game)
+                JiangHuLing.resetJiangHuLing(game)
                 return ResolveResult(DrawPhase(player), true)
             }
         }
-    }
-
-    val player: Player
-
-    init {
-        this.card = card
-        this.sendPhase = sendPhase
-        this.r = r
-        this.target = target
-        this.card = card
-        this.wantType = wantType
-        this.r = r
-        this.target = target
-        this.card = card
-        this.player = player
-        this.card = card
-        this.card = card
-        this.drawCards = drawCards
-        this.players = players
-        this.mainPhaseIdle = mainPhaseIdle
-        this.dieSkill = dieSkill
-        this.player = player
     }
 }

@@ -6,8 +6,8 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng
 
-class Deck(private val game: Game, totalPlayerCount: Int) {
-    private var nextId: Int
+class Deck(private val game: Game) {
+    private var nextId = 0
     private var cards = ArrayList<Card>()
     private var discardPile = ArrayList<Card>()
 
@@ -83,7 +83,8 @@ class Deck(private val game: Game, totalPlayerCount: Int) {
         return ++nextId
     }
 
-    init {
+    fun init(totalPlayerCount: Int) {
+        cards.clear()
         cards.addAll(DefaultDeck)
         if (totalPlayerCount < 4) {
             cards.subList(0, 18).clear()

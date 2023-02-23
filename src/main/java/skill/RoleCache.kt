@@ -1,14 +1,12 @@
 package com.fengsheng.skill
 
-import com.fengsheng.protos.Common.roleimport
-
-java.util.*import java.util.concurrent.ThreadLocalRandom
+import com.fengsheng.protos.Common.role
 
 /**
  * 记录所有角色的工具类
  */
 object RoleCache {
-    private val cache = java.util.List.of(
+    private val cache = listOf(
         RoleSkillsData("端木静", role.duan_mu_jing, true, true, XinSiChao()),
         RoleSkillsData("金生火", role.jin_sheng_huo, false, true, JinShen()),
         RoleSkillsData("老鳖", role.lao_bie, false, true, LianLuo(), MingEr()),
@@ -40,7 +38,7 @@ object RoleCache {
         RoleSkillsData("黄济仁", role.huang_ji_ren, false, false, DuiZhengXiaYao()),
         RoleSkillsData("白昆山", role.bai_kun_shan, false, false, DuJi())
     )
-    private val mapCache = EnumMap<role?, RoleSkillsData?>(role::class.java)
+    private val mapCache = HashMap<role, RoleSkillsData>()
 
     init {
         for (data in cache) {
@@ -51,27 +49,23 @@ object RoleCache {
     /**
      * @return 长度为 `n` 的数组
      */
-    fun getRandomRoles(n: Int): Array<RoleSkillsData?> {
-        val result = arrayOfNulls<RoleSkillsData>(n)
-        val random: Random = ThreadLocalRandom.current()
-        val indexArray = arrayOfNulls<Int>(cache.size)
-        for (i in indexArray.indices) indexArray[i] = i
-        Collections.shuffle(Arrays.asList(*indexArray), random)
-        for (i in 0 until n) result[i] = if (i < indexArray.size) cache[indexArray[i]!!] else RoleSkillsData()
-        return result
+    fun getRandomRoles(n: Int): Array<RoleSkillsData> {
+        val indexArray = Array(cache.size) { i -> i }
+        indexArray.shuffle()
+        return Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
     }
 
     /**
      * @param roles 返回数组的前几个角色强行指定
      * @return 长度为 `n` 的数组
      */
-    fun getRandomRolesWithSpecific(n: Int, roles: List<role>): Array<RoleSkillsData?> {
+    fun getRandomRolesWithSpecific(n: Int, roles: List<role>): Array<RoleSkillsData> {
         val roleSkillsDataArray = getRandomRoles(n)
         var roleIndex = 0
         while (roleIndex < roles.size && roleIndex < n) {
             var index = -1
             for (i in roleSkillsDataArray.indices) {
-                if (roles[roleIndex] == roleSkillsDataArray[i].getRole()) {
+                if (roles[roleIndex] == roleSkillsDataArray[i].role) {
                     index = i
                     break
                 }
