@@ -172,6 +172,7 @@ public class ShiTan extends Card {
                 log.error("你不是试探的目标：" + card);
                 return null;
             }
+            Card discardCard = null;
             if (card.checkDrawCard(target) || target.getCards().isEmpty()) {
                 if (msg.getCardIdCount() != 0) {
                     log.error(target + "被使用" + card + "时不应该弃牌");
@@ -180,6 +181,9 @@ public class ShiTan extends Card {
             } else {
                 if (msg.getCardIdCount() != 1) {
                     log.error(target + "被使用" + card + "时应该弃一张牌");
+                    return null;
+                } else if ((discardCard = target.findCard(msg.getCardId(0))) == null) {
+                    log.error("没有这张牌");
                     return null;
                 }
             }
@@ -192,7 +196,7 @@ public class ShiTan extends Card {
                 log.info(target + "选择了[弃一张牌]");
                 card.notifyResult(target, false);
                 if (msg.getCardIdCount() > 0)
-                    target.getGame().playerDiscardCard(target, target.findCard(msg.getCardId(0)));
+                    target.getGame().playerDiscardCard(target, discardCard);
             }
             return new ResolveResult(new MainPhaseIdle(r), true);
         }
