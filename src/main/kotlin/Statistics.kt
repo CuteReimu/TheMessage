@@ -106,12 +106,12 @@ object Statistics {
             val playerInfo2 = playerInfoMap.putIfAbsent(name, playerInfo)
             if (playerInfo2 != null) playerInfo = playerInfo2
         }
-        if (playerInfo.password == null || playerInfo.password!!.isEmpty()) playerInfo =
+        if (playerInfo.password.isEmpty()) playerInfo =
             PlayerInfo(playerInfo.name, playerInfo.deviceId, password, playerInfo.winCount, playerInfo.gameCount)
         if (password != playerInfo.password) return null
         // 对旧数据进行兼容
         val finalPlayerInfo = arrayOf(playerInfo)
-        playerGameCount.computeIfPresent(deviceId) { k: String?, v: PlayerGameCount ->
+        playerGameCount.computeIfPresent(deviceId) { _, v ->
             val gameCount = finalPlayerInfo[0].gameCount + v.gameCount
             val winCount = finalPlayerInfo[0].winCount + v.winCount
             finalPlayerInfo[0] = PlayerInfo(name, deviceId, password, gameCount, winCount)
@@ -204,8 +204,8 @@ object Statistics {
                 val playerOrders = player_orders.parseFrom(`is`.readAllBytes())
                 orderMap.putAll(playerOrders.ordersMap)
                 orderId = playerOrders.orderId
-                for (order in playerOrders.ordersMap.values) deviceOrderMap.computeIfAbsent(order.device) { k: String? -> ArrayList() }
-                    .add(order)
+                for (order in playerOrders.ordersMap.values)
+                    deviceOrderMap.computeIfAbsent(order.device) { ArrayList() }.add(order)
             }
         } catch (ignored: FileNotFoundException) {
         }
@@ -238,8 +238,8 @@ object Statistics {
             if (o1.time < o2.time) -1 else 1
         })
         val myOrders: List<player_order>? = deviceOrderMap[deviceId]
-        myOrders?.forEach(Consumer { o: player_order -> if (o.time > now - 1800) set.add(o) })
-        orderMap.forEach { (k: Int?, o: player_order) -> if (o.time > now - 1800) set.add(o) }
+        myOrders?.forEach(Consumer { o -> if (o.time > now - 1800) set.add(o) })
+        orderMap.forEach { (_, o) -> if (o.time > now - 1800) set.add(o) }
         val list: MutableList<pb_order> = ArrayList()
         for (o in set) {
             list.add(playerOrderToPbOrder(deviceId, o))
@@ -361,11 +361,11 @@ object Statistics {
             while (reader.readLine().also { line = it } != null) {
                 val a = line.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val role = role.valueOf(a[0])
-                appearCount.compute(role) { k: role?, v: Int? -> if (v == null) 1 else v + 1 }
-                if (java.lang.Boolean.parseBoolean(a[1])) winCount.compute(role) { k: role?, v: Int? -> if (v == null) 1 else v + 1 }
+                appearCount.compute(role) { _, v -> if (v == null) 1 else v + 1 }
+                if (java.lang.Boolean.parseBoolean(a[1])) winCount.compute(role) { _, v -> if (v == null) 1 else v + 1 }
                 if ("Black" == a[2]) {
-                    blackAppearCount.compute(role) { k: role?, v: Int? -> if (v == null) 1 else v + 1 }
-                    if (java.lang.Boolean.parseBoolean(a[1])) blackWinCount.compute(role) { k: role?, v: Int? -> if (v == null) 1 else v + 1 }
+                    blackAppearCount.compute(role) { _, v -> if (v == null) 1 else v + 1 }
+                    if (java.lang.Boolean.parseBoolean(a[1])) blackWinCount.compute(role) { _, v -> if (v == null) 1 else v + 1 }
                 }
                 timeSet.add(a[5])
             }
@@ -377,9 +377,9 @@ object Statistics {
             for ((key, value) in appearCount) {
                 val roleName = RoleCache.getRoleName(key) ?: WaitForSelectRole.getRoleName(key) ?: ""
                 writer.write(roleName)
-                writer.write(','.code)
+                writer.write(",")
                 writer.write(value.toString())
-                writer.write(','.code)
+                writer.write(",")
                 writer.write("%.2f%%".formatted(winCount.getOrDefault(key, 0) * 100.0 / value))
                 writer.write(','.code)
                 val blackAppear = blackAppearCount.getOrDefault(key, 0)
