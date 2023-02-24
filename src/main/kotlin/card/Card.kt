@@ -16,7 +16,7 @@ abstract class Card {
     /**
      * 获取卡牌颜色
      */
-    val colors: Array<color>
+    val colors: List<color>
 
     /**
      * 获取卡牌方向
@@ -25,7 +25,7 @@ abstract class Card {
     protected val lockable: Boolean
     private val originCard: Card?
 
-    protected constructor(id: Int, colors: Array<color>, direction: direction, lockable: Boolean) {
+    protected constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) {
         this.id = id
         this.colors = colors
         this.direction = direction
@@ -110,7 +110,7 @@ abstract class Card {
         val c = getOriginCard()
         return card.newBuilder().setCardId(c.id).setCardDir(c.direction).setCanLock(c.lockable).setCardType(
             c.type
-        ).addAllCardColor(c.colors.asList()).build()
+        ).addAllCardColor(c.colors).build()
     }
 
     companion object {

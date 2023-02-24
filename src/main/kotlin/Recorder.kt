@@ -1,6 +1,5 @@
 package com.fengsheng
 
-import com.fengsheng.*
 import com.fengsheng.phase.StartGame
 import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Errcode
@@ -9,18 +8,13 @@ import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Record.record_file
 import com.fengsheng.protos.Record.recorder_line
 import com.google.protobuf.ByteString
-import io.netty.util.Timeout
-import io.netty.util.TimerTask
 import org.apache.log4j.Logger
 import java.io.*
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.concurrent.*
-
-com.fengsheng.protos.Common.card_type
-import java.lang.Runnable
-import java.lang.StringBuilder
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class Recorder {
     private var list: MutableList<recorder_line> = ArrayList()
@@ -32,7 +26,7 @@ class Recorder {
     @Volatile
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
-        if (!loading && ("wait_for_select_role_toc" != protoName || !list.isEmpty())) list.add(
+        if (!loading && ("wait_for_select_role_toc" != protoName || list.isNotEmpty())) list.add(
             recorder_line.newBuilder().setNanoTime(System.nanoTime()).setProtoName(protoName)
                 .setMessageBuf(ByteString.copyFrom(messageBuf)).build()
         )
@@ -45,31 +39,29 @@ class Recorder {
         val timeStr = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"))
         val sb = StringBuilder()
         for (player in g.players) {
-            if (!sb.isEmpty()) sb.append("-")
-            sb.append(player.roleName)
+            if (sb.isNotEmpty()) sb.append("-")
+            sb.append(player!!.roleName)
         }
-        val recordId = java.lang.Long.toString(
-            (now.time / 1000 * 1000 + g.id % 100 * 10 + p.location()) % (36L * 36 * 36 * 36 * 36 * 36),
-            Character.MAX_RADIX
-        )
-        val fileName = timeStr + "-" + sb + "-" + p.location() + "-" + recordId
+        val recordId = ((now.time / 1000 * 1000 + g.id % 100 * 10 + p.location) %
+                (36L * 36 * 36 * 36 * 36 * 36)).toString(Character.MAX_RADIX)
+        val fileName = timeStr + "-" + sb + "-" + p.location + "-" + recordId
         val builder = record_file.newBuilder()
         builder.clientVersion = Config.ClientVersion
         builder.addAllLines(list)
         val recordFile = builder.build()
-        Recorder.Companion.saveLoadPool.submit(Runnable {
+        saveLoadPool.submit {
             val file = File("records/")
-            if (!file.exists() && !file.isDirectory && !file.mkdir()) Recorder.Companion.log.error("make dir failed: " + file.name)
+            if (!file.exists() && !file.isDirectory && !file.mkdir()) log.error("make dir failed: ${file.name}")
             try {
                 DataOutputStream(FileOutputStream("records/$fileName")).use { os ->
                     os.write(recordFile.toByteArray())
                     if (notify) p.send(Fengsheng.save_record_success_toc.newBuilder().setRecordId(recordId).build())
-                    Recorder.Companion.log.info("save record success: $recordId")
+                    log.info("save record success: $recordId")
                 }
             } catch (e: IOException) {
-                Recorder.Companion.log.error("save record failed", e)
+                log.error("save record failed", e)
             }
-        })
+        }
     }
 
     fun load(version: Int, recordId: String, player: HumanPlayer) {
@@ -81,12 +73,8 @@ class Recorder {
             )
             return
         }
-        val files = if (recordId.length == 6) file.listFiles { dir: File?, name: String ->
-            name.endsWith(
-                "-$recordId"
-            )
-        } else null
-        if (files == null || files.size == 0) {
+        val files = if (recordId.length == 6) file.listFiles { _, name -> name.endsWith("-$recordId") } else null
+        if (files.isNullOrEmpty()) {
             player.send(
                 error_code_toc.newBuilder()
                     .setCode(Errcode.error_code.record_not_exists).build()
@@ -95,7 +83,7 @@ class Recorder {
         }
         val recordFile = files[0]
         loading = true
-        Recorder.Companion.saveLoadPool.submit(Runnable {
+        saveLoadPool.submit {
             try {
                 DataInputStream(FileInputStream(recordFile)).use { `is` ->
                     val pb = record_file.parseFrom(`is`.readAllBytes())
@@ -111,18 +99,18 @@ class Recorder {
                     }
                     list = pb.linesList
                     currentIndex = 0
-                    Recorder.Companion.log.info("load record success: $recordId")
+                    log.info("load record success: $recordId")
                     displayNext(player)
                 }
             } catch (e: IOException) {
-                Recorder.Companion.log.error("load record failed", e)
+                log.error("load record failed", e)
                 player.send(
                     error_code_toc.newBuilder()
                         .setCode(Errcode.error_code.load_record_failed).build()
                 )
                 loading = false
             }
-        })
+        }
     }
 
     fun pause(pause: Boolean) {
@@ -136,8 +124,8 @@ class Recorder {
                 return
             }
             if (pausing) {
-                GameExecutor.Companion.TimeWheel.newTimeout(
-                    TimerTask { timeout: Timeout? -> displayNext(player) },
+                GameExecutor.TimeWheel.newTimeout(
+                    { displayNext(player) },
                     2,
                     TimeUnit.SECONDS
                 )
@@ -150,7 +138,7 @@ class Recorder {
                 break
             }
             val line = list[currentIndex]
-            player.send(line.getProtoName(), line.messageBuf.toByteArray(), true)
+            player.send(line.protoName, line.messageBuf.toByteArray(), true)
             if (++currentIndex >= list.size) {
                 player.send(Fengsheng.display_record_end_toc.getDefaultInstance())
                 list = ArrayList()
@@ -159,9 +147,9 @@ class Recorder {
             }
             val diffNanoTime = list[currentIndex].nanoTime - line.nanoTime
             if (diffNanoTime > 100000000) {
-                GameExecutor.Companion.TimeWheel.newTimeout(
-                    TimerTask { timeout: Timeout? -> displayNext(player) },
-                    Math.min(diffNanoTime, 2000000000),
+                GameExecutor.TimeWheel.newTimeout(
+                    { displayNext(player) },
+                    diffNanoTime.coerceAtMost(2000000000),
                     TimeUnit.NANOSECONDS
                 )
                 break
@@ -172,7 +160,7 @@ class Recorder {
     fun reconnect(player: HumanPlayer) {
         for (i in list.indices) {
             val line = list[i]
-            player.send(line.getProtoName(), line.messageBuf.toByteArray(), i == list.size - 1)
+            player.send(line.protoName, line.messageBuf.toByteArray(), i == list.size - 1)
         }
     }
 

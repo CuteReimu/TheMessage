@@ -1,25 +1,28 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.card.ShiTanimport
+import com.fengsheng.card.ShiTan
+import com.fengsheng.card.ShiTan.executeShiTan
+import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnUseCard
+import com.fengsheng.protos.Common
+import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Fengsheng.show_shi_tan_toc
+import com.fengsheng.protos.Fengsheng.use_shi_tan_toc
+import com.fengsheng.protos.Role.skill_cheng_fu_toc
+import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
+import com.fengsheng.skill.SkillId
+import com.google.protobuf.GeneratedMessageV3
+import org.apache.log4j.Logger
+import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.TimeUnit
 
-com.fengsheng.card.ShiTan.executeShiTanimport com.fengsheng.phase.MainPhaseIdleimport com.fengsheng.phase.OnUseCardimport com.fengsheng.protos.Commonimport com.fengsheng.protos.Common.*import com.fengsheng.protos.Fengshengimport
-
-com.fengsheng.protos.Fengsheng.show_shi_tan_tocimport com.fengsheng.protos.Fengsheng.use_shi_tan_tocimport com.fengsheng.protos.Role.skill_cheng_fu_tocimport com.fengsheng.protos.Role.skill_jiu_ji_b_tocimport com.fengsheng.skill.Skillimport com.fengsheng.skill.SkillIdimport com.google.protobuf.GeneratedMessageV3import org.apache.log4j.Loggerimport java.util.*import java.util.Listimport
-
-java.util.concurrent.*import kotlin.collections.ArrayListimport
-
-kotlin.collections.HashSetimport kotlin.collections.MutableListimport kotlin.collections.MutableSet
 class ShiTan : Card {
-    val whoDrawCard: Array<color>
+    val whoDrawCard: List<color>
 
-    constructor(
-        id: Int,
-        colors: Array<color>,
-        direction: direction,
-        lockable: Boolean,
-        whoDrawCard: Array<color>
-    ) : super(id, colors, direction, lockable) {
+    constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean, whoDrawCard: List<color>) :
+            super(id, colors, direction, lockable) {
         this.whoDrawCard = whoDrawCard
     }
 
@@ -40,7 +43,7 @@ class ShiTan : Card {
             return false
         }
         val target = args[0] as Player
-        if (g.fsm !is MainPhaseIdle || r !== fsm.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("试探的使用时机不对")
             return false
         }
@@ -48,7 +51,7 @@ class ShiTan : Card {
             log.error("试探不能对自己使用")
             return false
         }
-        if (!target.isAlive) {
+        if (!target.alive) {
             log.error("目标已死亡")
             return false
         }
@@ -59,47 +62,49 @@ class ShiTan : Card {
         val target = args[0] as Player
         log.info(r.toString() + "对" + target + "使用了" + this)
         r.deleteCard(id)
-        val resolveFunc = Fsm {
-            if (target.isRoleFaceUp && target.findSkill<Skill?>(SkillId.CHENG_FU) != null) {
-                log.info(target.toString() + "触发了[城府]，试探无效")
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        val builder = skill_cheng_fu_toc.newBuilder()
-                            .setPlayerId(player.getAlternativeLocation(target.location()))
-                        builder.fromPlayerId = player.getAlternativeLocation(r.location())
-                        if (player == r || player == target || target.getSkillUseCount(SkillId.JIU_JI) != 1) builder.card =
-                            toPbCard() else builder.unknownCardCount = 1
-                        player.send(builder.build())
-                    }
-                }
-                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
-                    target.addSkillUseCount(SkillId.JIU_JI)
-                    target.addCard(this)
-                    log.info(target.toString() + "将使用的" + this + "加入了手牌")
+        val resolveFunc = object : Fsm {
+            override fun resolve(): ResolveResult {
+                if (target.roleFaceUp && target.findSkill(SkillId.CHENG_FU) != null) {
+                    log.info("${target}触发了[城府]，试探无效")
                     for (player in g.players) {
                         if (player is HumanPlayer) {
-                            val builder = skill_jiu_ji_b_toc.newBuilder()
-                                .setPlayerId(player.getAlternativeLocation(target.location()))
-                            if (player == r || player == target) builder.card =
+                            val builder = skill_cheng_fu_toc.newBuilder()
+                                .setPlayerId(player.getAlternativeLocation(target.location))
+                            builder.fromPlayerId = player.getAlternativeLocation(r.location)
+                            if (player == r || player == target || target.getSkillUseCount(SkillId.JIU_JI) != 1) builder.card =
                                 toPbCard() else builder.unknownCardCount = 1
                             player.send(builder.build())
                         }
                     }
-                } else {
-                    g.deck.discard(this)
+                    if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                        target.addSkillUseCount(SkillId.JIU_JI)
+                        target.cards.add(this@ShiTan)
+                        log.info(target.toString() + "将使用的${this@ShiTan}加入了手牌")
+                        for (player in g.players) {
+                            if (player is HumanPlayer) {
+                                val builder = skill_jiu_ji_b_toc.newBuilder()
+                                    .setPlayerId(player.getAlternativeLocation(target.location))
+                                if (player == r || player == target) builder.card = toPbCard()
+                                else builder.unknownCardCount = 1
+                                player.send(builder.build())
+                            }
+                        }
+                    } else {
+                        g.deck.discard(this@ShiTan)
+                    }
+                    return ResolveResult(MainPhaseIdle(r), true)
                 }
-                return@Fsm ResolveResult(MainPhaseIdle(r), true)
-            }
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = use_shi_tan_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location())
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location())
-                    if (p === r) builder.cardId = id
-                    p.send(builder.build())
+                for (p in g.players) {
+                    if (p is HumanPlayer) {
+                        val builder = use_shi_tan_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                        if (p === r) builder.cardId = id
+                        p.send(builder.build())
+                    }
                 }
+                return ResolveResult(executeShiTan(r, target, this@ShiTan), true)
             }
-            ResolveResult(executeShiTan(r, target, this), true)
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, r, resolveFunc))
     }
@@ -110,30 +115,30 @@ class ShiTan : Card {
     }
 
     private fun notifyResult(target: Player, draw: Boolean) {
-        for (player in target.game.players) {
+        for (player in target.game!!.players) {
             (player as? HumanPlayer)?.send(
                 Fengsheng.execute_shi_tan_toc.newBuilder()
-                    .setPlayerId(player.getAlternativeLocation(target.location())).setIsDrawCard(draw).build()
+                    .setPlayerId(player.getAlternativeLocation(target.location)).setIsDrawCard(draw).build()
             )
         }
     }
 
-    private class executeShiTan(r: Player, target: Player, val card: ShiTan) : WaitingFsm {
+    private data class executeShiTan(val r: Player, val target: Player, val card: ShiTan) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in r.game.players) {
+            for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = show_shi_tan_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location())
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location())
+                    builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.waitingSecond = 15
                     if (p === target) {
                         val seq2: Int = p.seq
                         builder.setSeq(seq2).card = card.toPbCard()
-                        p.setTimeout(GameExecutor.Companion.post(r.game, Runnable {
+                        p.timeout = (GameExecutor.post(r.game!!, {
                             if (p.checkSeq(seq2)) {
                                 p.incrSeq()
                                 autoSelect()
-                                r.game.resolve(MainPhaseIdle(r))
+                                r.game!!.resolve(MainPhaseIdle(r))
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS))
                     } else if (p === r) {
@@ -143,9 +148,9 @@ class ShiTan : Card {
                 }
             }
             if (target is RobotPlayer) {
-                GameExecutor.Companion.post(target.getGame(), Runnable {
+                GameExecutor.post(target.game!!, {
                     autoSelect()
-                    target.getGame().resolve(MainPhaseIdle(r))
+                    target.game!!.resolve(MainPhaseIdle(r))
                 }, 2, TimeUnit.SECONDS)
             }
             return null
@@ -160,56 +165,46 @@ class ShiTan : Card {
                 log.error("你不是试探的目标：$card")
                 return null
             }
+            var discardCard: Card? = null
             if (card.checkDrawCard(target) || target.cards.isEmpty()) {
                 if (message.cardIdCount != 0) {
-                    log.error(target.toString() + "被使用" + card + "时不应该弃牌")
+                    log.error("${target}被使用${card}时不应该弃牌")
                     return null
                 }
             } else {
                 if (message.cardIdCount != 1) {
-                    log.error(target.toString() + "被使用" + card + "时应该弃一张牌")
+                    log.error("${target}被使用${card}时应该弃一张牌")
+                    return null
+                }
+                discardCard = target.findCard(message.getCardId(0))
+                if (discardCard == null) {
+                    log.error("没有这张牌")
                     return null
                 }
             }
             player.incrSeq()
             if (card.checkDrawCard(target)) {
-                log.info(target.toString() + "选择了[摸一张牌]")
+                log.info("${target}选择了[摸一张牌]")
                 card.notifyResult(target, true)
                 target.draw(1)
             } else {
-                log.info(target.toString() + "选择了[弃一张牌]")
+                log.info("${target}选择了[弃一张牌]")
                 card.notifyResult(target, false)
-                if (message.cardIdCount > 0) target.game.playerDiscardCard(
-                    target,
-                    target.findCard(message.getCardId(0))
-                )
+                if (discardCard != null)
+                    target.game!!.playerDiscardCard(target, discardCard)
             }
             return ResolveResult(MainPhaseIdle(r), true)
         }
 
         private fun autoSelect() {
             val builder = Fengsheng.execute_shi_tan_tos.newBuilder()
-            if (!card.checkDrawCard(target) && !target.cards.isEmpty()) {
-                for (cardId in target.cards.keys) {
-                    builder.addCardId(cardId)
+            if (!card.checkDrawCard(target) && target.cards.isNotEmpty()) {
+                for (c in target.cards) {
+                    builder.addCardId(c.id)
                     break
                 }
             }
             resolveProtocol(target, builder.build())
-        }
-
-        val r: Player
-        val target: Player
-
-        init {
-            this.sendPhase = sendPhase
-            this.r = r
-            this.target = target
-            card = card
-            this.wantType = wantType
-            this.r = r
-            this.target = target
-            card = card
         }
 
         companion object {
@@ -220,19 +215,19 @@ class ShiTan : Card {
     override fun toPbCard(): card? {
         return card.newBuilder().setCardId(id).setCardDir(direction).setCanLock(lockable).setCardType(
             type
-        ).addAllCardColor(colors).addAllWhoDrawCard(Arrays.asList(*whoDrawCard)).build()
+        ).addAllCardColor(colors).addAllWhoDrawCard(whoDrawCard).build()
     }
 
     override fun toString(): String {
-        val color: String = Card.Companion.cardColorToString(colors)
-        if (whoDrawCard.size == 1) return Player.Companion.identityColorToString(whoDrawCard[0]) + "+1试探"
-        val set: MutableSet<color> = HashSet(List.of(Common.color.Black, Common.color.Red, Common.color.Blue))
+        val color: String = cardColorToString(colors)
+        if (whoDrawCard.size == 1) return Player.identityColorToString(whoDrawCard[0]) + "+1试探"
+        val set = hashSetOf(Common.color.Black, Common.color.Red, Common.color.Blue)
         set.remove(whoDrawCard[0])
         set.remove(whoDrawCard[1])
         for (whoDiscardCard in set) {
-            return color + Player.Companion.identityColorToString(whoDiscardCard) + "-1试探"
+            return color + Player.identityColorToString(whoDiscardCard) + "-1试探"
         }
-        throw RuntimeException("impossible whoDrawCard: " + Arrays.toString(whoDrawCard))
+        throw RuntimeException("impossible whoDrawCard: ${whoDrawCard.toTypedArray().contentToString()}")
     }
 
     companion object {
@@ -240,15 +235,15 @@ class ShiTan : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
             val players: MutableList<Player> = ArrayList()
-            for (p in player.game.players) if (p !== player && p.isAlive && (!p.isRoleFaceUp || p.findSkill<Skill?>(
+            for (p in player.game!!.players) if (p !== player && p!!.alive && (!p.roleFaceUp || p.findSkill(
                     SkillId.CHENG_FU
                 ) == null)
             ) players.add(p)
             if (players.isEmpty()) return false
             val p = players[ThreadLocalRandom.current().nextInt(players.size)]
-            GameExecutor.Companion.post(
-                player.game,
-                Runnable { card.execute(player.game, player, p) },
+            GameExecutor.post(
+                player.game!!,
+                { card.execute(player.game!!, player, p) },
                 2,
                 TimeUnit.SECONDS
             )

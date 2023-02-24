@@ -25,7 +25,21 @@ abstract class Player protected constructor() {
         set(value) {
             field = value.copy()
         }
-    val skillUseCount = HashMap<SkillId, Int>()
+    private val skillUseCount = HashMap<SkillId, Int>()
+
+    fun deleteCard(id: Int): Card? {
+        val index = cards.indexOfFirst { c -> c.id == id }
+        return if (index >= 0) cards.removeAt(index) else null
+    }
+
+    fun findCard(id: Int): Card? {
+        return cards.find { c -> c.id == id }
+    }
+
+    fun deleteMessageCard(id: Int): Card {
+        val index = messageCards.indexOfFirst { c -> c.id == id }
+        return messageCards.removeAt(index)
+    }
 
     abstract fun notifyDrawPhase()
     abstract fun notifyMainPhase(waitSecond: Int)
