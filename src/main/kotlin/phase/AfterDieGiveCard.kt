@@ -9,7 +9,7 @@ import com.fengsheng.ResolveResult
 data class AfterDieGiveCard(val dieGiveCard: WaitForDieGiveCard) : Fsm {
     override fun resolve(): ResolveResult {
         val player = dieGiveCard.diedQueue[dieGiveCard.diedIndex]
-        val cards = player!!.cards.toTypedArray()
+        val cards = player.cards.toTypedArray()
         player.game!!.playerDiscardCard(player, *cards)
         val messageCards = player.messageCards.toTypedArray()
         player.messageCards.clear()

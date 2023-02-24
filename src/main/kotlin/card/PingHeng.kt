@@ -1,18 +1,17 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.card.PingHengimport
+import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnUseCard
+import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Fengsheng.use_ping_heng_toc
+import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
-com.fengsheng.phase.MainPhaseIdleimport com.fengsheng.phase.OnUseCardimport com.fengsheng.protos.Common.*import com.fengsheng.protos.Fengshengimport
-
-org.apache.log4j.Loggerimport java.util.concurrent.*
 class PingHeng : Card {
-    constructor(id: Int, colors: Array<color>, direction: direction, lockable: Boolean) : super(
-        id,
-        colors,
-        direction,
-        lockable
-    )
+    constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
+            super(id, colors, direction, lockable)
 
     constructor(id: Int, card: Card?) : super(id, card)
 
@@ -33,7 +32,7 @@ class PingHeng : Card {
             log.error("平衡被禁止使用了")
             return false
         }
-        if (g.fsm !is MainPhaseIdle || r !== fsm.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("平衡的使用时机不对")
             return false
         }
@@ -42,7 +41,7 @@ class PingHeng : Card {
             log.error("平衡不能对自己使用")
             return false
         }
-        if (!target.isAlive) {
+        if (!target.alive) {
             log.error("目标已死亡")
             return false
         }
@@ -51,29 +50,31 @@ class PingHeng : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
-        log.info(r.toString() + "对" + target + "使用了" + this)
+        log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = Fsm {
-            for (player in g.players) {
-                (player as? HumanPlayer)?.send(
-                    Fengsheng.use_ping_heng_toc.newBuilder()
-                        .setPlayerId(player.getAlternativeLocation(r.location()))
-                        .setTargetPlayerId(player.getAlternativeLocation(target.location()))
-                        .setPingHengCard(toPbCard()).build()
-                )
+        val resolveFunc = object : Fsm {
+            override fun resolve(): ResolveResult {
+                for (player in g.players) {
+                    (player as? HumanPlayer)?.send(
+                        use_ping_heng_toc.newBuilder()
+                            .setPlayerId(player.getAlternativeLocation(r.location))
+                            .setTargetPlayerId(player.getAlternativeLocation(target.location))
+                            .setPingHengCard(toPbCard()).build()
+                    )
+                }
+                g.playerDiscardCard(r, *r.cards.toTypedArray())
+                g.playerDiscardCard(target, *target.cards.toTypedArray())
+                r.draw(3)
+                target.draw(3)
+                g.deck.discard(getOriginCard())
+                return ResolveResult(MainPhaseIdle(r), true)
             }
-            g.playerDiscardCard(r, *r.cards.values.toTypedArray())
-            g.playerDiscardCard(target, *target.cards.values.toTypedArray())
-            r.draw(3)
-            target.draw(3)
-            g.deck.discard(originCard)
-            ResolveResult(MainPhaseIdle(r), true)
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Ping_Heng, r, resolveFunc))
     }
 
     override fun toString(): String {
-        return Card.Companion.cardColorToString(colors) + "平衡"
+        return "${cardColorToString(colors)}平衡"
     }
 
     companion object {
@@ -82,15 +83,10 @@ class PingHeng : Card {
             val player = e.player
             if (player.cards.size > 3) return false
             val players: MutableList<Player> = ArrayList()
-            for (p in player.game.players) if (p !== player && p.isAlive) players.add(p)
+            for (p in player.game!!.players) if (p !== player && p!!.alive) players.add(p)
             if (players.isEmpty()) return false
-            val p = players[ThreadLocalRandom.current().nextInt(players.size)]
-            GameExecutor.Companion.post(
-                player.game,
-                Runnable { card.execute(player.game, player, p) },
-                2,
-                TimeUnit.SECONDS
-            )
+            val p = players[Random.nextInt(players.size)]
+            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
             return true
         }
     }

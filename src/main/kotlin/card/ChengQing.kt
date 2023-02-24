@@ -1,7 +1,6 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.cardimport.PlayerAndCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.phase.UseChengQingOnDying
@@ -9,7 +8,8 @@ import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
-import java.util.concurrent.*
+import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.TimeUnit
 
 class ChengQing : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -70,7 +70,7 @@ class ChengQing : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
         val targetCardId = args[1] as Int
-        log.info(r.toString() + "对" + target + "使用了" + this)
+        log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val fsm = g.fsm
         val resolveFunc = object : Fsm {
@@ -101,7 +101,7 @@ class ChengQing : Card {
     }
 
     override fun toString(): String {
-        return cardColorToString(colors) + "澄清"
+        return "${cardColorToString(colors)}澄清"
     }
 
     companion object {
@@ -122,7 +122,7 @@ class ChengQing : Card {
             val p = playerAndCards[ThreadLocalRandom.current().nextInt(playerAndCards.size)]
             GameExecutor.post(
                 player.game!!,
-                { card.execute(player.game!!, player, p.player, p.card.getId()) },
+                { card.execute(player.game!!, player, p.player, p.card.id) },
                 2,
                 TimeUnit.SECONDS
             )

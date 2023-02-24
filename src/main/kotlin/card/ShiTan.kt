@@ -1,8 +1,6 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.card.ShiTan
-import com.fengsheng.card.ShiTan.executeShiTan
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common
@@ -19,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 class ShiTan : Card {
-    val whoDrawCard: List<color>
+    private val whoDrawCard: List<color>
 
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean, whoDrawCard: List<color>) :
             super(id, colors, direction, lockable) {
@@ -60,7 +58,7 @@ class ShiTan : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
-        log.info(r.toString() + "对" + target + "使用了" + this)
+        log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val resolveFunc = object : Fsm {
             override fun resolve(): ResolveResult {

@@ -1,19 +1,21 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.card.FengYunBianHuanimport
-
-com.fengsheng.card.FengYunBianHuan.executeFengYunBianHuanimport com.fengsheng.phase.MainPhaseIdleimport com.fengsheng.phase.OnUseCardimport com.fengsheng.protos.Common.*import com.fengsheng.protos.Fengshengimport
-
-com.fengsheng.protos.Fengsheng.use_feng_yun_bian_huan_tocimport com.fengsheng.protos.Fengsheng.wait_for_feng_yun_bian_huan_choose_card_tocimport com.google.protobuf.GeneratedMessageV3import org.apache.log4j.Loggerimport java.util.*import java.util.concurrent.*
+import com.fengsheng.card.FengYunBianHuan
+import com.fengsheng.card.FengYunBianHuan.executeFengYunBianHuan
+import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnUseCard
+import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Fengsheng.use_feng_yun_bian_huan_toc
+import com.fengsheng.protos.Fengsheng.wait_for_feng_yun_bian_huan_choose_card_toc
+import com.google.protobuf.GeneratedMessageV3
+import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
 
 class FengYunBianHuan : Card {
-    constructor(id: Int, colors: Array<color>, direction: direction, lockable: Boolean) : super(
-        id,
-        colors,
-        direction,
-        lockable
-    )
+    constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
+            super(id, colors, direction, lockable)
 
     constructor(id: Int, card: Card?) : super(id, card)
 
@@ -34,7 +36,7 @@ class FengYunBianHuan : Card {
             log.error("风云变幻被禁止使用了")
             return false
         }
-        if (g.fsm !is MainPhaseIdle || r !== fsm.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("风云变幻的使用时机不对")
             return false
         }
@@ -44,64 +46,62 @@ class FengYunBianHuan : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val fsm = g.fsm as MainPhaseIdle
         r.deleteCard(id)
-        val players: Deque<Player> = ArrayDeque()
-        for (player in r.game.players) {
-            if (player.isAlive) players.add(player)
-        }
-        val drawCards: MutableMap<Int, Card> = HashMap()
-        for (c in r.game.deck.draw(players.size)) {
-            drawCards[c.getId()] = c
-        }
+        val players = ArrayList(r.game!!.players.filterNotNull().filter { player -> player.alive })
+        val drawCards = arrayListOf(*(r.game!!.deck.draw(players.size)))
         while (players.size > drawCards.size) {
             players.removeLast() // 兼容牌库抽完的情况
         }
-        log.info(r.toString() + "使用了" + this + "，翻开了" + Arrays.toString(drawCards.values.toTypedArray()))
-        for (player in r.game.players) {
+        log.info("${r}使用了${this}，翻开了${drawCards.toTypedArray().contentToString()}")
+        for (player in r.game!!.players) {
             if (player is HumanPlayer) {
                 val builder = use_feng_yun_bian_huan_toc.newBuilder()
-                builder.setCard(toPbCard()).playerId = player.getAlternativeLocation(r.location())
-                for (c in drawCards.values) {
+                builder.setCard(toPbCard()).playerId = player.getAlternativeLocation(r.location)
+                for (c in drawCards) {
                     builder.addShowCards(c.toPbCard())
                 }
                 player.send(builder.build())
             }
         }
-        val resolveFunc = Fsm { ResolveResult(executeFengYunBianHuan(this, drawCards, players, fsm), true) }
+        val resolveFunc = object : Fsm {
+            override fun resolve(): ResolveResult {
+                return ResolveResult(executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm), true)
+            }
+        }
         g.resolve(OnUseCard(r, r, null, this, card_type.Feng_Yun_Bian_Huan, r, resolveFunc))
     }
 
-    private class executeFengYunBianHuan(
+    private data class executeFengYunBianHuan(
         val card: FengYunBianHuan,
-        drawCards: MutableMap<Int, Card>,
-        players: Queue<Player>,
-        mainPhaseIdle: MainPhaseIdle
+        val drawCards: ArrayList<Card>,
+        val players: ArrayList<Player>,
+        val mainPhaseIdle: MainPhaseIdle
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = players.peek()
+            val r = players.firstOrNull()
             if (r == null) {
-                mainPhaseIdle.player.game.deck.discard(card)
+                mainPhaseIdle.player.game!!.deck.discard(card)
                 return ResolveResult(mainPhaseIdle, true)
             }
-            for (player in r.game.players) {
+            for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
                     val builder = wait_for_feng_yun_bian_huan_choose_card_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location())
+                    builder.playerId = player.getAlternativeLocation(r.location)
                     builder.waitingSecond = 15
                     if (player === r) {
                         val seq2: Int = player.seq
                         builder.seq = seq2
-                        player.setTimeout(GameExecutor.Companion.post(r.getGame(), Runnable {
+                        player.timeout = GameExecutor.post(r.game!!, {
                             if (player.checkSeq(seq2)) {
                                 player.incrSeq()
                                 autoChooseCard()
                             }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS))
+                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
                     player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
-                GameExecutor.Companion.post(r.getGame(), Runnable { autoChooseCard() }, 2, TimeUnit.SECONDS)
+                GameExecutor.post(r.game!!, { autoChooseCard() }, 2, TimeUnit.SECONDS)
             }
             return null
         }
@@ -111,19 +111,19 @@ class FengYunBianHuan : Card {
                 log.error("现在正在结算风云变幻")
                 return null
             }
-            val chooseCard = drawCards[message.cardId]
+            val chooseCard = drawCards.find { c -> c.id == message.cardId }
             if (chooseCard == null) {
                 log.error("没有这张牌")
                 return null
             }
-            assert(!players.isEmpty())
-            if (player !== players.peek()) {
+            assert(players.isNotEmpty())
+            if (player !== players.first()) {
                 log.error("还没轮到你选牌")
                 return null
             }
             if (message.asMessageCard) {
                 var containsSame = false
-                for (c in player.messageCards.values) {
+                for (c in player.messageCards) {
                     if (c.hasSameColor(chooseCard)) {
                         containsSame = true
                         break
@@ -135,51 +135,26 @@ class FengYunBianHuan : Card {
                 }
             }
             player.incrSeq()
-            players.poll()
-            drawCards.remove(chooseCard.getId())
+            players.removeFirst()
+            drawCards.removeIf { c -> c.id == chooseCard.id }
             if (message.asMessageCard) {
-                player.addMessageCard(chooseCard)
+                player.messageCards.add(chooseCard)
             } else {
-                player.addCard(chooseCard)
+                player.cards.add(chooseCard)
             }
             return ResolveResult(this, true)
         }
 
         private fun autoChooseCard() {
-            assert(!drawCards.isEmpty())
-            assert(!players.isEmpty())
-            var chooseCard: Card? = null
-            for (c in drawCards.values) {
-                chooseCard = c
-                break
-            }
-            val r = players.peek()
+            assert(drawCards.isNotEmpty())
+            assert(players.isNotEmpty())
+            val chooseCard: Card = drawCards.first()
+            val r = players.first()
             val builder = Fengsheng.feng_yun_bian_huan_choose_card_tos.newBuilder()
-            builder.cardId = chooseCard.getId()
+            builder.cardId = chooseCard.id
             builder.asMessageCard = false
             if (r is HumanPlayer) builder.seq = r.seq
-            r.game.tryContinueResolveProtocol(r, builder.build())
-        }
-
-        val drawCards: MutableMap<Int, Card>
-        val players: Queue<Player>
-        val mainPhaseIdle: MainPhaseIdle
-
-        init {
-            this.sendPhase = sendPhase
-            this.r = r
-            this.target = target
-            card = card
-            this.wantType = wantType
-            this.r = r
-            this.target = target
-            card = card
-            this.player = player
-            card = card
-            card = card
-            this.drawCards = drawCards
-            this.players = players
-            this.mainPhaseIdle = mainPhaseIdle
+            r.game!!.tryContinueResolveProtocol(r, builder.build())
         }
 
         companion object {
@@ -188,17 +163,17 @@ class FengYunBianHuan : Card {
     }
 
     override fun toString(): String {
-        return Card.Companion.cardColorToString(colors) + "风云变幻"
+        return "${cardColorToString(colors)}风云变幻"
     }
 
     companion object {
         private val log = Logger.getLogger(FengYunBianHuan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            if (player.game.qiangLingTypes.contains(card_type.Feng_Yun_Bian_Huan)) return false
-            GameExecutor.Companion.post(
-                player.game,
-                Runnable { card.execute(player.game, player) },
+            if (player.game!!.qiangLingTypes.contains(card_type.Feng_Yun_Bian_Huan)) return false
+            GameExecutor.post(
+                player.game!!,
+                { card.execute(player.game!!, player) },
                 2,
                 TimeUnit.SECONDS
             )

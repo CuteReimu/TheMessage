@@ -41,6 +41,10 @@ abstract class Player protected constructor() {
         return messageCards.removeAt(index)
     }
 
+    fun findMessageCard(id: Int): Card? {
+        return messageCards.find { c -> c.id == id }
+    }
+
     abstract fun notifyDrawPhase()
     abstract fun notifyMainPhase(waitSecond: Int)
     abstract fun notifySendPhaseStart(waitSecond: Int)
@@ -87,7 +91,7 @@ abstract class Player protected constructor() {
     }
 
     fun draw(n: Int) {
-        val cards = game!!.deck!!.draw(n)
+        val cards = game!!.deck.draw(n)
         this.cards.addAll(cards)
         log.info("${this}摸了${cards.contentToString()}，现在有${this.cards.size}张手牌")
         for (player in game!!.players) {
@@ -134,7 +138,7 @@ abstract class Player protected constructor() {
     open fun notifyDie(location: Int) {
         if (this.location == location) {
             game!!.playerDiscardCard(this, *cards.toTypedArray())
-            game!!.deck!!.discard(*messageCards.toTypedArray())
+            game!!.deck.discard(*messageCards.toTypedArray())
         }
     }
 
@@ -166,7 +170,7 @@ abstract class Player protected constructor() {
     }
 
     fun addSkillUseCount(skillId: SkillId, count: Int) {
-        skillUseCount.compute(skillId) { k: SkillId?, v: Int? -> if (v == null) count else v + count }
+        skillUseCount.compute(skillId) { _, v -> if (v == null) count else v + count }
     }
 
     fun getSkillUseCount(skillId: SkillId): Int {

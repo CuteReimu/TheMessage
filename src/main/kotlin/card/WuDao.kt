@@ -1,21 +1,17 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.card.WuDao
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
 import org.apache.log4j.Logger
-import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class WuDao : Card {
-    constructor(id: Int, colors: Array<color>, direction: direction, lockable: Boolean) : super(
-        id,
-        colors,
-        direction,
-        lockable
-    )
+    constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
+            super(id, colors, direction, lockable)
 
     constructor(id: Int, card: Card?) : super(id, card)
 
@@ -37,7 +33,8 @@ class WuDao : Card {
             return false
         }
         val target = args[0] as Player
-        if (g.fsm !is FightPhaseIdle) {
+        val fsm = g.fsm as? FightPhaseIdle
+        if (fsm == null) {
             log.error("误导的使用时机不对")
             return false
         }
@@ -52,46 +49,48 @@ class WuDao : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
-        log.info(r.toString() + "对" + target + "使用了" + this)
+        log.info("${r}对${target}使用了$this")
         val fsm = g.fsm as FightPhaseIdle
         r.deleteCard(id)
-        val resolveFunc = Fsm {
-            fsm.inFrontOfWhom = target
-            fsm.whoseFightTurn = fsm.inFrontOfWhom
-            g.deck.discard(originCard)
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    val builder = use_wu_dao_toc.newBuilder().setCard(toPbCard())
-                    builder.playerId = player.getAlternativeLocation(r.location())
-                    builder.targetPlayerId = player.getAlternativeLocation(target.location())
-                    player.send(builder.build())
+        val resolveFunc = object : Fsm {
+            override fun resolve(): ResolveResult {
+                g.deck.discard(getOriginCard())
+                for (player in g.players) {
+                    if (player is HumanPlayer) {
+                        val builder = use_wu_dao_toc.newBuilder()
+                        builder.card = toPbCard()
+                        builder.playerId = player.getAlternativeLocation(r.location)
+                        builder.targetPlayerId = player.getAlternativeLocation(target.location)
+                        player.send(builder.build())
+                    }
                 }
+                return ResolveResult(fsm.copy(inFrontOfWhom = target, whoseFightTurn = fsm.inFrontOfWhom), true)
             }
-            ResolveResult(fsm, true)
         }
         g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Wu_Dao, r, resolveFunc))
     }
 
     override fun toString(): String {
-        return Card.Companion.cardColorToString(colors) + "误导"
+        return "${cardColorToString(colors)}误导"
     }
 
     companion object {
         private val log = Logger.getLogger(WuDao::class.java)
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
-            if (player.game.qiangLingTypes.contains(card_type.Wu_Dao)) return false
-            val colors = e.messageCard.getColors()
-            if (e.inFrontOfWhom === player && (e.isMessageCardFaceUp || player === e.whoseTurn) && colors.size == 1 && colors[0] != color.Black) return false
-            val target = when (ThreadLocalRandom.current().nextInt(4)) {
-                0 -> e.inFrontOfWhom.nextLeftAlivePlayer
-                1 -> e.inFrontOfWhom.nextRightAlivePlayer
-                else -> null
-            } ?: return false
-            GameExecutor.Companion.post(player.game, Runnable {
-                val card0 =
-                    if (card.type == card_type.Wu_Dao) card else Card.Companion.falseCard(card_type.Wu_Dao, card)
-                card0.execute(player.game, player, target)
+            if (player.game!!.qiangLingTypes.contains(card_type.Wu_Dao))
+                return false
+            val colors = e.messageCard.colors
+            if (e.inFrontOfWhom === player && (e.isMessageCardFaceUp || player === e.whoseTurn) && colors.size == 1 && colors[0] != color.Black)
+                return false
+            val target = when (Random.nextInt(4)) {
+                0 -> e.inFrontOfWhom.getNextLeftAlivePlayer()
+                1 -> e.inFrontOfWhom.getNextRightAlivePlayer()
+                else -> return false
+            }
+            GameExecutor.post(player.game!!, {
+                val card0 = if (card.type == card_type.Wu_Dao) card else falseCard(card_type.Wu_Dao, card)
+                card0.execute(player.game!!, player, target)
             }, 2, TimeUnit.SECONDS)
             return true
         }

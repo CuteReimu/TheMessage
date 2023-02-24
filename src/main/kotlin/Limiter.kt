@@ -6,15 +6,9 @@ import java.util.concurrent.TimeUnit
  * 令牌桶，不是线程安全的
  */
 class Limiter(private val limit: Long, recoverDuration: Long, unit: TimeUnit) {
-    private var left: Long
-    private var lastRecoverNanoTime: Long
-    private val recoverDuration: Long
-
-    init {
-        left = limit
-        lastRecoverNanoTime = System.nanoTime()
-        this.recoverDuration = unit.toNanos(recoverDuration)
-    }
+    private var left = limit
+    private var lastRecoverNanoTime = System.nanoTime()
+    private val recoverDuration = unit.toNanos(recoverDuration)
 
     @JvmOverloads
     fun allow(n: Long = 1): Boolean {

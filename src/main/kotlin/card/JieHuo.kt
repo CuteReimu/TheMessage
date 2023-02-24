@@ -1,14 +1,17 @@
 package com.fengsheng.card
 
+import com.fengsheng.*
+import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Fengsheng
+import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class JieHuo : Card {
-    constructor(id: Int, colors: Array<color>, direction: direction, lockable: Boolean) : super(
-        id,
-        colors,
-        direction,
-        lockable
-    )
+    constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
+            super(id, colors, direction, lockable)
 
     constructor(id: Int, card: Card?) : super(id, card)
 
@@ -33,19 +36,20 @@ class JieHuo : Card {
     }
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
-        log.info(r.toString() + "使用了" + this)
+        log.info("${r}使用了$this")
         r.deleteCard(id)
         execute(this, g, r)
     }
 
     override fun toString(): String {
-        return Card.Companion.cardColorToString(colors) + "截获"
+        return "${cardColorToString(colors)}截获"
     }
 
     companion object {
         private val log = Logger.getLogger(JieHuo::class.java)
         fun canUse(g: Game, r: Player): Boolean {
-            if (g.fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) {
+            val fsm = g.fsm as? FightPhaseIdle
+            if (r !== fsm?.whoseFightTurn) {
                 log.error("截获的使用时机不对")
                 return false
             }
@@ -63,45 +67,33 @@ class JieHuo : Card {
          */
         fun execute(card: JieHuo?, g: Game, r: Player) {
             val fsm = g.fsm as FightPhaseIdle
-            val resolveFunc = Fsm {
-                fsm.inFrontOfWhom = r
-                fsm.whoseFightTurn = fsm.inFrontOfWhom
-                if (card != null) g.deck.discard(card.originCard)
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        val builder = use_jie_huo_toc.newBuilder()
-                        builder.playerId = player.getAlternativeLocation(r.location())
-                        if (card != null) builder.card = card.toPbCard()
-                        player.send(builder.build())
+            val resolveFunc = object : Fsm {
+                override fun resolve(): ResolveResult {
+                    if (card != null) g.deck.discard(card.getOriginCard())
+                    for (player in g.players) {
+                        if (player is HumanPlayer) {
+                            val builder = Fengsheng.use_jie_huo_toc.newBuilder()
+                            builder.playerId = player.getAlternativeLocation(r.location)
+                            if (card != null) builder.card = card.toPbCard()
+                            player.send(builder.build())
+                        }
                     }
+                    return ResolveResult(fsm.copy(inFrontOfWhom = r, whoseFightTurn = fsm.inFrontOfWhom), true)
                 }
-                ResolveResult(fsm, true)
             }
-            if (card != null) g.resolve(
-                OnUseCard(
-                    fsm.whoseTurn,
-                    r,
-                    null,
-                    card,
-                    card_type.Jie_Huo,
-                    r,
-                    resolveFunc
-                )
-            ) else g.resolve(resolveFunc)
+            if (card != null)
+                g.resolve(OnUseCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, resolveFunc))
+            else
+                g.resolve(resolveFunc)
         }
 
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
-            if (player.game.qiangLingTypes.contains(card_type.Jie_Huo)) return false
-            val colors = e.messageCard.getColors()
+            if (player.game!!.qiangLingTypes.contains(card_type.Jie_Huo)) return false
+            val colors = e.messageCard.colors
             if (e.inFrontOfWhom === player || (e.isMessageCardFaceUp || player === e.whoseTurn) && colors.size == 1 && colors[0] == color.Black) return false
-            if (ThreadLocalRandom.current().nextBoolean()) return false
-            GameExecutor.Companion.post(
-                player.game,
-                Runnable { card.execute(player.game, player) },
-                2,
-                TimeUnit.SECONDS
-            )
+            if (Random.nextBoolean()) return false
+            GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true
         }
     }
