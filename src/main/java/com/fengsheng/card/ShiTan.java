@@ -195,7 +195,7 @@ public class ShiTan extends Card {
             } else {
                 log.info(target + "选择了[弃一张牌]");
                 card.notifyResult(target, false);
-                if (msg.getCardIdCount() > 0)
+                if (discardCard != null)
                     target.getGame().playerDiscardCard(target, discardCard);
             }
             return new ResolveResult(new MainPhaseIdle(r), true);
