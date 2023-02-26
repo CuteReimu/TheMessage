@@ -22,6 +22,7 @@ public class remove_one_position_tos extends AbstractProtoHandler<Fengsheng.remo
             int i = oldPlayers.length - 1;
             for (; i >= 0; i--)
                 if (oldPlayers[i] == null) break;
+            int nullIndex = i;
             Player[] players = new Player[oldPlayers.length - 1];
             System.arraycopy(oldPlayers, 0, players, 0, i);
             System.arraycopy(oldPlayers, i + 1, players, i, oldPlayers.length - i - 1);
@@ -32,7 +33,7 @@ public class remove_one_position_tos extends AbstractProtoHandler<Fengsheng.remo
             player.getGame().setPlayers(players);
             for (Player p : players) {
                 if (p instanceof HumanPlayer)
-                    ((HumanPlayer) p).send(Fengsheng.remove_one_position_toc.newBuilder().setPosition(i).build());
+                    ((HumanPlayer) p).send(Fengsheng.remove_one_position_toc.newBuilder().setPosition(nullIndex).build());
             }
             for (Player p : players)
                 if (p == null) return;
