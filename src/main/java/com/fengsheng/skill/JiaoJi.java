@@ -69,7 +69,6 @@ public class JiaoJi extends AbstractSkill implements ActiveSkill {
         Card[] cards = cardList.toArray(new Card[0]);
         log.info(r + "对" + target + "发动了[交际]，抽取了" + Arrays.toString(cards));
         for (Card card : cards) {
-            target.deleteCard(card.getId());
             r.addCard(card);
         }
         int black = 0;
