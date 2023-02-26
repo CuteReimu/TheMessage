@@ -4,5 +4,5 @@ interface Skill {
     /**
      * 获取技能ID
      */
-    val skillId: SkillId?
+    val skillId: SkillId
 }

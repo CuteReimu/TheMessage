@@ -69,9 +69,9 @@ abstract class Player protected constructor() {
     )
 
     open fun init() {
-        log.info("${this}的身份是" + identityColorToString(identity, secretTask))
+        log.info("${this}的身份是${identityColorToString(identity, secretTask)}")
         for (skill in roleSkillsData.skills) {
-            (skill as? TriggeredSkill)?.init(game)
+            (skill as? TriggeredSkill)?.init(game!!)
         }
     }
 
@@ -146,7 +146,7 @@ abstract class Player protected constructor() {
     abstract fun notifyAskForChengQing(whoDie: Player, askWhom: Player, waitSecond: Int)
     abstract fun waitForDieGiveCard(whoDie: Player, waitSecond: Int)
 
-    var skills: Array<Skill>
+    var skills: Array<out Skill>
         get() = roleSkillsData.skills
         set(value) {
             roleSkillsData.skills = value

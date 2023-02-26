@@ -11,8 +11,8 @@ interface TriggeredSkill : Skill {
     /**
      * 初始化一场游戏时调用
      */
-    fun init(g: Game?) {
-        g!!.addListeningSkill(this)
+    fun init(g: Game) {
+        g.addListeningSkill(this)
     }
 
     /**

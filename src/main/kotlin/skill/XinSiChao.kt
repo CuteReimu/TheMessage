@@ -1,20 +1,24 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Gameimport
+import com.fengsheng.Game
+import com.fengsheng.GameExecutor
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
+import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.protos.Role.skill_xin_si_chao_toc
+import com.fengsheng.protos.Role.skill_xin_si_chao_tos
+import com.google.protobuf.GeneratedMessageV3
+import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
 
-com.fengsheng.GameExecutorimport com.fengsheng.HumanPlayerimport com.fengsheng.Playerimport com.fengsheng.card.*import com.fengsheng.phase.MainPhaseIdleimport
-
-com.fengsheng.protos.Roleimport com.google.protobuf.GeneratedMessageV3import org.apache.log4j.Loggerimport java.util.concurrent.*
 /**
  * 端木静技能【新思潮】：出牌阶段限一次，你可以弃置一张手牌，然后摸两张牌。
  */
 class XinSiChao : AbstractSkill(), ActiveSkill {
-    override fun getSkillId(): SkillId? {
-        return SkillId.XIN_SI_CHAO
-    }
+    override val skillId = SkillId.XIN_SI_CHAO
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (g.fsm !is MainPhaseIdle || r !== fsm.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("现在不是出牌阶段空闲时点")
             return
         }
@@ -22,9 +26,9 @@ class XinSiChao : AbstractSkill(), ActiveSkill {
             log.error("[新思潮]一回合只能发动一次")
             return
         }
-        val pb = message as Role.skill_xin_si_chao_tos
+        val pb = message as skill_xin_si_chao_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: " + r.seq + ", actual Seq: " + pb.seq)
+            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             return
         }
         val card = r.findCard(pb.cardId)
@@ -36,9 +40,11 @@ class XinSiChao : AbstractSkill(), ActiveSkill {
         r.addSkillUseCount(skillId)
         log.info(r.toString() + "发动了[新思潮]")
         for (p in g.players) {
-            (p as? HumanPlayer)?.send(
-                Role.skill_xin_si_chao_toc.newBuilder().setPlayerId(p.getAlternativeLocation(r.location())).build()
-            )
+            if (p is HumanPlayer) {
+                val builder = skill_xin_si_chao_toc.newBuilder()
+                builder.playerId = p.getAlternativeLocation(r.location)
+                p.send(builder.build())
+            }
         }
         g.playerDiscardCard(r, card)
         r.draw(2)
@@ -49,16 +55,11 @@ class XinSiChao : AbstractSkill(), ActiveSkill {
         private val log = Logger.getLogger(XinSiChao::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.player.getSkillUseCount(SkillId.XIN_SI_CHAO) > 0) return false
-            var card: Card? = null
-            for (c in e.player.cards.values) {
-                card = c
-                break
-            }
-            if (card == null) return false
+            val card = e.player.cards.firstOrNull() ?: return false
             val cardId = card.id
-            GameExecutor.Companion.post(e.player.game, Runnable {
+            GameExecutor.post(e.player.game!!, {
                 skill.executeProtocol(
-                    e.player.game, e.player, Role.skill_xin_si_chao_tos.newBuilder().setCardId(cardId).build()
+                    e.player.game!!, e.player, skill_xin_si_chao_tos.newBuilder().setCardId(cardId).build()
                 )
             }, 2, TimeUnit.SECONDS)
             return true

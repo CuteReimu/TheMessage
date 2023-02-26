@@ -13,7 +13,7 @@ class skill_dui_zheng_xia_yao_a_tos : AbstractProtoHandler<skill_dui_zheng_xia_y
             log.error("你没有这个技能")
             return
         }
-        skill.executeProtocol(r.game, r, pb)
+        skill.executeProtocol(r.game!!, r, pb)
     }
 
     companion object {

@@ -32,7 +32,7 @@ class Game private constructor(totalPlayerCount: Int) {
     var deck: Deck = Deck(this)
     var fsm: Fsm? = null
         private set
-    private val listeningSkills = ArrayList<TriggeredSkill>()
+    val listeningSkills = ArrayList<TriggeredSkill>()
 
     /**
      * 用于王田香技能禁闭
@@ -269,13 +269,6 @@ class Game private constructor(totalPlayerCount: Int) {
      */
     fun addListeningSkill(skill: TriggeredSkill) {
         listeningSkills.add(skill)
-    }
-
-    /**
-     * 获取监听技能的列表
-     */
-    fun getListeningSkills(): List<TriggeredSkill> {
-        return listeningSkills
     }
 
     /**

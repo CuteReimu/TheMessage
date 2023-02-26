@@ -1,34 +1,37 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.*
-import com.fengsheng.phase.CheckWinimport
-
-com.fengsheng.phase.FightPhaseIdleimport com.fengsheng.protos.Common.cardimport com.fengsheng.protos.Common.colorimport com.fengsheng.protos.Roleimport com.fengsheng.protos.Role.*import com.fengsheng.skill.DuJi.executeDuJiAimport
-
-com.fengsheng.skill.DuJi.executeDuJiBimport com.google.protobuf.GeneratedMessageV3import org.apache.log4j.Loggerimport java.util.*import java.util.concurrent.*
+import com.fengsheng.card.Card
+import com.fengsheng.phase.CheckWin
+import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Role.*
+import com.google.protobuf.GeneratedMessageV3
+import org.apache.log4j.Logger
+import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 白昆山技能【毒计】：争夺阶段，你可以翻开此角色牌，然后指定两名其他角色，令他们相互抽取对方的一张手牌并展示之，你将展示的牌加入你的手牌，若展示的是黑色牌，你可以改为令抽取者选择一项：
  *  * 将其置入自己的情报区 * 将其置入对方的情报区
  */
 class DuJi : AbstractSkill(), ActiveSkill {
-    override fun getSkillId(): SkillId? {
-        return SkillId.DU_JI
-    }
+    override val skillId = SkillId.DU_JI
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (g.fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) {
+        val fsm = g.fsm as? FightPhaseIdle
+        if (r !== fsm?.whoseFightTurn) {
             log.error("现在不是发动[毒计]的时机")
             return
         }
-        if (r.isRoleFaceUp) {
+        if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[毒计]")
             return
         }
-        val pb = message as Role.skill_du_ji_a_tos
+        val pb = message as skill_du_ji_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: " + r.seq + ", actual Seq: " + pb.seq)
+            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             return
         }
         if (pb.targetPlayerIdsCount != 2) {
@@ -45,9 +48,9 @@ class DuJi : AbstractSkill(), ActiveSkill {
             log.error("不能以自己为目标")
             return
         }
-        val target1 = g.players[r.getAbstractLocation(idx1)]
-        val target2 = g.players[r.getAbstractLocation(idx2)]
-        if (!target1.isAlive || !target2.isAlive) {
+        val target1 = g.players[r.getAbstractLocation(idx1)]!!
+        val target2 = g.players[r.getAbstractLocation(idx2)]!!
+        if (!target1.alive || !target2.alive) {
             log.error("目标已死亡")
             return
         }
@@ -58,66 +61,76 @@ class DuJi : AbstractSkill(), ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        val cards1 = target1.cards.values.toTypedArray()
-        val cards2 = target2.cards.values.toTypedArray()
+        val cards1 = target1.cards.toTypedArray()
+        val cards2 = target2.cards.toTypedArray()
         val card1 = cards1[ThreadLocalRandom.current().nextInt(cards1.size)]
         val card2 = cards2[ThreadLocalRandom.current().nextInt(cards2.size)]
-        log.info(r.toString() + "发动了[毒计]，抽取了" + target1 + "的" + card1 + "和" + target2 + "的" + card2)
+        log.info("${r}发动了[毒计]，抽取了${target1}的${card1}和${target2}的$card2")
         target1.deleteCard(card1.id)
         target2.deleteCard(card2.id)
-        r.addCard(card1, card2)
+        r.cards.add(card1)
+        r.cards.add(card2)
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_du_ji_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location())
-                builder.addTargetPlayerIds(p.getAlternativeLocation(target1.location()))
-                builder.addTargetPlayerIds(p.getAlternativeLocation(target2.location()))
+                builder.playerId = p.getAlternativeLocation(r.location)
+                builder.addTargetPlayerIds(p.getAlternativeLocation(target1.location))
+                builder.addTargetPlayerIds(p.getAlternativeLocation(target2.location))
                 builder.addCards(card1.toPbCard())
                 builder.addCards(card2.toPbCard())
                 p.send(builder.build())
             }
         }
-        fsm.whoseFightTurn = fsm.inFrontOfWhom
-        val twoPlayersAndCards: MutableList<TwoPlayersAndCard> = ArrayList()
+        val twoPlayersAndCards = ArrayList<TwoPlayersAndCard>()
         if (card1.colors.contains(color.Black)) twoPlayersAndCards.add(TwoPlayersAndCard(target1, target2, card1))
         if (card2.colors.contains(color.Black)) twoPlayersAndCards.add(TwoPlayersAndCard(target2, target1, card2))
-        g.resolve(executeDuJiA(CheckWin(fsm.whoseTurn, fsm), r, twoPlayersAndCards))
+        g.resolve(
+            executeDuJiA(CheckWin(fsm.whoseTurn, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)), r, twoPlayersAndCards)
+        )
     }
 
-    private class executeDuJiA(fsm: CheckWin, r: Player, playerAndCards: MutableList<TwoPlayersAndCard>) : WaitingFsm {
+    private data class executeDuJiA(
+        val fsm: CheckWin,
+        val r: Player,
+        val playerAndCards: ArrayList<TwoPlayersAndCard>
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (playerAndCards.isEmpty()) return ResolveResult(fsm, true)
-            val g = r.game
+            val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_wait_for_du_ji_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location())
+                    builder.playerId = p.getAlternativeLocation(r.location)
                     for (twoPlayersAndCard in playerAndCards) {
-                        builder.addTargetPlayerIds(p.getAlternativeLocation(twoPlayersAndCard.waitingPlayer.location()))
+                        builder.addTargetPlayerIds(p.getAlternativeLocation(twoPlayersAndCard.waitingPlayer.location))
                         builder.addCardIds(twoPlayersAndCard.card.id)
                     }
                     builder.waitingSecond = 15
                     if (p === r) {
-                        val seq2: Int = p.seq
+                        val seq2 = p.seq
                         builder.seq = seq2
-                        p.setTimeout(GameExecutor.Companion.post(g, Runnable {
+                        p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
-                                g.tryContinueResolveProtocol(
-                                    r, Role.skill_du_ji_b_tos.newBuilder()
-                                        .setEnable(false).setSeq(seq2).build()
-                                )
+                                val builder2 = skill_du_ji_b_tos.newBuilder()
+                                builder2.enable = false
+                                builder2.seq = seq2
+                                g.tryContinueResolveProtocol(r, builder2.build())
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS))
+                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
                     p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
-                GameExecutor.Companion.post(g, Runnable {
-                    if (!playerAndCards.isEmpty()) g.tryContinueResolveProtocol(
-                        r, Role.skill_du_ji_b_tos.newBuilder().setEnable(true)
-                            .setCardId(playerAndCards[0].card.id).build()
-                    ) else g.tryContinueResolveProtocol(r, Role.skill_du_ji_b_tos.newBuilder().setEnable(false).build())
+                GameExecutor.post(g, {
+                    if (playerAndCards.isNotEmpty()) {
+                        val builder = skill_du_ji_b_tos.newBuilder()
+                        builder.enable = true
+                        builder.cardId = playerAndCards[0].card.id
+                        g.tryContinueResolveProtocol(r, builder.build())
+                    } else {
+                        g.tryContinueResolveProtocol(r, skill_du_ji_b_tos.newBuilder().setEnable(false).build())
+                    }
                 }, 2, TimeUnit.SECONDS)
             }
             return null
@@ -128,102 +141,35 @@ class DuJi : AbstractSkill(), ActiveSkill {
                 log.error("不是你发技能的时机")
                 return null
             }
-            if (message !is Role.skill_du_ji_b_tos) {
+            if (message !is skill_du_ji_b_tos) {
                 log.error("错误的协议")
                 return null
             }
-            val g = r.game
+            val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: " + r.seq + ", actual Seq: " + message.seq)
+                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 return null
             }
             if (!message.enable) {
                 r.incrSeq()
                 for (p in g.players) {
-                    (p as? HumanPlayer)?.send(
-                        skill_du_ji_b_toc.newBuilder().setPlayerId(p.getAlternativeLocation(r.location()))
-                            .setEnable(false).build()
-                    )
+                    if (p is HumanPlayer) {
+                        val builder = skill_du_ji_b_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.enable = false
+                        p.send(builder.build())
+                    }
                 }
                 return ResolveResult(fsm, true)
             }
-            var selection: TwoPlayersAndCard? = null
-            val it = playerAndCards.iterator()
-            while (it.hasNext()) {
-                val twoPlayersAndCard = it.next()
-                if (twoPlayersAndCard.card.id == message.cardId) {
-                    selection = twoPlayersAndCard
-                    it.remove()
-                    break
-                }
-            }
-            if (selection == null) {
+            val index = playerAndCards.indexOfFirst { it.card.id == message.cardId }
+            if (index < 0) {
                 log.error("目标卡牌不存在")
                 return null
             }
+            val selection = playerAndCards.removeAt(index)
             r.incrSeq()
             return ResolveResult(executeDuJiB(this, selection), true)
-        }
-
-        val fsm: CheckWin
-        val r: Player
-        val playerAndCards: MutableList<TwoPlayersAndCard>
-
-        init {
-            this.card = card
-            this.sendPhase = sendPhase
-            this.r = r
-            this.target = target
-            this.card = card
-            this.wantType = wantType
-            this.r = r
-            this.target = target
-            this.card = card
-            this.player = player
-            this.card = card
-            this.card = card
-            this.drawCards = drawCards
-            this.players = players
-            this.mainPhaseIdle = mainPhaseIdle
-            this.dieSkill = dieSkill
-            this.player = player
-            this.player = player
-            this.onUseCard = onUseCard
-            this.game = game
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.dir = dir
-            this.targetPlayer = targetPlayer
-            this.lockedPlayers = lockedPlayers
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.player = player
-            this.whoseTurn = whoseTurn
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.fightPhase = fightPhase
-            this.player = player
-            this.sendPhase = sendPhase
-            this.dieGiveCard = dieGiveCard
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.isMessageCardFaceUp = isMessageCardFaceUp
-            this.waitForChengQing = waitForChengQing
-            this.waitForChengQing = waitForChengQing
-            this.whoseTurn = whoseTurn
-            this.dyingQueue = dyingQueue
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.receiveOrder = receiveOrder
-            this.inFrontOfWhom = inFrontOfWhom
-            this.r = r
-            this.fsm = fsm
-            this.r = r
-            this.playerAndCards = playerAndCards
         }
 
         companion object {
@@ -231,36 +177,39 @@ class DuJi : AbstractSkill(), ActiveSkill {
         }
     }
 
-    private class executeDuJiB(fsm: executeDuJiA, selection: TwoPlayersAndCard) : WaitingFsm {
+    private data class executeDuJiB(val fsm: executeDuJiA, val selection: TwoPlayersAndCard) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            log.info("等待" + selection.waitingPlayer + "对" + selection.card + "进行选择")
-            val g = selection.waitingPlayer.game
+            log.info("等待${selection.waitingPlayer}对${selection.card}进行选择")
+            val g = selection.waitingPlayer.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_du_ji_b_toc.newBuilder().setEnable(true)
-                    builder.playerId = p.getAlternativeLocation(fsm.r.location())
-                    builder.waitingPlayerId = p.getAlternativeLocation(selection.waitingPlayer.location())
-                    builder.targetPlayerId = p.getAlternativeLocation(selection.fromPlayer.location())
+                    val builder = skill_du_ji_b_toc.newBuilder()
+                    builder.enable = true
+                    builder.playerId = p.getAlternativeLocation(fsm.r.location)
+                    builder.waitingPlayerId = p.getAlternativeLocation(selection.waitingPlayer.location)
+                    builder.targetPlayerId = p.getAlternativeLocation(selection.fromPlayer.location)
                     builder.card = selection.card.toPbCard()
                     builder.waitingSecond = 15
                     if (p === selection.waitingPlayer) {
                         val seq2: Int = p.seq
                         builder.seq = seq2
-                        p.setTimeout(GameExecutor.Companion.post(g, Runnable {
-                            if (p.checkSeq(seq2)) g.tryContinueResolveProtocol(
-                                selection.waitingPlayer, Role.skill_du_ji_c_tos.newBuilder()
-                                    .setInFrontOfMe(false).setSeq(seq2).build()
-                            )
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS))
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2)) {
+                                val builder2 = skill_du_ji_c_tos.newBuilder()
+                                builder2.inFrontOfMe = false
+                                builder2.seq = seq2
+                                g.tryContinueResolveProtocol(selection.waitingPlayer, builder2.build())
+                            }
+                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
                     p.send(builder.build())
                 }
             }
             if (selection.waitingPlayer is RobotPlayer) {
-                GameExecutor.Companion.post(g, Runnable {
+                GameExecutor.post(g, {
                     g.tryContinueResolveProtocol(
-                        selection.waitingPlayer, Role.skill_du_ji_c_tos.newBuilder()
-                            .setInFrontOfMe(false).build()
+                        selection.waitingPlayer,
+                        skill_du_ji_c_tos.newBuilder().setInFrontOfMe(false).build()
                     )
                 }, 2, TimeUnit.SECONDS)
             }
@@ -273,28 +222,28 @@ class DuJi : AbstractSkill(), ActiveSkill {
                 log.error("当前没有轮到你结算[毒计]")
                 return null
             }
-            if (message !is Role.skill_du_ji_c_tos) {
+            if (message !is skill_du_ji_c_tos) {
                 log.error("错误的协议")
                 return null
             }
-            val g = r.game
+            val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: " + r.seq + ", actual Seq: " + message.seq)
+                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 return null
             }
             r.incrSeq()
             val target = if (message.inFrontOfMe) selection.waitingPlayer else selection.fromPlayer
             val card = selection.card
-            log.info(r.toString() + "选择将" + card + "放在" + target + "面前")
+            log.info("${r}选择将${card}放在${target}面前")
             fsm.r.deleteCard(card.id)
-            target.addMessageCard(card)
+            target.messageCards.add(card)
             fsm.fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_du_ji_c_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(fsm.r.location())
-                    builder.waitingPlayerId = p.getAlternativeLocation(r.location())
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location())
+                    builder.playerId = p.getAlternativeLocation(fsm.r.location)
+                    builder.waitingPlayerId = p.getAlternativeLocation(r.location)
+                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.card = card.toPbCard()
                     p.send(builder.build())
                 }
@@ -302,162 +251,35 @@ class DuJi : AbstractSkill(), ActiveSkill {
             return ResolveResult(fsm, true)
         }
 
-        val fsm: executeDuJiA
-        val selection: TwoPlayersAndCard
-
-        init {
-            this.card = card
-            this.sendPhase = sendPhase
-            this.r = r
-            this.target = target
-            this.card = card
-            this.wantType = wantType
-            this.r = r
-            this.target = target
-            this.card = card
-            this.player = player
-            this.card = card
-            this.card = card
-            this.drawCards = drawCards
-            this.players = players
-            this.mainPhaseIdle = mainPhaseIdle
-            this.dieSkill = dieSkill
-            this.player = player
-            this.player = player
-            this.onUseCard = onUseCard
-            this.game = game
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.dir = dir
-            this.targetPlayer = targetPlayer
-            this.lockedPlayers = lockedPlayers
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.player = player
-            this.whoseTurn = whoseTurn
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.fightPhase = fightPhase
-            this.player = player
-            this.sendPhase = sendPhase
-            this.dieGiveCard = dieGiveCard
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.isMessageCardFaceUp = isMessageCardFaceUp
-            this.waitForChengQing = waitForChengQing
-            this.waitForChengQing = waitForChengQing
-            this.whoseTurn = whoseTurn
-            this.dyingQueue = dyingQueue
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.receiveOrder = receiveOrder
-            this.inFrontOfWhom = inFrontOfWhom
-            this.r = r
-            this.fsm = fsm
-            this.r = r
-            this.playerAndCards = playerAndCards
-            this.fsm = fsm
-            this.selection = selection
-        }
-
         companion object {
             private val log = Logger.getLogger(executeDuJiB::class.java)
         }
     }
 
-    private class TwoPlayersAndCard(fromPlayer: Player, waitingPlayer: Player, val card: Card) {
-        val fromPlayer: Player
-        val waitingPlayer: Player
-
-        init {
-            this.sendPhase = sendPhase
-            this.r = r
-            this.target = target
-            card = card
-            this.wantType = wantType
-            this.r = r
-            this.target = target
-            card = card
-            this.player = player
-            card = card
-            card = card
-            this.drawCards = drawCards
-            this.players = players
-            this.mainPhaseIdle = mainPhaseIdle
-            this.dieSkill = dieSkill
-            this.player = player
-            this.player = player
-            this.onUseCard = onUseCard
-            this.game = game
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.dir = dir
-            this.targetPlayer = targetPlayer
-            this.lockedPlayers = lockedPlayers
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.player = player
-            this.whoseTurn = whoseTurn
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.fightPhase = fightPhase
-            this.player = player
-            this.sendPhase = sendPhase
-            this.dieGiveCard = dieGiveCard
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.isMessageCardFaceUp = isMessageCardFaceUp
-            this.waitForChengQing = waitForChengQing
-            this.waitForChengQing = waitForChengQing
-            this.whoseTurn = whoseTurn
-            this.dyingQueue = dyingQueue
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.receiveOrder = receiveOrder
-            this.inFrontOfWhom = inFrontOfWhom
-            this.r = r
-            this.fsm = fsm
-            this.r = r
-            this.playerAndCards = playerAndCards
-            this.fsm = fsm
-            this.selection = selection
-            this.fromPlayer = fromPlayer
-            this.waitingPlayer = waitingPlayer
-            card = card
-        }
-    }
+    private data class TwoPlayersAndCard(val fromPlayer: Player, val waitingPlayer: Player, val card: Card)
 
     companion object {
         private val log = Logger.getLogger(DuJi::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.isRoleFaceUp) return false
-            val players: MutableList<Player> = ArrayList()
-            for (p in player.game.players) {
-                if (p !== player && p.isAlive && !p.cards.isEmpty()) players.add(p)
+            if (player.roleFaceUp) return false
+            val players = ArrayList<Player>()
+            for (p in player.game!!.players) {
+                if (p !== player && p!!.alive && p.cards.isNotEmpty()) players.add(p)
             }
             val playerCount = players.size
             if (playerCount < 2) return false
             if (ThreadLocalRandom.current().nextInt(playerCount * playerCount) != 0) return false
-            val random: Random = ThreadLocalRandom.current()
-            val i = random.nextInt(playerCount)
-            var j = random.nextInt(playerCount)
+            val i = Random.nextInt(playerCount)
+            var j = Random.nextInt(playerCount)
             j = if (i == j) (j + 1) % playerCount else j
             val player1 = players[i]
             val player2 = players[j]
-            GameExecutor.Companion.post(player.game, Runnable {
+            GameExecutor.post(player.game!!, {
                 skill.executeProtocol(
-                    player.game, player, Role.skill_du_ji_a_tos.newBuilder()
-                        .addTargetPlayerIds(player.getAlternativeLocation(player1.location()))
-                        .addTargetPlayerIds(player.getAlternativeLocation(player2.location())).build()
+                    player.game!!, player, skill_du_ji_a_tos.newBuilder()
+                        .addTargetPlayerIds(player.getAlternativeLocation(player1.location))
+                        .addTargetPlayerIds(player.getAlternativeLocation(player2.location)).build()
                 )
             }, 2, TimeUnit.SECONDS)
             return true

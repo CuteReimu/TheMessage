@@ -1,8 +1,6 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.card.FengYunBianHuan
-import com.fengsheng.card.FengYunBianHuan.executeFengYunBianHuan
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
@@ -136,7 +134,7 @@ class FengYunBianHuan : Card {
             }
             player.incrSeq()
             players.removeFirst()
-            drawCards.removeIf { c -> c.id == chooseCard.id }
+            drawCards.removeAt(drawCards.indexOfFirst { c -> c.id == chooseCard.id })
             if (message.asMessageCard) {
                 player.messageCards.add(chooseCard)
             } else {

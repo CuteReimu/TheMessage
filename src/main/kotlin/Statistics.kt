@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
-import java.util.function.Predicate
 
 object Statistics {
     private val pool = Executors.newSingleThreadExecutor()
@@ -258,12 +257,12 @@ object Statistics {
                 val order =
                     player_order.newBuilder().setId(++orderId).setDevice(device).setName(name).setTime(time).build()
                 orders1.add(order)
-                orders1.removeIf(Predicate { o: player_order ->
+                orders1.removeIf { o: player_order ->
                     if (o.time <= now - 1800) {
                         orderMap.remove(o.id)
                         true
                     } else false
-                })
+                }
                 if (orders1.size > 3) orders1.subList(0, orders1.size - 3).clear()
                 deviceOrderMap[device] = orders1
                 orderMap[order.id] = order
