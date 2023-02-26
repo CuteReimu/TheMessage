@@ -1,6 +1,8 @@
 package com.fengsheng.handler
 
-import com.fengsheng.*
+import com.fengsheng.Config
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Statistics
 import com.fengsheng.protos.Errcode
 import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng
@@ -24,7 +26,7 @@ class get_record_list_tos : ProtoHandler {
             player.channel.close()
             return
         }
-        Statistics.Companion.getInstance().displayRecordList(player)
+        Statistics.displayRecordList(player)
     }
 
     companion object {

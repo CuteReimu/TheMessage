@@ -5,7 +5,7 @@ import com.fengsheng.HumanPlayer
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 
-abstract class AbstractProtoHandler<T : GeneratedMessageV3?> : ProtoHandler {
+abstract class AbstractProtoHandler<T : GeneratedMessageV3> : ProtoHandler {
     protected abstract fun handle0(r: HumanPlayer, pb: T)
     override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
         // 因为player.setGame()只会join_room_tos调用，所以一定和这里的player.getGame()在同一线程，所以无需加锁
@@ -13,10 +13,11 @@ abstract class AbstractProtoHandler<T : GeneratedMessageV3?> : ProtoHandler {
         if (game == null) {
             log.error("player didn't not join room, current msg: " + message.descriptorForType.name)
         } else {
-            GameExecutor.Companion.post(game, Runnable {
+            GameExecutor.post(game) {
                 player.clearTimeoutCount()
+                @Suppress("UNCHECKED_CAST")
                 handle0(player, message as T)
-            })
+            }
         }
     }
 
