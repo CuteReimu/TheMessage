@@ -13,7 +13,7 @@ class skill_sou_ji_a_tos : AbstractProtoHandler<skill_sou_ji_a_tos>() {
             log.error("你没有这个技能")
             return
         }
-        skill.executeProtocol(r.game, r, pb)
+        skill.executeProtocol(r.game!!, r, pb)
     }
 
     companion object {

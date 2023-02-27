@@ -1,23 +1,26 @@
 package com.fengsheng.gm
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.Player
+import com.fengsheng.RobotPlayer
+import com.fengsheng.Statistics
 import java.util.function.Function
 
-class addrobot : Function<Map<String?, String>, String> {
-    override fun apply(form: Map<String?, String>): String {
+class addrobot : Function<Map<String, String?>, String> {
+    override fun apply(form: Map<String, String?>): String {
         return try {
             var count = if (form.containsKey("count")) form["count"]!!.toInt() else 0
             count = if (count > 0) count else 99
             synchronized(Game::class.java) {
-                val g: Game = Game.Companion.getInstance()
+                val g = Game.newGame
                 for (i in 0 until count) {
                     if (g.isStarted) break
                     val robotPlayer: Player = RobotPlayer()
-                    robotPlayer.playerName = Player.Companion.randPlayerName()
+                    robotPlayer.playerName = Player.randPlayerName()
                     robotPlayer.game = g
-                    robotPlayer.game.onPlayerJoinRoom(
+                    robotPlayer.game!!.onPlayerJoinRoom(
                         robotPlayer,
-                        Statistics.Companion.getInstance().getTotalPlayerGameCount()
+                        Statistics.totalPlayerGameCount
                     )
                 }
             }

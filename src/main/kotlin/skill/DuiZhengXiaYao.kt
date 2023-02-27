@@ -235,7 +235,7 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             }
             r.incrSeq()
             log.info("${r}弃掉了${target}面前的${card}")
-            g.deck.discard(target.deleteMessageCard(card.id))
+            g.deck.discard(target.deleteMessageCard(card.id)!!)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_dui_zheng_xia_yao_c_toc.newBuilder()

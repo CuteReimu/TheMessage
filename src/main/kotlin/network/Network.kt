@@ -1,4 +1,4 @@
-package com.fengsheng.networkimport
+package com.fengsheng.network
 
 import com.fengsheng.Config
 import io.netty.bootstrap.ServerBootstrap
@@ -7,18 +7,13 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import java.util.concurrent.CountDownLatch
 
-com.fengsheng.protos.Common.card_type
-import java.lang.Runnable
-import java.lang.RuntimeException
-import java.lang.InterruptedException
-
 object Network {
     fun init() {
-        Thread(Runnable { obj: Network? -> com.fengsheng.network.Network.initGameNetwork() }).start()
-        Thread(Runnable { obj: Network? -> com.fengsheng.network.Network.initGameWebSocketNetwork() }).start()
-        Thread(Runnable { obj: Network? -> com.fengsheng.network.Network.initGmNetwork() }).start()
+        Thread { initGameNetwork() }.start()
+        Thread { initGameWebSocketNetwork() }.start()
+        Thread { initGmNetwork() }.start()
         try {
-            com.fengsheng.network.Network.cd.await()
+            cd.await()
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
             throw RuntimeException(e)
@@ -35,7 +30,7 @@ object Network {
                 .channel(NioServerSocketChannel::class.java)
                 .childHandler(ProtoServerInitializer())
             val future = bootstrap.bind(Config.ListenPort)
-            com.fengsheng.network.Network.cd.countDown()
+            cd.countDown()
             future.channel().closeFuture().sync()
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
@@ -55,7 +50,7 @@ object Network {
                 .channel(NioServerSocketChannel::class.java)
                 .childHandler(WebSocketServerInitializer())
             val future = bootstrap.bind(Config.ListenWebSocketPort)
-            com.fengsheng.network.Network.cd.countDown()
+            cd.countDown()
             future.channel().closeFuture().sync()
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
@@ -68,7 +63,7 @@ object Network {
 
     private fun initGmNetwork() {
         if (!Config.IsGmEnable) {
-            com.fengsheng.network.Network.cd.countDown()
+            cd.countDown()
             return
         }
         val bossGroup: EventLoopGroup = NioEventLoopGroup()
@@ -79,7 +74,7 @@ object Network {
                 .channel(NioServerSocketChannel::class.java)
                 .childHandler(HttpServerInitializer())
             val future = bootstrap.bind(Config.GmListenPort)
-            com.fengsheng.network.Network.cd.countDown()
+            cd.countDown()
             future.channel().closeFuture().sync()
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()

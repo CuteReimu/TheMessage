@@ -1,31 +1,34 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.*
-import com.fengsheng.phase.FightPhaseIdleimport
-
-com.fengsheng.phase.NextTurnimport com.fengsheng.protos.Common.cardimport com.fengsheng.protos.Common.colorimport com.fengsheng.protos.Roleimport com.fengsheng.protos.Role.skill_sou_ji_a_tocimport com.fengsheng.protos.Role.skill_sou_ji_b_tocimport com.fengsheng.skill.SouJi.executeSouJiimport com.google.protobuf.GeneratedMessageV3import org.apache.log4j.Loggerimport java.util.*import java.util.concurrent.*
+import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.NextTurn
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Role.*
+import com.google.protobuf.GeneratedMessageV3
+import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 李醒技能【搜辑】：争夺阶段，你可以翻开此角色牌，然后查看一名角色的手牌和待收情报，并且你可以选择其中任意张黑色牌，展示并加入你的手牌。
  */
 class SouJi : AbstractSkill(), ActiveSkill {
-    override fun getSkillId(): SkillId? {
-        return SkillId.SOU_JI
-    }
+    override val skillId = SkillId.SOU_JI
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (g.fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) {
+        val fsm = g.fsm as? FightPhaseIdle
+        if (r !== fsm?.whoseFightTurn) {
             log.error("现在不是发动[搜辑]的时机")
             return
         }
-        if (r.isRoleFaceUp) {
+        if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[搜辑]")
             return
         }
-        val pb = message as Role.skill_sou_ji_a_tos
+        val pb = message as skill_sou_ji_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: " + r.seq + ", actual Seq: " + pb.seq)
+            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
@@ -36,8 +39,8 @@ class SouJi : AbstractSkill(), ActiveSkill {
             log.error("不能以自己为目标")
             return
         }
-        val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]
-        if (!target.isAlive) {
+        val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
+        if (!target.alive) {
             log.error("目标已死亡")
             return
         }
@@ -48,44 +51,41 @@ class SouJi : AbstractSkill(), ActiveSkill {
         g.resolve(executeSouJi(fsm, r, target))
     }
 
-    private class executeSouJi(fsm: FightPhaseIdle, r: Player, target: Player) : WaitingFsm {
+    private data class executeSouJi(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val g = r.game
-            log.info(r.toString() + "对" + target + "发动了[搜辑]")
+            val g = r.game!!
+            log.info("${r}对${target}发动了[搜辑]")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_sou_ji_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location())
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location())
+                    builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.waitingSecond = 20
                     if (p === r) {
-                        for (card in target.cards.values) builder.addCards(card.toPbCard())
+                        for (card in target.cards) builder.addCards(card.toPbCard())
                         builder.messageCard = fsm.messageCard.toPbCard()
-                        val seq2: Int = p.seq
+                        val seq2 = p.seq
                         builder.seq = seq2
-                        p.setTimeout(
-                            GameExecutor.Companion.post(
-                                g,
-                                Runnable {
-                                    if (p.checkSeq(seq2)) g.tryContinueResolveProtocol(
-                                        r,
-                                        Role.skill_sou_ji_b_tos.newBuilder().setSeq(seq2).build()
-                                    )
-                                },
-                                p.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                                TimeUnit.SECONDS
-                            )
+                        p.timeout = GameExecutor.post(
+                            g,
+                            {
+                                if (p.checkSeq(seq2)) {
+                                    val builder2 = skill_sou_ji_b_tos.newBuilder()
+                                    builder2.seq = seq2
+                                    g.tryContinueResolveProtocol(r, builder2.build())
+                                }
+                            },
+                            p.getWaitSeconds(builder.waitingSecond + 2).toLong(),
+                            TimeUnit.SECONDS
                         )
                     }
                     p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
-                GameExecutor.Companion.post(g, Runnable {
-                    val builder = Role.skill_sou_ji_b_tos.newBuilder()
-                    for (card in target.cards.values) {
-                        if (card.colors.contains(color.Black)) builder.addCardIds(card.id)
-                    }
+                GameExecutor.post(g, {
+                    val builder = skill_sou_ji_b_tos.newBuilder()
+                    target.cards.filter { it.colors.contains(color.Black) }.forEach { builder.addCardIds(it.id) }
                     if (fsm.messageCard.colors.contains(color.Black)) builder.messageCard = true
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
@@ -98,18 +98,17 @@ class SouJi : AbstractSkill(), ActiveSkill {
                 log.error("不是你发技能的时机")
                 return null
             }
-            if (message !is Role.skill_sou_ji_b_tos) {
+            if (message !is skill_sou_ji_b_tos) {
                 log.error("错误的协议")
                 return null
             }
-            val g = r.game
+            val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: " + r.seq + ", actual Seq: " + message.seq)
+                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 return null
             }
-            val cards = arrayOfNulls<Card>(message.cardIdsCount)
-            for (i in cards.indices) {
-                val card = target.findCard(message.getCardIds(i))
+            val cards = Array(message.cardIdsCount) {
+                val card = target.findCard(message.getCardIds(it))
                 if (card == null) {
                     log.error("没有这张牌")
                     return null
@@ -118,108 +117,34 @@ class SouJi : AbstractSkill(), ActiveSkill {
                     log.error("这张牌不是黑色的")
                     return null
                 }
-                cards[i] = card
+                card
             }
             if (message.messageCard && !fsm.messageCard.colors.contains(color.Black)) {
                 log.error("待收情报不是黑色的")
                 return null
             }
             r.incrSeq()
-            if (cards.size > 0) {
-                log.info(r.toString() + "将" + target + "的" + Arrays.toString(cards) + "收归手牌")
-                for (card in cards) target.deleteCard(card.getId())
-                r.addCard(*cards)
+            if (cards.isNotEmpty()) {
+                log.info("${r}将${target}的${cards.contentToString()}收归手牌")
+                target.cards.removeAll(cards.toSet())
+                r.cards.addAll(cards)
             }
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_sou_ji_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location())
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location())
-                    for (card in cards) builder.addCards(card!!.toPbCard())
+                    builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                    for (card in cards) builder.addCards(card.toPbCard())
                     if (message.messageCard) builder.messageCard = fsm.messageCard.toPbCard()
                     p.send(builder.build())
                 }
             }
             if (message.messageCard) {
-                log.info(r.toString() + "将待收情报" + fsm.messageCard + "收归手牌，回合结束")
-                r.addCard(fsm.messageCard)
+                log.info("${r}将待收情报${fsm.messageCard}收归手牌，回合结束")
+                r.cards.add(fsm.messageCard)
                 return ResolveResult(NextTurn(fsm.whoseTurn), true)
             }
-            fsm.whoseFightTurn = fsm.inFrontOfWhom
-            return ResolveResult(fsm, true)
-        }
-
-        val fsm: FightPhaseIdle
-        val r: Player
-        val target: Player
-
-        init {
-            this.card = card
-            this.sendPhase = sendPhase
-            this.r = r
-            this.target = target
-            this.card = card
-            this.wantType = wantType
-            this.r = r
-            this.target = target
-            this.card = card
-            this.player = player
-            this.card = card
-            this.card = card
-            this.drawCards = drawCards
-            this.players = players
-            this.mainPhaseIdle = mainPhaseIdle
-            this.dieSkill = dieSkill
-            this.player = player
-            this.player = player
-            this.onUseCard = onUseCard
-            this.game = game
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.dir = dir
-            this.targetPlayer = targetPlayer
-            this.lockedPlayers = lockedPlayers
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.player = player
-            this.whoseTurn = whoseTurn
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.fightPhase = fightPhase
-            this.player = player
-            this.sendPhase = sendPhase
-            this.dieGiveCard = dieGiveCard
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.isMessageCardFaceUp = isMessageCardFaceUp
-            this.waitForChengQing = waitForChengQing
-            this.waitForChengQing = waitForChengQing
-            this.whoseTurn = whoseTurn
-            this.dyingQueue = dyingQueue
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.receiveOrder = receiveOrder
-            this.inFrontOfWhom = inFrontOfWhom
-            this.r = r
-            this.fsm = fsm
-            this.r = r
-            this.playerAndCards = playerAndCards
-            this.fsm = fsm
-            this.selection = selection
-            this.fromPlayer = fromPlayer
-            this.waitingPlayer = waitingPlayer
-            this.card = card
-            this.r = r
-            this.r = r
-            this.target = target
-            this.fsm = fsm
-            this.fsm = fsm
-            this.r = r
-            this.target = target
+            return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
         }
 
         companion object {
@@ -231,23 +156,17 @@ class SouJi : AbstractSkill(), ActiveSkill {
         private val log = Logger.getLogger(SouJi::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.isRoleFaceUp) return false
-            val players: MutableList<Player> = ArrayList()
-            for (p in player.game.players) {
-                if (p !== player && p.isAlive && (!p.cards.isEmpty() || !p.messageCards.isEmpty())) {
-                    players.add(p)
-                }
+            if (player.roleFaceUp) return false
+            val players = player.game!!.players.filter {
+                it !== player && it!!.alive && (it.cards.isNotEmpty() || it.messageCards.isNotEmpty())
             }
             if (players.isEmpty()) return false
-            if (ThreadLocalRandom.current().nextInt(players.size + 1) != 0) return false
-            val p = players[ThreadLocalRandom.current().nextInt(players.size)]
-            GameExecutor.Companion.post(player.game, Runnable {
-                skill.executeProtocol(
-                    player.game,
-                    player,
-                    Role.skill_sou_ji_a_tos.newBuilder().setTargetPlayerId(player.getAlternativeLocation(p.location()))
-                        .build()
-                )
+            if (Random.nextInt(players.size + 1) != 0) return false
+            val p = players[Random.nextInt(players.size)]!!
+            GameExecutor.post(player.game!!, {
+                val builder = skill_sou_ji_a_tos.newBuilder()
+                builder.targetPlayerId = player.getAlternativeLocation(p.location)
+                skill.executeProtocol(player.game!!, player, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

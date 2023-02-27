@@ -75,7 +75,7 @@ class ChengQing : Card {
         val fsm = g.fsm
         val resolveFunc = object : Fsm {
             override fun resolve(): ResolveResult {
-                val targetCard = target.deleteMessageCard(targetCardId)
+                val targetCard = target.deleteMessageCard(targetCardId)!!
                 log.info("${target}面前的${targetCard}被置入弃牌堆")
                 g.deck.discard(targetCard)
                 for (player in g.players) {

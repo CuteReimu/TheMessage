@@ -173,9 +173,9 @@ class MiaoBiQiaoBian : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
-            val playerCount = player.game!!.players.size
+            val playerCount = player.game!!.players.count { it != null && it.alive }
             val playerAndCards = player.game!!.players.filter {
-                it != null && it.alive && it.messageCards.isNotEmpty()
+                it!!.alive && it.messageCards.isNotEmpty()
             }.flatMap { it!!.messageCards.map { card -> PlayerAndCard(it, card) } }
             if (playerAndCards.size < playerCount) return false
             if (Random.nextInt(playerCount * playerCount) != 0) return false

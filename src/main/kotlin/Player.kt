@@ -36,9 +36,9 @@ abstract class Player protected constructor() {
         return cards.find { c -> c.id == id }
     }
 
-    fun deleteMessageCard(id: Int): Card {
+    fun deleteMessageCard(id: Int): Card? {
         val index = messageCards.indexOfFirst { c -> c.id == id }
-        return messageCards.removeAt(index)
+        return if (index >= 0) messageCards.removeAt(index) else null
     }
 
     fun findMessageCard(id: Int): Card? {

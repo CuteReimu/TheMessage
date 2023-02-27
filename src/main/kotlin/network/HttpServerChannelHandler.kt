@@ -35,7 +35,7 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
                     val cls = this.javaClass.classLoader.loadClass("com.fengsheng.gm.$name")
 
                     @Suppress("UNCHECKED_CAST")
-                    val handler = cls.getDeclaredConstructor().newInstance() as Function<Map<String, String>, String>
+                    val handler = cls.getDeclaredConstructor().newInstance() as Function<Map<String, String?>, String>
                     val byteBuf = Unpooled.copiedBuffer(handler.apply(form), CharsetUtil.UTF_8)
                     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf)
                     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")

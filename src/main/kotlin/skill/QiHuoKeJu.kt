@@ -1,34 +1,34 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.ReceivePhaseReceiverSkillimport
+import com.fengsheng.phase.ReceivePhaseReceiverSkill
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
+import com.fengsheng.protos.Role.skill_qi_huo_ke_ju_toc
+import com.fengsheng.protos.Role.skill_qi_huo_ke_ju_tos
+import com.google.protobuf.GeneratedMessageV3
+import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
 
-com.fengsheng.protos.Common.cardimport com.fengsheng.protos.Common.colorimport com.fengsheng.protos.Fengshengimport com.fengsheng.protos.Roleimport com.fengsheng.skill.QiHuoKeJu.executeQiHuoKeJuimport com.google.protobuf.GeneratedMessageV3import org.apache.log4j.Loggerimport java.util.concurrent.*
 /**
  * 毛不拔技能【奇货可居】：你接收双色情报后，可以从你的情报区选择一张情报加入手牌。
  */
 class QiHuoKeJu : AbstractSkill(), TriggeredSkill {
-    override fun getSkillId(): SkillId? {
-        return SkillId.QI_HUO_KE_JU
-    }
+    override val skillId = SkillId.QI_HUO_KE_JU
 
     override fun execute(g: Game): ResolveResult? {
-        if (g.fsm !is ReceivePhaseReceiverSkill || fsm.inFrontOfWhom.findSkill<Skill>(skillId) == null) return null
+        val fsm = g.fsm as? ReceivePhaseReceiverSkill
+        if (fsm?.inFrontOfWhom?.findSkill(skillId) == null) return null
         if (fsm.inFrontOfWhom.getSkillUseCount(skillId) > 0) return null
-        if (fsm.messageCard.getColors().size < 2) return null
+        if (fsm.messageCard.colors.size < 2) return null
         fsm.inFrontOfWhom.addSkillUseCount(skillId)
         return ResolveResult(executeQiHuoKeJu(fsm), true)
     }
 
-    private class executeQiHuoKeJu(fsm: ReceivePhaseReceiverSkill) : WaitingFsm {
+    private data class executeQiHuoKeJu(val fsm: ReceivePhaseReceiverSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game.players) p.notifyReceivePhase(
-                fsm.whoseTurn,
-                fsm.inFrontOfWhom,
-                fsm.messageCard,
-                fsm.inFrontOfWhom,
-                15
-            )
+            for (p in fsm.whoseTurn.game!!.players)
+                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom, 15)
             return null
         }
 
@@ -37,22 +37,22 @@ class QiHuoKeJu : AbstractSkill(), TriggeredSkill {
                 log.error("不是你发技能的时机")
                 return null
             }
-            if (message is Fengsheng.end_receive_phase_tos) {
+            if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                    log.error("操作太晚了, required Seq: " + player.seq + ", actual Seq: " + message.seq)
+                    log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                     return null
                 }
                 player.incrSeq()
                 return ResolveResult(fsm, true)
             }
-            if (message !is Role.skill_qi_huo_ke_ju_tos) {
+            if (message !is skill_qi_huo_ke_ju_tos) {
                 log.error("错误的协议")
                 return null
             }
             val r = fsm.inFrontOfWhom
-            val g = r.game
+            val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: " + r.seq + ", actual Seq: " + message.seq)
+                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 return null
             }
             val card = r.findMessageCard(message.cardId)
@@ -61,107 +61,19 @@ class QiHuoKeJu : AbstractSkill(), TriggeredSkill {
                 return null
             }
             r.incrSeq()
-            log.info(r.toString() + "发动了[奇货可居]")
+            log.info("${r}发动了[奇货可居]")
             r.deleteMessageCard(card.id)
             fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(r)
-            r.addCard(card)
+            r.cards.add(card)
             for (p in g.players) {
-                (p as? HumanPlayer)?.send(
-                    Role.skill_qi_huo_ke_ju_toc.newBuilder().setCardId(card.id)
-                        .setPlayerId(p.getAlternativeLocation(r.location())).build()
-                )
+                if (p is HumanPlayer) {
+                    val builder = skill_qi_huo_ke_ju_toc.newBuilder()
+                    builder.cardId = card.id
+                    builder.playerId = p.getAlternativeLocation(r.location)
+                    p.send(builder.build())
+                }
             }
             return ResolveResult(fsm, true)
-        }
-
-        val fsm: ReceivePhaseReceiverSkill
-
-        init {
-            this.card = card
-            this.sendPhase = sendPhase
-            this.r = r
-            this.target = target
-            this.card = card
-            this.wantType = wantType
-            this.r = r
-            this.target = target
-            this.card = card
-            this.player = player
-            this.card = card
-            this.card = card
-            this.drawCards = drawCards
-            this.players = players
-            this.mainPhaseIdle = mainPhaseIdle
-            this.dieSkill = dieSkill
-            this.player = player
-            this.player = player
-            this.onUseCard = onUseCard
-            this.game = game
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.dir = dir
-            this.targetPlayer = targetPlayer
-            this.lockedPlayers = lockedPlayers
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.player = player
-            this.whoseTurn = whoseTurn
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.fightPhase = fightPhase
-            this.player = player
-            this.sendPhase = sendPhase
-            this.dieGiveCard = dieGiveCard
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.inFrontOfWhom = inFrontOfWhom
-            this.isMessageCardFaceUp = isMessageCardFaceUp
-            this.waitForChengQing = waitForChengQing
-            this.waitForChengQing = waitForChengQing
-            this.whoseTurn = whoseTurn
-            this.dyingQueue = dyingQueue
-            this.diedQueue = diedQueue
-            this.afterDieResolve = afterDieResolve
-            this.whoseTurn = whoseTurn
-            this.messageCard = messageCard
-            this.receiveOrder = receiveOrder
-            this.inFrontOfWhom = inFrontOfWhom
-            this.r = r
-            this.fsm = fsm
-            this.r = r
-            this.playerAndCards = playerAndCards
-            this.fsm = fsm
-            this.selection = selection
-            this.fromPlayer = fromPlayer
-            this.waitingPlayer = waitingPlayer
-            this.card = card
-            this.r = r
-            this.r = r
-            this.target = target
-            this.fsm = fsm
-            this.fsm = fsm
-            this.r = r
-            this.target = target
-            this.fsm = fsm
-            this.fsm = fsm
-            this.target = target
-            this.needReturnCount = needReturnCount
-            this.fsm = fsm
-            this.fsm = fsm
-            this.cards = cards
-            this.fsm = fsm
-            this.fsm = fsm
-            this.fsm = fsm
-            this.fsm = fsm
-            this.fsm = fsm
-            this.target = target
-            this.fsm = fsm
-            this.r = r
-            this.target = target
-            this.fsm = fsm
-            this.r = r
-            this.fsm = fsm
         }
 
         companion object {
@@ -172,24 +84,19 @@ class QiHuoKeJu : AbstractSkill(), TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeQiHuoKeJu) return false
-            val p: Player = fsm0.fsm.inFrontOfWhom
-            for (card in p.messageCards.values) {
-                if (card.colors.contains(color.Black)) {
-                    GameExecutor.Companion.post(
-                        p.game,
-                        Runnable {
-                            p.game.tryContinueResolveProtocol(
-                                p,
-                                Role.skill_qi_huo_ke_ju_tos.newBuilder().setCardId(card.id).build()
-                            )
-                        },
-                        2,
-                        TimeUnit.SECONDS
-                    )
-                    return true
-                }
-            }
-            return false
+            val p = fsm0.fsm.inFrontOfWhom
+            val card = p.messageCards.find { it.colors.contains(color.Black) } ?: return false
+            GameExecutor.post(
+                p.game!!,
+                {
+                    val builder = skill_qi_huo_ke_ju_tos.newBuilder()
+                    builder.cardId = card.id
+                    p.game!!.tryContinueResolveProtocol(p, builder.build())
+                },
+                2,
+                TimeUnit.SECONDS
+            )
+            return true
         }
     }
 }

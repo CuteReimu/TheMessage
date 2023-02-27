@@ -13,7 +13,7 @@ class skill_jin_kou_yi_kai_a_tos : AbstractProtoHandler<skill_jin_kou_yi_kai_a_t
             log.error("你没有这个技能")
             return
         }
-        skill.executeProtocol(r.game, r, pb)
+        skill.executeProtocol(r.game!!, r, pb)
     }
 
     companion object {

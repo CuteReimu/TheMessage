@@ -17,7 +17,7 @@ class skill_du_ji_a_tos : AbstractProtoHandler<skill_du_ji_a_tos>() {
             log.error("选择的角色重复${pb.targetPlayerIdsList.toTypedArray().contentToString()}")
             return
         }
-        skill.executeProtocol(r.game, r, pb)
+        skill.executeProtocol(r.game!!, r, pb)
     }
 
     companion object {

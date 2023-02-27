@@ -17,7 +17,7 @@ class skill_ji_song_tos : AbstractProtoHandler<skill_ji_song_tos>() {
             log.error("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
             return
         }
-        skill.executeProtocol(r.game, r, pb)
+        skill.executeProtocol(r.game!!, r, pb)
     }
 
     companion object {

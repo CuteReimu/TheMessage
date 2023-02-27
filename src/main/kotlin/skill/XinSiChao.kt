@@ -58,9 +58,9 @@ class XinSiChao : AbstractSkill(), ActiveSkill {
             val card = e.player.cards.firstOrNull() ?: return false
             val cardId = card.id
             GameExecutor.post(e.player.game!!, {
-                skill.executeProtocol(
-                    e.player.game!!, e.player, skill_xin_si_chao_tos.newBuilder().setCardId(cardId).build()
-                )
+                val builder = skill_xin_si_chao_tos.newBuilder()
+                builder.cardId = cardId
+                skill.executeProtocol(e.player.game!!, e.player, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

@@ -45,6 +45,7 @@ class HumanPlayer(var channel: Channel) : Player() {
     }
 
     fun send(protoName: String, buf: ByteArray, flush: Boolean) {
+        // TODO: 区分 WebSocketServer 和 TCPServer
         val protoNameBuf = protoName.toByteArray()
         val totalLen = 2 + protoNameBuf.size + buf.size
         val byteBuf = Unpooled.buffer(totalLen)

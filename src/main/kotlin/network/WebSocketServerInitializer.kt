@@ -1,6 +1,5 @@
 package com.fengsheng.network
 
-import com.fengsheng.networkimport.WebSocketServerChannelHandler
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.codec.http.HttpObjectAggregator

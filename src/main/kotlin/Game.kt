@@ -4,7 +4,7 @@ import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.Statistics.PlayerGameResult
 import com.fengsheng.card.Card
 import com.fengsheng.card.Deck
-import com.fengsheng.networkimport.Network
+import com.fengsheng.network.Network
 import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*

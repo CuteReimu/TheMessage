@@ -1,6 +1,5 @@
 package com.fengsheng.network
 
-import com.fengsheng.networkimport.HttpServerChannelHandler
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.codec.http.HttpServerCodec

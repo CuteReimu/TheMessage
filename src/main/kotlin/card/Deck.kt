@@ -14,7 +14,7 @@ class Deck(private val game: Game) {
     /**
      * 洗牌
      */
-    fun shuffle() {
+    private fun shuffle() {
         discardPile.shuffle()
         discardPile.addAll(cards)
         cards = discardPile
@@ -202,8 +202,8 @@ class Deck(private val game: Game) {
             WuDao(98, listOf(color.Black), direction.Right, false),
             WuDao(99, listOf(color.Blue, color.Black), direction.Left, false),
             WuDao(100, listOf(color.Red, color.Black), direction.Right, false),
-            FengYunBianHuan(101, listOf(color.Black), direction.Up, false),
-            FengYunBianHuan(102, listOf(color.Black), direction.Up, false)
+//            FengYunBianHuan(101, listOf(color.Black), direction.Up, false),
+//            FengYunBianHuan(102, listOf(color.Black), direction.Up, false),
         )
     }
 }

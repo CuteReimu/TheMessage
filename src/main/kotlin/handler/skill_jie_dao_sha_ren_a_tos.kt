@@ -13,7 +13,7 @@ class skill_jie_dao_sha_ren_a_tos : AbstractProtoHandler<skill_jie_dao_sha_ren_a
             log.error("你没有这个技能")
             return
         }
-        skill.executeProtocol(r.game, r, pb)
+        skill.executeProtocol(r.game!!, r, pb)
     }
 
     companion object {
