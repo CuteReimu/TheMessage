@@ -146,7 +146,7 @@ abstract class Player protected constructor() {
     abstract fun notifyAskForChengQing(whoDie: Player, askWhom: Player, waitSecond: Int)
     abstract fun waitForDieGiveCard(whoDie: Player, waitSecond: Int)
 
-    var skills: Array<out Skill>
+    var skills: Array<Skill>
         get() = roleSkillsData.skills
         set(value) {
             roleSkillsData.skills = value
