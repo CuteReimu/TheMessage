@@ -11,6 +11,7 @@ import com.google.protobuf.Descriptors
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
 import com.google.protobuf.TextFormat
+import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
@@ -67,7 +68,15 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
     override fun channelActive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
         log.info("session connected: ${channel.id().asShortText()} ${channel.remoteAddress()}")
-        val player = HumanPlayer(channel)
+        val player = HumanPlayer(channel) { protoName: String, buf: ByteArray ->
+            val protoNameBuf = protoName.toByteArray()
+            val totalLen = 2 + protoNameBuf.size + buf.size
+            val byteBuf = Unpooled.buffer(totalLen)
+            byteBuf.writeShortLE(protoNameBuf.size)
+            byteBuf.writeBytes(protoNameBuf)
+            byteBuf.writeBytes(buf)
+            BinaryWebSocketFrame(byteBuf)
+        }
         if (playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
             log.error("already assigned channel id: ${channel.id().asLongText()}")
         }

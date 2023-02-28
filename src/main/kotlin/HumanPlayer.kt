@@ -1,24 +1,20 @@
 package com.fengsheng
 
 import com.fengsheng.card.Card
-import com.fengsheng.network.ProtoServerChannelHandler
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.*
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
-import io.netty.buffer.PooledByteBufAllocator
-import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelFutureListener
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import io.netty.util.Timeout
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
-class HumanPlayer(var channel: Channel) : Player() {
+class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> Any) : Player() {
     var seq = 0
         private set
 
@@ -47,32 +43,12 @@ class HumanPlayer(var channel: Channel) : Player() {
     }
 
     fun send(protoName: String, buf: ByteArray, flush: Boolean) {
-        // TODO: 区分 WebSocketServer 和 TCPServer
-        run {
-            val byteBuf = PooledByteBufAllocator.DEFAULT.ioBuffer(buf.size + 4, buf.size + 4)
-            byteBuf.writeShortLE(buf.size + 2)
-            byteBuf.writeShortLE(ProtoServerChannelHandler.stringHash(protoName).toInt())
-            byteBuf.writeBytes(buf)
-            val f = if (flush) channel.writeAndFlush(byteBuf) else channel.write(byteBuf)
-            f.addListener(ChannelFutureListener { future: ChannelFuture ->
-                if (!future.isSuccess)
-                    log.error("send@${channel.id().asShortText()} failed, proto name: $protoName, len: ${buf.size}")
-            })
-        }
-        run {
-            val protoNameBuf = protoName.toByteArray()
-            val totalLen = 2 + protoNameBuf.size + buf.size
-            val byteBuf = Unpooled.buffer(totalLen)
-            byteBuf.writeShortLE(protoNameBuf.size)
-            byteBuf.writeBytes(protoNameBuf)
-            byteBuf.writeBytes(buf)
-            val frame = BinaryWebSocketFrame(byteBuf)
-            val f = if (flush) channel.writeAndFlush(frame) else channel.write(frame)
-            f.addListener(ChannelFutureListener { future: ChannelFuture ->
-                if (!future.isSuccess)
-                    log.error("send@${channel.id().asShortText()} failed, proto name: $protoName, len: ${buf.size}")
-            })
-        }
+        val v = newBodyFun(protoName, buf)
+        val f = if (flush) channel.writeAndFlush(v) else channel.write(v)
+        f.addListener(ChannelFutureListener { future: ChannelFuture ->
+            if (!future.isSuccess)
+                log.error("send@${channel.id().asShortText()} failed, proto name: $protoName, len: ${buf.size}")
+        })
     }
 
     fun saveRecord() {

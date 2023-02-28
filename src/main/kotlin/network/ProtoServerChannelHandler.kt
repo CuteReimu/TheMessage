@@ -12,6 +12,7 @@ import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
 import com.google.protobuf.TextFormat
 import io.netty.buffer.ByteBuf
+import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import org.apache.log4j.Logger
@@ -26,7 +27,12 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         log.info(
             "session connected: ${channel.id().asShortText()} ${channel.remoteAddress()}"
         )
-        val player = HumanPlayer(channel)
+        val player = HumanPlayer(channel) { protoName: String, buf: ByteArray ->
+            val byteBuf = PooledByteBufAllocator.DEFAULT.ioBuffer(buf.size + 4, buf.size + 4)
+            byteBuf.writeShortLE(buf.size + 2)
+            byteBuf.writeShortLE(ProtoServerChannelHandler.stringHash(protoName).toInt())
+            byteBuf.writeBytes(buf)
+        }
         if (playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
             log.error("already assigned channel id: ${channel.id().asLongText()}")
         }
