@@ -66,7 +66,8 @@ class QiangLing : TriggeredSkill {
                     val result =
                         if (r.game!!.qiangLingTypes.isEmpty()) {
                             val cardTypes = arrayOf(Jie_Huo, Diao_Bao, Wu_Dao)
-                            cardTypes.drop(Random.nextInt(cardTypes.size))
+                            val index = Random.nextInt(cardTypes.size)
+                            cardTypes.filterIndexed { i, _ -> i != index }
                         } else {
                             val cardTypes = arrayOf(Jie_Huo, Diao_Bao, Wu_Dao, Po_Yi)
                             cardTypes.filterNot { r.game!!.qiangLingTypes.contains(it) }

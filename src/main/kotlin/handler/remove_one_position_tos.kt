@@ -17,7 +17,7 @@ class remove_one_position_tos : AbstractProtoHandler<remove_one_position_tos>() 
             val oldPlayers = r.game!!.players
             if (oldPlayers.size <= 2) return
             val index = oldPlayers.indexOfFirst { p -> p == null }
-            val players = oldPlayers.drop(index).toTypedArray()
+            val players = oldPlayers.filterIndexed { i, _ -> i != index }.toTypedArray()
             r.game!!.players = players
             players.forEachIndexed { i, p ->
                 p?.location = i
