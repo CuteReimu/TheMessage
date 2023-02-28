@@ -178,7 +178,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
             }
         }
 
-        private fun stringHash(s: String): Short {
+        fun stringHash(s: String): Short {
             var hash = 0
             for (c in s.toByteArray()) {
                 val i = if (c >= 0) c.toInt() else 256 + c
