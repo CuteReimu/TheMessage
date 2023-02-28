@@ -9,7 +9,6 @@ import com.fengsheng.protos.Fengsheng.po_yi_show_toc
 import com.fengsheng.protos.Fengsheng.use_po_yi_toc
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 class PoYi : Card {
@@ -141,8 +140,7 @@ class PoYi : Card {
         fun ai(e: SendPhaseIdle, card: Card): Boolean {
             val player = e.inFrontOfWhom
             if (player.game!!.qiangLingTypes.contains(card_type.Po_Yi)) return false
-            if (player === e.whoseTurn || e.isMessageCardFaceUp) return false
-            if (ThreadLocalRandom.current().nextBoolean()) return false
+            if (e.isMessageCardFaceUp || !e.messageCard.colors.contains(color.Black)) return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true
         }

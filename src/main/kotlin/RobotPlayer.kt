@@ -64,20 +64,18 @@ class RobotPlayer : Player() {
         }
         GameExecutor.post(game!!, {
             val colors = fsm.messageCard.colors
-            val certainlyReceive = fsm.isMessageCardFaceUp && colors.size == 1 && colors[0] != color.Black
-            val certainlyReject = fsm.isMessageCardFaceUp && colors.size == 1 && colors[0] == color.Black
-            if (certainlyReceive || fsm.lockedPlayers.contains(this) || fsm.whoseTurn === this ||
-                !certainlyReject && Random.nextInt((game!!.players.size - 1) * 2) == 0
+            val receive = fsm.lockedPlayers.contains(this) || fsm.whoseTurn === this || // 如果被锁了，或者自己是传出者，则必须接收
+                    if (colors.size == 1) {
+                        colors.first() != color.Black && Random.nextBoolean() // 如果是单色，纯黑则不接，纯非黑则有一半几率接
+                    } else {
+                        Random.nextInt(4) == 0 // 如果是双色，则有四分之一几率接
+                    }
+            game!!.resolve(
+                if (receive)
+                    OnChooseReceiveCard(fsm.whoseTurn, fsm.messageCard, fsm.inFrontOfWhom, fsm.isMessageCardFaceUp)
+                else
+                    MessageMoveNext(fsm)
             )
-                game!!.resolve(
-                    OnChooseReceiveCard(
-                        fsm.whoseTurn,
-                        fsm.messageCard,
-                        fsm.inFrontOfWhom,
-                        fsm.isMessageCardFaceUp
-                    )
-                )
-            else game!!.resolve(MessageMoveNext(fsm))
         }, 2, TimeUnit.SECONDS)
     }
 
