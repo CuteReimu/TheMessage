@@ -2,7 +2,7 @@ name: sync-proto
 on:
   push:
     branches:
-      - master
+      - kotlin
     paths:
       - '**.proto'
       - '.github/sync.yml'
