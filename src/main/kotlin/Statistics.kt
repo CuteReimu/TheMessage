@@ -152,8 +152,10 @@ object Statistics {
     fun load() {
         try {
             BufferedReader(InputStreamReader(FileInputStream("player.csv"))).use { reader ->
-                var line: String
-                while (reader.readLine().also { line = it } != null) {
+                var line: String?
+                while (true) {
+                    line = reader.readLine()
+                    if (line == null) break
                     val a = line.split(",".toRegex(), limit = 3).toTypedArray()
                     val deviceId = a[2]
                     val win = a[0].toInt()
@@ -167,9 +169,11 @@ object Statistics {
         var gameCount = 0
         try {
             BufferedReader(InputStreamReader(FileInputStream("playerInfo.csv"))).use { reader ->
-                var line: String
-                while (reader.readLine().also { line = it } != null) {
-                    val a = line.split(",".toRegex(), limit = 5).toTypedArray()
+                var line: String?
+                while (true) {
+                    line = reader.readLine()
+                    if (line == null) break
+                    val a = line!!.split(",".toRegex(), limit = 5).toTypedArray()
                     val password = a[4]
                     val deviceId = a[3]
                     val name = a[2]
@@ -190,9 +194,11 @@ object Statistics {
         totalGameCount.set(gameCount)
         try {
             BufferedReader(InputStreamReader(FileInputStream("trial.csv"))).use { reader ->
-                var line: String
-                while (reader.readLine().also { line = it } != null) {
-                    val a = line.split(",".toRegex(), limit = 2).toTypedArray()
+                var line: String?
+                while (true) {
+                    line = reader.readLine()
+                    if (line == null) break
+                    val a = line!!.split(",".toRegex(), limit = 2).toTypedArray()
                     trialStartTime[a[1]] = a[0].toLong()
                 }
             }
