@@ -64,7 +64,7 @@ class WuDao : Card {
                         player.send(builder.build())
                     }
                 }
-                return ResolveResult(fsm.copy(inFrontOfWhom = target, whoseFightTurn = fsm.inFrontOfWhom), true)
+                return ResolveResult(fsm.copy(inFrontOfWhom = target, whoseFightTurn = target), true)
             }
         }
         g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Wu_Dao, r, resolveFunc))

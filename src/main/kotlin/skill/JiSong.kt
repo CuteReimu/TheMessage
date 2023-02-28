@@ -92,7 +92,7 @@ class JiSong : AbstractSkill(), ActiveSkill {
                 p.send(builder.build())
             }
         }
-        g.resolve(fsm.copy(inFrontOfWhom = target, whoseFightTurn = fsm.inFrontOfWhom))
+        g.resolve(fsm.copy(inFrontOfWhom = target, whoseFightTurn = target))
     }
 
     companion object {

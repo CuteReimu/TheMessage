@@ -154,7 +154,7 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
                 fsm.copy(
                     messageCard = card,
                     inFrontOfWhom = target2,
-                    whoseFightTurn = fsm.inFrontOfWhom,
+                    whoseFightTurn = target2,
                     isMessageCardFaceUp = true
                 ), true
             )

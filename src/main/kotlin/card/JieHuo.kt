@@ -78,7 +78,7 @@ class JieHuo : Card {
                             player.send(builder.build())
                         }
                     }
-                    return ResolveResult(fsm.copy(inFrontOfWhom = r, whoseFightTurn = fsm.inFrontOfWhom), true)
+                    return ResolveResult(fsm.copy(inFrontOfWhom = r, whoseFightTurn = r), true)
                 }
             }
             if (card != null)
