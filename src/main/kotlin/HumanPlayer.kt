@@ -53,8 +53,7 @@ class HumanPlayer(var channel: Channel) : Player() {
             byteBuf.writeShortLE(buf.size + 2)
             byteBuf.writeShortLE(ProtoServerChannelHandler.stringHash(protoName).toInt())
             byteBuf.writeBytes(buf)
-            val frame = BinaryWebSocketFrame(byteBuf)
-            val f = if (flush) channel.writeAndFlush(frame) else channel.write(frame)
+            val f = if (flush) channel.writeAndFlush(byteBuf) else channel.write(byteBuf)
             f.addListener(ChannelFutureListener { future: ChannelFuture ->
                 if (!future.isSuccess)
                     log.error("send@${channel.id().asShortText()} failed, proto name: $protoName, len: ${buf.size}")
