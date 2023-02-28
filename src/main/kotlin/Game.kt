@@ -287,7 +287,7 @@ class Game private constructor(totalPlayerCount: Int) {
         val GameCache: ConcurrentMap<Int, Game> = ConcurrentHashMap()
         val deviceCache: ConcurrentMap<String, HumanPlayer> = ConcurrentHashMap()
         private var increaseId = 0
-        var newGame = newInstance()
+        var newGame = Game(Config.TotalPlayerCount)
 
         /**
          * 不是线程安全的
