@@ -83,8 +83,9 @@ class PoYi : Card {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    showAndDrawCard(sendPhase.messageCard.colors.contains(color.Black))
-                    r.game!!.resolve(sendPhase)
+                    val show = sendPhase.messageCard.colors.contains(color.Black)
+                    showAndDrawCard(show)
+                    r.game!!.resolve(sendPhase.copy(isMessageCardFaceUp = show))
                 }, 2, TimeUnit.SECONDS)
             }
             return null
