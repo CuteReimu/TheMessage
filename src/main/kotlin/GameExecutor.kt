@@ -2,7 +2,6 @@ package com.fengsheng
 
 import io.netty.util.HashedWheelTimer
 import io.netty.util.Timeout
-import kotlinx.coroutines.channels.ClosedSendChannelException
 import java.util.concurrent.TimeUnit
 
 object GameExecutor {
@@ -14,11 +13,7 @@ object GameExecutor {
      * 绝大部分逻辑代码都应该由游戏的主线程去执行，因此不需要加锁。
      */
     fun post(game: Game, callback: Runnable) {
-        try {
-            game.queue.offer(callback)
-        } catch (_: ClosedSendChannelException) {
-            // Ignored
-        }
+        game.queue.trySend(callback)
     }
 
     /**
