@@ -2,7 +2,7 @@ package com.fengsheng
 
 import io.netty.util.HashedWheelTimer
 import io.netty.util.Timeout
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import java.util.concurrent.TimeUnit
 
 object GameExecutor {
@@ -16,7 +16,7 @@ object GameExecutor {
     fun post(game: Game, callback: Runnable) {
         try {
             game.queue.offer(callback)
-        } catch (_: ClosedReceiveChannelException) {
+        } catch (_: ClosedSendChannelException) {
             // Ignored
         }
     }

@@ -55,12 +55,11 @@ class Game private constructor(totalPlayerCount: Int) {
         // 调用构造函数时加锁了，所以increaseId无需加锁
         players = arrayOfNulls(totalPlayerCount)
         GlobalScope.launch {
-            while (true) try {
+            while (!isEnd) try {
                 val callBack = queue.receive()
-                if (isEnd) break
                 callBack.run()
             } catch (_: ClosedReceiveChannelException) {
-                // Ignored
+                break
             } catch (e: Exception) {
                 log.error("catch throwable", e)
             }
