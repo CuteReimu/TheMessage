@@ -138,32 +138,26 @@ class RobotPlayer : Player() {
         if (whoDie !== this) return
         GameExecutor.post(game!!, {
             if (identity != color.Black) {
-                for (target in game!!.players) {
-                    if (target !== this && target!!.identity == identity) {
-                        val giveCards: MutableList<Card> = ArrayList()
-                        for (card in cards) {
-                            giveCards.add(card)
-                            if (giveCards.size >= 3) break
-                        }
-                        if (giveCards.isNotEmpty()) {
-                            cards.removeAll(giveCards.toSet())
-                            target.cards.addAll(giveCards)
-                            log.info("${this}给了${target}${cards.toTypedArray().contentToString()}")
-                            for (p in game!!.players) {
-                                if (p is HumanPlayer) {
-                                    val builder = notify_die_give_card_toc.newBuilder()
-                                    builder.playerId = p.getAlternativeLocation(location)
-                                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                                    if (p === target) {
-                                        for (card in cards) builder.addCard(card.toPbCard())
-                                    } else {
-                                        builder.unknownCardCount = cards.size
-                                    }
-                                    p.send(builder.build())
+                val target = game!!.players.find { it !== this && it!!.identity == identity }
+                if (target != null) {
+                    val giveCards = cards.take(3)
+                    if (giveCards.isNotEmpty()) {
+                        cards.removeAll(giveCards.toSet())
+                        target.cards.addAll(giveCards)
+                        log.info("${this}给了${target}${giveCards.toTypedArray().contentToString()}")
+                        for (p in game!!.players) {
+                            if (p is HumanPlayer) {
+                                val builder = notify_die_give_card_toc.newBuilder()
+                                builder.playerId = p.getAlternativeLocation(location)
+                                builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                                if (p === target) {
+                                    giveCards.forEach { builder.addCard(it.toPbCard()) }
+                                } else {
+                                    builder.unknownCardCount = cards.size
                                 }
+                                p.send(builder.build())
                             }
                         }
-                        break
                     }
                 }
             }
