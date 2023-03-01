@@ -11,6 +11,10 @@ import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.TriggeredSkill
 import com.google.protobuf.GeneratedMessageV3
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.launch
 import org.apache.log4j.Logger
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
@@ -19,6 +23,7 @@ import kotlin.math.max
 import kotlin.random.Random
 
 class Game private constructor(totalPlayerCount: Int) {
+    val queue = Channel<Runnable>(Channel.UNLIMITED)
 
     val id: Int = ++increaseId
 
@@ -49,6 +54,17 @@ class Game private constructor(totalPlayerCount: Int) {
     init {
         // 调用构造函数时加锁了，所以increaseId无需加锁
         players = arrayOfNulls(totalPlayerCount)
+        GlobalScope.launch {
+            while (true) try {
+                val callBack = queue.receive()
+                if (isEnd) break
+                callBack.run()
+            } catch (_: ClosedReceiveChannelException) {
+                // Ignored
+            } catch (e: Exception) {
+                log.error("catch throwable", e)
+            }
+        }
     }
 
     /**
@@ -176,6 +192,7 @@ class Game private constructor(totalPlayerCount: Int) {
             Statistics.add(records)
             Statistics.addPlayerGameCount(playerGameResultList)
         }
+        queue.close()
     }
 
     /**
