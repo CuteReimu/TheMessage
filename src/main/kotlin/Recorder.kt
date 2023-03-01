@@ -26,7 +26,7 @@ class Recorder {
     @Volatile
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
-        if (!loading && ("wait_for_select_role_toc" != protoName || list.isNotEmpty())) list.add(
+        if (!loading && ("wait_for_select_role_toc" == protoName || list.isNotEmpty())) list.add(
             recorder_line.newBuilder().setNanoTime(System.nanoTime()).setProtoName(protoName)
                 .setMessageBuf(ByteString.copyFrom(messageBuf)).build()
         )
