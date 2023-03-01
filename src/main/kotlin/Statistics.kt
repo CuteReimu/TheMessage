@@ -113,7 +113,7 @@ object Statistics {
         playerGameCount.computeIfPresent(deviceId) { _, v ->
             val gameCount = finalPlayerInfo[0].gameCount + v.gameCount
             val winCount = finalPlayerInfo[0].winCount + v.winCount
-            finalPlayerInfo[0] = PlayerInfo(name, deviceId, password, gameCount, winCount)
+            finalPlayerInfo[0] = PlayerInfo(name, deviceId, password, winCount, gameCount)
             null
         }
         if (finalPlayerInfo[0] !== playerInfo) {
