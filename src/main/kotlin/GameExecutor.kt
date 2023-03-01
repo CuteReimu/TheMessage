@@ -3,12 +3,11 @@ package com.fengsheng
 import io.netty.util.HashedWheelTimer
 import io.netty.util.Timeout
 import org.apache.log4j.Logger
-import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
 class GameExecutor private constructor() : Runnable {
-    private val queue: BlockingQueue<GameAndCallback> = LinkedBlockingQueue()
+    private val queue = LinkedBlockingQueue<GameAndCallback>()
     override fun run() {
         while (true) try {
             val gameAndCallback = queue.take()
@@ -40,7 +39,6 @@ class GameExecutor private constructor() : Runnable {
         /**
          * （重要）由游戏的主线程去执行一段逻辑。
          *
-         *
          * 绝大部分逻辑代码都应该由游戏的主线程去执行，因此不需要加锁。
          */
         fun post(game: Game, callback: Runnable) {
@@ -60,7 +58,6 @@ class GameExecutor private constructor() : Runnable {
 
         /**
          * （重要）在一段时间延迟后，由游戏的主线程去执行一段逻辑。
-         *
          *
          * 绝大部分逻辑代码都应该由游戏的主线程去执行，因此不需要加锁。
          */

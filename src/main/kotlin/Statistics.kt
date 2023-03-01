@@ -17,20 +17,19 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.Consumer
 
 object Statistics {
     private val pool = Executors.newSingleThreadExecutor()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    private val playerGameCount: MutableMap<String, PlayerGameCount> = ConcurrentHashMap()
-    private val playerInfoMap: MutableMap<String, PlayerInfo?> = ConcurrentHashMap()
+    private val playerGameCount = ConcurrentHashMap<String, PlayerGameCount>()
+    private val playerInfoMap = ConcurrentHashMap<String, PlayerInfo>()
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
-    private val trialStartTime: MutableMap<String, Long> = ConcurrentHashMap()
-    private val orderMap: MutableMap<Int, player_order> = HashMap()
-    private val deviceOrderMap: MutableMap<String, MutableList<player_order>> = ConcurrentHashMap()
+    private val trialStartTime = ConcurrentHashMap<String, Long>()
+    private val orderMap = ConcurrentHashMap<Int, player_order>()
+    private val deviceOrderMap = ConcurrentHashMap<String, List<player_order>>()
     private var orderId = 0
-    fun add(records: ArrayList<Record>) {
+    fun add(records: List<Record>) {
         pool.submit {
             try {
                 val time = dateFormat.format(Date())
@@ -71,7 +70,7 @@ object Statistics {
                 totalGameCount.addAndGet(game)
                 var sb = StringBuilder()
                 for ((_, info) in playerInfoMap) {
-                    sb.append(info!!.winCount).append(',')
+                    sb.append(info.winCount).append(',')
                     sb.append(info.gameCount).append(',')
                     sb.append(info.name).append(',')
                     sb.append(info.deviceId).append(',')
@@ -99,14 +98,9 @@ object Statistics {
             log.error("md5加密失败", e)
             return null
         }
-        var playerInfo = playerInfoMap[name]
-        if (playerInfo == null) {
-            playerInfo = PlayerInfo(name, deviceId, password, 0, 0)
-            val playerInfo2 = playerInfoMap.putIfAbsent(name, playerInfo)
-            if (playerInfo2 != null) playerInfo = playerInfo2
+        val playerInfo = playerInfoMap.getOrPut(name) { PlayerInfo(name, deviceId, password, 0, 0) }.let {
+            return@let if (it.password.isEmpty() && password.isNotEmpty()) it.copy(password = password) else it
         }
-        if (playerInfo.password.isEmpty()) playerInfo =
-            PlayerInfo(playerInfo.name, playerInfo.deviceId, password, playerInfo.winCount, playerInfo.gameCount)
         if (password != playerInfo.password) return null
         // 对旧数据进行兼容
         val finalPlayerInfo = arrayOf(playerInfo)
@@ -121,7 +115,7 @@ object Statistics {
             pool.submit {
                 var sb = StringBuilder()
                 for ((_, info) in playerInfoMap) {
-                    sb.append(info!!.winCount).append(',')
+                    sb.append(info.winCount).append(',')
                     sb.append(info.gameCount).append(',')
                     sb.append(info.name).append(',')
                     sb.append(info.deviceId).append(',')
@@ -209,8 +203,7 @@ object Statistics {
                 val playerOrders = player_orders.parseFrom(`is`.readAllBytes())
                 orderMap.putAll(playerOrders.ordersMap)
                 orderId = playerOrders.orderId
-                for (order in playerOrders.ordersMap.values)
-                    deviceOrderMap.computeIfAbsent(order.device) { ArrayList() }.add(order)
+                deviceOrderMap.putAll(playerOrders.ordersMap.values.groupBy { it.device })
             }
         } catch (ignored: FileNotFoundException) {
         }
@@ -238,19 +231,13 @@ object Statistics {
 
     fun getOrders(deviceId: String): List<pb_order> {
         val now = System.currentTimeMillis() / 1000 + 8 * 3600
-        val set: MutableSet<player_order> = TreeSet(Comparator { o1: player_order, o2: player_order ->
-            if (o1.time == o2.time) return@Comparator Integer.compare(o1.id, o2.id)
+        val list1 = deviceOrderMap[deviceId]?.filter { it.time > now - 1800 }
+        val list2 = orderMap.values.filter { it.time > now - 1800 }
+        val list = (list1?.plus(list2) ?: list2).sortedWith { o1: player_order, o2: player_order ->
+            if (o1.time == o2.time) return@sortedWith o1.id.compareTo(o2.id)
             if (o1.time < o2.time) -1 else 1
-        })
-        val myOrders: List<player_order>? = deviceOrderMap[deviceId]
-        myOrders?.forEach(Consumer { o -> if (o.time > now - 1800) set.add(o) })
-        orderMap.forEach { (_, o) -> if (o.time > now - 1800) set.add(o) }
-        val list: MutableList<pb_order> = ArrayList()
-        for (o in set) {
-            list.add(playerOrderToPbOrder(deviceId, o))
-            if (list.size >= 20) break
         }
-        return list
+        return (if (list.size > 20) list.subList(0, 20) else list).map { playerOrderToPbOrder(deviceId, it) }
     }
 
     fun addOrder(device: String, name: String?, time: Long) {
@@ -258,32 +245,30 @@ object Statistics {
         if (time <= now - 1800) return
         pool.submit {
             try {
-                var orders1 = deviceOrderMap[device]
-                orders1 = if (orders1 == null) ArrayList() else ArrayList(orders1)
-                val order =
-                    player_order.newBuilder().setId(++orderId).setDevice(device).setName(name).setTime(time).build()
+                val orders1 = deviceOrderMap[device]?.toMutableList() ?: ArrayList()
+                val builder = player_order.newBuilder()
+                builder.id = ++orderId
+                builder.device = device
+                builder.name = name
+                builder.time = time
+                val order = builder.build()
                 orders1.add(order)
-                orders1.removeIf { o: player_order ->
-                    if (o.time <= now - 1800) {
-                        orderMap.remove(o.id)
+                orders1.removeIf {
+                    if (it.time <= now - 1800) {
+                        orderMap.remove(it.id)
                         true
                     } else false
                 }
-                if (orders1.size > 3) orders1.subList(0, orders1.size - 3).clear()
-                deviceOrderMap[device] = orders1
+                deviceOrderMap[device] = if (orders1.size > 3) orders1.takeLast(3) else orders1
                 orderMap[order.id] = order
-                val removeList: MutableList<Int> = ArrayList()
+                val removeList = ArrayList<Int>()
                 for ((key, o) in orderMap) {
                     if (o.time <= now - 1800) {
                         removeList.add(key)
-                        val orders2: MutableList<player_order> = ArrayList()
-                        for (o2 in deviceOrderMap[o.device]!!) {
-                            if (o2.id != o.id) orders2.add(o2)
-                        }
-                        deviceOrderMap[o.device] = orders2
+                        deviceOrderMap.computeIfPresent(o.device) { _, v -> v.filter { it.id != o.id } }
                     }
                 }
-                removeList.forEach(Consumer { key: Int -> orderMap.remove(key) })
+                removeList.forEach { orderMap.remove(it) }
                 val buf = player_orders.newBuilder().setOrderId(orderId).putAllOrders(orderMap).build().toByteArray()
                 writeFile("order.dat", buf)
             } catch (e: Exception) {
@@ -298,7 +283,7 @@ object Statistics {
             val dir = File("records")
             val files = dir.list()
             if (files != null) {
-                Arrays.sort(files)
+                files.sort()
                 var lastPrefix: String? = null
                 var j = 0
                 for (i in files.indices.reversed()) {
@@ -340,9 +325,12 @@ object Statistics {
 
     private val log = Logger.getLogger(Statistics::class.java)
     private fun playerOrderToPbOrder(deviceId: String, order: player_order): pb_order {
-        return pb_order.newBuilder().setId(order.id).setName(order.name).setTime(order.time).setIsMine(
-            deviceId == order.device
-        ).build()
+        val builder = pb_order.newBuilder()
+        builder.id = order.id
+        builder.name = order.name
+        builder.time = order.time
+        builder.isMine = deviceId == order.device
+        return builder.build()
     }
 
     private fun writeFile(fileName: String, buf: ByteArray, append: Boolean = false) {
@@ -356,21 +344,23 @@ object Statistics {
     @Throws(IOException::class)
     @JvmStatic
     fun main(args: Array<String>) {
-        val appearCount = EnumMap<role, Int>(role::class.java)
-        val blackAppearCount = EnumMap<role, Int>(role::class.java)
-        val winCount = EnumMap<role, Int>(role::class.java)
-        val blackWinCount = EnumMap<role, Int>(role::class.java)
-        val timeSet: MutableSet<String> = HashSet()
+        val appearCount = HashMap<role, Int>()
+        val blackAppearCount = HashMap<role, Int>()
+        val winCount = HashMap<role, Int>()
+        val blackWinCount = HashMap<role, Int>()
+        val timeSet = HashSet<String>()
         BufferedReader(InputStreamReader(FileInputStream("stat.csv"))).use { reader ->
-            var line: String
-            while (reader.readLine().also { line = it } != null) {
-                val a = line.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            var line: String?
+            while (true) {
+                line = reader.readLine()
+                if (line == null) break
+                val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val role = role.valueOf(a[0])
-                appearCount.compute(role) { _, v -> if (v == null) 1 else v + 1 }
-                if (java.lang.Boolean.parseBoolean(a[1])) winCount.compute(role) { _, v -> if (v == null) 1 else v + 1 }
+                appearCount.compute(role) { _, v -> (v ?: 0) + 1 }
+                if (a[1].toBoolean()) winCount.compute(role) { _, v -> (v ?: 0) + 1 }
                 if ("Black" == a[2]) {
-                    blackAppearCount.compute(role) { _, v -> if (v == null) 1 else v + 1 }
-                    if (java.lang.Boolean.parseBoolean(a[1])) blackWinCount.compute(role) { _, v -> if (v == null) 1 else v + 1 }
+                    blackAppearCount.compute(role) { _, v -> (v ?: 0) + 1 }
+                    if (a[1].toBoolean()) blackWinCount.compute(role) { _, v -> (v ?: 0) + 1 }
                 }
                 timeSet.add(a[5])
             }
@@ -385,25 +375,19 @@ object Statistics {
                 writer.write(",")
                 writer.write(value.toString())
                 writer.write(",")
-                writer.write("%.2f%%".formatted(winCount.getOrDefault(key, 0) * 100.0 / value))
-                writer.write(','.code)
+                writer.write("%.2f%%".format(winCount.getOrDefault(key, 0) * 100.0 / value))
+                writer.write(",")
                 val blackAppear = blackAppearCount.getOrDefault(key, 0)
                 val nonBlackAppear = value - blackAppear
                 if (nonBlackAppear > 0) writer.write(
-                    "%.2f%%".formatted(
-                        (winCount.getOrDefault(
-                            key,
-                            0
-                        ) - blackWinCount.getOrDefault(key, 0)) * 100.0 / nonBlackAppear
+                    "%.2f%%".format(
+                        (winCount.getOrDefault(key, 0) - blackWinCount.getOrDefault(key, 0)) * 100.0 / nonBlackAppear
                     )
                 ) else writer.write("0.00%")
                 writer.write(','.code)
                 if (blackAppear > 0) writer.write(
-                    "%.2f%%".formatted(
-                        blackWinCount.getOrDefault(
-                            key,
-                            0
-                        ) * 100.0 / blackAppearCount[key]!!
+                    "%.2f%%".format(
+                        blackWinCount.getOrDefault(key, 0) * 100.0 / blackAppear
                     )
                 ) else writer.write("0.00%")
                 writer.newLine()
