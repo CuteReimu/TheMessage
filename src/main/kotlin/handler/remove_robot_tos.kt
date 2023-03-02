@@ -9,20 +9,21 @@ import org.apache.log4j.Logger
 
 class remove_robot_tos : AbstractProtoHandler<remove_robot_tos>() {
     override fun handle0(r: HumanPlayer, pb: remove_robot_tos) {
-        val players = r.game!!.players
-        var robotPlayer: RobotPlayer? = null
-        synchronized(Game::class.java) {
-            for (p in r.game!!.players) {
-                if (p is RobotPlayer) {
-                    robotPlayer = p
-                    players[p.location] = null
-                    break
-                }
-            }
+        if (r.game!!.isStarted) {
+            log.error("game is already started")
+            return
         }
+        val players = r.game!!.players
+        val robotPlayer =
+            synchronized(Game::class.java) {
+                val index = players.indexOfLast { it is RobotPlayer }
+                if (index >= 0) {
+                    players[index] as RobotPlayer
+                } else null
+            }
         if (robotPlayer != null) {
-            log.info("${robotPlayer!!.playerName}离开了房间")
-            val reply = leave_room_toc.newBuilder().setPosition(robotPlayer!!.location).build()
+            log.info("${robotPlayer.playerName}离开了房间")
+            val reply = leave_room_toc.newBuilder().setPosition(robotPlayer.location).build()
             for (p in players) {
                 if (p is HumanPlayer) {
                     p.send(reply)

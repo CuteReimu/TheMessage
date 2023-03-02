@@ -10,7 +10,7 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.add_robot_tos) {
         synchronized(Game::class.java) {
             if (r.game!!.isStarted) {
-                log.error("room is already full")
+                log.error("game is already started")
                 return
             }
             if (r.game!!.players.size > 5) {
