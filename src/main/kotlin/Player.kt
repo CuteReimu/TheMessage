@@ -250,7 +250,7 @@ abstract class Player protected constructor() {
         }
 
         fun randPlayerName(): String {
-            return Random.nextInt().toString()
+            return Random.nextInt(Int.MAX_VALUE).toString()
         }
     }
 }
