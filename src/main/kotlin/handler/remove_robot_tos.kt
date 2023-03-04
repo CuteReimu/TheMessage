@@ -15,7 +15,7 @@ class remove_robot_tos : AbstractProtoHandler<remove_robot_tos>() {
             return
         }
         val players = r.game!!.players
-        val robotPlayer: Player
+        val robotPlayer: Player?
         synchronized(Game::class.java) {
             val index = players.indexOfLast { it is RobotPlayer }
             if (index >= 0) {
