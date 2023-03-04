@@ -2,6 +2,7 @@ package com.fengsheng.handler
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.RobotPlayer
 import com.fengsheng.protos.Fengsheng.leave_room_toc
 import com.fengsheng.protos.Fengsheng.remove_robot_tos
