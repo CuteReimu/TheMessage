@@ -14,13 +14,16 @@ class remove_robot_tos : AbstractProtoHandler<remove_robot_tos>() {
             return
         }
         val players = r.game!!.players
-        val robotPlayer =
-            synchronized(Game::class.java) {
-                val index = players.indexOfLast { it is RobotPlayer }
-                if (index >= 0) {
-                    players[index] as RobotPlayer
-                } else null
+        val robotPlayer: Player
+        synchronized(Game::class.java) {
+            val index = players.indexOfLast { it is RobotPlayer }
+            if (index >= 0) {
+                robotPlayer = players[index]
+                players[index] = null
+            } else {
+                robotPlayer = null
             }
+        }
         if (robotPlayer != null) {
             log.info("${robotPlayer.playerName}离开了房间")
             val reply = leave_room_toc.newBuilder().setPosition(robotPlayer.location).build()
