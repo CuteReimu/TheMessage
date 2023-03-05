@@ -15,7 +15,7 @@ data class WaitForDieGiveCard(
     /**
      * 死亡的顺序
      */
-    val diedQueue: ArrayList<Player>,
+    val diedQueue: List<Player>,
     /**
      * 在结算死亡技能时，又有新的人获得三张黑色情报的顺序
      */

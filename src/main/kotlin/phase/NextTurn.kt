@@ -15,14 +15,14 @@ import com.fengsheng.skill.QiangLing
 data class NextTurn(val player: Player) : Fsm {
     override fun resolve(): ResolveResult {
         val game = player.game!!
+        if (game.checkOnlyOneAliveIdentityPlayers())
+            return ResolveResult(null, false)
         var whoseTurn = player.location
         while (true) {
             whoseTurn = (whoseTurn + 1) % game.players.size
             val player = game.players[whoseTurn]!!
             if (player.alive) {
-                for (p in game.players) {
-                    p!!.resetSkillUseCount()
-                }
+                game.players.forEach { it!!.resetSkillUseCount() }
                 JinBi.resetJinBi(game)
                 QiangLing.resetQiangLing(game)
                 JiangHuLing.resetJiangHuLing(game)

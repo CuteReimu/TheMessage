@@ -9,6 +9,7 @@ import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.RoleCache
+import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.TriggeredSkill
 import com.google.protobuf.GeneratedMessageV3
 import kotlinx.coroutines.GlobalScope
@@ -296,6 +297,38 @@ class Game private constructor(totalPlayerCount: Int) {
             if (result != null) return result
         }
         return null
+    }
+
+    /**
+     * 判断是否仅剩的一个阵营存活
+     */
+    fun checkOnlyOneAliveIdentityPlayers(): Boolean {
+        var identity: color? = null
+        val alivePlayers = players.filter {
+            if (it!!.alive) return@filter false
+            when (identity) {
+                null -> identity = it.identity
+                color.Black -> return false
+                it.identity -> {}
+                else -> return false
+            }
+            true
+        }.filterNotNull()
+        val players = players.filterNotNull()
+        val winner =
+            if (identity == color.Red || identity == color.Blue)
+                players.filter { !it.lose && identity == it.identity }.toMutableList()
+            else
+                alivePlayers.toMutableList()
+        if (winner.any { it.findSkill(SkillId.WEI_SHENG) != null && it.roleFaceUp }) {
+            winner.addAll(players.filter { !it.lose && it.identity == color.Has_No_Identity })
+        }
+        val winners = winner.toTypedArray()
+        log.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
+        allPlayerSetRoleFaceUp()
+        players.forEach { it.notifyWin(arrayOf(), winners) }
+        end(winner)
+        return true
     }
 
     companion object {

@@ -1,10 +1,9 @@
 package com.fengsheng.phase
 
 import com.fengsheng.Fsm
-import com.fengsheng.Game
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
-import com.fengsheng.protos.Common
+import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.secret_task
 import com.fengsheng.skill.SkillId
@@ -17,146 +16,59 @@ import org.apache.log4j.Logger
  * @param diedQueue       死亡顺序
  * @param afterDieResolve 死亡结算后的下一个动作
  */
-data class CheckKillerWin(val whoseTurn: Player, val diedQueue: ArrayList<Player>, val afterDieResolve: Fsm) : Fsm {
+data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, val afterDieResolve: Fsm) : Fsm {
     override fun resolve(): ResolveResult {
         if (diedQueue.isEmpty()) return ResolveResult(afterDieResolve, true)
-        val players = whoseTurn.game!!.players
-        var killer: Player? = null
-        var stealer: Player? = null
-        for (p in players) {
-            if (p!!.lose || p.identity != color.Black) continue
-            if (p.secretTask == secret_task.Killer) killer = p else if (p.secretTask == secret_task.Stealer) stealer = p
-        }
-        var declaredWinner = arrayListOf<Player>()
-        var winner = arrayListOf<Player>()
+        val players = whoseTurn.game!!.players.filterNotNull().filter { !it.lose }
+        val killer = players.find { it.identity == color.Black && it.secretTask == secret_task.Killer } // 镇压者
+        val stealer = players.find { it.identity == color.Black && it.secretTask == secret_task.Stealer } // 簒夺者
+        var declaredWinner = ArrayList<Player>()
+        var winner = ArrayList<Player>()
         if (whoseTurn === killer) {
-            for (whoDie in diedQueue) {
-                var count = 0
-                for (card in whoDie.messageCards) {
-                    for (color in card.colors) {
-                        if (color != Common.color.Black) {
-                            count++
-                            break
-                        }
-                    }
-                }
-                if (count >= 2) {
-                    declaredWinner.add(killer)
-                    winner.add(killer)
-                }
+            if (diedQueue.any { it.messageCards.countTrueCard() >= 2 }) {
+                declaredWinner.add(killer)
+                winner.add(killer)
             }
         }
-        for (whoDie in diedQueue) {
-            if (whoDie.identity == color.Black && whoDie.secretTask == secret_task.Pioneer) {
-                var count = 0
-                for (card in whoDie.messageCards) {
-                    for (color in card.colors) {
-                        if (color != Common.color.Black) {
-                            count++
-                            break
-                        }
-                    }
-                }
-                if (count >= 1) {
-                    declaredWinner.add(whoDie)
-                    winner.add(whoDie)
-                }
-                break
-            }
+        val pioneer = diedQueue.find { it.identity == color.Black && it.secretTask == secret_task.Pioneer } // 先行者
+        if (pioneer != null && pioneer.messageCards.countTrueCard() >= 1) {
+            declaredWinner.add(pioneer)
+            winner.add(pioneer)
         }
         if (declaredWinner.isNotEmpty() && stealer != null && stealer === whoseTurn) {
             declaredWinner = arrayListOf(stealer)
-            winner = ArrayList(declaredWinner)
+            winner = arrayListOf(stealer)
         }
         if (declaredWinner.isNotEmpty()) {
-            var hasGuXiaoMeng = false
-            for (p in winner) {
-                if (p.findSkill(SkillId.WEI_SHENG) != null && p.roleFaceUp) {
-                    hasGuXiaoMeng = true
-                    break
-                }
-            }
-            if (hasGuXiaoMeng) {
-                for (p in players) {
-                    if (!p!!.lose && p.identity == color.Has_No_Identity) {
-                        winner.add(p)
-                    }
-                }
+            if (winner.any { it.findSkill(SkillId.WEI_SHENG) != null && it.roleFaceUp }) {
+                winner.addAll(
+                    players.filter { !it.lose && it.identity == color.Has_No_Identity }
+                )
             }
             val declaredWinners = declaredWinner.toTypedArray()
             val winners = winner.toTypedArray()
             log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
             whoseTurn.game!!.allPlayerSetRoleFaceUp()
-            for (p in players) p!!.notifyWin(declaredWinners, winners)
+            for (p in players) p.notifyWin(declaredWinners, winners)
             whoseTurn.game!!.end(winner)
             return ResolveResult(null, false)
         }
-        var alivePlayer: Player? = null
-        for (p in players) {
-            if (p!!.alive) {
-                alivePlayer = if (alivePlayer == null) {
-                    p
-                } else {
-                    // 至少有2个人存活，游戏继续
-                    return ResolveResult(DieSkill(whoseTurn, diedQueue, whoseTurn, afterDieResolve), true)
-                }
-            }
-        }
-        if (alivePlayer == null) {
-            // 全部死亡，游戏结束
+        if (players.all { !it.alive }) {
             log.info("全部死亡，游戏结束")
             whoseTurn.game!!.allPlayerSetRoleFaceUp()
             for (p in players) {
-                p!!.notifyWin(arrayOf(), arrayOf())
+                p.notifyWin(arrayOf(), arrayOf())
             }
             whoseTurn.game!!.end(emptyList())
             return ResolveResult(null, false)
         }
-        // 只剩1个人存活，游戏结束
-        onlyOneAliveWinner(whoseTurn.game!!, alivePlayer)
-        return ResolveResult(null, false)
+        return ResolveResult(DieSkill(whoseTurn, diedQueue, whoseTurn, afterDieResolve), true)
     }
 
     companion object {
         private val log = Logger.getLogger(CheckKillerWin::class.java)
 
-        /**
-         * 只剩1个人存活，游戏结束
-         */
-        fun onlyOneAliveWinner(g: Game, alivePlayer: Player) {
-            val players = g.players
-            val winner: MutableList<Player> = ArrayList()
-            val identity = alivePlayer.identity
-            if (identity == color.Red || identity == color.Blue) {
-                for (p in players) {
-                    if (!p!!.lose && identity == p.identity) {
-                        winner.add(p)
-                    }
-                }
-            } else {
-                winner.add(alivePlayer)
-            }
-            var hasGuXiaoMeng = false
-            for (p in winner) {
-                if (p.findSkill(SkillId.WEI_SHENG) != null && p.roleFaceUp) {
-                    hasGuXiaoMeng = true
-                    break
-                }
-            }
-            if (hasGuXiaoMeng) {
-                for (p in players) {
-                    if (!p!!.lose && p.identity == color.Has_No_Identity) {
-                        winner.add(p)
-                    }
-                }
-            }
-            val winners = winner.toTypedArray()
-            log.info("只剩下${alivePlayer}存活，胜利者有${winners.contentToString()}")
-            g.allPlayerSetRoleFaceUp()
-            for (p in players) {
-                p!!.notifyWin(arrayOf(), winners)
-            }
-            g.end(winner)
-        }
+        private fun Collection<Card>.countTrueCard() =
+            count { card -> card.colors.any { c -> c != color.Black } }
     }
 }

@@ -16,7 +16,7 @@ data class DieSkill(
     /**
      * 死亡的顺序
      */
-    val diedQueue: ArrayList<Player>,
+    val diedQueue: List<Player>,
     /**
      * 正在询问谁
      */
