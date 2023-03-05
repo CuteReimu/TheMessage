@@ -41,9 +41,7 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
         }
         if (declaredWinner.isNotEmpty()) {
             if (winner.any { it.findSkill(SkillId.WEI_SHENG) != null && it.roleFaceUp }) {
-                winner.addAll(
-                    players.filter { !it.lose && it.identity == color.Has_No_Identity }
-                )
+                winner.addAll(players.filter { it.identity == color.Has_No_Identity })
             }
             val declaredWinners = declaredWinner.toTypedArray()
             val winners = winner.toTypedArray()
