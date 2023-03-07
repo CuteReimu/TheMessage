@@ -91,26 +91,16 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
             return
         }
         val game = player.game ?: return
-        val reply: GeneratedMessageV3?
-        synchronized(Game::class.java) {
+        GameExecutor.post(game) {
             if (game.isStarted) {
-                GameExecutor.post(game) {
-                    for (p in game.players) {
-                        if (p is HumanPlayer && p.isActive) return@post
-                    }
+                if (game.players.all { it !is HumanPlayer || !it.isActive })
                     game.end(null)
-                }
-                reply = null
             } else {
                 log.info("${player.playerName}离开了房间")
                 game.players[player.location] = null
                 Game.deviceCache.remove(player.device!!, player)
-                reply = leave_room_toc.newBuilder().setPosition(player.location).build()
-            }
-        }
-        if (reply != null) {
-            for (p in game.players) {
-                (p as? HumanPlayer)?.send(reply)
+                val reply = leave_room_toc.newBuilder().setPosition(player.location).build()
+                game.players.forEach { (it as? HumanPlayer)?.send(reply) }
             }
         }
     }
