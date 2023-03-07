@@ -236,7 +236,7 @@ class WeiBi : Card {
             }
             if (players.isEmpty()) return false
             val p = players[Random.nextInt(players.size)]!!
-            val cardTypes = p.cards.filter { availableCardType.contains(it.type) }
+            val cardTypes = availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }
             val cardType = cardTypes[Random.nextInt(cardTypes.size)]
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p, cardType) }, 2, TimeUnit.SECONDS)
             return true
