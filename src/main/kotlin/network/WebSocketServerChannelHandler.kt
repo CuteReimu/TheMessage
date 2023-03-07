@@ -50,7 +50,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         val message = protoInfo.parser.parseFrom(buf) as GeneratedMessageV3
         if ("heart_tos" != protoName && "auto_play_tos" != protoName) {
             log.debug(
-                "recv@%s len: %d %s | %s".formatted(
+                "recv@%s len: %d %s | %s".format(
                     ctx.channel().id().asShortText(), buf.size, protoName,
                     printer.printToString(message).replace("\n *".toRegex(), " ")
                 )
@@ -115,9 +115,11 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         }
     }
 
+    @Deprecated("Deprecated in Java")
     @Throws(Exception::class)
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         if (cause is SocketException && "Connection reset" == cause.message) return
+        @Suppress("DEPRECATION")
         super.exceptionCaught(ctx, cause)
     }
 

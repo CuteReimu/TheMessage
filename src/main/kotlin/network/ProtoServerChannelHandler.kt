@@ -30,7 +30,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         val player = HumanPlayer(channel) { protoName: String, buf: ByteArray ->
             val byteBuf = PooledByteBufAllocator.DEFAULT.ioBuffer(buf.size + 4, buf.size + 4)
             byteBuf.writeShortLE(buf.size + 2)
-            byteBuf.writeShortLE(ProtoServerChannelHandler.stringHash(protoName).toInt())
+            byteBuf.writeShortLE(stringHash(protoName).toInt())
             byteBuf.writeBytes(buf)
         }
         if (playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
@@ -49,25 +49,16 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
             return
         }
         val game = player.game ?: return
-        var reply: GeneratedMessageV3? = null
-        synchronized(Game::class.java) {
+        GameExecutor.post(game) {
             if (game.isStarted) {
-                GameExecutor.post(game) {
-                    for (p in game.players) {
-                        if (p is HumanPlayer && p.isActive) return@post
-                    }
+                if (game.players.all { it !is HumanPlayer || !it.isActive })
                     game.end(null)
-                }
             } else {
-                log.info(player.playerName + "离开了房间")
+                log.info("${player.playerName}离开了房间")
                 game.players[player.location] = null
                 Game.deviceCache.remove(player.device!!, player)
-                reply = leave_room_toc.newBuilder().setPosition(player.location).build()
-            }
-        }
-        if (reply != null) {
-            for (p in game.players) {
-                (p as? HumanPlayer)?.send(reply!!)
+                val reply = leave_room_toc.newBuilder().setPosition(player.location).build()
+                game.players.forEach { (it as? HumanPlayer)?.send(reply) }
             }
         }
     }
@@ -92,15 +83,13 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         val message = protoInfo.parser.parseFrom(buf) as GeneratedMessageV3
         if (id != heartMsgId && id != autoPlayMsgId) {
             log.debug(
-                "recv@%s len: %d %s | %s".formatted(
-                    ctx.channel().id().asShortText(), msgLen - 2, protoInfo.name,
-                    printer.printToString(message).replace("\n *".toRegex(), " ")
-                )
+                "recv@${ctx.channel().id().asShortText()} len: ${msgLen - 2} ${protoInfo.name} | " +
+                        printer.printToString(message).replace("\n *".toRegex(), " ")
             )
         }
         val player = playerCache[ctx.channel().id().asLongText()]!!
         if (!player.limiter.allow()) {
-            log.error("recv msg too fast: " + ctx.channel().id().asShortText())
+            log.error("recv msg too fast: ${ctx.channel().id().asShortText()}")
             ctx.close()
             return
         }
@@ -108,9 +97,11 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         handler.handle(player, message)
     }
 
+    @Deprecated("Deprecated in Java")
     @Throws(Exception::class)
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         if (cause is SocketException && "Connection reset" == cause.message) return
+        @Suppress("DEPRECATION")
         super.exceptionCaught(ctx, cause)
     }
 
@@ -125,14 +116,8 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         private val autoPlayMsgId: Short = stringHash("auto_play_tos")
         fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
             oldPlayer.channel = newPlayer.channel
-            if (playerCache.put(
-                    newPlayer.channel.id().asLongText(),
-                    oldPlayer
-                ) == null
-            ) {
-                log.error(
-                    "channel [id: " + newPlayer.channel.id().asLongText() + "] not exists"
-                )
+            if (playerCache.put(newPlayer.channel.id().asLongText(), oldPlayer) == null) {
+                log.error("channel [id: ${newPlayer.channel.id().asLongText()}] not exists")
             }
         }
 

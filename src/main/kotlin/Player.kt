@@ -11,7 +11,7 @@ import kotlin.random.Random
 
 abstract class Player protected constructor() {
     var game: Game? = null
-    var playerName: String? = null
+    var playerName: String = ""
     var location = 0
     val cards = ArrayList<Card>()
     val messageCards = ArrayList<Card>()

@@ -12,6 +12,7 @@ import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.TriggeredSkill
 import com.google.protobuf.GeneratedMessageV3
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -24,7 +25,7 @@ import kotlin.math.max
 import kotlin.random.Random
 
 class Game private constructor(totalPlayerCount: Int) {
-    val queue = Channel<Runnable>(Channel.UNLIMITED)
+    val queue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
     val id: Int = ++increaseId
 
@@ -44,9 +45,7 @@ class Game private constructor(totalPlayerCount: Int) {
      * 用于王田香技能禁闭
      */
     var jinBiPlayer: Player? = null
-    /**
-     * 用于张一挺技能强令
-     */
+
     /**
      * 用于张一挺技能强令
      */
@@ -55,10 +54,11 @@ class Game private constructor(totalPlayerCount: Int) {
     init {
         // 调用构造函数时加锁了，所以increaseId无需加锁
         players = arrayOfNulls(totalPlayerCount)
+        @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
             while (!isEnd) try {
                 val callBack = queue.receive()
-                callBack.run()
+                callBack()
             } catch (_: ClosedReceiveChannelException) {
                 break
             } catch (e: Exception) {
@@ -70,7 +70,7 @@ class Game private constructor(totalPlayerCount: Int) {
     /**
      * 玩家进入房间时调用
      */
-    fun onPlayerJoinRoom(player: Player, count: PlayerGameCount?) {
+    fun onPlayerJoinRoom(player: Player, count: PlayerGameCount) {
         var unready = -1
         for (index in players.indices) {
             if (players[index] == null && ++unready == 0) {
@@ -79,10 +79,8 @@ class Game private constructor(totalPlayerCount: Int) {
             }
         }
         val builder = join_room_toc.newBuilder().setName(player.playerName).setPosition(player.location)
-        if (count != null) {
-            builder.winCount = count.winCount
-            builder.gameCount = count.gameCount
-        }
+        builder.winCount = count.winCount
+        builder.gameCount = count.gameCount
         val msg = builder.build()
         for (p in players) {
             if (p !== player && p is HumanPlayer) {

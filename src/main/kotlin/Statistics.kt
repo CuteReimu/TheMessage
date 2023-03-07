@@ -61,7 +61,7 @@ object Statistics {
                         if (trialStartTime.remove(count.player.device) != null) updateTrial = true
                     }
                     game++
-                    playerInfoMap.computeIfPresent(count.player.playerName!!) { _, v ->
+                    playerInfoMap.computeIfPresent(count.player.playerName) { _, v ->
                         val addWin = if (count.isWin) 1 else 0
                         PlayerInfo(v.name, v.deviceId, v.password, v.winCount + addWin, v.gameCount + 1)
                     }
@@ -134,8 +134,8 @@ object Statistics {
         return playerInfo
     }
 
-    fun getPlayerGameCount(name: String): PlayerGameCount? {
-        val playerInfo = playerInfoMap[name] ?: return null
+    fun getPlayerGameCount(name: String): PlayerGameCount {
+        val playerInfo = playerInfoMap[name] ?: return PlayerGameCount(0, 0)
         return PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
     }
 
