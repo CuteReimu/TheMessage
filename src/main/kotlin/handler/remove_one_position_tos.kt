@@ -27,7 +27,7 @@ class remove_one_position_tos : AbstractProtoHandler<remove_one_position_tos>() 
         log.info("已满${players.size}个人，游戏开始。。。")
         r.game!!.isStarted = true
         GameExecutor.post(r.game!!) { r.game!!.start() }
-        Game.newGame = Game.newInstance()
+        Game.newInstance()
     }
 
     companion object {

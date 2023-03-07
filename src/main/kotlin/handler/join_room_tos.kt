@@ -83,8 +83,9 @@ class join_room_tos : ProtoHandler {
                     player.game = newGame
                     val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
                     player.game!!.onPlayerJoinRoom(player, count)
-                    val builder = get_room_info_toc.newBuilder().setMyPosition(player.location)
-                        .setOnlineCount(Game.deviceCache.size)
+                    val builder = get_room_info_toc.newBuilder()
+                    builder.myPosition = player.location
+                    builder.onlineCount = Game.deviceCache.size
                     for (p in player.game!!.players) {
                         builder.addNames(p?.playerName ?: "")
                         val count1 =

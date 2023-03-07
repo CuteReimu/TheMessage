@@ -70,29 +70,24 @@ class Game private constructor(totalPlayerCount: Int) {
      * 玩家进入房间时调用
      */
     fun onPlayerJoinRoom(player: Player, count: PlayerGameCount) {
-        var unready = -1
-        for (index in players.indices) {
-            if (players[index] == null && ++unready == 0) {
-                players[index] = player
-                player.location = index
-            }
-        }
-        val builder = join_room_toc.newBuilder().setName(player.playerName).setPosition(player.location)
+        val index = players.indexOfFirst { it == null }
+        players[index] = player
+        player.location = index
+        val unready = players.count { it == null }
+        val builder = join_room_toc.newBuilder()
+        builder.name = player.playerName
+        builder.position = player.location
         builder.winCount = count.winCount
         builder.gameCount = count.gameCount
         val msg = builder.build()
-        for (p in players) {
-            if (p !== player && p is HumanPlayer) {
-                p.send(msg)
-            }
-        }
+        players.forEach { if (it !== player && it is HumanPlayer) it.send(msg) }
         if (unready == 0) {
-            log.info(player.playerName + "加入了。已加入" + players.size + "个人，游戏开始。。。")
+            log.info("${player.playerName}加入了。已加入${players.size}个人，游戏开始。。。")
             isStarted = true
             GameExecutor.post(this) { start() }
-            newGame = newInstance()
+            newInstance()
         } else {
-            log.info(player.playerName + "加入了。已加入" + (players.size - unready) + "个人，等待" + unready + "人加入。。。")
+            log.info("${player.playerName}加入了。已加入${players.size - unready}个人，等待${unready}人加入。。。")
         }
     }
 
@@ -346,8 +341,8 @@ class Game private constructor(totalPlayerCount: Int) {
         /**
          * 不是线程安全的
          */
-        fun newInstance(): Game {
-            return Game(max(newGame.players.size, Config.TotalPlayerCount))
+        fun newInstance() {
+            newGame = Game(max(newGame.players.size, Config.TotalPlayerCount))
         }
 
         @Throws(IOException::class, ClassNotFoundException::class)
