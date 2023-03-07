@@ -2,7 +2,6 @@ package com.fengsheng.handler
 
 import com.fengsheng.*
 import com.fengsheng.Statistics.PlayerGameCount
-import com.fengsheng.network.ProtoServerChannelHandler
 import com.fengsheng.protos.Errcode.error_code
 import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng
@@ -40,7 +39,7 @@ class join_room_tos : ProtoHandler {
                             player.channel.close()
                             return@call false
                         }
-                        ProtoServerChannelHandler.exchangePlayer(oldPlayer, player) // TODO: 需要同时支持Websocket和TCP
+                        Game.exchangePlayer(oldPlayer, player)
                         oldPlayer.setAutoPlay(false)
                         oldPlayer.reconnect()
                         log.info("${oldPlayer}断线重连成功")

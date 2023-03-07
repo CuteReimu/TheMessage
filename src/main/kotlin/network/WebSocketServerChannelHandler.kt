@@ -19,7 +19,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame
 import org.apache.log4j.Logger
 import java.lang.reflect.InvocationTargetException
 import java.net.SocketException
-import java.util.concurrent.ConcurrentHashMap
 
 class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame>() {
     @Throws(Exception::class)
@@ -56,7 +55,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
                 )
             )
         }
-        val player = playerCache[ctx.channel().id().asLongText()]
+        val player = Game.playerCache[ctx.channel().id().asLongText()]
         if (!player!!.limiter.allow()) {
             log.error("recv msg too fast: ${ctx.channel().id().asShortText()}")
             ctx.close()
@@ -77,7 +76,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
             byteBuf.writeBytes(buf)
             BinaryWebSocketFrame(byteBuf)
         }
-        if (playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
+        if (Game.playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
             log.error("already assigned channel id: ${channel.id().asLongText()}")
         }
     }
@@ -85,9 +84,9 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
     override fun channelInactive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
         log.info("session closed: ${channel.id().asShortText()} ${channel.remoteAddress()}")
-        val player = playerCache.remove(channel.id().asLongText())
+        val player = Game.playerCache.remove(channel.id().asLongText())
         if (player == null) {
-            log.error("already unassigned channel id: " + channel.id().asLongText())
+            log.error("already unassigned channel id: ${channel.id().asLongText()}")
             return
         }
         val game = player.game ?: return
@@ -119,7 +118,6 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         private val log = Logger.getLogger(WebSocketServerChannelHandler::class.java)
         private val printer = TextFormat.printer().escapingNonAscii(false)
         private val ProtoInfoMap = HashMap<String, ProtoInfo>()
-        private val playerCache = ConcurrentHashMap<String, HumanPlayer>()
 
         init {
             try {
@@ -150,38 +148,18 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
             for (d in descriptor.messageTypes) {
                 val name = d.name
                 if (!name.endsWith("_tos")) continue
-                val id: Short = stringHash(name)
-                if (id.toInt() == 0) {
-                    throw RuntimeException("message meta require 'ID' field: $name")
-                }
-                val className = protoCls.name + "$" + name
+                val className = "${protoCls.name}$$name"
                 val cls = protoCls.classLoader.loadClass(className)
                 val parser = cls.getDeclaredMethod("parser").invoke(null) as Parser<*>
                 try {
                     val handlerClass = protoCls.classLoader.loadClass("com.fengsheng.handler.$name")
                     val handler = handlerClass.getDeclaredConstructor().newInstance() as ProtoHandler
                     if (ProtoInfoMap.putIfAbsent(name, ProtoInfo(name, parser, handler)) != null) {
-                        throw RuntimeException("Duplicate message meta register by id: $id")
+                        throw RuntimeException("Duplicate message meta register by name: $name")
                     }
                 } catch (ignored: ClassNotFoundException) {
                 }
             }
-        }
-
-        fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
-            oldPlayer.channel = newPlayer.channel
-            if (playerCache.put(newPlayer.channel.id().asLongText(), oldPlayer) == null) {
-                log.error("channel [id: ${newPlayer.channel.id().asLongText()}] not exists")
-            }
-        }
-
-        private fun stringHash(s: String): Short {
-            var hash = 0
-            for (c in s.toByteArray()) {
-                val i = if (c >= 0) c.toInt() else 256 + c
-                hash = (hash + (hash shl 5) + i + (i shl 7)).toShort().toInt()
-            }
-            return hash.toShort()
         }
     }
 }

@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 import org.apache.log4j.Logger
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -331,10 +330,18 @@ class Game private constructor(totalPlayerCount: Int) {
 
     companion object {
         private val log = Logger.getLogger(Game::class.java)
-        val GameCache: ConcurrentMap<Int, Game> = ConcurrentHashMap()
-        val deviceCache: ConcurrentMap<String, HumanPlayer> = ConcurrentHashMap()
+        val playerCache = ConcurrentHashMap<String, HumanPlayer>()
+        val GameCache = ConcurrentHashMap<Int, Game>()
+        val deviceCache = ConcurrentHashMap<String, HumanPlayer>()
         private var increaseId = 0
         var newGame = Game(Config.TotalPlayerCount)
+
+        fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
+            oldPlayer.channel = newPlayer.channel
+            if (playerCache.put(newPlayer.channel.id().asLongText(), oldPlayer) == null) {
+                log.error("channel [id: ${newPlayer.channel.id().asLongText()}] not exists")
+            }
+        }
 
         /**
          * 不是线程安全的

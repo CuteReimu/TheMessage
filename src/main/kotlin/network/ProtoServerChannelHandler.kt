@@ -18,8 +18,6 @@ import io.netty.channel.SimpleChannelInboundHandler
 import org.apache.log4j.Logger
 import java.lang.reflect.InvocationTargetException
 import java.net.SocketException
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 
 class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
     override fun channelActive(ctx: ChannelHandlerContext) {
@@ -33,7 +31,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
             byteBuf.writeShortLE(stringHash(protoName).toInt())
             byteBuf.writeBytes(buf)
         }
-        if (playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
+        if (Game.playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
             log.error("already assigned channel id: ${channel.id().asLongText()}")
         }
     }
@@ -43,7 +41,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         log.info(
             "session closed: " + channel.id().asShortText() + " " + channel.remoteAddress()
         )
-        val player = playerCache.remove(channel.id().asLongText())
+        val player = Game.playerCache.remove(channel.id().asLongText())
         if (player == null) {
             log.error("already unassigned channel id: " + channel.id().asLongText())
             return
@@ -87,7 +85,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                         printer.printToString(message).replace("\n *".toRegex(), " ")
             )
         }
-        val player = playerCache[ctx.channel().id().asLongText()]!!
+        val player = Game.playerCache[ctx.channel().id().asLongText()]!!
         if (!player.limiter.allow()) {
             log.error("recv msg too fast: ${ctx.channel().id().asShortText()}")
             ctx.close()
@@ -111,15 +109,8 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         private val log = Logger.getLogger(ProtoServerChannelHandler::class.java)
         private val printer = TextFormat.printer().escapingNonAscii(false)
         private val ProtoInfoMap = HashMap<Short, ProtoInfo>()
-        private val playerCache: ConcurrentMap<String, HumanPlayer> = ConcurrentHashMap()
         private val heartMsgId: Short = stringHash("heart_tos")
         private val autoPlayMsgId: Short = stringHash("auto_play_tos")
-        fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
-            oldPlayer.channel = newPlayer.channel
-            if (playerCache.put(newPlayer.channel.id().asLongText(), oldPlayer) == null) {
-                log.error("channel [id: ${newPlayer.channel.id().asLongText()}] not exists")
-            }
-        }
 
         init {
             try {
@@ -154,7 +145,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                 if (id.toInt() == 0) {
                     throw RuntimeException("message meta require 'ID' field: $name")
                 }
-                val className = protoCls.name + "$" + name
+                val className = "${protoCls.name}$$name"
                 val cls = protoCls.classLoader.loadClass(className)
                 val parser = cls.getDeclaredMethod("parser").invoke(null) as Parser<*>
                 try {
