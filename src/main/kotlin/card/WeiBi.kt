@@ -12,6 +12,7 @@ import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class WeiBi : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -227,25 +228,17 @@ class WeiBi : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
             val identity = player.identity
-            val players: MutableList<Player> = ArrayList()
-            for (p in player.game!!.players) {
-                if (p !== player && p!!.alive && p.cards.isNotEmpty() && (identity == color.Black || identity != p.identity)
-                    && (!p.roleFaceUp || p.findSkill(SkillId.CHENG_FU) == null)
-                ) {
-                    for (c in p.cards) if (availableCardType.contains(c.type)) players.add(p)
-                }
+            val players = player.game!!.players.filter {
+                it !== player && it!!.alive &&
+                        (!it.roleFaceUp || it.findSkill(SkillId.CHENG_FU) == null) &&
+                        (identity == color.Black || identity != it.identity) &&
+                        it.cards.any { card -> availableCardType.contains(card.type) }
             }
             if (players.isEmpty()) return false
-            val p = players[ThreadLocalRandom.current().nextInt(players.size)]
-            val cardTypes: MutableList<card_type?> = ArrayList()
-            for (c in p.cards) if (availableCardType.contains(c.type)) cardTypes.add(c.type)
-            val cardType = cardTypes[ThreadLocalRandom.current().nextInt(cardTypes.size)]
-            GameExecutor.post(
-                player.game!!,
-                { card.execute(player.game!!, player, p, cardType!!) },
-                2,
-                TimeUnit.SECONDS
-            )
+            val p = players[Random.nextInt(players.size)]!!
+            val cardTypes = p.cards.filter { availableCardType.contains(it.type) }
+            val cardType = cardTypes[Random.nextInt(cardTypes.size)]
+            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p, cardType) }, 2, TimeUnit.SECONDS)
             return true
         }
     }

@@ -8,8 +8,8 @@ import com.fengsheng.protos.Fengsheng.use_li_you_toc
 import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
 import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class LiYou : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -122,12 +122,25 @@ class LiYou : Card {
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            val players: MutableList<Player> = ArrayList()
-            for (p in player.game!!.players)
-                if (p!!.alive) players.add(p)
-            if (players.isEmpty()) return false
-            val p = players[ThreadLocalRandom.current().nextInt(players.size)]
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
+            val game = player.game!!
+            if (game.deck.deckCount == 0) return false
+            val identity = player.identity
+            val nextCard = game.deck.peek(1).first()
+            val players =
+                if (game.deck.deckCount == 0 || nextCard.colors.size == 2) {
+                    game.players.filter { it!!.alive }
+                } else {
+                    val (partners, enemies) = game.players.filter { it!!.alive }.partition {
+                        identity != color.Black && identity == it!!.identity
+                    }
+                    if (nextCard.colors.first() == color.Black) enemies else partners
+                }
+            val p = when (players.size) {
+                0 -> return false
+                1 -> players[0]
+                else -> players[Random.nextInt(players.size)]
+            }!!
+            GameExecutor.post(game, { card.execute(game, player, p) }, 2, TimeUnit.SECONDS)
             return true
         }
     }

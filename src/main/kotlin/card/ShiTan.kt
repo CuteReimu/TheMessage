@@ -13,8 +13,8 @@ import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
 import com.fengsheng.skill.SkillId
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class ShiTan : Card {
     private val whoDrawCard: List<color>
@@ -232,19 +232,12 @@ class ShiTan : Card {
         private val log = Logger.getLogger(ShiTan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            val players: MutableList<Player> = ArrayList()
-            for (p in player.game!!.players) if (p !== player && p!!.alive && (!p.roleFaceUp || p.findSkill(
-                    SkillId.CHENG_FU
-                ) == null)
-            ) players.add(p)
+            val players = player.game!!.players.filter {
+                it !== player && it!!.alive && (!it.roleFaceUp || it.findSkill(SkillId.CHENG_FU) == null)
+            }
             if (players.isEmpty()) return false
-            val p = players[ThreadLocalRandom.current().nextInt(players.size)]
-            GameExecutor.post(
-                player.game!!,
-                { card.execute(player.game!!, player, p) },
-                2,
-                TimeUnit.SECONDS
-            )
+            val p = players[Random.nextInt(players.size)]!!
+            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
             return true
         }
     }

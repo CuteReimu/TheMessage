@@ -91,7 +91,7 @@ class JieHuo : Card {
             val player = e.whoseFightTurn
             if (player.game!!.qiangLingTypes.contains(card_type.Jie_Huo)) return false
             val colors = e.messageCard.colors
-            if (e.inFrontOfWhom === player || (e.isMessageCardFaceUp || player === e.whoseTurn) && colors.size == 1 && colors[0] == color.Black) return false
+            if (e.inFrontOfWhom === player || colors.size == 1 && colors.first() == color.Black) return false
             if (Random.nextBoolean()) return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true

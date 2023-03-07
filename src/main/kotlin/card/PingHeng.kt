@@ -82,10 +82,14 @@ class PingHeng : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
             if (player.cards.size > 3) return false
-            val players: MutableList<Player> = ArrayList()
-            for (p in player.game!!.players) if (p !== player && p!!.alive) players.add(p)
+            val identity = player.identity
+            val players = player.game!!.players.filter {
+                if (it === player || !it!!.alive) false
+                else if (identity != color.Black && identity == it.identity) it.cards.size <= 3
+                else it.cards.size >= 3
+            }
             if (players.isEmpty()) return false
-            val p = players[Random.nextInt(players.size)]
+            val p = players[Random.nextInt(players.size)]!!
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
             return true
         }

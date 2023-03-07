@@ -81,7 +81,7 @@ class WuDao : Card {
             if (player.game!!.qiangLingTypes.contains(card_type.Wu_Dao))
                 return false
             val colors = e.messageCard.colors
-            if (e.inFrontOfWhom === player && (e.isMessageCardFaceUp || player === e.whoseTurn) && colors.size == 1 && colors[0] != color.Black)
+            if (e.inFrontOfWhom === player && colors.size == 1 && colors.first() != color.Black)
                 return false
             val target = when (Random.nextInt(4)) {
                 0 -> e.inFrontOfWhom.getNextLeftAlivePlayer()

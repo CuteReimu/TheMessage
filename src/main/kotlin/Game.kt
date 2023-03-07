@@ -35,7 +35,7 @@ class Game private constructor(totalPlayerCount: Int) {
     var isEnd = false
         private set
     var players: Array<Player?>
-    var deck: Deck = Deck(this)
+    var deck = Deck(this)
     var fsm: Fsm? = null
         private set
     val listeningSkills = ArrayList<TriggeredSkill>()

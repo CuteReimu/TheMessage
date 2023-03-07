@@ -1,13 +1,11 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
-import com.fengsheng.card.DiaoBao
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 class DiaoBao : Card {
@@ -78,16 +76,16 @@ class DiaoBao : Card {
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
             if (player.game!!.qiangLingTypes.contains(card_type.Diao_Bao)) return false
-            val colors = e.messageCard.colors
-            if (e.inFrontOfWhom === player && (e.isMessageCardFaceUp || player === e.whoseTurn) && colors.size == 1 && colors[0] != color.Black) return false
-            if (ThreadLocalRandom.current().nextInt(4) != 0) return false
-            GameExecutor.post(
-                player.game!!,
-                { card.execute(player.game!!, player) },
-                2,
-                TimeUnit.SECONDS
-            )
+            if (player.identity != color.Black && player.identity == e.inFrontOfWhom.identity) {
+                if (card.getColorScore() <= e.messageCard.getColorScore()) return false
+            } else {
+                if (card.getColorScore() >= e.messageCard.getColorScore()) return false
+            }
+            GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true
         }
+
+        private fun Card.getColorScore() =
+            if (colors.size == 2) 1 else if (colors.first() == color.Black) 0 else 2
     }
 }
