@@ -31,7 +31,7 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
             val whoDie = fsm.diedQueue[fsm.diedIndex]
             val cards = whoDie.cards.toTypedArray()
             whoDie.cards.clear()
-            r.cards.addAll(whoDie.cards)
+            r.cards.addAll(cards)
             log.info("${r}发动了[承志]，获得了${whoDie}的${cards.contentToString()}")
             if (whoDie.identity == color.Has_No_Identity) return ResolveResult(fsm, true)
             for (player in r.game!!.players) {
