@@ -77,7 +77,6 @@ class join_room_tos : ProtoHandler {
                 val playerInfo = Statistics.login(playerName, pb.device, pb.password)
                 if (playerInfo == null) {
                     player.send(error_code_toc.newBuilder().setCode(error_code.login_failed).build())
-                    player.channel.close()
                 } else {
                     player.playerName = playerName
                     player.game = newGame
