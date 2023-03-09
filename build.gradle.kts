@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation("io.netty:netty-all:4.1.89.Final")
-    implementation("com.google.protobuf:protobuf-java:3.22.0")
+    implementation("com.google.protobuf:protobuf-java:3.22.1")
     implementation("log4j:log4j:1.2.17")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
@@ -25,7 +25,7 @@ dependencies {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.22.0"
+        artifact = "com.google.protobuf:protoc:3.22.1"
     }
 }
 
