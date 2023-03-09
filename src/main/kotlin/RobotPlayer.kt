@@ -153,7 +153,7 @@ class RobotPlayer : Player() {
                                 if (p === target) {
                                     giveCards.forEach { builder.addCard(it.toPbCard()) }
                                 } else {
-                                    builder.unknownCardCount = cards.size
+                                    builder.unknownCardCount = giveCards.size
                                 }
                                 p.send(builder.build())
                             }
