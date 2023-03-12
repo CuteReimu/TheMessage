@@ -1,7 +1,7 @@
 package com.fengsheng.phase
 
 import com.fengsheng.Player
-import com.fengsheng.protos.Common
+import com.fengsheng.protos.Common.color
 import java.util.*
 
 /**
@@ -10,22 +10,12 @@ import java.util.*
 class ReceiveOrder : LinkedList<Player>() {
     fun addPlayerIfHasThreeBlack(player: Player) {
         if (contains(player)) return
-        var count = 0
-        for (card in player.messageCards) {
-            for (color in card.colors) {
-                if (color == Common.color.Black) count++
-            }
-        }
+        val count = player.messageCards.count { it.colors.contains(color.Black) }
         if (count >= 3) add(player)
     }
 
     fun removePlayerIfNotHaveThreeBlack(player: Player) {
-        var count = 0
-        for (card in player.messageCards) {
-            for (color in card.colors) {
-                if (color == Common.color.Black) count++
-            }
-        }
+        val count = player.messageCards.count { it.colors.contains(color.Black) }
         if (count < 3) remove(player)
     }
 }

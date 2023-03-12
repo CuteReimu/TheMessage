@@ -1,6 +1,8 @@
 package com.fengsheng.phase
 
-import com.fengsheng.*
+import com.fengsheng.Fsm
+import com.fengsheng.Player
+import com.fengsheng.ResolveResult
 import org.apache.log4j.Logger
 import java.util.*
 
@@ -11,7 +13,7 @@ import java.util.*
  * @param diedQueue       接收第三张黑色情报的顺序，也就是后续结算濒死的顺序
  * @param afterDieResolve 濒死结算后的下一个动作
  */
-internal data class StartWaitForChengQing(
+data class StartWaitForChengQing(
     val whoseTurn: Player,
     val dyingQueue: Queue<Player>,
     val diedQueue: ArrayList<Player>,

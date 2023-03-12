@@ -12,20 +12,20 @@ class ReceivePhaseSenderSkill(
     /**
      * 谁的回合
      */
-    var whoseTurn: Player,
+    val whoseTurn: Player,
     /**
      * 情报牌
      */
-    var messageCard: Card,
+    val messageCard: Card,
     /**
      * 情报在谁面前
      */
-    var inFrontOfWhom: Player
-) : Fsm {
+    val inFrontOfWhom: Player,
     /**
      * 接收第三张黑色情报牌的顺序（也就是后续结算死亡的顺序）
      */
-    val receiveOrder = ReceiveOrder()
+    val receiveOrder: ReceiveOrder = ReceiveOrder()
+) : Fsm {
     override fun resolve(): ResolveResult {
         val result = whoseTurn.game!!.dealListeningSkill()
         return result ?: ResolveResult(

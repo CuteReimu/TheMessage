@@ -24,17 +24,16 @@ data class DieSkill(
     /**
      * 死亡结算后的下一个动作
      */
-    val afterDieResolve: Fsm
-) : Fsm {
+    val afterDieResolve: Fsm,
     /**
      * 结算到dieQueue的第几个人的死亡事件了
      */
-    var diedIndex = 0
-
+    val diedIndex: Int = 0,
     /**
      * 在结算死亡技能时，又有新的人获得三张黑色情报的顺序
      */
-    var receiveOrder = ReceiveOrder()
+    val receiveOrder: ReceiveOrder = ReceiveOrder()
+) : Fsm {
     override fun resolve(): ResolveResult {
         if (askWhom !== diedQueue[diedIndex] && !askWhom.alive) return ResolveResult(DieSkillNext(this), true)
         val result = askWhom.game!!.dealListeningSkill()
@@ -52,8 +51,15 @@ data class DieSkill(
             while (true) {
                 askWhom = (askWhom + 1) % players.size
                 if (askWhom == dieSkill.whoseTurn.location) {
-                    dieSkill.diedIndex++
-                    if (dieSkill.diedIndex >= dieSkill.diedQueue.size) return ResolveResult(
+                    if (dieSkill.diedIndex + 1 < dieSkill.diedQueue.size) {
+                        return ResolveResult(
+                            dieSkill.copy(
+                                askWhom = dieSkill.whoseTurn,
+                                diedIndex = dieSkill.diedIndex + 1
+                            ), true
+                        )
+                    }
+                    return ResolveResult(
                         WaitForDieGiveCard(
                             dieSkill.whoseTurn,
                             dieSkill.diedQueue,
@@ -61,7 +67,6 @@ data class DieSkill(
                             dieSkill.afterDieResolve
                         ), true
                     )
-                    return ResolveResult(dieSkill.copy(askWhom = dieSkill.whoseTurn), true)
                 }
                 if (players[askWhom] === dieSkill.diedQueue[dieSkill.diedIndex] || players[askWhom]!!.alive) {
                     return ResolveResult(dieSkill.copy(askWhom = players[askWhom]!!), true)
