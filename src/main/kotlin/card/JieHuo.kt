@@ -1,6 +1,9 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.GameExecutor
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
@@ -67,24 +70,22 @@ class JieHuo : Card {
          */
         fun execute(card: JieHuo?, g: Game, r: Player) {
             val fsm = g.fsm as FightPhaseIdle
-            val resolveFunc = object : Fsm {
-                override fun resolve(): ResolveResult {
-                    if (card != null) g.deck.discard(card.getOriginCard())
-                    for (player in g.players) {
-                        if (player is HumanPlayer) {
-                            val builder = Fengsheng.use_jie_huo_toc.newBuilder()
-                            builder.playerId = player.getAlternativeLocation(r.location)
-                            if (card != null) builder.card = card.toPbCard()
-                            player.send(builder.build())
-                        }
+            val resolveFunc = {
+                if (card != null) g.deck.discard(card.getOriginCard())
+                for (player in g.players) {
+                    if (player is HumanPlayer) {
+                        val builder = Fengsheng.use_jie_huo_toc.newBuilder()
+                        builder.playerId = player.getAlternativeLocation(r.location)
+                        if (card != null) builder.card = card.toPbCard()
+                        player.send(builder.build())
                     }
-                    return ResolveResult(fsm.copy(inFrontOfWhom = r, whoseFightTurn = r), true)
                 }
+                fsm.copy(inFrontOfWhom = r, whoseFightTurn = r)
             }
             if (card != null)
                 g.resolve(OnUseCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, resolveFunc))
             else
-                g.resolve(resolveFunc)
+                g.resolve(resolveFunc())
         }
 
         fun ai(e: FightPhaseIdle, card: Card): Boolean {

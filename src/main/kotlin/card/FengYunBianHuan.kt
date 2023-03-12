@@ -60,10 +60,8 @@ class FengYunBianHuan : Card {
                 player.send(builder.build())
             }
         }
-        val resolveFunc = object : Fsm {
-            override fun resolve(): ResolveResult {
-                return ResolveResult(executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm), true)
-            }
+        val resolveFunc = {
+            executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
         g.resolve(OnUseCard(r, r, null, this, card_type.Feng_Yun_Bian_Huan, r, resolveFunc))
     }

@@ -160,58 +160,55 @@ class WeiBi : Card {
          * @param card 使用的那张【威逼】卡牌。可以为 `null` ，因为肥原龙川技能【诡诈】可以视为使用了【威逼】。
          */
         fun execute(card: WeiBi?, g: Game, r: Player, target: Player, wantType: card_type) {
-            val resolveFunc = object : Fsm {
-                override fun resolve(): ResolveResult {
-                    if (target.roleFaceUp && target.findSkill(SkillId.CHENG_FU) != null) {
-                        log.info("${target}触发了[城府]，威逼无效")
-                        for (player in g.players) {
-                            if (player is HumanPlayer) {
-                                val builder = skill_cheng_fu_toc.newBuilder()
-                                builder.playerId = player.getAlternativeLocation(target.location)
-                                builder.fromPlayerId = player.getAlternativeLocation(r.location)
-                                if (card != null) builder.card = card.toPbCard()
-                                player.send(builder.build())
-                            }
+            val resolveFunc = {
+                if (target.roleFaceUp && target.findSkill(SkillId.CHENG_FU) != null) {
+                    log.info("${target}触发了[城府]，威逼无效")
+                    for (player in g.players) {
+                        if (player is HumanPlayer) {
+                            val builder = skill_cheng_fu_toc.newBuilder()
+                            builder.playerId = player.getAlternativeLocation(target.location)
+                            builder.fromPlayerId = player.getAlternativeLocation(r.location)
+                            if (card != null) builder.card = card.toPbCard()
+                            player.send(builder.build())
                         }
-                        if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
-                            target.addSkillUseCount(SkillId.JIU_JI)
-                            if (card != null) {
-                                target.cards.add(card)
-                                log.info("${target}将使用的${card}加入了手牌")
-                                for (player in g.players) {
-                                    if (player is HumanPlayer) {
-                                        val builder = skill_jiu_ji_b_toc.newBuilder()
-                                        builder.playerId = player.getAlternativeLocation(target.location)
-                                        builder.card = card.toPbCard()
-                                        player.send(builder.build())
-                                    }
+                    }
+                    if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                        target.addSkillUseCount(SkillId.JIU_JI)
+                        if (card != null) {
+                            target.cards.add(card)
+                            log.info("${target}将使用的${card}加入了手牌")
+                            for (player in g.players) {
+                                if (player is HumanPlayer) {
+                                    val builder = skill_jiu_ji_b_toc.newBuilder()
+                                    builder.playerId = player.getAlternativeLocation(target.location)
+                                    builder.card = card.toPbCard()
+                                    player.send(builder.build())
                                 }
                             }
-                        } else if (card != null) {
-                            g.deck.discard(card.getOriginCard())
                         }
-                        return ResolveResult(MainPhaseIdle(r), true)
+                    } else if (card != null) {
+                        g.deck.discard(card.getOriginCard())
                     }
-                    if (hasCard(target, wantType)) {
-                        return ResolveResult(executeWeiBi(r, target, card, wantType), true)
-                    } else {
-                        log.info("${target}向${r}展示了所有手牌")
-                        if (card != null) g.deck.discard(card)
-                        for (p in g.players) {
-                            if (p is HumanPlayer) {
-                                val builder = wei_bi_show_hand_card_toc.newBuilder()
-                                if (card != null) builder.card = card.toPbCard()
-                                builder.wantType = wantType
-                                builder.playerId = p.getAlternativeLocation(r.location)
-                                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                                if (p === r) {
-                                    for (c in target.cards) builder.addCards(c.toPbCard())
-                                }
-                                p.send(builder.build())
+                    MainPhaseIdle(r)
+                } else if (hasCard(target, wantType)) {
+                    executeWeiBi(r, target, card, wantType)
+                } else {
+                    log.info("${target}向${r}展示了所有手牌")
+                    if (card != null) g.deck.discard(card)
+                    for (p in g.players) {
+                        if (p is HumanPlayer) {
+                            val builder = wei_bi_show_hand_card_toc.newBuilder()
+                            if (card != null) builder.card = card.toPbCard()
+                            builder.wantType = wantType
+                            builder.playerId = p.getAlternativeLocation(r.location)
+                            builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                            if (p === r) {
+                                for (c in target.cards) builder.addCards(c.toPbCard())
                             }
+                            p.send(builder.build())
                         }
-                        return ResolveResult(MainPhaseIdle(r), true)
                     }
+                    MainPhaseIdle(r)
                 }
             }
             g.resolve(OnUseCard(r, r, target, card, card_type.Wei_Bi, r, resolveFunc))

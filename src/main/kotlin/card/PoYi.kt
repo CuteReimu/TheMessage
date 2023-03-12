@@ -50,10 +50,8 @@ class PoYi : Card {
         val fsm = g.fsm as SendPhaseIdle
         log.info("${r}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = object : Fsm {
-            override fun resolve(): ResolveResult {
-                return ResolveResult(executePoYi(this@PoYi, fsm), true)
-            }
+        val resolveFunc = {
+            executePoYi(this@PoYi, fsm)
         }
         g.resolve(OnUseCard(r, r, null, this, card_type.Po_Yi, r, resolveFunc))
     }

@@ -60,38 +60,37 @@ class ShiTan : Card {
         val target = args[0] as Player
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = object : Fsm {
-            override fun resolve(): ResolveResult {
-                if (target.roleFaceUp && target.findSkill(SkillId.CHENG_FU) != null) {
-                    log.info("${target}触发了[城府]，试探无效")
+        val resolveFunc = func@{
+            if (target.roleFaceUp && target.findSkill(SkillId.CHENG_FU) != null) {
+                log.info("${target}触发了[城府]，试探无效")
+                for (player in g.players) {
+                    if (player is HumanPlayer) {
+                        val builder = skill_cheng_fu_toc.newBuilder()
+                            .setPlayerId(player.getAlternativeLocation(target.location))
+                        builder.fromPlayerId = player.getAlternativeLocation(r.location)
+                        if (player == r || player == target || target.getSkillUseCount(SkillId.JIU_JI) != 1) builder.card =
+                            toPbCard() else builder.unknownCardCount = 1
+                        player.send(builder.build())
+                    }
+                }
+                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                    target.addSkillUseCount(SkillId.JIU_JI)
+                    target.cards.add(this@ShiTan)
+                    log.info(target.toString() + "将使用的${this@ShiTan}加入了手牌")
                     for (player in g.players) {
                         if (player is HumanPlayer) {
-                            val builder = skill_cheng_fu_toc.newBuilder()
+                            val builder = skill_jiu_ji_b_toc.newBuilder()
                                 .setPlayerId(player.getAlternativeLocation(target.location))
-                            builder.fromPlayerId = player.getAlternativeLocation(r.location)
-                            if (player == r || player == target || target.getSkillUseCount(SkillId.JIU_JI) != 1) builder.card =
-                                toPbCard() else builder.unknownCardCount = 1
+                            if (player == r || player == target) builder.card = toPbCard()
+                            else builder.unknownCardCount = 1
                             player.send(builder.build())
                         }
                     }
-                    if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
-                        target.addSkillUseCount(SkillId.JIU_JI)
-                        target.cards.add(this@ShiTan)
-                        log.info(target.toString() + "将使用的${this@ShiTan}加入了手牌")
-                        for (player in g.players) {
-                            if (player is HumanPlayer) {
-                                val builder = skill_jiu_ji_b_toc.newBuilder()
-                                    .setPlayerId(player.getAlternativeLocation(target.location))
-                                if (player == r || player == target) builder.card = toPbCard()
-                                else builder.unknownCardCount = 1
-                                player.send(builder.build())
-                            }
-                        }
-                    } else {
-                        g.deck.discard(this@ShiTan)
-                    }
-                    return ResolveResult(MainPhaseIdle(r), true)
+                } else {
+                    g.deck.discard(this@ShiTan)
                 }
+                MainPhaseIdle(r)
+            } else {
                 for (p in g.players) {
                     if (p is HumanPlayer) {
                         val builder = use_shi_tan_toc.newBuilder()
@@ -101,7 +100,7 @@ class ShiTan : Card {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(executeShiTan(r, target, this@ShiTan), true)
+                executeShiTan(r, target, this@ShiTan)
             }
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, r, resolveFunc))

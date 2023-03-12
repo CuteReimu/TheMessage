@@ -1,6 +1,9 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.GameExecutor
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
@@ -52,23 +55,21 @@ class PingHeng : Card {
         val target = args[0] as Player
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = object : Fsm {
-            override fun resolve(): ResolveResult {
-                for (player in g.players) {
-                    (player as? HumanPlayer)?.send(
-                        use_ping_heng_toc.newBuilder()
-                            .setPlayerId(player.getAlternativeLocation(r.location))
-                            .setTargetPlayerId(player.getAlternativeLocation(target.location))
-                            .setPingHengCard(toPbCard()).build()
-                    )
-                }
-                g.playerDiscardCard(r, *r.cards.toTypedArray())
-                g.playerDiscardCard(target, *target.cards.toTypedArray())
-                r.draw(3)
-                target.draw(3)
-                g.deck.discard(getOriginCard())
-                return ResolveResult(MainPhaseIdle(r), true)
+        val resolveFunc = {
+            for (player in g.players) {
+                (player as? HumanPlayer)?.send(
+                    use_ping_heng_toc.newBuilder()
+                        .setPlayerId(player.getAlternativeLocation(r.location))
+                        .setTargetPlayerId(player.getAlternativeLocation(target.location))
+                        .setPingHengCard(toPbCard()).build()
+                )
             }
+            g.playerDiscardCard(r, *r.cards.toTypedArray())
+            g.playerDiscardCard(target, *target.cards.toTypedArray())
+            r.draw(3)
+            target.draw(3)
+            g.deck.discard(getOriginCard())
+            MainPhaseIdle(r)
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Ping_Heng, r, resolveFunc))
     }

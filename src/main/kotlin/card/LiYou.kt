@@ -1,6 +1,9 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.GameExecutor
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
@@ -69,55 +72,53 @@ class LiYou : Card {
          * @param card 使用的那张【利诱】卡牌。可以为 `null` ，因为肥原龙川技能【诡诈】可以视为使用了【利诱】。
          */
         fun execute(card: LiYou?, g: Game, r: Player, target: Player) {
-            val resolveFunc = object : Fsm {
-                override fun resolve(): ResolveResult {
-                    val deckCards = g.deck.draw(1)
-                    var joinIntoHand = false
-                    if (deckCards.isNotEmpty()) {
-                        if (target.checkThreeSameMessageCard(deckCards[0])) {
-                            joinIntoHand = true
-                            r.cards.addAll(deckCards)
-                            log.info("${deckCards.contentToString()}加入了${r}的手牌")
-                        } else {
-                            target.messageCards.addAll(deckCards)
-                            log.info("${deckCards.contentToString()}加入了${target}的的情报区")
-                        }
+            val resolveFunc = {
+                val deckCards = g.deck.draw(1)
+                var joinIntoHand = false
+                if (deckCards.isNotEmpty()) {
+                    if (target.checkThreeSameMessageCard(deckCards[0])) {
+                        joinIntoHand = true
+                        r.cards.addAll(deckCards)
+                        log.info("${deckCards.contentToString()}加入了${r}的手牌")
+                    } else {
+                        target.messageCards.addAll(deckCards)
+                        log.info("${deckCards.contentToString()}加入了${target}的的情报区")
                     }
-                    for (player in g.players) {
-                        if (player is HumanPlayer) {
-                            val builder = use_li_you_toc.newBuilder()
-                            builder.playerId = player.getAlternativeLocation(r.location)
-                            builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                            if (card != null) builder.liYouCard = card.toPbCard()
-                            builder.joinIntoHand = joinIntoHand
-                            if (deckCards.isNotEmpty()) builder.messageCard = deckCards[0].toPbCard()
-                            player.send(builder.build())
-                        }
+                }
+                for (player in g.players) {
+                    if (player is HumanPlayer) {
+                        val builder = use_li_you_toc.newBuilder()
+                        builder.playerId = player.getAlternativeLocation(r.location)
+                        builder.targetPlayerId = player.getAlternativeLocation(target.location)
+                        if (card != null) builder.liYouCard = card.toPbCard()
+                        builder.joinIntoHand = joinIntoHand
+                        if (deckCards.isNotEmpty()) builder.messageCard = deckCards[0].toPbCard()
+                        player.send(builder.build())
                     }
-                    if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
-                        target.addSkillUseCount(SkillId.JIU_JI)
-                        if (card != null) {
-                            target.cards.add(card)
-                            log.info("${target}将使用的${card}加入了手牌")
-                            for (player in g.players) {
-                                if (player is HumanPlayer) {
-                                    val builder = skill_jiu_ji_b_toc.newBuilder()
-                                    builder.playerId = player.getAlternativeLocation(target.location)
-                                    builder.card = card.toPbCard()
-                                    player.send(builder.build())
-                                }
+                }
+                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                    target.addSkillUseCount(SkillId.JIU_JI)
+                    if (card != null) {
+                        target.cards.add(card)
+                        log.info("${target}将使用的${card}加入了手牌")
+                        for (player in g.players) {
+                            if (player is HumanPlayer) {
+                                val builder = skill_jiu_ji_b_toc.newBuilder()
+                                builder.playerId = player.getAlternativeLocation(target.location)
+                                builder.card = card.toPbCard()
+                                player.send(builder.build())
                             }
                         }
-                    } else {
-                        if (card != null) g.deck.discard(card.getOriginCard())
                     }
-                    return ResolveResult(MainPhaseIdle(r), true)
+                } else {
+                    if (card != null) g.deck.discard(card.getOriginCard())
                 }
+                MainPhaseIdle(r)
             }
             if (card != null)
                 g.resolve(OnUseCard(r, r, target, card, card_type.Li_You, r, resolveFunc))
             else
-                g.resolve(resolveFunc)
+                g.resolve(resolveFunc())
         }
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {

@@ -1,6 +1,5 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Fsm
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
@@ -32,11 +31,9 @@ class YouDao : AbstractSkill(), TriggeredSkill {
         }
         r.draw(1)
         val oldResolveFunc = fsm.resolveFunc
-        val newFsm = fsm.copy(resolveFunc = object : Fsm {
-            override fun resolve(): ResolveResult? {
-                r.resetSkillUseCount(skillId)
-                return oldResolveFunc.resolve()
-            }
+        val newFsm = fsm.copy(resolveFunc = {
+            r.resetSkillUseCount(skillId)
+            oldResolveFunc()
         })
         return ResolveResult(newFsm, true)
     }

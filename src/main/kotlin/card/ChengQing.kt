@@ -1,12 +1,15 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.GameExecutor
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.phase.UseChengQingOnDying
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.*
-import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
 import org.apache.log4j.Logger
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
@@ -73,25 +76,23 @@ class ChengQing : Card {
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val fsm = g.fsm
-        val resolveFunc = object : Fsm {
-            override fun resolve(): ResolveResult {
-                val targetCard = target.deleteMessageCard(targetCardId)!!
-                log.info("${target}面前的${targetCard}被置入弃牌堆")
-                g.deck.discard(targetCard)
-                for (player in g.players) {
-                    (player as? HumanPlayer)?.send(
-                        Fengsheng.use_cheng_qing_toc.newBuilder()
-                            .setCard(toPbCard()).setPlayerId(player.getAlternativeLocation(r.location))
-                            .setTargetPlayerId(player.getAlternativeLocation(target.location))
-                            .setTargetCardId(targetCardId).build()
-                    )
+        val resolveFunc = {
+            val targetCard = target.deleteMessageCard(targetCardId)!!
+            log.info("${target}面前的${targetCard}被置入弃牌堆")
+            g.deck.discard(targetCard)
+            for (player in g.players) {
+                if (player is HumanPlayer) {
+                    val builder = use_cheng_qing_toc.newBuilder()
+                    builder.card = toPbCard()
+                    builder.playerId = player.getAlternativeLocation(r.location)
+                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
+                    builder.targetCardId = targetCardId
+                    player.send(builder.build())
                 }
-                g.deck.discard(getOriginCard())
-                return if (fsm is MainPhaseIdle) ResolveResult(fsm, true) else ResolveResult(
-                    UseChengQingOnDying(fsm as WaitForChengQing),
-                    true
-                )
             }
+            g.deck.discard(getOriginCard())
+            if (fsm is MainPhaseIdle) fsm
+            else UseChengQingOnDying(fsm as WaitForChengQing)
         }
         if (fsm is MainPhaseIdle) g.resolve(
             OnUseCard(fsm.player, r, target, this, card_type.Cheng_Qing, r, resolveFunc)

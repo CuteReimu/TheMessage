@@ -37,7 +37,7 @@ data class OnUseCard(
     /**
      * 卡牌效果的结算函数
      */
-    val resolveFunc: Fsm
+    val resolveFunc: () -> Fsm
 ) : Fsm {
     override fun resolve(): ResolveResult {
         val result = whoseTurn.game!!.dealListeningSkill()
@@ -45,17 +45,17 @@ data class OnUseCard(
     }
 
     override fun toString(): String {
-        return player.toString() + "使用" + card + "时"
+        return "${player}使用${card}时"
     }
 
     private data class OnUseCardNext(val onUseCard: OnUseCard) : Fsm {
-        override fun resolve(): ResolveResult? {
+        override fun resolve(): ResolveResult {
             var askWhom = onUseCard.askWhom.location
             val players = onUseCard.askWhom.game!!.players
             while (true) {
                 askWhom = (askWhom + 1) % players.size
                 if (askWhom == onUseCard.player.location) {
-                    return onUseCard.resolveFunc.resolve()
+                    return ResolveResult(onUseCard.resolveFunc(), true)
                 }
                 if (players[askWhom]!!.alive) {
                     return ResolveResult(onUseCard.copy(askWhom = players[askWhom]!!), true)

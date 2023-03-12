@@ -1,6 +1,9 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.GameExecutor
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
@@ -52,20 +55,18 @@ class WuDao : Card {
         log.info("${r}对${target}使用了$this")
         val fsm = g.fsm as FightPhaseIdle
         r.deleteCard(id)
-        val resolveFunc = object : Fsm {
-            override fun resolve(): ResolveResult {
-                g.deck.discard(getOriginCard())
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        val builder = use_wu_dao_toc.newBuilder()
-                        builder.card = toPbCard()
-                        builder.playerId = player.getAlternativeLocation(r.location)
-                        builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                        player.send(builder.build())
-                    }
+        val resolveFunc = {
+            g.deck.discard(getOriginCard())
+            for (player in g.players) {
+                if (player is HumanPlayer) {
+                    val builder = use_wu_dao_toc.newBuilder()
+                    builder.card = toPbCard()
+                    builder.playerId = player.getAlternativeLocation(r.location)
+                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
+                    player.send(builder.build())
                 }
-                return ResolveResult(fsm.copy(inFrontOfWhom = target, whoseFightTurn = target), true)
             }
+            fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
         }
         g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Wu_Dao, r, resolveFunc))
     }

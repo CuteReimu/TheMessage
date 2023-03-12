@@ -1,6 +1,9 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.GameExecutor
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
@@ -42,27 +45,23 @@ class DiaoBao : Card {
         val fsm = g.fsm as FightPhaseIdle
         log.info("${r}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = object : Fsm {
-            override fun resolve(): ResolveResult {
-                val oldCard = fsm.messageCard
-                g.deck.discard(oldCard)
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        val builder = use_diao_bao_toc.newBuilder()
-                        builder.oldMessageCard = oldCard.toPbCard()
-                        builder.playerId = player.getAlternativeLocation(r.location)
-                        if (player === r) builder.cardId = id
-                        player.send(builder.build())
-                    }
+        val resolveFunc = {
+            val oldCard = fsm.messageCard
+            g.deck.discard(oldCard)
+            for (player in g.players) {
+                if (player is HumanPlayer) {
+                    val builder = use_diao_bao_toc.newBuilder()
+                    builder.oldMessageCard = oldCard.toPbCard()
+                    builder.playerId = player.getAlternativeLocation(r.location)
+                    if (player === r) builder.cardId = id
+                    player.send(builder.build())
                 }
-                return ResolveResult(
-                    fsm.copy(
-                        messageCard = getOriginCard(),
-                        isMessageCardFaceUp = false,
-                        whoseFightTurn = fsm.inFrontOfWhom
-                    ), true
-                )
             }
+            fsm.copy(
+                messageCard = getOriginCard(),
+                isMessageCardFaceUp = false,
+                whoseFightTurn = fsm.inFrontOfWhom
+            )
         }
         g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Diao_Bao, r, resolveFunc))
     }

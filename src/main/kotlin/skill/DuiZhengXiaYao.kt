@@ -302,11 +302,8 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
             val playerCount = player.game!!.players.size
-            val playerAndCards: MutableList<PlayerAndCard> = ArrayList()
-            for (p in player.game!!.players) {
-                if (p!!.alive) {
-                    for (c in p.messageCards) playerAndCards.add(PlayerAndCard(p, c))
-                }
+            val playerAndCards = player.game!!.players.filter { it!!.alive }.flatMap { p ->
+                p!!.messageCards.map { PlayerAndCard(p, it) }
             }
             if (playerAndCards.size < playerCount) return false
             if (ThreadLocalRandom.current().nextInt(playerCount * playerCount) != 0) return false
