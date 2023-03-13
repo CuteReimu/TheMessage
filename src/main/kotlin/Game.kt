@@ -296,8 +296,9 @@ class Game private constructor(totalPlayerCount: Int) {
      */
     fun checkOnlyOneAliveIdentityPlayers(): Boolean {
         var identity: color? = null
+        val players = players.filterNotNull().filter { !it.lose }
         val alivePlayers = players.filter {
-            if (!it!!.alive) return@filter false
+            if (!it.alive) return@filter false
             when (identity) {
                 null -> identity = it.identity
                 color.Black -> return false
@@ -305,20 +306,25 @@ class Game private constructor(totalPlayerCount: Int) {
                 else -> return false
             }
             true
-        }.filterNotNull()
-        val players = players.filterNotNull().filter { !it.lose }
+        }
         val winner =
-            if (identity == color.Red || identity == color.Blue)
+            if (alivePlayers.size == 1 && alivePlayers.first()
+                    .let { it.identity == color.Black && it.secretTask == secret_task.Stealer }
+            ) {
+                log.info("只剩簒夺者者存活，无法获胜，游戏失败")
+                ArrayList()
+            } else if (identity == color.Red || identity == color.Blue) {
                 players.filter { identity == it.identity }.toMutableList()
-            else
+            } else {
                 alivePlayers.toMutableList()
+            }
         if (winner.any { it.findSkill(SkillId.WEI_SHENG) != null && it.roleFaceUp }) {
             winner.addAll(players.filter { it.identity == color.Has_No_Identity })
         }
         val winners = winner.toTypedArray()
         log.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
         allPlayerSetRoleFaceUp()
-        players.forEach { it.notifyWin(arrayOf(), winners) }
+        this.players.forEach { it!!.notifyWin(arrayOf(), winners) }
         end(winner)
         return true
     }
