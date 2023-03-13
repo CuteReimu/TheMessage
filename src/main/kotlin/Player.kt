@@ -53,7 +53,8 @@ abstract class Player protected constructor() {
         targetPlayer: Player,
         lockedPlayers: Array<Player>,
         messageCard: Card,
-        dir: direction?
+        dir: direction?,
+        sender: Player
     )
 
     abstract fun notifySendPhase(waitSecond: Int)

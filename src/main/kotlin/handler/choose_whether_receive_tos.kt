@@ -24,7 +24,7 @@ class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether
                 OnChooseReceiveCard(fsm.whoseTurn, fsm.messageCard, fsm.inFrontOfWhom, fsm.isMessageCardFaceUp)
             )
         } else {
-            if (r === fsm.whoseTurn) {
+            if (r === fsm.sender) {
                 log.error("传出者必须接收")
                 return
             }

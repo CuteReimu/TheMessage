@@ -30,7 +30,9 @@ data class SendPhaseIdle(
     /**
      * 情报是否面朝上
      */
-    val isMessageCardFaceUp: Boolean
+    val isMessageCardFaceUp: Boolean,
+    /** 谁传出的情报 */
+    val sender: Player,
 ) : Fsm {
     override fun resolve(): ResolveResult? {
         for (p in whoseTurn.game!!.players) {
@@ -40,7 +42,7 @@ data class SendPhaseIdle(
     }
 
     override fun toString(): String {
-        return whoseTurn.toString() + "的回合的情报传递阶段，情报在" + inFrontOfWhom + "面前"
+        return "${whoseTurn}的回合的情报传递阶段，传出者是${sender}，情报在${inFrontOfWhom}面前"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -55,6 +57,7 @@ data class SendPhaseIdle(
         if (inFrontOfWhom != other.inFrontOfWhom) return false
         if (!lockedPlayers.contentEquals(other.lockedPlayers)) return false
         if (isMessageCardFaceUp != other.isMessageCardFaceUp) return false
+        if (sender != other.sender) return false
 
         return true
     }
@@ -66,6 +69,7 @@ data class SendPhaseIdle(
         result = 31 * result + inFrontOfWhom.hashCode()
         result = 31 * result + lockedPlayers.contentHashCode()
         result = 31 * result + isMessageCardFaceUp.hashCode()
+        result = 31 * result + sender.hashCode()
         return result
     }
 }

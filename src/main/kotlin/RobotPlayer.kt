@@ -48,7 +48,8 @@ class RobotPlayer : Player() {
         targetPlayer: Player,
         lockedPlayers: Array<Player>,
         messageCard: Card,
-        dir: direction?
+        dir: direction?,
+        sender: Player
     ) {
         // Do nothing
     }
@@ -64,7 +65,7 @@ class RobotPlayer : Player() {
         }
         GameExecutor.post(game!!, {
             val colors = fsm.messageCard.colors
-            val receive = fsm.lockedPlayers.contains(this) || fsm.whoseTurn === this || // 如果被锁了，或者自己是传出者，则必须接收
+            val receive = fsm.lockedPlayers.contains(this) || fsm.sender === this || // 如果被锁了，或者自己是传出者，则必须接收
                     if (colors.size == 1) { // 如果是单色，纯黑则不接，纯非黑则有一半几率接，已翻开的纯非黑则必接
                         colors.first() != color.Black && (fsm.isMessageCardFaceUp || Random.nextBoolean())
                     } else {

@@ -71,7 +71,7 @@ message remove_one_position_toc {
 
 // 请求播放录像
 message display_record_tos {
-  uint32 version   = 1; // 客户端版本号
+  uint32 version = 1; // 客户端版本号
   string record_id = 2; // 录像ID
 }
 
@@ -86,9 +86,9 @@ message save_record_success_toc {
 
 // 申请加入房间
 message join_room_tos {
-  uint32 version  = 1; // 客户端版本号
-  string name     = 2; // 玩家的名字
-  string device   = 3; // 设备号，用于断线重连
+  uint32 version = 1; // 客户端版本号
+  string name = 2; // 玩家的名字
+  string device = 3; // 设备号，用于断线重连
   string password = 4; // 密码，建议客户端先加密一下再发过来
 }
 
@@ -228,6 +228,7 @@ message notify_phase_toc {
   uint32    waiting_player_id = 6; // 读秒的玩家ID
   uint32    waiting_second = 7; // 读多少秒
   uint32    seq = 8; // 只有当自己需要读秒时，这个字段才有值
+  uint32    sender_id = 9; // 传递阶段会有这个字段，传出情报的玩家id。有可能不是当前回合玩家传出的情报。
 }
 
 // 请求结束出牌阶段，进入情报传递阶段
@@ -260,9 +261,9 @@ message use_ping_heng_tos {
 
 // 通知客户端使用平衡的结果
 message use_ping_heng_toc {
-  uint32        player_id = 1; // 使用者
-  uint32        target_player_id = 2; // 被使用者
-  card          ping_heng_card = 3; // 使用的这张平衡牌
+  uint32 player_id = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者
+  card   ping_heng_card = 3; // 使用的这张平衡牌
 }
 
 // 请求使用威逼
@@ -337,6 +338,7 @@ message send_message_card_toc {
   uint32          target_player_id = 3; // 目标
   repeated uint32 lock_player_ids = 4; // 被锁定的玩家ID
   direction       card_dir = 5; // 传递的方向
+  uint32          sender_id = 6; // 传出情报的玩家id。有可能不是当前回合玩家传出的情报。
 }
 
 // 选择是否接收情报

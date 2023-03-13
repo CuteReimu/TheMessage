@@ -18,7 +18,7 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
         if (sendPhase.dir == direction.Up) {
             return if (sendPhase.whoseTurn.alive) {
                 log.info("情报到达${sendPhase.whoseTurn}面前")
-                ResolveResult(sendPhase.copy(inFrontOfWhom = sendPhase.whoseTurn), true)
+                ResolveResult(sendPhase.copy(inFrontOfWhom = sendPhase.sender), true)
             } else {
                 nextTurn()
             }
@@ -32,7 +32,7 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
                 if (players[inFrontOfWhom]!!.alive) {
                     log.info("情报到达${players[inFrontOfWhom]}面前")
                     return ResolveResult(sendPhase.copy(inFrontOfWhom = players[inFrontOfWhom]!!), true)
-                } else if (sendPhase.whoseTurn === players[inFrontOfWhom]) {
+                } else if (sendPhase.sender === players[inFrontOfWhom]) {
                     return nextTurn()
                 }
             }

@@ -31,9 +31,12 @@ data class OnSendCard(
         log.info(s)
         whoseTurn.cards.remove(messageCard)
         for (p in whoseTurn.game!!.players)
-            p!!.notifySendMessageCard(whoseTurn, targetPlayer, lockedPlayers, messageCard, dir)
+            p!!.notifySendMessageCard(whoseTurn, targetPlayer, lockedPlayers, messageCard, dir, whoseTurn)
         log.info("情报到达${targetPlayer}面前")
-        return ResolveResult(SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, false), true)
+        return ResolveResult(
+            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, false, whoseTurn),
+            true
+        )
     }
 
     override fun equals(other: Any?): Boolean {

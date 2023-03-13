@@ -173,12 +173,14 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
         targetPlayer: Player,
         lockedPlayers: Array<Player>,
         messageCard: Card,
-        dir: direction?
+        dir: direction?,
+        sender: Player
     ) {
         val builder = send_message_card_toc.newBuilder()
         builder.playerId = getAlternativeLocation(player.location)
         builder.targetPlayerId = getAlternativeLocation(targetPlayer.location)
         builder.cardDir = dir
+        builder.senderId = getAlternativeLocation(sender.location)
         if (player === this) builder.cardId = messageCard.id
         for (p in lockedPlayers) builder.addLockPlayerIds(getAlternativeLocation(p.location))
         send(builder.build())
@@ -191,7 +193,9 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
         builder.setCurrentPlayerId(playerId).currentPhase = Common.phase.Send_Phase
         builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
         builder.waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
-        builder.setMessageCardDir(fsm.dir).waitingSecond = waitSecond
+        builder.messageCardDir = fsm.dir
+        builder.waitingSecond = waitSecond
+        builder.senderId = getAlternativeLocation(fsm.sender.location)
         if (fsm.isMessageCardFaceUp) builder.messageCard = fsm.messageCard.toPbCard()
         if (this === fsm.inFrontOfWhom) {
             builder.seq = seq
