@@ -7,3 +7,13 @@ Jiaozze/TheMessage:
     dest: Assets/Network/fengsheng.proto
   - source: src/main/proto/role.proto
     dest: Assets/Network/role.proto
+
+Death-alter/TheMessage:
+  - source: src/main/proto/common.proto
+    dest: assets/network/common.proto
+  - source: src/main/proto/errcode.proto
+    dest: assets/network/errcode.proto
+  - source: src/main/proto/fengsheng.proto
+    dest: assets/network/fengsheng.proto
+  - source: src/main/proto/role.proto
+    dest: assets/network/role.proto
