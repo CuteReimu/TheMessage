@@ -33,7 +33,7 @@ data class CheckWin(
         val game = whoseTurn.game!!
         val players = game.players.filterNotNull().filter { !it.lose }
         val stealer = players.find { it.identity == color.Black && it.secretTask == secret_task.Stealer } // 簒夺者
-        val mutator = players.find { it.alive && it.identity == color.Black && it.secretTask == secret_task.Mutator }
+        val mutator = players.find { it.identity == color.Black && it.secretTask == secret_task.Mutator } // 诱变者
         val redPlayers = players.filter { it.identity == color.Red }
         val bluePlayers = players.filter { it.identity == color.Blue }
         var declareWinner = ArrayList<Player>()
