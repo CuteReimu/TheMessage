@@ -21,6 +21,10 @@ abstract class Player protected constructor() {
     var originSecretTask = secret_task.Killer
     var alive = true
     var lose = false
+
+    /** 为true表示刚死，还没死透。为false表示死透了。与诱变者的胜利判定有关 */
+    var dieJustNow = false
+
     var roleSkillsData = RoleSkillsData()
         set(value) {
             field = value.copy()

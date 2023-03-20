@@ -33,7 +33,8 @@ data class CheckWin(
         val game = whoseTurn.game!!
         val players = game.players.filterNotNull().filter { !it.lose }
         val stealer = players.find { it.identity == color.Black && it.secretTask == secret_task.Stealer } // 簒夺者
-        val mutator = players.find { it.identity == color.Black && it.secretTask == secret_task.Mutator } // 诱变者
+        val mutator = // 诱变者
+            players.find { (it.alive || it.dieJustNow) && it.identity == color.Black && it.secretTask == secret_task.Mutator }
         val redPlayers = players.filter { it.identity == color.Red }
         val bluePlayers = players.filter { it.identity == color.Blue }
         var declareWinner = ArrayList<Player>()
@@ -100,6 +101,7 @@ data class CheckWin(
             whoseTurn.game!!.end(winner)
             return ResolveResult(null, false)
         }
+        game.players.forEach { it!!.dieJustNow = false }
         return ResolveResult(StartWaitForChengQing(whoseTurn, receiveOrder, afterDieResolve), true)
     }
 
