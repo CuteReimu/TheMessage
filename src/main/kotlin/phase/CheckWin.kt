@@ -101,7 +101,6 @@ data class CheckWin(
             whoseTurn.game!!.end(winner)
             return ResolveResult(null, false)
         }
-        game.players.forEach { it!!.dieJustNow = false }
         return ResolveResult(StartWaitForChengQing(whoseTurn, receiveOrder, afterDieResolve), true)
     }
 

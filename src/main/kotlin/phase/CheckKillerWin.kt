@@ -10,7 +10,7 @@ import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
 
 /**
- * 判断镇压者获胜条件，或者只剩一个人存活
+ * 判断镇压者获胜条件
  *
  * @param whoseTurn       谁的回合
  * @param diedQueue       死亡顺序
@@ -18,7 +18,10 @@ import org.apache.log4j.Logger
  */
 data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, val afterDieResolve: Fsm) : Fsm {
     override fun resolve(): ResolveResult {
-        if (diedQueue.isEmpty()) return ResolveResult(afterDieResolve, true)
+        if (diedQueue.isEmpty()) {
+            whoseTurn.game!!.players.forEach { it!!.dieJustNow = false }
+            return ResolveResult(afterDieResolve, true)
+        }
         val players = whoseTurn.game!!.players.filterNotNull().filter { !it.lose }
         val killer = players.find { it.identity == color.Black && it.secretTask == secret_task.Killer } // 镇压者
         val stealer = players.find { it.identity == color.Black && it.secretTask == secret_task.Stealer } // 簒夺者
