@@ -308,12 +308,7 @@ class Game private constructor(totalPlayerCount: Int) {
             true
         }
         val winner =
-            if (alivePlayers.size == 1 && alivePlayers.first()
-                    .let { it.identity == color.Black && it.secretTask == secret_task.Stealer }
-            ) {
-                log.info("只剩簒夺者者存活，无法获胜，游戏失败")
-                ArrayList()
-            } else if (identity == color.Red || identity == color.Blue) {
+            if (identity == color.Red || identity == color.Blue) {
                 players.filter { identity == it.identity }.toMutableList()
             } else {
                 alivePlayers.toMutableList()
