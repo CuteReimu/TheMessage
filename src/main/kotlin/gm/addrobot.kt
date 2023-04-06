@@ -15,7 +15,7 @@ class addrobot : Function<Map<String, String?>, String> {
                 for (i in 0 until count) {
                     if (g.isStarted) break
                     val robotPlayer: Player = RobotPlayer()
-                    robotPlayer.playerName = Player.randPlayerName()
+                    robotPlayer.playerName = Player.randPlayerName(g)
                     robotPlayer.game = g
                     g.onPlayerJoinRoom(robotPlayer, Statistics.totalPlayerGameCount)
                 }

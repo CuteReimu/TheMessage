@@ -254,8 +254,12 @@ abstract class Player protected constructor() {
             }
         }
 
-        fun randPlayerName(): String {
-            return Random.nextInt(Int.MAX_VALUE).toString()
+        fun randPlayerName(game: Game): String {
+            val except = game.players.mapNotNull { it?.playerName }
+            return (setOf(
+                "这是机器人", "去群里喊人", "喊人一起玩", "不要单机",
+                "人多才好玩", "单机没意思", "别玩人机局", "多喊点人"
+            ) - except.toSet()).randomOrNull() ?: Random.nextInt(Int.MAX_VALUE).toString()
         }
     }
 }

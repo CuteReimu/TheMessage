@@ -30,7 +30,7 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             Statistics.setTrialStartTime(r.device!!, now)
         }
         val robotPlayer: Player = RobotPlayer()
-        robotPlayer.playerName = Player.randPlayerName()
+        robotPlayer.playerName = Player.randPlayerName(r.game!!)
         robotPlayer.game = r.game
         robotPlayer.game!!.onPlayerJoinRoom(robotPlayer, Statistics.totalPlayerGameCount)
     }
