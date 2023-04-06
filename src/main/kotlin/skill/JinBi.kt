@@ -5,7 +5,6 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 /**
@@ -177,12 +176,8 @@ class JinBi : AbstractSkill(), ActiveSkill {
 
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.player.getSkillUseCount(SkillId.JIN_BI) > 0) return false
-            val players: MutableList<Player> = ArrayList()
-            for (p in e.player.game!!.players) {
-                if (p !== e.player && p!!.alive) players.add(p)
-            }
-            if (players.isEmpty()) return false
-            val player = players[ThreadLocalRandom.current().nextInt(players.size)]
+            val players = e.player.game!!.players.filter { p -> p!!.alive && p.isEnemy(e.player) }
+            val player = players.randomOrNull() ?: return false
             GameExecutor.post(e.player.game!!, {
                 val builder = skill_jin_bi_a_tos.newBuilder()
                 builder.targetPlayerId = e.player.getAlternativeLocation(player.location)

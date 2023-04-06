@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.count
 import com.fengsheng.phase.ReceivePhaseSenderSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -91,12 +92,19 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
     }
 
     companion object {
-        fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeMianLiCangZhen) return false
-            val p: Player = fsm0.fsm.whoseTurn
-            val target: Player = fsm0.fsm.inFrontOfWhom
-            if (p === target || !target.alive) return false
-            val card = p.cards.find { it.colors.contains(color.Black) } ?: return false
+        fun ai(fsm: Fsm): Boolean {
+            if (fsm !is executeMianLiCangZhen) return false
+            val p = fsm.fsm.whoseTurn
+            val target = fsm.fsm.inFrontOfWhom
+            if (!target.alive) return false
+            val cards = p.cards.filter { it.isBlack() }.ifEmpty { return false }
+            val c1 = target.identity
+            val card =
+                if (p.isPartnerOrSelf(target)) {
+                    if (c1 == color.Black || p.messageCards.count(color.Black) >= 2) null
+                    else cards.find { c1 in it.colors }
+                } else cards.find { c1 == color.Black || c1 !in it.colors }
+            if (card == null) return false
             GameExecutor.post(
                 p.game!!,
                 {

@@ -6,13 +6,12 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.card.JieHuo
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_tou_tian_toc
 import com.fengsheng.protos.Role.skill_tou_tian_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 鄭文先技能【偷天】：争夺阶段你可以翻开此角色牌，然后视为你使用了一张【截获】。
@@ -48,9 +47,8 @@ class TouTian : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.whoseFightTurn.roleFaceUp) return false
             val player = e.whoseFightTurn
-            val colors = e.messageCard.colors
-            if (e.inFrontOfWhom === player || (e.isMessageCardFaceUp || player === e.whoseTurn) && colors.size == 1 && colors[0] == color.Black) return false
-            if (ThreadLocalRandom.current().nextBoolean()) return false
+            if (e.inFrontOfWhom === player || e.messageCard.isPureBlack()) return false
+            if (Random.nextBoolean()) return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
                 skill.executeProtocol(
                     e.whoseFightTurn.game!!, e.whoseFightTurn, skill_tou_tian_tos.getDefaultInstance()

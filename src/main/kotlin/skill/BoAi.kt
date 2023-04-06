@@ -5,7 +5,6 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 /**
@@ -60,15 +59,11 @@ class BoAi : AbstractSkill(), ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val players: MutableList<Player> = ArrayList()
-                    for (player in r.game!!.players) {
-                        if (player!!.alive && player !== r && player.isFemale) players.add(player)
-                    }
-                    if (players.isEmpty()) {
+                    val player = r.game!!.players.find { it!!.alive && it.isPartner(r) && it.isFemale }
+                    if (player == null) {
                         r.game!!.tryContinueResolveProtocol(r, skill_bo_ai_b_tos.newBuilder().setCardId(0).build())
                         return@post
                     }
-                    val player = players[ThreadLocalRandom.current().nextInt(players.size)]
                     for (card in r.cards) {
                         val builder = skill_bo_ai_b_tos.newBuilder()
                         builder.cardId = card.id

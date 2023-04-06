@@ -213,6 +213,15 @@ abstract class Player protected constructor() {
         return game!!.players[right]!!
     }
 
+    /** @return 如果other是队友（不含自己），则返回true。如果是自己，或者不是队友，则返回false */
+    fun isPartner(other: Player) = this !== other && identity != color.Black && identity == other.identity
+
+    /** @return 如果other是队友或自己，则返回true。否则返回false */
+    fun isPartnerOrSelf(other: Player) = this === other || identity != color.Black && identity == other.identity
+
+    /** @return 如果other是敌人，则返回true。否则返回false */
+    fun isEnemy(other: Player) = !isPartnerOrSelf(other)
+
     override fun toString(): String {
         val hide = if (roleFaceUp) "" else "(隐)"
         return "${location}号[$roleName$hide]"
