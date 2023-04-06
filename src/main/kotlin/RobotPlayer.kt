@@ -131,6 +131,15 @@ class RobotPlayer : Player() {
     override fun notifyAskForChengQing(whoDie: Player, askWhom: Player, waitSecond: Int) {
         val fsm = game!!.fsm as WaitForChengQing
         if (askWhom !== this) return
+        run {
+            if (identity == color.Black || identity != whoDie.identity) return@run
+            val card = cards.find { it is ChengQing } ?: return@run
+            val black = whoDie.messageCards.filter { color.Black in it.colors }.run {
+                find { it.colors.size == 1 } ?: find { identity !in it.colors } ?: firstOrNull()
+            } ?: return@run
+            GameExecutor.post(game!!, { card.execute(game!!, this, whoDie, black.id) }, 2, TimeUnit.SECONDS)
+            return
+        }
         GameExecutor.post(game!!, { game!!.resolve(WaitNextForChengQing(fsm)) }, 2, TimeUnit.SECONDS)
     }
 
