@@ -254,7 +254,7 @@ class Game private constructor(totalPlayerCount: Int) {
     fun tryContinueResolveProtocol(player: Player, pb: GeneratedMessageV3) {
         GameExecutor.post(this) {
             if (fsm !is WaitingFsm) {
-                log.error("时机错误，当前时点为：$fsm")
+                log.error("时机错误，当前时点为：$fsm，收到: $pb")
                 return@post
             }
             val result = (fsm as WaitingFsm).resolveProtocol(player, pb)
