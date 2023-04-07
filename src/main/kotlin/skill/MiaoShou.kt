@@ -83,10 +83,10 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val card = target.cards.firstOrNull() ?: target.messageCards.firstOrNull() ?: return@post
                     val builder = skill_miao_shou_b_tos.newBuilder()
-                    builder.cardId = card.id
-                    builder.targetPlayerId = 0
+                    builder.cardId = target.cards.firstOrNull()?.id ?: 0
+                    if (builder.cardId == 0)
+                        builder.targetPlayerId = target.messageCards.firstOrNull()?.id ?: 0
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }
