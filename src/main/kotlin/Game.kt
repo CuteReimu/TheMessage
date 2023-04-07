@@ -208,10 +208,12 @@ class Game private constructor(totalPlayerCount: Int) {
 
     fun playerSetRoleFaceUp(player: Player?, faceUp: Boolean) {
         if (faceUp) {
-            log.error(if (player!!.roleFaceUp) "${player}本来就是正面朝上的" else "${player}将角色翻至正面朝上")
+            if (player!!.roleFaceUp) log.error("${player}本来就是正面朝上的")
+            else log.info("${player}将角色翻至正面朝上")
             player.roleFaceUp = true
         } else {
-            log.error(if (player!!.roleFaceUp) "${player}本来就是背面朝上的" else "${player}将角色翻至背面朝上")
+            if (!player!!.roleFaceUp) log.error("${player}本来就是背面朝上的")
+            else log.info("${player}将角色翻至背面朝上")
             player.roleFaceUp = false
         }
         for (p in players) {
