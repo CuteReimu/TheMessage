@@ -3,7 +3,9 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
+import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -173,13 +175,14 @@ class MiaoBiQiaoBian : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
-            val playerCount = player.game!!.players.count { it != null && it.alive }
-            val playerAndCards = player.game!!.players.filter {
-                it!!.alive && it.messageCards.isNotEmpty()
-            }.flatMap { it!!.messageCards.map { card -> PlayerAndCard(it, card) } }
-            if (playerAndCards.size < playerCount) return false
-            if (Random.nextInt(playerCount * playerCount) != 0) return false
-            val playerAndCard = playerAndCards[Random.nextInt(playerAndCards.size)]
+            val playerAndCard = player.game!!.players.find {
+                it!!.alive && player.isEnemy(it) && it.identity != color.Black && it.messageCards.count(it.identity) >= 2
+            }?.run {
+                val card = messageCards.filter { identity in it.colors }.run {
+                    find { it.colors.size == 1 } ?: first() // 优先找纯色
+                }
+                PlayerAndCard(this, card)
+            } ?: return false
             val builder = skill_miao_bi_qiao_bian_a_tos.newBuilder()
             builder.cardId = playerAndCard.card.id
             builder.targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)

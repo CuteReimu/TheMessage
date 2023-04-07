@@ -2,12 +2,13 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
+import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.Common
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 阿芙罗拉技能【妙手】：争夺阶段，你可以翻开此角色牌，然后弃置待接收情报，并查看一名角色的手牌和情报区，从中选择一张牌作为待收情报，面朝上移至一名角色的面前。
@@ -67,10 +68,10 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
                         builder.seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
-                                val card =
-                                    target.cards.firstOrNull() ?: target.messageCards.firstOrNull() ?: return@post
                                 val builder2 = skill_miao_shou_b_tos.newBuilder()
-                                builder2.cardId = card.id
+                                builder2.cardId = target.cards.firstOrNull()?.id ?: 0
+                                if (builder2.cardId == 0)
+                                    builder2.messageCardId = target.messageCards.firstOrNull()?.id ?: 0
                                 builder2.targetPlayerId = 0
                                 builder2.seq = seq2
                                 g.tryContinueResolveProtocol(r, builder2.build())
@@ -84,9 +85,10 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder = skill_miao_shou_b_tos.newBuilder()
-                    builder.cardId = target.cards.firstOrNull()?.id ?: 0
-                    if (builder.cardId == 0)
-                        builder.targetPlayerId = target.messageCards.firstOrNull()?.id ?: 0
+                    builder.messageCardId = target.messageCards.firstOrNull()?.id ?: 0
+                    if (builder.messageCardId == 0)
+                        builder.cardId = target.cards.firstOrNull()?.id ?: 0
+                    builder.targetPlayerId = 0
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -170,12 +172,10 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
-            val players = player.game!!.players.filter {
-                it!!.alive && (it.cards.isNotEmpty() || it.messageCards.isNotEmpty())
-            }
-            if (players.isEmpty()) return false
-            if (Random.nextInt(players.size) != 0) return false
-            val p = players[Random.nextInt(players.size)]!!
+            val p = player.game!!.players.find {
+                it!!.alive && player.isEnemy(it)
+                        && it.identity != Common.color.Black && it.messageCards.count(it.identity) >= 2
+            } ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_miao_shou_a_tos.newBuilder()
                 builder.targetPlayerId = p.location

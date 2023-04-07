@@ -93,14 +93,13 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val players = ArrayList<Player>()
-                    for (p in g.players) if (p !== r && p!!.alive) players.add(p)
+                    val players = g.players.filter { it !== r && it!!.alive && r.isEnemy(it) }
                     if (players.isEmpty()) {
                         val builder = skill_jie_dao_sha_ren_b_tos.newBuilder()
                         builder.enable = false
                         g.tryContinueResolveProtocol(r, builder.build())
                     } else {
-                        val target2 = players.random()
+                        val target2 = players.random()!!
                         val builder = skill_jie_dao_sha_ren_b_tos.newBuilder()
                         builder.enable = true
                         builder.targetPlayerId = r.getAlternativeLocation(target2.location)
