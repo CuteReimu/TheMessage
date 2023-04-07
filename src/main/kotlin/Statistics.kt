@@ -17,6 +17,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
 
 object Statistics {
     private val pool = Executors.newSingleThreadExecutor()
@@ -309,7 +310,12 @@ object Statistics {
 
     data class PlayerGameResult(val player: HumanPlayer, val isWin: Boolean)
 
-    data class PlayerGameCount(val winCount: Int, val gameCount: Int)
+    data class PlayerGameCount(val winCount: Int, val gameCount: Int) {
+        fun random(): PlayerGameCount {
+            val i = winCount * Random.nextInt(20)
+            return PlayerGameCount(winCount * i / 100, gameCount * i / 100)
+        }
+    }
 
     data class PlayerInfo(
         val name: String,

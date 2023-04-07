@@ -17,7 +17,7 @@ class addrobot : Function<Map<String, String?>, String> {
                     val robotPlayer: Player = RobotPlayer()
                     robotPlayer.playerName = Player.randPlayerName(g)
                     robotPlayer.game = g
-                    g.onPlayerJoinRoom(robotPlayer, Statistics.totalPlayerGameCount)
+                    g.onPlayerJoinRoom(robotPlayer, Statistics.totalPlayerGameCount.random())
                 }
             }
             "{\"msg\": \"success\"}"

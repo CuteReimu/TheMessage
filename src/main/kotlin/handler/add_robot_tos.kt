@@ -32,7 +32,7 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
         val robotPlayer: Player = RobotPlayer()
         robotPlayer.playerName = Player.randPlayerName(r.game!!)
         robotPlayer.game = r.game
-        robotPlayer.game!!.onPlayerJoinRoom(robotPlayer, Statistics.totalPlayerGameCount)
+        robotPlayer.game!!.onPlayerJoinRoom(robotPlayer, Statistics.totalPlayerGameCount.random())
     }
 
     companion object {

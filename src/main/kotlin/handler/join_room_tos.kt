@@ -89,7 +89,7 @@ class join_room_tos : ProtoHandler {
                         builder.addNames(p?.playerName ?: "")
                         val count1 =
                             if (p is HumanPlayer) Statistics.getPlayerGameCount(p.playerName)
-                            else Statistics.totalPlayerGameCount
+                            else Statistics.totalPlayerGameCount.random()
                         builder.addWinCounts(count1.winCount)
                     }
                     player.send(builder.build())
