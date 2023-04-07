@@ -12,7 +12,6 @@ import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
 import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class LiYou : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -124,23 +123,16 @@ class LiYou : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
             val game = player.game!!
-            if (game.deck.deckCount == 0) return false
-            val identity = player.identity
-            val nextCard = game.deck.peek(1).first()
+            val nextCard = game.deck.peek(1).firstOrNull()
             val players =
-                if (game.deck.deckCount == 0 || nextCard.colors.size == 2) {
+                if (nextCard == null || nextCard.colors.size == 2) {
                     game.players.filter { it!!.alive }
                 } else {
-                    val (partners, enemies) = game.players.filter { it!!.alive }.partition {
-                        identity != color.Black && identity == it!!.identity
-                    }
-                    if (nextCard.colors.first() == color.Black) enemies else partners
+                    val (partners, enemies) = game.players.filter { it!!.alive }
+                        .partition { player.isPartnerOrSelf(it!!) }
+                    if (nextCard.isBlack()) enemies else partners
                 }
-            val p = when (players.size) {
-                0 -> return false
-                1 -> players[0]
-                else -> players[Random.nextInt(players.size)]
-            }!!
+            val p = players.randomOrNull() ?: return false
             GameExecutor.post(game, { card.execute(game, player, p) }, 2, TimeUnit.SECONDS)
             return true
         }

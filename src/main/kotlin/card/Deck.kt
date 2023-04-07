@@ -39,10 +39,10 @@ class Deck(private val game: Game) {
     }
 
     /**
-     * 查看牌堆顶的n张牌
+     * 查看牌堆顶的n张牌（不足n张则全返回）
      *
-     * @return 返回查看的牌，它是牌堆的一个 `sublist` ，其中 `cards.get(0)` 是观看的最后一张牌，
-     * `cards.get(cards.length() - 1)` 是牌堆顶第一张牌。
+     * @return 返回查看的牌，它是牌堆的一个 [subList][List.subList] ，其中 [List.first] 是观看的最后一张牌，
+     * [List.last] 是牌堆顶第一张牌。它的 [size][List.size] 可能小于n。
      */
     fun peek(n: Int): MutableList<Card> {
         if (n > cards.size) shuffle()
@@ -56,12 +56,6 @@ class Deck(private val game: Game) {
     fun discard(vararg cards: Card) {
         discardPile.addAll(cards)
     }
-
-    val deckCount: Int
-        /**
-         * 获取牌堆剩余卡牌数量
-         */
-        get() = cards.size
 
     /**
      * 通知客户端牌堆剩余卡牌数量

@@ -114,10 +114,7 @@ abstract class Card {
     }
 
     fun isBlack(): Boolean = color.Black in colors
-    fun isNotBlack(): Boolean = color.Black !in colors
-    fun isTrue(): Boolean = colors.any { it != color.Black }
     fun isPureBlack(): Boolean = colors.size == 1 && colors.first() == color.Black
-    fun isPureTrue(): Boolean = colors.size == 1 && colors.first() != color.Black
 
     companion object {
         /**

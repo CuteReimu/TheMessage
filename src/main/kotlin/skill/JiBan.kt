@@ -5,7 +5,6 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 /**
@@ -120,11 +119,11 @@ class JiBan : AbstractSkill(), ActiveSkill {
         }
 
         private fun autoSelect(seq: Int) {
-            val players = ArrayList<Player>()
-            for (player in r.game!!.players) {
-                if (player!!.alive && player !== r) players.add(player)
-            }
-            val player = players[ThreadLocalRandom.current().nextInt(players.size)]
+            val availableTargets = r.game!!.players.filter { it!!.alive && it !== r } // 如果所有人都死了游戏就结束了，所以这里一定不为空
+            val players =
+                if (seq != 0) availableTargets
+                else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets } // 机器人优先选队友
+            val player = players.random()!!
             val card = r.cards.first()
             val builder = skill_ji_ban_b_tos.newBuilder().addCardIds(card.id)
             builder.seq = seq

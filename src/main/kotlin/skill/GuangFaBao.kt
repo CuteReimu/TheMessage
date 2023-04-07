@@ -175,7 +175,6 @@ class GuangFaBao : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
-            if (player.cards.size < 5) return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_guang_fa_bao_a_tos.newBuilder().build())
             }, 2, TimeUnit.SECONDS)

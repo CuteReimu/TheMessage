@@ -9,7 +9,6 @@ import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 /**
@@ -59,8 +58,10 @@ class JiangHuLing : TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val colors = arrayOf(color.Black, color.Red, color.Blue)
-                    val color = colors[ThreadLocalRandom.current().nextInt(colors.size)]
+                    val colors =
+                        if (r.identity == color.Black) listOf(color.Black, color.Red, color.Blue)
+                        else listOf(color.Black, color.Red, color.Blue) - r.identity
+                    val color = colors.random()
                     val builder = skill_jiang_hu_ling_a_tos.newBuilder()
                     builder.enable = true
                     builder.color = color
@@ -166,22 +167,22 @@ class JiangHuLing : TriggeredSkill {
             val p = fsm.whoseTurn
             if (p is RobotPlayer) {
                 val target = fsm.inFrontOfWhom
-                if (target.alive) {
-                    for (card in target.messageCards) {
-                        if (card.colors.contains(color) && !(p === target && color != Common.color.Black && card.colors.size == 1)) {
-                            GameExecutor.post(
-                                p.game!!,
-                                {
-                                    val builder = skill_jiang_hu_ling_b_tos.newBuilder()
-                                    builder.cardId = card.id
-                                    p.game!!.tryContinueResolveProtocol(p, builder.build())
-                                },
-                                2,
-                                TimeUnit.SECONDS
-                            )
-                            return null
-                        }
-                    }
+                run {
+                    if (!target.alive) return@run
+                    val card = target.messageCards.find {
+                        color in it.colors && p.isPartnerOrSelf(target) == it.isBlack()
+                    } ?: return@run
+                    GameExecutor.post(
+                        p.game!!,
+                        {
+                            val builder = skill_jiang_hu_ling_b_tos.newBuilder()
+                            builder.cardId = card.id
+                            p.game!!.tryContinueResolveProtocol(p, builder.build())
+                        },
+                        2,
+                        TimeUnit.SECONDS
+                    )
+                    return null
                 }
                 GameExecutor.TimeWheel.newTimeout({
                     p.game!!.tryContinueResolveProtocol(p, end_receive_phase_tos.getDefaultInstance())

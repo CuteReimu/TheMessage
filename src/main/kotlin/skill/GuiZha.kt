@@ -12,7 +12,6 @@ import com.fengsheng.protos.Role.skill_gui_zha_toc
 import com.fengsheng.protos.Role.skill_gui_zha_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 /**
@@ -71,16 +70,24 @@ class GuiZha : AbstractSkill(), ActiveSkill {
     companion object {
         private val log = Logger.getLogger(GuiZha::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.player.getSkillUseCount(SkillId.GUI_ZHA) > 0) return false
-            val players = ArrayList<Player>()
-            for (p in e.player.game!!.players) if (p!!.alive) players.add(p)
-            if (players.isEmpty()) return false
-            val p = players[ThreadLocalRandom.current().nextInt(players.size)]
-            GameExecutor.post(e.player.game!!, {
+            val player = e.player
+            if (player.getSkillUseCount(SkillId.GUI_ZHA) > 0) return false
+            val game = player.game!!
+            val nextCard = game.deck.peek(1).firstOrNull()
+            val players =
+                if (nextCard == null || nextCard.colors.size == 2) {
+                    game.players.filter { it!!.alive }
+                } else {
+                    val (partners, enemies) = game.players.filter { it!!.alive }
+                        .partition { player.isPartnerOrSelf(it!!) }
+                    if (nextCard.isBlack()) enemies else partners
+                }
+            val p = players.randomOrNull() ?: return false
+            GameExecutor.post(game, {
                 val builder = skill_gui_zha_tos.newBuilder()
                 builder.cardType = card_type.Li_You
                 builder.targetPlayerId = e.player.getAlternativeLocation(p.location)
-                skill.executeProtocol(e.player.game!!, e.player, builder.build())
+                skill.executeProtocol(game, e.player, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }
