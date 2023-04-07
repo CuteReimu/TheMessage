@@ -8,7 +8,6 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -63,8 +62,8 @@ class DuJi : AbstractSkill(), ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         val cards1 = target1.cards.toTypedArray()
         val cards2 = target2.cards.toTypedArray()
-        val card1 = cards1[ThreadLocalRandom.current().nextInt(cards1.size)]
-        val card2 = cards2[ThreadLocalRandom.current().nextInt(cards2.size)]
+        val card1 = cards1.random()
+        val card2 = cards2.random()
         log.info("${r}发动了[毒计]，抽取了${target1}的${card1}和${target2}的$card2")
         target1.deleteCard(card1.id)
         target2.deleteCard(card2.id)
@@ -269,7 +268,7 @@ class DuJi : AbstractSkill(), ActiveSkill {
             }
             val playerCount = players.size
             if (playerCount < 2) return false
-            if (ThreadLocalRandom.current().nextInt(playerCount * playerCount) != 0) return false
+            if (Random.nextInt(playerCount * playerCount) != 0) return false
             val i = Random.nextInt(playerCount)
             var j = Random.nextInt(playerCount)
             j = if (i == j) (j + 1) % playerCount else j

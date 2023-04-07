@@ -10,7 +10,6 @@ import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
 import com.fengsheng.skill.SkillId
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -116,11 +115,9 @@ class WeiBi : Card {
         }
 
         private fun autoSelect() {
-            val availableCards: MutableList<Int> = ArrayList()
-            for (c in target.cards)
-                if (c.type == wantType) availableCards.add(c.id)
-            val cardId = availableCards[ThreadLocalRandom.current().nextInt(availableCards.size)]
-            resolveProtocol(target, wei_bi_give_card_tos.newBuilder().setCardId(cardId).build())
+            val availableCards = target.cards.filter { it.type == wantType }
+            val card = availableCards.random()
+            resolveProtocol(target, wei_bi_give_card_tos.newBuilder().setCardId(card.id).build())
         }
 
         companion object {

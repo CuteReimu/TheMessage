@@ -11,7 +11,6 @@ import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 class ChengQing : Card {
@@ -120,7 +119,7 @@ class ChengQing : Card {
                 }
             }
             if (playerAndCards.isEmpty()) return false
-            val p = playerAndCards[ThreadLocalRandom.current().nextInt(playerAndCards.size)]
+            val p = playerAndCards.random()
             GameExecutor.post(
                 player.game!!,
                 { card.execute(player.game!!, player, p.player, p.card.id) },

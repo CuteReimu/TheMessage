@@ -5,7 +5,6 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.card.*
 import com.fengsheng.protos.Common.card_type
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Function
 
 class addcard : Function<Map<String, String?>, String> {
@@ -23,7 +22,7 @@ class addcard : Function<Map<String, String?>, String> {
                     if (playerId < g.players.size && playerId >= 0 && g.players[playerId]!!.alive) {
                         val cardList: MutableList<Card> = ArrayList()
                         for (i in 0 until finalCount) {
-                            val c = availableCards[ThreadLocalRandom.current().nextInt(availableCards.size)]
+                            val c = availableCards.random()
                             cardList.add(
                                 when (cardType) {
                                     card_type.Cheng_Qing -> ChengQing(g.deck.getNextId(), c)

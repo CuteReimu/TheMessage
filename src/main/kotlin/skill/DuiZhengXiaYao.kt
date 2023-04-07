@@ -10,8 +10,8 @@ import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 黄济仁技能【对症下药】：争夺阶段，你可以翻开此角色牌，然后摸三张牌，并且你可以展示两张含有相同颜色的手牌，然后从一名角色的情报区，弃置一张对应颜色情报。
@@ -306,7 +306,7 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
                 p!!.messageCards.map { PlayerAndCard(p, it) }
             }
             if (playerAndCards.size < playerCount) return false
-            if (ThreadLocalRandom.current().nextInt(playerCount * playerCount) != 0) return false
+            if (Random.nextInt(playerCount * playerCount) != 0) return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_dui_zheng_xia_yao_a_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)

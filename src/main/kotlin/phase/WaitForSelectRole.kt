@@ -10,8 +10,8 @@ import com.fengsheng.skill.YingBian
 import com.fengsheng.skill.YouDao
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 等待玩家选择角色
@@ -44,7 +44,7 @@ data class WaitForSelectRole(val game: Game, val options: Array<RoleSkillsData>)
                     }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 val spRole = spMap[options[player!!.location].role]
-                if (spRole != null && ThreadLocalRandom.current().nextBoolean()) selected[player.location] =
+                if (spRole != null && Random.nextBoolean()) selected[player.location] =
                     spRole else selected[player.location] = options[player.location]
                 player.roleSkillsData = selected[player.location]!!
             }

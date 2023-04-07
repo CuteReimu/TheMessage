@@ -7,7 +7,6 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -177,7 +176,7 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
                 if (p !== player && p!!.alive && p.cards.isNotEmpty()) players.add(p)
             }
             if (players.isEmpty()) return false
-            val target = players[ThreadLocalRandom.current().nextInt(players.size)]
+            val target = players.random()
             GameExecutor.post(player.game!!, {
                 val builder = skill_jiao_ji_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)

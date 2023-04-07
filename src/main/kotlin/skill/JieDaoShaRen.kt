@@ -8,7 +8,6 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 /**
@@ -53,7 +52,7 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         val cards = target.cards.toTypedArray()
-        val card = cards[ThreadLocalRandom.current().nextInt(cards.size)]
+        val card = cards.random()
         g.resolve(executeJieDaoShaRen(fsm, r, target, card))
     }
 
@@ -101,7 +100,7 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
                         builder.enable = false
                         g.tryContinueResolveProtocol(r, builder.build())
                     } else {
-                        val target2 = players[ThreadLocalRandom.current().nextInt(players.size)]
+                        val target2 = players.random()
                         val builder = skill_jie_dao_sha_ren_b_tos.newBuilder()
                         builder.enable = true
                         builder.targetPlayerId = r.getAlternativeLocation(target2.location)
@@ -173,7 +172,7 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
                         it.cards.all { card -> card.colors.contains(color.Black) }
             }
             if (players.isEmpty()) return false
-            val target = players[ThreadLocalRandom.current().nextInt(players.size)]!!
+            val target = players.random()!!
             GameExecutor.post(player.game!!, {
                 val builder = skill_jie_dao_sha_ren_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
