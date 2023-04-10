@@ -161,7 +161,7 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
             timeout = GameExecutor.post(game!!, {
                 if (checkSeq(seq2)) {
                     incrSeq()
-                    RobotPlayer.autoSendMessageCard(this, false)
+                    RobotPlayer.autoSendMessageCard(this)
                 }
             }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
         }

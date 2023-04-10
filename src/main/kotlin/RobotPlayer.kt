@@ -40,7 +40,7 @@ class RobotPlayer : Player() {
     override fun notifySendPhaseStart(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseStart
         if (this !== fsm.player) return
-        GameExecutor.post(game!!, { autoSendMessageCard(this, true) }, 2, TimeUnit.SECONDS)
+        GameExecutor.post(game!!, { autoSendMessageCard(this) }, 2, TimeUnit.SECONDS)
     }
 
     override fun notifySendMessageCard(
@@ -180,42 +180,33 @@ class RobotPlayer : Player() {
 
         /**
          * 随机选择一张牌作为情报传出
-         *
-         * @param lock 是否考虑锁定
          */
-        fun autoSendMessageCard(r: Player, lock: Boolean) {
-            val card = r.cards.first()
+        fun autoSendMessageCard(r: Player) {
+            val isRobot = r is RobotPlayer
+            val card =
+                if (!isRobot || r.identity == color.Black) r.cards.first()
+                else r.cards.run { find { r.identity in it.colors } ?: find { it.isPureBlack() } ?: first() }
             val fsm = r.game!!.fsm as SendPhaseStart
-            var dir = card.direction
-            if (r.findSkill(SkillId.LIAN_LUO) != null) {
-                dir = direction.forNumber(Random.nextInt(3))
+            val dir =
+                if (r.findSkill(SkillId.LIAN_LUO) == null) card.direction
+                else arrayOf(direction.Up, direction.Left, direction.Right).random()
+            val availableTargets = r.game!!.players.filter { it !== r && it!!.alive }
+            val target: Player
+            val lockedPlayers = ArrayList<Player>()
+            if (dir == direction.Up) {
+                target =
+                    if (!isRobot || card.isBlack()) availableTargets.random()!!
+                    else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets }.random()!!
+                if (isRobot && card.canLock() && Random.nextBoolean())
+                    lockedPlayers.add(target)
+            } else {
+                target =
+                    if (dir == direction.Left) r.getNextLeftAlivePlayer()
+                    else r.getNextRightAlivePlayer()
+                if (isRobot && card.canLock())
+                    lockedPlayers.add(availableTargets.random()!!)
             }
-            var targetLocation = 0
-            val availableLocations: MutableList<Int> = ArrayList()
-            var lockedPlayer: Player? = null
-            for (p in r.game!!.players) {
-                if (p !== r && p!!.alive) availableLocations.add(p.location)
-            }
-            if (dir != direction.Up && lock && card.canLock() && Random.nextInt(3) != 0) {
-                val player = r.game!!.players[availableLocations[Random.nextInt(availableLocations.size)]]!!
-                if (player.alive) lockedPlayer = player
-            }
-            when (dir) {
-                direction.Up -> {
-                    targetLocation = availableLocations[Random.nextInt(availableLocations.size)]
-                    if (lock && card.canLock() && Random.nextBoolean()) lockedPlayer = r.game!!.players[targetLocation]
-                }
-
-                direction.Left -> targetLocation = r.getNextLeftAlivePlayer().location
-                direction.Right -> targetLocation = r.getNextRightAlivePlayer().location
-                else -> {}
-            }
-            r.game!!.resolve(
-                OnSendCard(
-                    fsm.player, card, dir, r.game!!.players[targetLocation]!!,
-                    if (lockedPlayer == null) arrayOf() else arrayOf(lockedPlayer)
-                )
-            )
+            r.game!!.resolve(OnSendCard(fsm.player, card, dir, target, lockedPlayers.toTypedArray()))
         }
 
         private val aiSkillMainPhase = hashMapOf<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>>(
