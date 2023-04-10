@@ -112,7 +112,6 @@ class FengYunBianHuan : Card {
                 log.error("没有这张牌")
                 return null
             }
-            assert(players.isNotEmpty())
             if (player !== players.first()) {
                 log.error("还没轮到你选牌")
                 return null
@@ -142,9 +141,7 @@ class FengYunBianHuan : Card {
         }
 
         private fun autoChooseCard() {
-            assert(drawCards.isNotEmpty())
-            assert(players.isNotEmpty())
-            val chooseCard: Card = drawCards.first()
+            val chooseCard = drawCards.first()
             val r = players.first()
             val builder = Fengsheng.feng_yun_bian_huan_choose_card_tos.newBuilder()
             builder.cardId = chooseCard.id

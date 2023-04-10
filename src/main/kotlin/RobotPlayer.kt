@@ -189,7 +189,6 @@ class RobotPlayer : Player() {
             var dir = card.direction
             if (r.findSkill(SkillId.LIAN_LUO) != null) {
                 dir = direction.forNumber(Random.nextInt(3))
-                assert(dir != null)
             }
             var targetLocation = 0
             val availableLocations: MutableList<Int> = ArrayList()
