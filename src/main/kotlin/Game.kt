@@ -12,6 +12,7 @@ import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.TriggeredSkill
 import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.TextFormat
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
@@ -248,13 +249,18 @@ class Game private constructor(totalPlayerCount: Int) {
         }
     }
 
+    private val printer = TextFormat.printer().escapingNonAscii(false)
+
     /**
      * 对于[WaitingFsm]，当收到玩家协议时，继续处理当前状态机
      */
     fun tryContinueResolveProtocol(player: Player, pb: GeneratedMessageV3) {
         GameExecutor.post(this) {
             if (fsm !is WaitingFsm) {
-                log.error("时机错误，当前时点为：$fsm，收到: $pb")
+                log.error(
+                    "时机错误，当前时点为：$fsm，收到: ${pb.javaClass.simpleName} | " +
+                            printer.printToString(pb).replace("\n *".toRegex(), " ")
+                )
                 return@post
             }
             val result = (fsm as WaitingFsm).resolveProtocol(player, pb)
