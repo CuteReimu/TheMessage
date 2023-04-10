@@ -103,7 +103,7 @@ class LianMin : AbstractSkill(), TriggeredSkill {
             if (fsm0 !is executeLianMin) return false
             val p = fsm0.fsm.whoseTurn
             for (target in arrayOf(p, fsm0.fsm.inFrontOfWhom)) {
-                if (target.alive) continue
+                if (!target.alive || p.isEnemy(target)) continue
                 val card = target.messageCards.find { it.colors.contains(color.Black) } ?: continue
                 GameExecutor.post(p.game!!, {
                     val builder = skill_lian_min_tos.newBuilder()

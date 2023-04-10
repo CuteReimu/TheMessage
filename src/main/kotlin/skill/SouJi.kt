@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color
@@ -8,7 +9,6 @@ import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 李醒技能【搜辑】：争夺阶段，你可以翻开此角色牌，然后查看一名角色的手牌和待收情报，并且你可以选择其中任意张黑色牌，展示并加入你的手牌。
@@ -157,12 +157,12 @@ class SouJi : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
-            val players = player.game!!.players.filter {
-                it !== player && it!!.alive && (it.cards.isNotEmpty() || it.messageCards.isNotEmpty())
-            }
-            if (players.isEmpty()) return false
-            if (Random.nextInt(players.size + 1) != 0) return false
-            val p = players[Random.nextInt(players.size)]!!
+            if (!player.game!!.players.any {
+                    it!!.alive && player.isEnemy(it)
+                            && it.identity != color.Black && it.messageCards.count(it.identity) >= 2
+                }) return false
+            val players = player.game!!.players.filter { it!!.alive && player.isEnemy(it) }
+            val p = players.maxByOrNull { it!!.cards.size } ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_sou_ji_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(p.location)

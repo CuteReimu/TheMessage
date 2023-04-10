@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Common
+import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -174,7 +174,7 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
             if (player.roleFaceUp) return false
             val p = player.game!!.players.find {
                 it!!.alive && player.isEnemy(it)
-                        && it.identity != Common.color.Black && it.messageCards.count(it.identity) >= 2
+                        && it.identity != color.Black && it.messageCards.count(it.identity) >= 2
             } ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_miao_shou_a_tos.newBuilder()

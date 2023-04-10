@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.DieSkill
-import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -54,7 +53,7 @@ class RuGui : AbstractSkill(), TriggeredSkill {
                 }
             }
             if (r is RobotPlayer) {
-                val card = r.messageCards.find { it.colors.contains(color.Black) }
+                val card = r.messageCards.find { it.isBlack() }
                 GameExecutor.post(
                     r.game!!,
                     {

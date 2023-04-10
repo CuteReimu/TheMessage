@@ -4,6 +4,7 @@ import com.fengsheng.Game
 import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
+import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_yi_hua_jie_mu_toc
@@ -96,21 +97,16 @@ class YiHuaJieMu : AbstractSkill(), ActiveSkill {
                 it.colors.size == 1 && it.colors.first() == color.Black
             } ?: return false
             val target = e.whoseTurn
-            if (p === target || !target.alive) return false
-            if (p.identity == color.Black || p.identity != target.identity) {
-                val black = target.messageCards.count { it.colors.contains(color.Black) }
-                if (black < 2) {
-                    GameExecutor.post(e.whoseFightTurn.game!!, {
-                        val builder = skill_yi_hua_jie_mu_tos.newBuilder()
-                        builder.cardId = blackCard.id
-                        builder.fromPlayerId = 0
-                        builder.toPlayerId = p.getAlternativeLocation(target.location)
-                        skill.executeProtocol(e.whoseFightTurn.game!!, e.whoseFightTurn, builder.build())
-                    }, 2, TimeUnit.SECONDS)
-                    return true
-                }
-            }
-            return false
+            if (p === target || !target.alive || !p.isEnemy(target)) return false
+            if (target.messageCards.count(color.Black) >= 2) return false
+            GameExecutor.post(e.whoseFightTurn.game!!, {
+                val builder = skill_yi_hua_jie_mu_tos.newBuilder()
+                builder.cardId = blackCard.id
+                builder.fromPlayerId = 0
+                builder.toPlayerId = p.getAlternativeLocation(target.location)
+                skill.executeProtocol(e.whoseFightTurn.game!!, e.whoseFightTurn, builder.build())
+            }, 2, TimeUnit.SECONDS)
+            return true
         }
     }
 }

@@ -51,27 +51,30 @@ class YiXin : AbstractSkill(), TriggeredSkill {
                 }
             }
             if (r is RobotPlayer) {
-                if (fsm.whoseTurn.alive && r !== fsm.whoseTurn && r.cards.isNotEmpty()) {
-                    val card = r.cards.first()
-                    GameExecutor.post(r.game!!, {
-                        val builder = skill_yi_xin_tos.newBuilder()
-                        builder.enable = true
-                        builder.cardId = card.id
-                        builder.targetPlayerId = r.getAlternativeLocation(fsm.whoseTurn.location)
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
-                    }, 2, TimeUnit.SECONDS)
-                } else {
-                    GameExecutor.post(
-                        r.game!!,
-                        {
-                            val builder = skill_yi_xin_tos.newBuilder()
-                            builder.enable = false
-                            r.game!!.tryContinueResolveProtocol(r, builder.build())
-                        },
-                        2,
-                        TimeUnit.SECONDS
-                    )
+                if (r.cards.isNotEmpty()) {
+                    val card = r.cards.find { it.isBlack() } ?: r.cards.first()
+                    r.game!!.players.filter { it!!.alive && r !== it && card.isBlack() == r.isEnemy(it) }
+                        .randomOrNull()?.let { target ->
+                            GameExecutor.post(r.game!!, {
+                                val builder = skill_yi_xin_tos.newBuilder()
+                                builder.enable = true
+                                builder.cardId = card.id
+                                builder.targetPlayerId = r.getAlternativeLocation(target.location)
+                                r.game!!.tryContinueResolveProtocol(r, builder.build())
+                            }, 2, TimeUnit.SECONDS)
+                            return null
+                        }
                 }
+                GameExecutor.post(
+                    r.game!!,
+                    {
+                        val builder = skill_yi_xin_tos.newBuilder()
+                        builder.enable = false
+                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    },
+                    2,
+                    TimeUnit.SECONDS
+                )
             }
             return null
         }

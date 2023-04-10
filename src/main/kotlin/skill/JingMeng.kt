@@ -160,9 +160,10 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeJingMengA) return false
-            val p: Player = fsm0.fsm.inFrontOfWhom
-            val target: Player = fsm0.fsm.whoseTurn
-            if (p === target || !target.alive || target.cards.isEmpty()) return false
+            val p = fsm0.fsm.inFrontOfWhom
+            val target = p.game!!.players.filter {
+                it!!.alive && p.isEnemy(it) && it.cards.isNotEmpty()
+            }.randomOrNull() ?: return false
             GameExecutor.post(p.game!!, {
                 val builder = skill_jing_meng_a_tos.newBuilder()
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)

@@ -12,7 +12,6 @@ import com.fengsheng.protos.Role.skill_ji_song_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 鬼脚技能【急送】：争夺阶段限一次，你可以弃置两张手牌，或从你的情报区弃置一张非黑色情报，然后将待收情报移至一名角色面前。
@@ -112,11 +111,7 @@ class JiSong : AbstractSkill(), ActiveSkill {
                 if (identity2 == color.Black || colors[0] != identity2) return false
             }
             val players = player.game!!.players.filter { it !== e.inFrontOfWhom && it!!.alive }
-            val target = when (players.size) {
-                0 -> return false
-                1 -> players.first()
-                else -> players[Random.nextInt(players.size)]
-            }!!
+            val target = players.randomOrNull() ?: return false
             val cards = Array(2) { player.cards[it] }
             GameExecutor.post(player.game!!, {
                 val builder = skill_ji_song_tos.newBuilder()

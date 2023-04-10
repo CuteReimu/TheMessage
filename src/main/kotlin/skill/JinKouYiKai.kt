@@ -68,7 +68,6 @@ class JinKouYiKai : AbstractSkill(), ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            fsm
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder = skill_jin_kou_yi_kai_b_tos.newBuilder()
