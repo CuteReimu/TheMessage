@@ -312,7 +312,7 @@ object Statistics {
 
     data class PlayerGameCount(val winCount: Int, val gameCount: Int) {
         fun random(): PlayerGameCount {
-            val i = winCount * Random.nextInt(20)
+            val i = Random.nextInt(20)
             return PlayerGameCount(winCount * i / 100, gameCount * i / 100)
         }
     }
