@@ -1,6 +1,7 @@
 package com.fengsheng.phase
 
 import com.fengsheng.*
+import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.role
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.RoleSkillsData
@@ -31,9 +32,11 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                         )
                     }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
-                selected[player!!.location] = options[player.location].run {
-                    robotPrefer.forEach { role -> find { o -> o.role == role }?.let { o -> return@run o } }
-                    filterNot { it.role in robotDisgust }.ifEmpty { this }.firstOrNull() ?: RoleSkillsData()
+                val prefer = if (player!!.identity == color.Black) blackPrefer else redBluePrefer
+                val disgust = if (player.identity == color.Black) blackDisgust else redBlueDisgust
+                selected[player.location] = options[player.location].run {
+                    prefer.forEach { role -> find { o -> o.role == role }?.let { o -> return@run o } }
+                    filterNot { it.role in disgust }.ifEmpty { this }.firstOrNull() ?: RoleSkillsData()
                 }
                 player.roleSkillsData = selected[player.location]!!
             }
@@ -67,7 +70,9 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
     companion object {
         private val log = Logger.getLogger(WaitForSelectRole::class.java)
 
-        private val robotPrefer = listOf(role.shang_yu)
-        private val robotDisgust = listOf(role.jin_sheng_huo, role.mao_bu_ba, role.wang_tian_xiang)
+        private val blackPrefer = listOf(role.shang_yu)
+        private val redBluePrefer = blackPrefer + listOf(role.xiao_jiu, role.sp_gu_xiao_meng, role.bai_xiao_nian)
+        private val redBlueDisgust = listOf(role.jin_sheng_huo, role.mao_bu_ba, role.wang_tian_xiang)
+        private val blackDisgust = redBlueDisgust + listOf(role.xiao_jiu, role.sp_gu_xiao_meng, role.bai_xiao_nian)
     }
 }
