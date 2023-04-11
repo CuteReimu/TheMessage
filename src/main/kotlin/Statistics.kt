@@ -1,6 +1,5 @@
 package com.fengsheng
 
-import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.get_record_list_toc
 import com.fengsheng.protos.Fengsheng.pb_order
@@ -376,7 +375,7 @@ object Statistics {
             writer.write("角色,场次,胜率,军潜胜率,神秘人胜率")
             writer.newLine()
             for ((key, value) in appearCount) {
-                val roleName = RoleCache.getRoleName(key) ?: WaitForSelectRole.getRoleName(key) ?: ""
+                val roleName = RoleCache.getRoleName(key) ?: ""
                 writer.write(roleName)
                 writer.write(",")
                 writer.write(value.toString())

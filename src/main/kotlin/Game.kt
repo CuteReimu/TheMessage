@@ -156,10 +156,16 @@ class Game private constructor(totalPlayerCount: Int) {
             players[i]!!.originSecretTask = task
         }
         val roleSkillsDataArray = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
-            players.size * 2,
+            players.size * 3,
             Config.DebugRoles
-        ) else RoleCache.getRandomRoles(players.size * 2)
-        resolve(WaitForSelectRole(this, roleSkillsDataArray))
+        ) else RoleCache.getRandomRoles(players.size * 3)
+        resolve(WaitForSelectRole(this, players.indices.map {
+            arrayOf(
+                roleSkillsDataArray[it],
+                roleSkillsDataArray[it + players.size],
+                roleSkillsDataArray[it + players.size * 2]
+            ).filter { r -> r.role != role.unknown }
+        }))
     }
 
     fun end(winners: List<Player?>?) {
