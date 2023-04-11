@@ -178,7 +178,7 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
             } ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_miao_shou_a_tos.newBuilder()
-                builder.targetPlayerId = p.location
+                builder.targetPlayerId = player.getAlternativeLocation(p.location)
                 skill.executeProtocol(player.game!!, player, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
