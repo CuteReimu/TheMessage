@@ -64,13 +64,10 @@ class BoAi : AbstractSkill(), ActiveSkill {
                         r.game!!.tryContinueResolveProtocol(r, skill_bo_ai_b_tos.newBuilder().setCardId(0).build())
                         return@post
                     }
-                    for (card in r.cards) {
-                        val builder = skill_bo_ai_b_tos.newBuilder()
-                        builder.cardId = card.id
-                        builder.targetPlayerId = r.getAlternativeLocation(player.location)
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
-                        break
-                    }
+                    val builder = skill_bo_ai_b_tos.newBuilder()
+                    builder.cardId = r.cards.first().id
+                    builder.targetPlayerId = r.getAlternativeLocation(player.location)
+                    r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }
             return null

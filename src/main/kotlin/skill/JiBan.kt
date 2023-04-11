@@ -124,8 +124,7 @@ class JiBan : AbstractSkill(), ActiveSkill {
                 if (seq != 0) availableTargets
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets } // 机器人优先选队友
             val player = players.random()!!
-            val card = r.cards.first()
-            val builder = skill_ji_ban_b_tos.newBuilder().addCardIds(card.id)
+            val builder = skill_ji_ban_b_tos.newBuilder().addCardIds(r.cards.first().id)
             builder.seq = seq
             builder.targetPlayerId = r.getAlternativeLocation(player.location)
             r.game!!.tryContinueResolveProtocol(r, builder.build())
