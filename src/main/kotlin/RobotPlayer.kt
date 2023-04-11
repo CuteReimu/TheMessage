@@ -181,32 +181,58 @@ class RobotPlayer : Player() {
         /**
          * 随机选择一张牌作为情报传出
          */
-        fun autoSendMessageCard(r: Player) {
-            val isRobot = r is RobotPlayer
-            val card =
-                if (!isRobot || r.identity == color.Black) r.cards.first()
-                else r.cards.run { find { r.identity in it.colors } ?: find { it.isPureBlack() } ?: first() }
-            val fsm = r.game!!.fsm as SendPhaseStart
-            val dir =
-                if (r.findSkill(SkillId.LIAN_LUO) == null) card.direction
-                else arrayOf(direction.Up, direction.Left, direction.Right).random()
-            val availableTargets = r.game!!.players.filter { it !== r && it!!.alive }
-            val target: Player
+        private fun autoSendMessageCard(r: Player) {
+            var card: Card? = null
             val lockedPlayers = ArrayList<Player>()
-            if (dir == direction.Up) {
-                target =
-                    if (!isRobot || card.isBlack()) availableTargets.random()!!
-                    else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets }.random()!!
-                if (isRobot && card.canLock() && Random.nextBoolean())
-                    lockedPlayers.add(target)
+            val players = r.game!!.players.filterNotNull().filter { r !== it && it.alive }
+            if (r.identity != color.Black) {
+                val enemyColor = arrayOf(color.Red, color.Blue).first { it != r.identity }
+                val twoBlackEnemy = players.find {
+                    it.identity == enemyColor && it.messageCards.count(color.Black) == 2
+                }
+                if (twoBlackEnemy != null) {
+                    val maxEnemyColorCount = players.filter { it.identity == enemyColor }
+                        .maxOf { it.messageCards.count(enemyColor) }
+                    card = r.cards.find {
+                        it.canLock() && if (maxEnemyColorCount == 2) it.isPureBlack() else it.isBlack()
+                    }
+                    if (card != null) lockedPlayers.add(twoBlackEnemy)
+                }
+                if (card == null) card = r.cards.find { r.identity in it.colors }
             } else {
-                target =
-                    if (dir == direction.Left) r.getNextLeftAlivePlayer()
-                    else r.getNextRightAlivePlayer()
-                if (isRobot && card.canLock())
-                    lockedPlayers.add(availableTargets.random()!!)
+                when (r.secretTask) {
+                    secret_task.Killer, secret_task.Pioneer -> card = r.cards.find { it.isBlack() }
+
+                    secret_task.Stealer -> {
+                        arrayOf(color.Red, color.Blue).any { color ->
+                            val two = players.find { it.identity == color && it.messageCards.count(color) == 2 }
+                                ?: return@any false
+                            card =
+                                r.cards.filter { color in it.colors }.run { find { it.canLock() } ?: firstOrNull() }
+                                    ?: return@any false
+                            if (card!!.canLock()) lockedPlayers.add(two)
+                            true
+                        }
+                    }
+
+                    else -> card = r.cards.find { !it.isPureBlack() }
+                }
             }
-            r.game!!.resolve(OnSendCard(fsm.player, card, dir, target, lockedPlayers.toTypedArray()))
+            val finalCard = card ?: r.cards.first()
+            val dir =
+                if (r.findSkill(SkillId.LIAN_LUO) == null) finalCard.direction
+                else if (lockedPlayers.isNotEmpty()) direction.Up
+                else arrayOf(direction.Up, direction.Left, direction.Right).random()
+            val target = if (dir == direction.Up) {
+                lockedPlayers.firstOrNull()
+                    ?: (if (!finalCard.isBlack()) players.filter { r.isPartner(it) }.randomOrNull()
+                    else if (finalCard.isPureBlack()) players.filter { r.isEnemy(it) }.randomOrNull()
+                    else null) ?: players.random()
+            } else {
+                if (dir == direction.Left) r.getNextLeftAlivePlayer()
+                else r.getNextRightAlivePlayer()
+            }
+            r.game!!.resolve(OnSendCard(r, finalCard, dir, target, lockedPlayers.toTypedArray()))
         }
 
         private val aiSkillMainPhase = hashMapOf<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>>(

@@ -5,6 +5,7 @@ import com.fengsheng.phase.*
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.skill.SkillId
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
 import io.netty.channel.Channel
@@ -161,7 +162,7 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
             timeout = GameExecutor.post(game!!, {
                 if (checkSeq(seq2)) {
                     incrSeq()
-                    RobotPlayer.autoSendMessageCard(this)
+                    autoSendMessageCard(this)
                 }
             }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
         }
@@ -377,5 +378,22 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
     companion object {
         private val log = Logger.getLogger(HumanPlayer::class.java)
         private val printer = TextFormat.printer().escapingNonAscii(false)
+
+        /**
+         * 随机选择一张牌作为情报传出
+         */
+        private fun autoSendMessageCard(r: Player) {
+            val card = r.cards.first()
+            val dir =
+                if (r.findSkill(SkillId.LIAN_LUO) == null) card.direction
+                else arrayOf(direction.Up, direction.Left, direction.Right).random()
+            val availableTargets = r.game!!.players.filter { it !== r && it!!.alive }
+            val target = when (dir) {
+                direction.Up -> availableTargets.random()!!
+                direction.Left -> r.getNextLeftAlivePlayer()
+                else -> r.getNextRightAlivePlayer()
+            }
+            r.game!!.resolve(OnSendCard(r, card, dir, target, arrayOf()))
+        }
     }
 }
