@@ -97,25 +97,26 @@ class WuDao : Card {
                                         && it.messageCards.count(color.Black) < 2
                             } // 2黑时，无2黑队友
                     }
+                    if (target != null && player.checkFriendship(target, e.inFrontOfWhom) > 0) target = null
                 } else if (card.colors.size == 1 && card.colors.first() == player.identity) { // 己方纯色
                     if (player.isPartnerOrSelf(e.inFrontOfWhom)) return false // 在队友面前，不使用误导
                     target = arrayOf(left, right).run {
                         find { it.identity == player.identity && it.messageCards.count(player.identity) == 2 } // 2真队友
                             ?: find { it.identity == player.identity } // 队友
                     }
+                    if (target != null && player.checkFriendship(target, e.inFrontOfWhom) < 0) target = null
                 } else if (card.colors.size == 1 && card.colors.first() == enemyColor) { // 敌方纯色
-                    if (player.isPartnerOrSelf(e.inFrontOfWhom)) return false // 在队友面前，不使用误导
-                    if (e.inFrontOfWhom.identity == enemyColor) {
-                        target = arrayOf(left, right).run {
-                            find { it.identity == player.identity } // 队友
-                                ?: find { it.identity == color.Black } // 神秘人
-                                ?: find { it.identity == player.identity } // 队友
-                                ?: find {
-                                    e.inFrontOfWhom.messageCards.count(enemyColor) == 2
-                                            && it.messageCards.count(enemyColor) < 2
-                                } // 2真时，无2真敌人
-                        }
+                    if (e.inFrontOfWhom.identity != enemyColor) return false // 不在敌对阵营面前，不使用误导
+                    target = arrayOf(left, right).run {
+                        find { it.identity == player.identity } // 队友
+                            ?: find { it.identity == color.Black } // 神秘人
+                            ?: find { it.identity == player.identity } // 队友
+                            ?: find {
+                                e.inFrontOfWhom.messageCards.count(enemyColor) == 2
+                                        && it.messageCards.count(enemyColor) < 2
+                            } // 2真时，无2真敌人
                     }
+                    if (target != null && player.checkFriendship(target, e.inFrontOfWhom) < 0) target = null
                 }
             }
             val colors = e.messageCard.colors

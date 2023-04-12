@@ -222,6 +222,21 @@ abstract class Player protected constructor() {
     /** @return 如果other是敌人，则返回true。否则返回false */
     fun isEnemy(other: Player) = !isPartnerOrSelf(other)
 
+    /** 亲密度。敌对阵营是0，神秘人是1，队友是2。如果自己是神秘人，则所有人都是1。 */
+    private fun getFriendship(other: Player) =
+        if (identity == color.Black) 1
+        else when (other.identity) {
+            identity -> 2
+            color.Black -> 1
+            else -> 0
+        }
+
+    /**
+     * 比较两个人的亲密度。
+     * @return 大于0表示前者比后者更亲密
+     */
+    fun checkFriendship(other1: Player, other2: Player): Int = getFriendship(other1) - getFriendship(other2)
+
     override fun toString(): String {
         val hide = if (roleFaceUp) "" else "(隐)"
         return "${location}号[$roleName$hide]"
