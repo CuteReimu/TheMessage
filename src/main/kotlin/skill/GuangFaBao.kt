@@ -75,12 +75,12 @@ class GuangFaBao : AbstractSkill(), ActiveSkill {
                         target = g.players.find { it!!.alive && it.messageCards.count(color.Black) < 2 }
                         card = if (target != null) {
                             val c1 = target.identity
-                            r.cards.filter { r.identity in it.colors && target.checkThreeSameMessageCard(it) }
+                            r.cards.filter { it.isBlack() && !target.checkThreeSameMessageCard(it) }
                                 .run { find { c1 == color.Black || c1 !in it.colors } ?: firstOrNull() }
                         } else null
                     } else {
                         target = r
-                        card = r.cards.filter { r.identity in it.colors && r.checkThreeSameMessageCard(it) }
+                        card = r.cards.filter { r.identity in it.colors && !r.checkThreeSameMessageCard(it) }
                             .run { find { it.colors.size == 1 } ?: firstOrNull() }
                     }
                     if (target != null && card != null) {
