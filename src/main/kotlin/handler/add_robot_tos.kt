@@ -15,10 +15,6 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             log.error("game is already started")
             return
         }
-        if (r.game!!.players.size > 5) {
-            r.send(error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build())
-            return
-        }
         val count = Statistics.getPlayerGameCount(r.playerName)
         if (count.winCount <= 0) {
             val now = System.currentTimeMillis()
