@@ -102,15 +102,9 @@ class Game private constructor(totalPlayerCount: Int) {
                 else -> arrayListOf(color.Black, color.Black)
             }
 
-            9 -> {
-                identities.add(color.Red)
-                identities.add(color.Red)
-                identities.add(color.Blue)
-                identities.add(color.Blue)
-                identities.add(color.Black)
+            3 -> {
                 identities.add(color.Red)
                 identities.add(color.Blue)
-                identities.add(color.Black)
                 identities.add(color.Black)
             }
 
@@ -121,13 +115,7 @@ class Game private constructor(totalPlayerCount: Int) {
                 identities.add(color.Black)
             }
 
-            3 -> {
-                identities.add(color.Red)
-                identities.add(color.Blue)
-                identities.add(color.Black)
-            }
-
-            else -> {
+            5, 6, 7, 8 -> {
                 var i = 0
                 while (i < (players.size - 1) / 2) {
                     identities.add(color.Red)
@@ -136,6 +124,16 @@ class Game private constructor(totalPlayerCount: Int) {
                 }
                 identities.add(color.Black)
                 if (players.size % 2 == 0) identities.add(color.Black)
+            }
+
+            else -> {
+                identities.add(color.Red)
+                identities.add(color.Red)
+                identities.add(color.Red)
+                identities.add(color.Blue)
+                identities.add(color.Blue)
+                identities.add(color.Blue)
+                repeat(players.size - identities.size) { identities.add(color.Black) }
             }
         }
         identities.shuffle()
@@ -171,16 +169,12 @@ class Game private constructor(totalPlayerCount: Int) {
     fun end(winners: List<Player?>?) {
         isEnd = true
         GameCache.remove(id)
-        var isHumanGame = true
-        for (p in players) {
-            if (p is HumanPlayer) {
-                p.saveRecord()
-                deviceCache.remove(p.device)
-            } else {
-                isHumanGame = false
-            }
+        val humanPlayers = players.filterIsInstance<HumanPlayer>()
+        humanPlayers.forEach {
+            it.saveRecord()
+            deviceCache.remove(it.device)
         }
-        if (winners != null && isHumanGame && players.size >= 5) {
+        if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
             val records = ArrayList<Statistics.Record>(players.size)
             val playerGameResultList = ArrayList<PlayerGameResult>()
             for (p in players) {
