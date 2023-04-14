@@ -359,6 +359,12 @@ object Statistics {
             }
         }
 
+        fun <K> HashMap<K, IntArray>.sum(index: Int): Int {
+            var sum = 0
+            this.forEach { sum += it.value[index] }
+            return sum
+        }
+
         val appearCount = HashMap<role, IntArray>()
         val winCount = HashMap<role, IntArray>()
         FileInputStream("stat.csv").use { `is` ->
@@ -379,23 +385,38 @@ object Statistics {
                 }
             }
         }
+        val lines = TreeMap<Double, String>(Collections.reverseOrder())
+        for ((key, value) in appearCount) {
+            val sb = StringBuilder()
+            val roleName = RoleCache.getRoleName(key) ?: ""
+            sb.append(roleName)
+            sb.append(",")
+            sb.append(value[0])
+            var winRate: Double? = null
+            for ((i, v) in value.withIndex()) {
+                sb.append(",")
+                winCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
+                    if (winRate == null) winRate = r
+                    sb.append("%.2f%%".format(r))
+                }
+            }
+            lines[winRate!!] = sb.toString()
+        }
         FileOutputStream("stat0.csv").use { os ->
             BufferedWriter(OutputStreamWriter(os)).use { writer ->
                 writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率")
                 writer.newLine()
-                for ((key, value) in appearCount) {
-                    val roleName = RoleCache.getRoleName(key) ?: ""
-                    writer.write(roleName)
+                writer.write("全部,${appearCount.sum(0)}")
+                for (i in 0 until 8) {
                     writer.write(",")
-                    writer.write(value[0].toString())
-                    for ((i, v) in value.withIndex()) {
-                        writer.write(",")
-                        winCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
-                            writer.write("%.2f%%".format(r))
-                        }
-                    }
+                    writer.write("%.2f%%".format(winCount.sum(i) * 100.0 / appearCount.sum(i)))
+                }
+                writer.newLine()
+                for (line in lines.values) {
+                    writer.write(line)
                     writer.newLine()
                 }
+                writer.newLine()
             }
         }
     }
