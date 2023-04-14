@@ -32,9 +32,6 @@ class Deck(private val game: Game) {
         val result = subList.toTypedArray()
         subList.clear()
         notifyDeckCount(false)
-        if (cards.isEmpty()) {
-            shuffle()
-        }
         return result
     }
 
