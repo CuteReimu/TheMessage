@@ -349,53 +349,53 @@ object Statistics {
     @Throws(IOException::class)
     @JvmStatic
     fun main(args: Array<String>) {
-        val appearCount = HashMap<role, Int>()
-        val blackAppearCount = HashMap<role, Int>()
-        val winCount = HashMap<role, Int>()
-        val blackWinCount = HashMap<role, Int>()
-        val timeSet = HashSet<String>()
-        BufferedReader(InputStreamReader(FileInputStream("stat.csv"))).use { reader ->
-            var line: String?
-            while (true) {
-                line = reader.readLine()
-                if (line == null) break
-                val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val role = role.valueOf(a[0])
-                appearCount.compute(role) { _, v -> (v ?: 0) + 1 }
-                if (a[1].toBoolean()) winCount.compute(role) { _, v -> (v ?: 0) + 1 }
-                if ("Black" == a[2]) {
-                    blackAppearCount.compute(role) { _, v -> (v ?: 0) + 1 }
-                    if (a[1].toBoolean()) blackWinCount.compute(role) { _, v -> (v ?: 0) + 1 }
-                }
-                timeSet.add(a[5])
+        fun IntArray.inc(index: Int? = null) {
+            this[0]++
+            if (index != null) {
+                this[2]++
+                this[index]++
+            } else {
+                this[1]++
             }
         }
-        if (timeSet.isEmpty()) return
-        BufferedWriter(OutputStreamWriter(FileOutputStream("stat0.csv"))).use { writer ->
-            writer.write("角色,场次,胜率,军潜胜率,神秘人胜率")
-            writer.newLine()
-            for ((key, value) in appearCount) {
-                val roleName = RoleCache.getRoleName(key) ?: ""
-                writer.write(roleName)
-                writer.write(",")
-                writer.write(value.toString())
-                writer.write(",")
-                writer.write("%.2f%%".format(winCount.getOrDefault(key, 0) * 100.0 / value))
-                writer.write(",")
-                val blackAppear = blackAppearCount.getOrDefault(key, 0)
-                val nonBlackAppear = value - blackAppear
-                if (nonBlackAppear > 0) writer.write(
-                    "%.2f%%".format(
-                        (winCount.getOrDefault(key, 0) - blackWinCount.getOrDefault(key, 0)) * 100.0 / nonBlackAppear
-                    )
-                ) else writer.write("0.00%")
-                writer.write(','.code)
-                if (blackAppear > 0) writer.write(
-                    "%.2f%%".format(
-                        blackWinCount.getOrDefault(key, 0) * 100.0 / blackAppear
-                    )
-                ) else writer.write("0.00%")
+
+        val appearCount = HashMap<role, IntArray>()
+        val winCount = HashMap<role, IntArray>()
+        FileInputStream("stat.csv").use { `is` ->
+            BufferedReader(InputStreamReader(`is`)).use { reader ->
+                var line: String?
+                while (true) {
+                    line = reader.readLine()
+                    if (line == null) break
+                    val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
+                    val role = role.valueOf(a[0])
+                    val appear = appearCount.computeIfAbsent(role) { IntArray(8) }
+                    val win = winCount.computeIfAbsent(role) { IntArray(8) }
+                    val index =
+                        if ("Black" == a[2]) secret_task.valueOf(a[3]).number + 3
+                        else null
+                    appear.inc(index)
+                    if (a[1].toBoolean()) win.inc(index)
+                }
+            }
+        }
+        FileOutputStream("stat0.csv").use { os ->
+            BufferedWriter(OutputStreamWriter(os)).use { writer ->
+                writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率")
                 writer.newLine()
+                for ((key, value) in appearCount) {
+                    val roleName = RoleCache.getRoleName(key) ?: ""
+                    writer.write(roleName)
+                    writer.write(",")
+                    writer.write(value[0].toString())
+                    for ((i, v) in value.withIndex()) {
+                        writer.write(",")
+                        winCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
+                            writer.write("%.2f%%".format(r))
+                        }
+                    }
+                    writer.newLine()
+                }
             }
         }
     }
