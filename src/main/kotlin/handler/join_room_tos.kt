@@ -2,6 +2,7 @@ package com.fengsheng.handler
 
 import com.fengsheng.*
 import com.fengsheng.Statistics.PlayerGameCount
+import com.fengsheng.handler.remove_robot_tos.Companion.removeOneRobot
 import com.fengsheng.protos.Errcode.error_code
 import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng
@@ -78,6 +79,8 @@ class join_room_tos : ProtoHandler {
                 if (playerInfo == null) {
                     player.send(error_code_toc.newBuilder().setCode(error_code.login_failed).build())
                 } else {
+                    val emptyCount = newGame.players.count { it == null }
+                    if (emptyCount == 1) newGame.removeOneRobot()
                     player.playerName = playerName
                     player.game = newGame
                     val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)

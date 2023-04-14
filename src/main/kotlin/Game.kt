@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 import org.apache.log4j.Logger
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.max
 import kotlin.random.Random
 
 class Game private constructor(totalPlayerCount: Int) {
@@ -338,7 +337,8 @@ class Game private constructor(totalPlayerCount: Int) {
         val GameCache = ConcurrentHashMap<Int, Game>()
         val deviceCache = ConcurrentHashMap<String, HumanPlayer>()
         private var increaseId = 0
-        var newGame = Game(Config.TotalPlayerCount)
+        private var lastTotalPlayerCount = Config.TotalPlayerCount
+        var newGame = Game(lastTotalPlayerCount)
 
         fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
             oldPlayer.channel = newPlayer.channel
@@ -351,7 +351,9 @@ class Game private constructor(totalPlayerCount: Int) {
          * 不是线程安全的
          */
         fun newInstance() {
-            newGame = Game(max(newGame.players.size, Config.TotalPlayerCount))
+            if (newGame.players.all { it is HumanPlayer })
+                lastTotalPlayerCount = newGame.players.size + 1
+            newGame = Game(lastTotalPlayerCount.coerceIn(5..8))
         }
 
         @Throws(IOException::class, ClassNotFoundException::class)
