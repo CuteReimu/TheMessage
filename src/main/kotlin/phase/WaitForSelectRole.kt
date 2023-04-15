@@ -50,11 +50,13 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             log.error("正在等待选择角色")
             return null
         }
-        if (player.role != role.unknown) {
+        if (selected[player.location] != null) {
             log.error("你已经选了角色")
             return null
         }
-        val roleSkillsData = options[player.location].find { o -> o.role == message.role }
+        val roleSkillsData =
+            if (message.role == role.unknown && options[player.location].isEmpty()) RoleSkillsData()
+            else options[player.location].find { o -> o.role == message.role }
         if (roleSkillsData == null) {
             log.error("你没有这个角色")
             return null
