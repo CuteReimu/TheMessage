@@ -13,6 +13,7 @@ class remove_robot_tos : AbstractProtoHandler<remove_robot_tos>() {
             log.error("game is already started")
             return
         }
+        r.game!!.removeOneRobot()
     }
 
     companion object {
