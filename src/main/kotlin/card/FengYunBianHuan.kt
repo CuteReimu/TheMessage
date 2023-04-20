@@ -4,11 +4,10 @@ import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
-import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.use_feng_yun_bian_huan_toc
-import com.fengsheng.protos.Fengsheng.wait_for_feng_yun_bian_huan_choose_card_toc
+import com.fengsheng.protos.Fengsheng.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class FengYunBianHuan : Card {
@@ -44,7 +43,7 @@ class FengYunBianHuan : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val fsm = g.fsm as MainPhaseIdle
         r.deleteCard(id)
-        val players = ArrayList(r.game!!.players.filterNotNull().filter { player -> player.alive })
+        val players = LinkedList(r.game!!.players.filterNotNull().filter { player -> player.alive })
         val drawCards = arrayListOf(*(r.game!!.deck.draw(players.size)))
         while (players.size > drawCards.size) {
             players.removeLast() // 兼容牌库抽完的情况
@@ -69,12 +68,13 @@ class FengYunBianHuan : Card {
     private data class executeFengYunBianHuan(
         val card: FengYunBianHuan,
         val drawCards: ArrayList<Card>,
-        val players: ArrayList<Player>,
+        val players: LinkedList<Player>,
         val mainPhaseIdle: MainPhaseIdle
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = players.firstOrNull()
             if (r == null) {
+                mainPhaseIdle.player.game!!.deck.discard(*drawCards.toTypedArray())
                 mainPhaseIdle.player.game!!.deck.discard(card)
                 return ResolveResult(mainPhaseIdle, true)
             }
@@ -103,7 +103,7 @@ class FengYunBianHuan : Card {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (message !is Fengsheng.feng_yun_bian_huan_choose_card_tos) {
+            if (message !is feng_yun_bian_huan_choose_card_tos) {
                 log.error("现在正在结算风云变幻")
                 return null
             }
@@ -117,13 +117,7 @@ class FengYunBianHuan : Card {
                 return null
             }
             if (message.asMessageCard) {
-                var containsSame = false
-                for (c in player.messageCards) {
-                    if (c.hasSameColor(chooseCard)) {
-                        containsSame = true
-                        break
-                    }
-                }
+                val containsSame = player.messageCards.any { c -> c.hasSameColor(chooseCard) }
                 if (containsSame) {
                     log.error("已有相同颜色情报，不能作为情报牌")
                     return null
@@ -137,13 +131,22 @@ class FengYunBianHuan : Card {
             } else {
                 player.cards.add(chooseCard)
             }
+            for (p in player.game!!.players) {
+                if (p is HumanPlayer) {
+                    val builder = feng_yun_bian_huan_choose_card_toc.newBuilder()
+                    builder.playerId = p.getAlternativeLocation(player.location)
+                    builder.cardId = message.cardId
+                    builder.asMessageCard = message.asMessageCard
+                    p.send(builder.build())
+                }
+            }
             return ResolveResult(this, true)
         }
 
         private fun autoChooseCard() {
             val chooseCard = drawCards.first()
             val r = players.first()
-            val builder = Fengsheng.feng_yun_bian_huan_choose_card_tos.newBuilder()
+            val builder = feng_yun_bian_huan_choose_card_tos.newBuilder()
             builder.cardId = chooseCard.id
             builder.asMessageCard = false
             if (r is HumanPlayer) builder.seq = r.seq
