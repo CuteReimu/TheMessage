@@ -86,6 +86,11 @@ class Deck(private val game: Game) {
             cards.removeAt(8)
             cards.removeAt(3)
             cards.removeAt(0)
+        } else if (totalPlayerCount <= 8) {
+            cards.removeAt(16)
+            cards.removeAt(13)
+            cards.removeAt(11)
+            cards.removeAt(8)
         }
         nextId = DefaultDeck.size
         cards.shuffle()
@@ -193,8 +198,8 @@ class Deck(private val game: Game) {
             WuDao(98, listOf(color.Black), direction.Right, false),
             WuDao(99, listOf(color.Blue, color.Black), direction.Left, false),
             WuDao(100, listOf(color.Red, color.Black), direction.Right, false),
-//            FengYunBianHuan(101, listOf(color.Black), direction.Up, false),
-//            FengYunBianHuan(102, listOf(color.Black), direction.Up, false),
+            FengYunBianHuan(101, listOf(color.Black), direction.Up, false),
+            FengYunBianHuan(102, listOf(color.Black), direction.Up, false),
         )
     }
 }
