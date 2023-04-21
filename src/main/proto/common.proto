@@ -56,7 +56,8 @@ enum card_type {
   Jie_Huo = 6; // 截获
   Diao_Bao = 7; // 调包
   Wu_Dao = 8; // 误导
-  Feng_Yun_Bian_Huan = 9;
+  Feng_Yun_Bian_Huan = 9; // 风云变幻
+  Mi_Ling = 10; // 密令
 }
 
 enum color {
@@ -89,4 +90,5 @@ message card {
   card_type      card_type = 4; // 卡牌类型
   repeated color who_draw_card = 5; // （试探卡）哪个身份的人摸1张牌（那么另外的身份一定是弃1张牌）
   bool           can_lock = 6; // 是否有锁定标记
+  repeated color secret_color = 7; // （密令卡）长度为3的数组，[东风对应颜色，西风对应颜色，静风对应颜色]
 }

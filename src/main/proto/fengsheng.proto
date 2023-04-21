@@ -334,11 +334,11 @@ message send_message_card_tos {
 // 通知所有人传情报
 message send_message_card_toc {
   uint32          card_id = 1; // 只有传出者能看到这个字段
-  uint32          player_id = 2; // 传出者
+  uint32          player_id = 2; // 当前回合玩家ID
   uint32          target_player_id = 3; // 目标
   repeated uint32 lock_player_ids = 4; // 被锁定的玩家ID
   direction       card_dir = 5; // 传递的方向
-  uint32          sender_id = 6; // 传出情报的玩家id。有可能不是当前回合玩家传出的情报。
+  uint32          sender_id = 6; // 传出情报的玩家ID。有可能不是当前回合玩家传出的情报。
 }
 
 // 选择是否接收情报
@@ -514,4 +514,24 @@ message feng_yun_bian_huan_choose_card_toc {
   uint32 player_id = 1;
   uint32 card_id = 2;
   bool   as_message_card = 3; // 是否作为情报牌
+}
+
+// 使用密令
+message use_mi_ling_tos {
+  uint32 card_id = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者，不能没有手牌
+  uint32 secret = 3; // 0-东风，1-西风，2-静风
+  uint32 seq = 4;
+}
+
+// 通知所有人使用密令，这条协议后会紧接着下面一条协议，客户端接下来应该由使用者(has_color为false)或者被使用者(has_color为true)发 send_message_card_tos
+message use_mi_ling_toc {
+  uint32        player_id = 1; // 使用者
+  uint32        target_player_id = 2; // 被使用者，也就是传情报的人
+  uint32        secret = 3; // 0-东风，1-西风，2-静风
+  card          card = 4; // 只有自己是使用者或者被使用者时，这个字段才会有值，否则为null/nil
+  bool          has_color = 5; // 为true表示有这个颜色，由被使用者选牌。为false表示没有这个颜色，由使用者选牌。
+  repeated card hand_cards = 6; // 被使用者的手牌，只有has_color为false且自己是使用者时，这个字段才有值
+  uint32        waiting_second = 7; // 读多少秒
+  uint32        seq = 8;
 }
