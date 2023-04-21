@@ -15,7 +15,7 @@ class DiaoBao : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
             super(id, colors, direction, lockable)
 
-    constructor(id: Int, card: Card?) : super(id, card)
+    constructor(id: Int, card: Card) : super(id, card)
 
     /**
      * 仅用于“作为调包使用”

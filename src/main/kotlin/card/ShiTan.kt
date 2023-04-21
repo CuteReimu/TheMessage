@@ -24,8 +24,8 @@ class ShiTan : Card {
         this.whoDrawCard = whoDrawCard
     }
 
-    constructor(id: Int, card: ShiTan?) : super(id, card) {
-        whoDrawCard = card!!.whoDrawCard
+    constructor(id: Int, card: ShiTan) : super(id, card) {
+        whoDrawCard = card.whoDrawCard
     }
 
     override val type: card_type

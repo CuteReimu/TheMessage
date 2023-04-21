@@ -26,7 +26,7 @@ class addcard : Function<Map<String, String?>, String> {
                             cardList.add(
                                 when (cardType) {
                                     card_type.Cheng_Qing -> ChengQing(g.deck.getNextId(), c)
-                                    card_type.Shi_Tan -> ShiTan(g.deck.getNextId(), c as ShiTan?)
+                                    card_type.Shi_Tan -> ShiTan(g.deck.getNextId(), c as ShiTan)
                                     card_type.Wei_Bi -> WeiBi(g.deck.getNextId(), c)
                                     card_type.Li_You -> LiYou(g.deck.getNextId(), c)
                                     card_type.Ping_Heng -> PingHeng(g.deck.getNextId(), c)

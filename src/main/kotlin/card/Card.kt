@@ -33,9 +33,9 @@ abstract class Card {
         originCard = null
     }
 
-    protected constructor(id: Int, card: Card?) {
+    protected constructor(id: Int, card: Card) {
         this.id = id
-        colors = card!!.colors
+        colors = card.colors
         direction = card.direction
         lockable = card.lockable
         originCard = null
