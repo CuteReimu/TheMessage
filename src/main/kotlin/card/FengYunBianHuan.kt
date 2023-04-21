@@ -43,7 +43,11 @@ class FengYunBianHuan : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val fsm = g.fsm as MainPhaseIdle
         r.deleteCard(id)
-        val players = LinkedList(r.game!!.players.filterNotNull().filter { player -> player.alive })
+        val players = LinkedList<Player>()
+        for (i in r.location until r.location + g.players.size) {
+            val player = g.players[i % g.players.size]!!
+            if (player.alive) players.add(player)
+        }
         val drawCards = arrayListOf(*(r.game!!.deck.draw(players.size)))
         while (players.size > drawCards.size) {
             players.removeLast() // 兼容牌库抽完的情况
