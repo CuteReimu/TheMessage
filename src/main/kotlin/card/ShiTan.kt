@@ -210,9 +210,14 @@ class ShiTan : Card {
     }
 
     override fun toPbCard(): card? {
-        return card.newBuilder().setCardId(id).setCardDir(direction).setCanLock(lockable).setCardType(
-            type
-        ).addAllCardColor(colors).addAllWhoDrawCard(whoDrawCard).build()
+        val builder = card.newBuilder()
+        builder.cardId = id
+        builder.cardDir = direction
+        builder.canLock = lockable
+        builder.cardType = type
+        builder.addAllCardColor(colors)
+        builder.addAllWhoDrawCard(whoDrawCard)
+        return builder.build()
     }
 
     override fun toString(): String {
