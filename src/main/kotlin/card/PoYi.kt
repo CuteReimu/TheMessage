@@ -56,7 +56,6 @@ class PoYi : Card {
         g.resolve(OnUseCard(r, r, null, this, card_type.Po_Yi, r, resolveFunc))
     }
 
-    @JvmRecord
     private data class executePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = sendPhase.inFrontOfWhom

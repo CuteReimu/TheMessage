@@ -10,7 +10,6 @@ class Limiter(private val limit: Long, recoverDuration: Long, unit: TimeUnit) {
     private var lastRecoverNanoTime = System.nanoTime()
     private val recoverDuration = unit.toNanos(recoverDuration)
 
-    @JvmOverloads
     fun allow(n: Long = 1): Boolean {
         var newLeft = left
         if (left < limit) {
