@@ -6,7 +6,6 @@ import com.fengsheng.handler.remove_robot_tos.Companion.removeOneRobot
 import com.fengsheng.protos.Errcode.error_code
 import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.get_room_info_toc
 import com.google.protobuf.GeneratedMessageV3
 import kotlinx.coroutines.runBlocking
 import org.apache.log4j.Logger
@@ -85,7 +84,7 @@ class join_room_tos : ProtoHandler {
                     player.game = newGame
                     val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
                     player.game!!.onPlayerJoinRoom(player, count)
-                    val builder = get_room_info_toc.newBuilder()
+                    val builder = Fengsheng.get_room_info_toc.newBuilder()
                     builder.myPosition = player.location
                     builder.onlineCount = Game.deviceCache.size
                     for (p in player.game!!.players) {

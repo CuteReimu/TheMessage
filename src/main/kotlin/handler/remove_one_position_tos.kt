@@ -3,12 +3,11 @@ package com.fengsheng.handler
 import com.fengsheng.Game
 import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
-import com.fengsheng.protos.Fengsheng.remove_one_position_toc
-import com.fengsheng.protos.Fengsheng.remove_one_position_tos
+import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
 
-class remove_one_position_tos : AbstractProtoHandler<remove_one_position_tos>() {
-    override fun handle0(r: HumanPlayer, pb: remove_one_position_tos) {
+class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_position_tos>() {
+    override fun handle0(r: HumanPlayer, pb: Fengsheng.remove_one_position_tos) {
         if (r.game!!.isStarted) {
             log.error("game already started")
             return
@@ -20,7 +19,7 @@ class remove_one_position_tos : AbstractProtoHandler<remove_one_position_tos>() 
         r.game!!.players = players
         players.forEachIndexed { i, p ->
             p?.location = i
-            if (p is HumanPlayer) p.send(remove_one_position_toc.newBuilder().setPosition(index).build())
+            if (p is HumanPlayer) p.send(Fengsheng.remove_one_position_toc.newBuilder().setPosition(index).build())
         }
         for (p in players)
             if (p == null) return

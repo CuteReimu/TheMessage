@@ -2,11 +2,11 @@ package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Common
-import com.fengsheng.protos.Fengsheng.use_feng_yun_bian_huan_tos
+import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
 
-class use_feng_yun_bian_huan_tos : AbstractProtoHandler<use_feng_yun_bian_huan_tos>() {
-    override fun handle0(r: HumanPlayer, pb: use_feng_yun_bian_huan_tos) {
+class use_feng_yun_bian_huan_tos : AbstractProtoHandler<Fengsheng.use_feng_yun_bian_huan_tos>() {
+    override fun handle0(r: HumanPlayer, pb: Fengsheng.use_feng_yun_bian_huan_tos) {
         if (!r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             return

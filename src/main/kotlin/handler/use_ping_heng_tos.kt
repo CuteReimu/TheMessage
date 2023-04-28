@@ -2,11 +2,11 @@ package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Common.card_type
-import com.fengsheng.protos.Fengsheng.use_ping_heng_tos
+import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
 
-class use_ping_heng_tos : AbstractProtoHandler<use_ping_heng_tos>() {
-    override fun handle0(r: HumanPlayer, pb: use_ping_heng_tos) {
+class use_ping_heng_tos : AbstractProtoHandler<Fengsheng.use_ping_heng_tos>() {
+    override fun handle0(r: HumanPlayer, pb: Fengsheng.use_ping_heng_tos) {
         if (!r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             return

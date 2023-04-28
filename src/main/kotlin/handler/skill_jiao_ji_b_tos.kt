@@ -1,12 +1,12 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.protos.Role.skill_jiao_ji_b_tos
+import com.fengsheng.protos.Role
 import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
 
-class skill_jiao_ji_b_tos : AbstractProtoHandler<skill_jiao_ji_b_tos>() {
-    override fun handle0(r: HumanPlayer, pb: skill_jiao_ji_b_tos) {
+class skill_jiao_ji_b_tos : AbstractProtoHandler<Role.skill_jiao_ji_b_tos>() {
+    override fun handle0(r: HumanPlayer, pb: Role.skill_jiao_ji_b_tos) {
         val skill = r.findSkill(SkillId.JIAO_JI)
         if (skill == null) {
             log.error("你没有这个技能")

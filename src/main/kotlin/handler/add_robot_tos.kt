@@ -5,7 +5,6 @@ import com.fengsheng.Player
 import com.fengsheng.RobotPlayer
 import com.fengsheng.Statistics
 import com.fengsheng.protos.Errcode
-import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
 
@@ -18,7 +17,7 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
         val humanCount = r.game!!.players.count { it is HumanPlayer }
         val emptyCount = r.game!!.players.count { it == null }
         if (humanCount >= 2 && emptyCount == 1) {
-            r.send(error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build())
+            r.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build())
             return
         }
         val count = Statistics.getPlayerGameCount(r.playerName)
@@ -26,7 +25,7 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             val now = System.currentTimeMillis()
             val startTrialTime: Long = Statistics.getTrialStartTime(r.device!!)
             if (startTrialTime != 0L && now - 5 * 24 * 3600 * 1000 >= startTrialTime) {
-                r.send(error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build())
+                r.send(Errcode.error_code_toc.newBuilder().setCode(Errcode.error_code.robot_not_allowed).build())
                 return
             }
             Statistics.setTrialStartTime(r.device!!, now)

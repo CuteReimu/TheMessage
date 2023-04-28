@@ -5,7 +5,6 @@ import com.fengsheng.card.Card
 import com.fengsheng.phase.AfterDieGiveCard
 import com.fengsheng.phase.WaitForDieGiveCard
 import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.notify_die_give_card_toc
 import org.apache.log4j.Logger
 
 class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
@@ -56,7 +55,7 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
         log.info("${r}给了${target}$${cards.toTypedArray().contentToString()}")
         for (p in r.game!!.players) {
             if (p is HumanPlayer) {
-                val builder = notify_die_give_card_toc.newBuilder()
+                val builder = Fengsheng.notify_die_give_card_toc.newBuilder()
                 builder.playerId = p.getAlternativeLocation(r.location)
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
                 if (p === r || p === target)
