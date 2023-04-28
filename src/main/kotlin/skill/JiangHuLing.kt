@@ -20,7 +20,7 @@ class JiangHuLing : TriggeredSkill {
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm
         if (fsm is OnSendCard) {
-            val r: Player = fsm.whoseTurn
+            val r = fsm.sender
             if (r.findSkill(skillId) == null) return null
             if (r.getSkillUseCount(skillId) >= 1) return null
             r.addSkillUseCount(skillId)

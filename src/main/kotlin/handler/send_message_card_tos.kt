@@ -77,7 +77,10 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
         }
         r.incrSeq()
         r.game!!.resolve(
-            OnSendCard(fsm.player, card, pb.cardDir, r.game!!.players[targetLocation]!!, lockPlayers.toTypedArray())
+            OnSendCard(
+                fsm.player, fsm.player, card, pb.cardDir, r.game!!.players[targetLocation]!!,
+                lockPlayers.toTypedArray()
+            )
         )
     }
 

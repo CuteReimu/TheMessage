@@ -40,7 +40,11 @@ class RobotPlayer : Player() {
     override fun notifySendPhaseStart(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseStart
         if (this !== fsm.player) return
-        GameExecutor.post(game!!, { autoSendMessageCard(this) }, 2, TimeUnit.SECONDS)
+        GameExecutor.post(game!!, {
+            for (card in cards)
+                if (card is MiLing && MiLing.ai(fsm, card)) return@post
+            autoSendMessageCard(this)
+        }, 2, TimeUnit.SECONDS)
     }
 
     override fun notifySendMessageCard(
@@ -232,7 +236,7 @@ class RobotPlayer : Player() {
                 if (dir == direction.Left) r.getNextLeftAlivePlayer()
                 else r.getNextRightAlivePlayer()
             }
-            r.game!!.resolve(OnSendCard(r, finalCard, dir, target, lockedPlayers.toTypedArray()))
+            r.game!!.resolve(OnSendCard(r, r, finalCard, dir, target, lockedPlayers.toTypedArray()))
         }
 
         private val aiSkillMainPhase = hashMapOf<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>>(

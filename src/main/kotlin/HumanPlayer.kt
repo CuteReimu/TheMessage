@@ -393,7 +393,7 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
                 direction.Left -> r.getNextLeftAlivePlayer()
                 else -> r.getNextRightAlivePlayer()
             }
-            r.game!!.resolve(OnSendCard(r, card, dir, target, arrayOf()))
+            r.game!!.resolve(OnSendCard(r, r, card, dir, target, arrayOf()))
         }
     }
 }
