@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.8.21"
     application
     idea
-    id("com.google.protobuf") version "0.9.2"
+    id("com.google.protobuf") version "0.9.3"
 }
 
 group = "com.fengsheng"
