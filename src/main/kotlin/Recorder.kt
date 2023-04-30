@@ -43,7 +43,7 @@ class Recorder {
             sb.append(player!!.roleName)
         }
         val recordId = ((now.time / 1000 * 1000 + g.id % 100 * 10 + p.location) %
-                (36L * 36 * 36 * 36 * 36 * 36)).toString(Character.MAX_RADIX)
+                (36L * 36 * 36 * 36 * 36 * 36)).toString(Character.MAX_RADIX).addLeadingZero(6)
         val fileName = timeStr + "-" + sb + "-" + p.location + "-" + recordId
         val builder = record_file.newBuilder()
         builder.clientVersion = Config.ClientVersion
@@ -171,5 +171,14 @@ class Recorder {
     companion object {
         private val log = Logger.getLogger(Recorder::class.java)
         private val saveLoadPool = Executors.newSingleThreadExecutor()
+    }
+
+    private fun String.addLeadingZero(totalLen: Int): String {
+        val zeroCount = totalLen - length
+        if (zeroCount <= 0) return this
+        val sb = StringBuilder()
+        repeat(zeroCount) { sb.append('0') }
+        sb.append(this)
+        return sb.toString()
     }
 }
