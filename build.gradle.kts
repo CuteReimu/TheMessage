@@ -20,7 +20,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:3.22.4")
     implementation("log4j:log4j:1.2.17")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0")
 }
 
 protobuf {
