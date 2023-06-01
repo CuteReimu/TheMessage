@@ -62,41 +62,43 @@ class join_room_tos : ProtoHandler {
         val newGame = Game.newGame
         GameExecutor.post(newGame) {
             player.device = pb.device
-            val oldPlayer2 = Game.deviceCache.putIfAbsent(pb.device, player)
             val playerName = pb.name
-            if (oldPlayer2 != null && oldPlayer2.game === newGame && playerName == oldPlayer2.playerName) {
-                log.warn("怀疑连续发送了两次连接请求。为了游戏体验，拒绝本次连接。想要单设备双开请修改不同的用户名。")
-                player.send(error_code_toc.newBuilder().setCode(error_code.join_room_too_fast).build())
-                player.channel.close()
-            } else if (playerName.isBlank() || playerName.contains(",") ||
+            if (playerName.isBlank() || playerName.contains(",") ||
                 playerName.contains("\n") || playerName.contains("\r")
             ) {
                 player.send(error_code_toc.newBuilder().setCode(error_code.login_failed).build())
                 player.channel.close()
-            } else {
-                val playerInfo = Statistics.login(playerName, pb.device, pb.password)
-                if (playerInfo == null) {
-                    player.send(error_code_toc.newBuilder().setCode(error_code.login_failed).build())
-                } else {
-                    val emptyCount = newGame.players.count { it == null }
-                    if (emptyCount == 1) newGame.removeOneRobot()
-                    player.playerName = playerName
-                    player.game = newGame
-                    val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
-                    player.game!!.onPlayerJoinRoom(player, count)
-                    val builder = Fengsheng.get_room_info_toc.newBuilder()
-                    builder.myPosition = player.location
-                    builder.onlineCount = Game.deviceCache.size
-                    for (p in player.game!!.players) {
-                        builder.addNames(p?.playerName ?: "")
-                        val count1 =
-                            if (p is HumanPlayer) Statistics.getPlayerGameCount(p.playerName)
-                            else Statistics.totalPlayerGameCount.random()
-                        builder.addWinCounts(count1.winCount)
-                    }
-                    player.send(builder.build())
-                }
+                return@post
             }
+            val playerInfo = Statistics.login(playerName, pb.device, pb.password)
+            if (playerInfo == null) {
+                player.send(error_code_toc.newBuilder().setCode(error_code.login_failed).build())
+                return@post
+            }
+            val oldPlayer2 = Game.deviceCache.putIfAbsent(pb.device, player)
+            if (oldPlayer2 != null && oldPlayer2.game === newGame && playerName == oldPlayer2.playerName) {
+                log.warn("怀疑连续发送了两次连接请求。为了游戏体验，拒绝本次连接。想要单设备双开请修改不同的用户名。")
+                player.send(error_code_toc.newBuilder().setCode(error_code.join_room_too_fast).build())
+                player.channel.close()
+                return@post
+            }
+            val emptyCount = newGame.players.count { it == null }
+            if (emptyCount == 1) newGame.removeOneRobot()
+            player.playerName = playerName
+            player.game = newGame
+            val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
+            player.game!!.onPlayerJoinRoom(player, count)
+            val builder = Fengsheng.get_room_info_toc.newBuilder()
+            builder.myPosition = player.location
+            builder.onlineCount = Game.deviceCache.size
+            for (p in player.game!!.players) {
+                builder.addNames(p?.playerName ?: "")
+                val count1 =
+                    if (p is HumanPlayer) Statistics.getPlayerGameCount(p.playerName)
+                    else Statistics.totalPlayerGameCount.random()
+                builder.addWinCounts(count1.winCount)
+            }
+            player.send(builder.build())
         }
     }
 
