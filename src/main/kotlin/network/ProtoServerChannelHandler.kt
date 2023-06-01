@@ -156,7 +156,6 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                     }
                 } catch (ignored: ClassNotFoundException) {
                 }
-
             }
         }
 

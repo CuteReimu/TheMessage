@@ -2,9 +2,6 @@ package com.fengsheng
 
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.get_record_list_toc
-import com.fengsheng.protos.Fengsheng.pb_order
-import com.fengsheng.protos.Record.player_order
-import com.fengsheng.protos.Record.player_orders
 import com.fengsheng.skill.RoleCache
 import org.apache.log4j.Logger
 import java.io.*
@@ -21,14 +18,10 @@ import kotlin.random.Random
 object Statistics {
     private val pool = Executors.newSingleThreadExecutor()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    private val playerGameCount = ConcurrentHashMap<String, PlayerGameCount>()
     private val playerInfoMap = ConcurrentHashMap<String, PlayerInfo>()
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
     private val trialStartTime = ConcurrentHashMap<String, Long>()
-    private val orderMap = ConcurrentHashMap<Int, player_order>()
-    private val deviceOrderMap = ConcurrentHashMap<String, List<player_order>>()
-    private var orderId = 0
     fun add(records: List<Record>) {
         pool.submit {
             try {
@@ -68,23 +61,8 @@ object Statistics {
                 }
                 totalWinCount.addAndGet(win)
                 totalGameCount.addAndGet(game)
-                var sb = StringBuilder()
-                for ((_, info) in playerInfoMap) {
-                    sb.append(info.winCount).append(',')
-                    sb.append(info.gameCount).append(',')
-                    sb.append(info.name).append(',')
-                    sb.append(info.deviceId).append(',')
-                    sb.append(info.password).append('\n')
-                }
-                writeFile("playerInfo.csv", sb.toString().toByteArray())
-                if (updateTrial) {
-                    sb = StringBuilder()
-                    for ((key, value) in trialStartTime) {
-                        sb.append(value).append(',')
-                        sb.append(key).append('\n')
-                    }
-                    writeFile("trial.csv", sb.toString().toByteArray())
-                }
+                savePlayerInfo()
+                if (updateTrial) saveTrials()
             } catch (e: Exception) {
                 log.error("execute task failed", e)
             }
@@ -92,45 +70,19 @@ object Statistics {
     }
 
     fun login(name: String, deviceId: String, pwd: String?): PlayerInfo? {
-        val password: String = try {
+        val password = try {
             if (pwd.isNullOrEmpty()) "" else md5(name + pwd)
         } catch (e: NoSuchAlgorithmException) {
             log.error("md5加密失败", e)
             return null
         }
-        val playerInfo = playerInfoMap.getOrPut(name) { PlayerInfo(name, deviceId, password, 0, 0) }.let {
+        val playerInfo = playerInfoMap.getOrPut(name) {
+            pool.submit(::savePlayerInfo)
+            PlayerInfo(name, deviceId, password, 0, 0)
+        }.let {
             return@let if (it.password.isEmpty() && password.isNotEmpty()) it.copy(password = password) else it
         }
         if (password != playerInfo.password) return null
-        // 对旧数据进行兼容
-        val finalPlayerInfo = arrayOf(playerInfo)
-        playerGameCount.computeIfPresent(deviceId) { _, v ->
-            val gameCount = finalPlayerInfo[0].gameCount + v.gameCount
-            val winCount = finalPlayerInfo[0].winCount + v.winCount
-            finalPlayerInfo[0] = PlayerInfo(name, deviceId, password, winCount, gameCount)
-            null
-        }
-        if (finalPlayerInfo[0] !== playerInfo) {
-            playerInfoMap[name] = finalPlayerInfo[0]
-            pool.submit {
-                var sb = StringBuilder()
-                for ((_, info) in playerInfoMap) {
-                    sb.append(info.winCount).append(',')
-                    sb.append(info.gameCount).append(',')
-                    sb.append(info.name).append(',')
-                    sb.append(info.deviceId).append(',')
-                    sb.append(info.password).append('\n')
-                }
-                writeFile("playerInfo.csv", sb.toString().toByteArray())
-                sb = StringBuilder()
-                for ((key, count) in playerGameCount) {
-                    sb.append(count.winCount).append(',')
-                    sb.append(count.gameCount).append(',')
-                    sb.append(key).append('\n')
-                }
-                writeFile("player.csv", sb.toString().toByteArray())
-            }
-        }
         return playerInfo
     }
 
@@ -142,23 +94,29 @@ object Statistics {
     val totalPlayerGameCount: PlayerGameCount
         get() = PlayerGameCount(totalWinCount.get(), totalGameCount.get())
 
+    private fun savePlayerInfo() {
+        val sb = StringBuilder()
+        for ((_, info) in playerInfoMap) {
+            sb.append(info.winCount).append(',')
+            sb.append(info.gameCount).append(',')
+            sb.append(info.name).append(',')
+            sb.append(info.deviceId).append(',')
+            sb.append(info.password).append('\n')
+        }
+        writeFile("playerInfo.csv", sb.toString().toByteArray())
+    }
+
+    private fun saveTrials() {
+        val sb = StringBuilder()
+        for ((key, value) in trialStartTime) {
+            sb.append(value).append(',')
+            sb.append(key).append('\n')
+        }
+        writeFile("trial.csv", sb.toString().toByteArray())
+    }
+
     @Throws(IOException::class)
     fun load() {
-        try {
-            BufferedReader(InputStreamReader(FileInputStream("player.csv"))).use { reader ->
-                var line: String?
-                while (true) {
-                    line = reader.readLine()
-                    if (line == null) break
-                    val a = line.split(",".toRegex(), limit = 3).toTypedArray()
-                    val deviceId = a[2]
-                    val win = a[0].toInt()
-                    val game = a[1].toInt()
-                    playerGameCount[deviceId] = PlayerGameCount(win, game)
-                }
-            }
-        } catch (ignored: FileNotFoundException) {
-        }
         var winCount = 0
         var gameCount = 0
         try {
@@ -167,7 +125,7 @@ object Statistics {
                 while (true) {
                     line = reader.readLine()
                     if (line == null) break
-                    val a = line!!.split(",".toRegex(), limit = 5).toTypedArray()
+                    val a = line.split(",".toRegex(), limit = 5).toTypedArray()
                     val password = a[4]
                     val deviceId = a[3]
                     val name = a[2]
@@ -198,15 +156,6 @@ object Statistics {
             }
         } catch (ignored: FileNotFoundException) {
         }
-        try {
-            FileInputStream("order.dat").use { `is` ->
-                val playerOrders = player_orders.parseFrom(`is`.readAllBytes())
-                orderMap.putAll(playerOrders.ordersMap)
-                orderId = playerOrders.orderId
-                deviceOrderMap.putAll(playerOrders.ordersMap.values.groupBy { it.device })
-            }
-        } catch (ignored: FileNotFoundException) {
-        }
     }
 
     fun getTrialStartTime(deviceId: String): Long {
@@ -217,60 +166,7 @@ object Statistics {
         pool.submit {
             try {
                 trialStartTime[device] = time
-                val sb = StringBuilder()
-                for ((key, value) in trialStartTime) {
-                    sb.append(value).append(',')
-                    sb.append(key).append('\n')
-                }
-                writeFile("trial.csv", sb.toString().toByteArray())
-            } catch (e: Exception) {
-                log.error("execute task failed", e)
-            }
-        }
-    }
-
-    fun getOrders(deviceId: String): List<pb_order> {
-        val now = System.currentTimeMillis() / 1000 + 8 * 3600
-        val list1 = deviceOrderMap[deviceId]?.filter { it.time > now - 1800 }
-        val list2 = orderMap.values.filter { it.time > now - 1800 }
-        val list = (list1?.plus(list2) ?: list2).sortedWith { o1: player_order, o2: player_order ->
-            if (o1.time == o2.time) return@sortedWith o1.id.compareTo(o2.id)
-            if (o1.time < o2.time) -1 else 1
-        }
-        return (if (list.size > 20) list.subList(0, 20) else list).map { playerOrderToPbOrder(deviceId, it) }
-    }
-
-    fun addOrder(device: String, name: String?, time: Long) {
-        val now = System.currentTimeMillis() / 1000 + 8 * 3600
-        if (time <= now - 1800) return
-        pool.submit {
-            try {
-                val orders1 = deviceOrderMap[device]?.toMutableList() ?: ArrayList()
-                val builder = player_order.newBuilder()
-                builder.id = ++orderId
-                builder.device = device
-                builder.name = name
-                builder.time = time
-                val order = builder.build()
-                orders1.add(order)
-                orders1.removeIf {
-                    if (it.time <= now - 1800) {
-                        orderMap.remove(it.id)
-                        true
-                    } else false
-                }
-                deviceOrderMap[device] = if (orders1.size > 3) orders1.takeLast(3) else orders1
-                orderMap[order.id] = order
-                val removeList = ArrayList<Int>()
-                for ((key, o) in orderMap) {
-                    if (o.time <= now - 1800) {
-                        removeList.add(key)
-                        deviceOrderMap.computeIfPresent(o.device) { _, v -> v.filter { it.id != o.id } }
-                    }
-                }
-                removeList.forEach { orderMap.remove(it) }
-                val buf = player_orders.newBuilder().setOrderId(orderId).putAllOrders(orderMap).build().toByteArray()
-                writeFile("order.dat", buf)
+                saveTrials()
             } catch (e: Exception) {
                 log.error("execute task failed", e)
             }
@@ -329,14 +225,6 @@ object Statistics {
     }
 
     private val log = Logger.getLogger(Statistics::class.java)
-    private fun playerOrderToPbOrder(deviceId: String, order: player_order): pb_order {
-        val builder = pb_order.newBuilder()
-        builder.id = order.id
-        builder.name = order.name
-        builder.time = order.time
-        builder.isMine = deviceId == order.device
-        return builder.build()
-    }
 
     private fun writeFile(fileName: String, buf: ByteArray, append: Boolean = false) {
         try {
@@ -426,19 +314,24 @@ object Statistics {
 
     @Throws(NoSuchAlgorithmException::class)
     private fun md5(s: String): String {
-        val `in` = s.toByteArray(StandardCharsets.UTF_8)
-        val messageDigest = MessageDigest.getInstance("md5")
-        messageDigest.update(`in`)
-        // 获得密文
-        val md = messageDigest.digest()
-        // 将密文转换成16进制字符串形式
-        val j = md.size
-        val str = CharArray(j * 2)
-        var k = 0
-        for (b in md) {
-            str[k++] = hexDigests[b.toInt() ushr 4 and 0xf] // 高4位
-            str[k++] = hexDigests[b.toInt() and 0xf] // 低4位
+        try {
+            val `in` = s.toByteArray(StandardCharsets.UTF_8)
+            val messageDigest = MessageDigest.getInstance("md5")
+            messageDigest.update(`in`)
+            // 获得密文
+            val md = messageDigest.digest()
+            // 将密文转换成16进制字符串形式
+            val j = md.size
+            val str = CharArray(j * 2)
+            var k = 0
+            for (b in md) {
+                str[k++] = hexDigests[b.toInt() ushr 4 and 0xf] // 高4位
+                str[k++] = hexDigests[b.toInt() and 0xf] // 低4位
+            }
+            return String(str)
+        } catch (e: NoSuchAlgorithmException) {
+            log.warn("calculate md5 failed: ", e)
+            return s
         }
-        return String(str)
     }
 }
