@@ -70,7 +70,7 @@ class MiLing : Card {
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.secret = secret
-                    builder.card = toPbCard()
+                    if (p === r || p === target) builder.card = toPbCard()
                     builder.hasColor = hasColor
                     builder.waitingSecond = 15
                     if (!hasColor && p === r)
@@ -221,7 +221,7 @@ class MiLing : Card {
                 log.error("目标错误: ${pb.targetPlayerId}")
                 return null
             }
-            if (target.findSkill(SkillId.LIAN_LUO) == null && pb.cardDir != card.direction) {
+            if (target.findSkill(SkillId.LIAN_LUO) == null && pb.cardDir != messageCard.direction) {
                 log.error("方向错误: ${pb.cardDir}")
                 return null
             }
@@ -234,7 +234,7 @@ class MiLing : Card {
                 log.error("不能传给那个人: ${pb.targetPlayerId}")
                 return null
             }
-            if (card.canLock()) {
+            if (messageCard.canLock()) {
                 if (pb.lockPlayerIdCount > 1) {
                     log.error("最多锁定一个目标")
                     return null
