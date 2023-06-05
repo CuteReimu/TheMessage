@@ -169,7 +169,7 @@ class MiLing : Card {
                 target.timeout = GameExecutor.post(target.game!!, {
                     if (target.checkSeq(seq2)) {
                         val builder = send_message_card_tos.newBuilder()
-                        builder.cardId = target.cards.first().id
+                        builder.cardId = card.id
                         builder.targetPlayerId = target.getAlternativeLocation(messageTarget.location)
                         builder.cardDir = card.direction
                         builder.seq = seq2
@@ -179,7 +179,7 @@ class MiLing : Card {
             } else {
                 GameExecutor.post(target.game!!, {
                     val builder = send_message_card_tos.newBuilder()
-                    builder.cardId = target.cards.first().id
+                    builder.cardId = card.id
                     builder.targetPlayerId = target.getAlternativeLocation(messageTarget.location)
                     builder.cardDir = card.direction
                     target.game!!.tryContinueResolveProtocol(target, builder.build())
