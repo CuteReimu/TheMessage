@@ -306,7 +306,7 @@ class MiLing : Card {
             }.randomOrNull() ?: return false
             GameExecutor.post(
                 player.game!!,
-                { card.execute(player.game!!, player, target, (1..3).random()) },
+                { card.execute(player.game!!, player, target, (0..2).random()) },
                 2,
                 TimeUnit.SECONDS
             )
