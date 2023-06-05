@@ -17,7 +17,7 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
         }
         val fsm = r.game!!.fsm as? SendPhaseStart
         if (r !== fsm?.player) {
-            log.error("不是传递情报的时机")
+            r.game!!.tryContinueResolveProtocol(r, pb)
             return
         }
         val card = r.findCard(pb.cardId)
