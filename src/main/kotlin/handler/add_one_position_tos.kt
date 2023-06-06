@@ -11,7 +11,7 @@ class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos
             return
         }
         val players = r.game!!.players
-        if (players.size >= 11) return
+        if (players.size >= 9) return
         val newPlayers = arrayOf(*players, null)
         r.game!!.players = newPlayers
         for (p in players) {
