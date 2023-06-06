@@ -310,13 +310,19 @@ class Game private constructor(totalPlayerCount: Int) {
                 null -> identity = it.identity
                 color.Black -> return false
                 it.identity -> {}
-                else -> return false
+                else -> {
+                    if (this.players.size != 4) // 四人局潜伏和军情会同时获胜
+                        return false
+                }
             }
             true
         }
         val winner =
             if (identity == color.Red || identity == color.Blue) {
-                players.filter { identity == it.identity }.toMutableList()
+                if (this.players.size == 4) // 四人局潜伏和军情会同时获胜
+                    players.filter { it.identity == color.Red || it.identity == color.Blue }.toMutableList()
+                else
+                    players.filter { identity == it.identity }.toMutableList()
             } else {
                 alivePlayers.toMutableList()
             }
