@@ -170,19 +170,19 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
     }
 
     override fun notifySendMessageCard(
-        player: Player,
+        whoseTurn: Player,
+        sender: Player,
         targetPlayer: Player,
         lockedPlayers: Array<Player>,
         messageCard: Card,
-        dir: direction?,
-        sender: Player
+        dir: direction?
     ) {
         val builder = send_message_card_toc.newBuilder()
-        builder.playerId = getAlternativeLocation(player.location)
+        builder.playerId = getAlternativeLocation(whoseTurn.location)
         builder.targetPlayerId = getAlternativeLocation(targetPlayer.location)
         builder.cardDir = dir
         builder.senderId = getAlternativeLocation(sender.location)
-        if (player === this) builder.cardId = messageCard.id
+        if (sender === this) builder.cardId = messageCard.id
         for (p in lockedPlayers) builder.addLockPlayerIds(getAlternativeLocation(p.location))
         send(builder.build())
     }

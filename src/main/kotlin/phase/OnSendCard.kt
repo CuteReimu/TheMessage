@@ -33,7 +33,7 @@ data class OnSendCard(
         log.info(s)
         sender.cards.remove(messageCard)
         for (p in whoseTurn.game!!.players)
-            p!!.notifySendMessageCard(whoseTurn, targetPlayer, lockedPlayers, messageCard, dir, sender)
+            p!!.notifySendMessageCard(whoseTurn, sender, targetPlayer, lockedPlayers, messageCard, dir)
         log.info("情报到达${targetPlayer}面前")
         return ResolveResult(
             SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, false, sender),

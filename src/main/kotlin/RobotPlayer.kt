@@ -48,12 +48,12 @@ class RobotPlayer : Player() {
     }
 
     override fun notifySendMessageCard(
-        player: Player,
+        whoseTurn: Player,
+        sender: Player,
         targetPlayer: Player,
         lockedPlayers: Array<Player>,
         messageCard: Card,
-        dir: direction?,
-        sender: Player
+        dir: direction?
     ) {
         // Do nothing
     }
