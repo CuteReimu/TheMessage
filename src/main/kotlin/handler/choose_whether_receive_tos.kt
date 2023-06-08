@@ -21,7 +21,13 @@ class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether
         if (pb.receive) {
             r.incrSeq()
             r.game!!.resolve(
-                OnChooseReceiveCard(fsm.whoseTurn, fsm.messageCard, fsm.inFrontOfWhom, fsm.isMessageCardFaceUp)
+                OnChooseReceiveCard(
+                    fsm.whoseTurn,
+                    fsm.sender,
+                    fsm.messageCard,
+                    fsm.inFrontOfWhom,
+                    fsm.isMessageCardFaceUp
+                )
             )
         } else {
             if (r === fsm.sender) {

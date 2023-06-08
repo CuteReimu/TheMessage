@@ -77,7 +77,13 @@ class RobotPlayer : Player() {
                     }
             game!!.resolve(
                 if (receive)
-                    OnChooseReceiveCard(fsm.whoseTurn, fsm.messageCard, fsm.inFrontOfWhom, fsm.isMessageCardFaceUp)
+                    OnChooseReceiveCard(
+                        fsm.whoseTurn,
+                        fsm.sender,
+                        fsm.messageCard,
+                        fsm.inFrontOfWhom,
+                        fsm.isMessageCardFaceUp
+                    )
                 else
                     MessageMoveNext(fsm)
             )

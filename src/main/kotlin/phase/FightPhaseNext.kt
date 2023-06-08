@@ -18,6 +18,7 @@ data class FightPhaseNext(val fightPhase: FightPhaseIdle) : Fsm {
             if (whoseFightTurn == fightPhase.inFrontOfWhom.location) return ResolveResult(
                 ReceivePhase(
                     fightPhase.whoseTurn,
+                    fightPhase.sender,
                     fightPhase.messageCard,
                     fightPhase.inFrontOfWhom
                 ), true

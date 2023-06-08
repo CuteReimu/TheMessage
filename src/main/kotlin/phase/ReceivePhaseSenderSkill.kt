@@ -14,6 +14,10 @@ class ReceivePhaseSenderSkill(
      */
     val whoseTurn: Player,
     /**
+     * 情报传出者
+     */
+    val sender: Player,
+    /**
      * 情报牌
      */
     val messageCard: Card,

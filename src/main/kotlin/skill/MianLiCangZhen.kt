@@ -19,21 +19,21 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSenderSkill
-        if (fsm?.whoseTurn?.findSkill(skillId) == null) return null
-        if (fsm.whoseTurn.getSkillUseCount(skillId) > 0) return null
-        fsm.whoseTurn.addSkillUseCount(skillId)
+        if (fsm?.sender?.findSkill(skillId) == null) return null
+        if (fsm.sender.getSkillUseCount(skillId) > 0) return null
+        fsm.sender.addSkillUseCount(skillId)
         return ResolveResult(executeMianLiCangZhen(fsm), true)
     }
 
     private data class executeMianLiCangZhen(val fsm: ReceivePhaseSenderSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.whoseTurn, 15)
+            for (p in fsm.sender.game!!.players)
+                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender, 15)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.whoseTurn) {
+            if (player !== fsm.sender) {
                 log.error("不是你发技能的时机")
                 return null
             }
@@ -49,7 +49,7 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
                 log.error("错误的协议")
                 return null
             }
-            val r = fsm.whoseTurn
+            val r = fsm.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 return null
@@ -94,7 +94,7 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
     companion object {
         fun ai(fsm: Fsm): Boolean {
             if (fsm !is executeMianLiCangZhen) return false
-            val p = fsm.fsm.whoseTurn
+            val p = fsm.fsm.sender
             val target = fsm.fsm.inFrontOfWhom
             if (!target.alive) return false
             val cards = p.cards.filter { it.isBlack() }.ifEmpty { return false }

@@ -119,7 +119,7 @@ class JiangHuLing : TriggeredSkill {
         override fun execute(g: Game): ResolveResult? {
             val fsm = g.fsm
             if (fsm is ReceivePhaseSenderSkill) {
-                val r = fsm.whoseTurn
+                val r = fsm.sender
                 if (r.findSkill(skillId) == null) return null
                 if (r.getSkillUseCount(skillId) >= 1) return null
                 var containsColor = false
@@ -139,13 +139,13 @@ class JiangHuLing : TriggeredSkill {
 
     private data class executeJiangHuLingB(val fsm: ReceivePhaseSenderSkill, val color: color) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players) {
+            for (p in fsm.sender.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_wait_for_jiang_hu_ling_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(fsm.whoseTurn.location)
+                    builder.playerId = p.getAlternativeLocation(fsm.sender.location)
                     builder.color = color
                     builder.waitingSecond = 15
-                    if (p === fsm.whoseTurn) {
+                    if (p === fsm.sender) {
                         val seq2 = p.seq
                         builder.seq = seq2
                         p.timeout = GameExecutor.post(
@@ -164,7 +164,7 @@ class JiangHuLing : TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            val p = fsm.whoseTurn
+            val p = fsm.sender
             if (p is RobotPlayer) {
                 val target = fsm.inFrontOfWhom
                 run {
@@ -192,7 +192,7 @@ class JiangHuLing : TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.whoseTurn) {
+            if (player !== fsm.sender) {
                 log.error("不是你发技能的时机")
                 return null
             }
@@ -208,7 +208,7 @@ class JiangHuLing : TriggeredSkill {
                 log.error("错误的协议")
                 return null
             }
-            val r = fsm.whoseTurn
+            val r = fsm.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 return null

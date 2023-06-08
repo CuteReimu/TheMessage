@@ -16,18 +16,18 @@ class FuHei : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSenderSkill
-        if (fsm == null || fsm.whoseTurn.findSkill(skillId) == null || !fsm.whoseTurn.alive) return null
-        if (fsm.whoseTurn.getSkillUseCount(skillId) > 0) return null
+        if (fsm == null || fsm.sender.findSkill(skillId) == null || !fsm.sender.alive) return null
+        if (fsm.sender.getSkillUseCount(skillId) > 0) return null
         val colors = fsm.messageCard.colors
         if (!colors.contains(color.Black)) return null
-        fsm.whoseTurn.addSkillUseCount(skillId)
-        log.info("${fsm.whoseTurn}发动了[腹黑]")
+        fsm.sender.addSkillUseCount(skillId)
+        log.info("${fsm.sender}发动了[腹黑]")
         for (p in g.players) {
             (p as? HumanPlayer)?.send(
-                skill_fu_hei_toc.newBuilder().setPlayerId(p.getAlternativeLocation(fsm.whoseTurn.location)).build()
+                skill_fu_hei_toc.newBuilder().setPlayerId(p.getAlternativeLocation(fsm.sender.location)).build()
             )
         }
-        fsm.whoseTurn.draw(1)
+        fsm.sender.draw(1)
         return null
     }
 

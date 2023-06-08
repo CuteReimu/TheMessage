@@ -214,6 +214,7 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
                     if (isLocked || fsm.inFrontOfWhom === fsm.whoseTurn) game!!.resolve(
                         OnChooseReceiveCard(
                             fsm.whoseTurn,
+                            fsm.sender,
                             fsm.messageCard,
                             fsm.inFrontOfWhom,
                             fsm.isMessageCardFaceUp

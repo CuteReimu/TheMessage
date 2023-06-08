@@ -10,12 +10,14 @@ import org.apache.log4j.Logger
  * 选择接收情报时
  *
  * @param whoseTurn           谁的回合（也就是情报传出者）
+ * @param sender              情报传出者
  * @param messageCard         情报牌
  * @param inFrontOfWhom       情报在谁面前
  * @param isMessageCardFaceUp 情报是否面朝上
  */
 data class OnChooseReceiveCard(
     val whoseTurn: Player,
+    val sender: Player,
     val messageCard: Card,
     val inFrontOfWhom: Player,
     val isMessageCardFaceUp: Boolean
@@ -26,7 +28,7 @@ data class OnChooseReceiveCard(
         log.info("${inFrontOfWhom}选择接收情报")
         for (p in whoseTurn.game!!.players) p!!.notifyChooseReceiveCard(inFrontOfWhom)
         return ResolveResult(
-            FightPhaseIdle(whoseTurn, messageCard, inFrontOfWhom, inFrontOfWhom, isMessageCardFaceUp),
+            FightPhaseIdle(whoseTurn, sender, messageCard, inFrontOfWhom, inFrontOfWhom, isMessageCardFaceUp),
             true
         )
     }
