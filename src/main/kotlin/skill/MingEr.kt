@@ -16,23 +16,23 @@ class MingEr : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSenderSkill
-        if (fsm == null || fsm.whoseTurn.findSkill(skillId) == null || !fsm.whoseTurn.alive) return null
-        if (fsm.whoseTurn.getSkillUseCount(skillId) > 0) return null
+        if (fsm == null || fsm.sender.findSkill(skillId) == null || !fsm.sender.alive) return null
+        if (fsm.sender.getSkillUseCount(skillId) > 0) return null
         val colors: List<color> = fsm.messageCard.colors
         if (!colors.contains(color.Red) && !colors.contains(color.Blue)) return null
-        fsm.whoseTurn.addSkillUseCount(skillId)
-        log.info("${fsm.whoseTurn}发动了[明饵]")
+        fsm.sender.addSkillUseCount(skillId)
+        log.info("${fsm.sender}发动了[明饵]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_ming_er_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(fsm.whoseTurn.location)
+                builder.playerId = p.getAlternativeLocation(fsm.sender.location)
                 p.send(builder.build())
             }
         }
-        if (fsm.whoseTurn === fsm.inFrontOfWhom) {
-            fsm.whoseTurn.draw(2)
+        if (fsm.sender === fsm.inFrontOfWhom) {
+            fsm.sender.draw(2)
         } else {
-            fsm.whoseTurn.draw(1)
+            fsm.sender.draw(1)
             fsm.inFrontOfWhom.draw(1)
         }
         return null

@@ -18,22 +18,22 @@ class LianMin : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSenderSkill
-        if (fsm?.whoseTurn?.findSkill(skillId) == null) return null
+        if (fsm?.sender?.findSkill(skillId) == null) return null
         if (fsm.messageCard.colors.contains(color.Black)) return null
-        if (fsm.whoseTurn.getSkillUseCount(skillId) > 0) return null
-        fsm.whoseTurn.addSkillUseCount(skillId)
+        if (fsm.sender.getSkillUseCount(skillId) > 0) return null
+        fsm.sender.addSkillUseCount(skillId)
         return ResolveResult(executeLianMin(fsm), true)
     }
 
     private data class executeLianMin(val fsm: ReceivePhaseSenderSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.whoseTurn, 15)
+            for (p in fsm.sender.game!!.players)
+                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender, 15)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.whoseTurn) {
+            if (player !== fsm.sender) {
                 log.error("不是你发技能的时机")
                 return null
             }
@@ -49,7 +49,7 @@ class LianMin : AbstractSkill(), TriggeredSkill {
                 log.error("错误的协议")
                 return null
             }
-            val r = fsm.whoseTurn
+            val r = fsm.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 return null
@@ -101,7 +101,7 @@ class LianMin : AbstractSkill(), TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeLianMin) return false
-            val p = fsm0.fsm.whoseTurn
+            val p = fsm0.fsm.sender
             for (target in arrayOf(p, fsm0.fsm.inFrontOfWhom)) {
                 if (!target.alive || p.isEnemy(target)) continue
                 val card = target.messageCards.find { it.colors.contains(color.Black) } ?: continue
