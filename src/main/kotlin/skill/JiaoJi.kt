@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
+import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
@@ -59,8 +60,8 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
         }
         log.info("${r}对${target}发动了[交际]，抽取了${cards.contentToString()}")
         r.cards.addAll(cards)
-        val black = r.messageCards.count { it.colors.contains(color.Black) }
-        val needReturnCount = (cards.size - black).coerceAtLeast(0)
+        val black = r.messageCards.count(color.Black)
+        val needReturnCount = (cards.size - black).coerceAtLeast(0)..cards.size
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_jiao_ji_a_toc.newBuilder()
@@ -71,35 +72,29 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
                 } else {
                     builder.unknownCardCount = cards.size
                 }
-                if (needReturnCount > 0) {
-                    builder.waitingSecond = 15
-                    if (p === r) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_jiao_ji_b_tos.newBuilder().setSeq(seq2)
-                                for (c in r.cards) {
-                                    if (builder2.cardIdsCount >= needReturnCount) break
-                                    builder2.addCardIds(c.id)
-                                }
-                                g.tryContinueResolveProtocol(r, builder2.build())
+                builder.waitingSecond = 15
+                if (p === r) {
+                    val seq2: Int = p.seq
+                    builder.seq = seq2
+                    p.timeout = GameExecutor.post(g, {
+                        if (p.checkSeq(seq2)) {
+                            val builder2 = skill_jiao_ji_b_tos.newBuilder().setSeq(seq2)
+                            for (c in r.cards) {
+                                if (builder2.cardIdsCount >= needReturnCount.first) break
+                                builder2.addCardIds(c.id)
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
+                            g.tryContinueResolveProtocol(r, builder2.build())
+                        }
+                    }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                 }
                 p.send(builder.build())
             }
-        }
-        if (needReturnCount == 0) {
-            g.continueResolve()
-            return
         }
         if (r is RobotPlayer) {
             GameExecutor.post(g, {
                 val builder2 = skill_jiao_ji_b_tos.newBuilder()
                 for (c in r.cards) {
-                    if (builder2.cardIdsCount >= needReturnCount) break
+                    if (builder2.cardIdsCount >= needReturnCount.first) break
                     builder2.addCardIds(c.id)
                 }
                 g.tryContinueResolveProtocol(r, builder2.build())
@@ -108,7 +103,7 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
         g.resolve(executeJiaoJi(fsm, target, needReturnCount))
     }
 
-    private data class executeJiaoJi(val fsm: MainPhaseIdle, val target: Player, val needReturnCount: Int) :
+    private data class executeJiaoJi(val fsm: MainPhaseIdle, val target: Player, val needReturnCount: IntRange) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             return null
@@ -123,7 +118,7 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
                 log.error("错误的协议")
                 return null
             }
-            if (message.cardIdsCount != needReturnCount) {
+            if (message.cardIdsCount !in needReturnCount) {
                 log.error("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
                 return null
             }
@@ -133,7 +128,7 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 return null
             }
-            val cards = Array(needReturnCount) {
+            val cards = Array(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     log.error("没有这张卡")
