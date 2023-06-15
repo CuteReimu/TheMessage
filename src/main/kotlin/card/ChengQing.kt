@@ -109,17 +109,9 @@ class ChengQing : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
             if (player.game!!.qiangLingTypes.contains(card_type.Cheng_Qing)) return false
-            val playerAndCards = ArrayList<PlayerAndCard>()
-            val identity = player.identity
-            for (p in player.game!!.players) {
-                if ((p === player || identity != color.Black && identity == p!!.identity) && p.alive) {
-                    for (c in p.messageCards) {
-                        if (c.colors.contains(color.Black)) playerAndCards.add(PlayerAndCard(p, c))
-                    }
-                }
-            }
-            if (playerAndCards.isEmpty()) return false
-            val p = playerAndCards.random()
+            val p = player.game!!.players.filter { p -> p!!.alive && p.isPartnerOrSelf(player) }
+                .flatMap { p -> p!!.messageCards.filter(color.Black).map { c -> PlayerAndCard(p, c) } }
+                .randomOrNull() ?: return false
             GameExecutor.post(
                 player.game!!,
                 { card.execute(player.game!!, player, p.player, p.card.id) },

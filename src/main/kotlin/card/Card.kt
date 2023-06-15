@@ -156,3 +156,5 @@ abstract class Card {
 }
 
 fun Iterable<Card>.count(c: color) = count { c in it.colors }
+
+fun Iterable<Card>.filter(c: color) = filter { c in it.colors }
