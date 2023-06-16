@@ -87,7 +87,7 @@ class ShiTan : Card {
                         }
                     }
                 } else {
-                    g.deck.discard(this@ShiTan)
+                    g.deck.discard(this@ShiTan.getOriginCard())
                 }
                 MainPhaseIdle(r)
             } else {

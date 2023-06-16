@@ -79,7 +79,7 @@ class FengYunBianHuan : Card {
             val r = players.firstOrNull()
             if (r == null) {
                 mainPhaseIdle.player.game!!.deck.discard(*drawCards.toTypedArray())
-                mainPhaseIdle.player.game!!.deck.discard(card)
+                mainPhaseIdle.player.game!!.deck.discard(card.getOriginCard())
                 return ResolveResult(mainPhaseIdle, true)
             }
             for (player in r.game!!.players) {
