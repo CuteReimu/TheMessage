@@ -189,9 +189,9 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
 
     override fun notifySendPhase(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseIdle
-        val playerId = getAlternativeLocation(fsm.whoseTurn.location)
         val builder = notify_phase_toc.newBuilder()
-        builder.setCurrentPlayerId(playerId).currentPhase = Common.phase.Send_Phase
+        builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
+        builder.currentPhase = Common.phase.Send_Phase
         builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
         builder.waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
         builder.messageCardDir = fsm.dir
@@ -211,7 +211,7 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
                             break
                         }
                     }
-                    if (isLocked || fsm.inFrontOfWhom === fsm.whoseTurn) game!!.resolve(
+                    if (isLocked || fsm.inFrontOfWhom === fsm.sender) game!!.resolve(
                         OnChooseReceiveCard(
                             fsm.whoseTurn,
                             fsm.sender,

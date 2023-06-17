@@ -16,8 +16,8 @@ import org.apache.log4j.Logger
 data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
     override fun resolve(): ResolveResult {
         if (sendPhase.dir == direction.Up) {
-            return if (sendPhase.whoseTurn.alive) {
-                log.info("情报到达${sendPhase.whoseTurn}面前")
+            return if (sendPhase.sender.alive) {
+                log.info("情报到达${sendPhase.sender}面前")
                 ResolveResult(sendPhase.copy(inFrontOfWhom = sendPhase.sender), true)
             } else {
                 nextTurn()
@@ -51,6 +51,7 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
                     builder.messagePlayerId = player.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
                     builder.messageCardDir = sendPhase.dir
                     builder.messageCard = sendPhase.messageCard.toPbCard()
+                    builder.senderId = player.getAlternativeLocation(sendPhase.sender.location)
                     builder.waitingPlayerId = player.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
                     player.send(builder.build())
                 }
