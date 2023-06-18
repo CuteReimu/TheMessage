@@ -311,7 +311,7 @@ class Game private constructor(totalPlayerCount: Int) {
                 color.Black -> return false
                 it.identity -> {}
                 else -> {
-                    if (this.players.size != 4) // 四人局潜伏和军情会同时获胜
+                    if (this.players.size != 4 || it.identity == color.Black) // 四人局潜伏和军情会同时获胜
                         return false
                 }
             }
