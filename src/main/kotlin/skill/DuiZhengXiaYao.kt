@@ -68,9 +68,9 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val cache = hashMapOf<color, ArrayList<Card>>(
-                        Pair(color.Black, ArrayList()),
-                        Pair(color.Red, ArrayList()),
-                        Pair(color.Blue, ArrayList())
+                        color.Black to ArrayList(),
+                        color.Red to ArrayList(),
+                        color.Blue to ArrayList()
                     )
                     for (card in r.cards) {
                         for (color in card.colors) cache[color]!!.add(card)

@@ -246,51 +246,51 @@ class RobotPlayer : Player() {
         }
 
         private val aiSkillMainPhase = hashMapOf<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>>(
-            Pair(SkillId.XIN_SI_CHAO, BiPredicate { e, skill -> XinSiChao.ai(e, skill) }),
-            Pair(SkillId.GUI_ZHA, BiPredicate { e, skill -> GuiZha.ai(e, skill) }),
-            Pair(SkillId.JIAO_JI, BiPredicate { e, skill -> JiaoJi.ai(e, skill) }),
-            Pair(SkillId.JIN_BI, BiPredicate { e, skill -> JinBi.ai(e, skill) }),
-            Pair(SkillId.JI_BAN, BiPredicate { e, skill -> JiBan.ai(e, skill) }),
-            Pair(SkillId.BO_AI, BiPredicate { e, skill -> BoAi.ai(e, skill) }),
+            SkillId.XIN_SI_CHAO to BiPredicate { e, skill -> XinSiChao.ai(e, skill) },
+            SkillId.GUI_ZHA to BiPredicate { e, skill -> GuiZha.ai(e, skill) },
+            SkillId.JIAO_JI to BiPredicate { e, skill -> JiaoJi.ai(e, skill) },
+            SkillId.JIN_BI to BiPredicate { e, skill -> JinBi.ai(e, skill) },
+            SkillId.JI_BAN to BiPredicate { e, skill -> JiBan.ai(e, skill) },
+            SkillId.BO_AI to BiPredicate { e, skill -> BoAi.ai(e, skill) },
         )
         private val aiSkillFightPhase = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
-            Pair(SkillId.TOU_TIAN, BiPredicate { e, skill -> TouTian.ai(e, skill) }),
-            Pair(SkillId.JI_ZHI, BiPredicate { e, skill -> JiZhi.ai(e, skill) }),
-            Pair(SkillId.YI_HUA_JIE_MU, BiPredicate { e, skill -> YiHuaJieMu.ai(e, skill) }),
-            Pair(SkillId.JIE_DAO_SHA_REN, BiPredicate { e, skill -> JieDaoShaRen.ai(e, skill) }),
-            Pair(SkillId.GUANG_FA_BAO, BiPredicate { e, skill -> GuangFaBao.ai(e, skill) }),
-            Pair(SkillId.JI_SONG, BiPredicate { e, skill -> JiSong.ai(e, skill) }),
-            Pair(SkillId.MIAO_BI_QIAO_BIAN, BiPredicate { e, skill -> MiaoBiQiaoBian.ai(e, skill) }),
-            Pair(SkillId.JIN_KOU_YI_KAI, BiPredicate { e, skill -> JinKouYiKai.ai(e, skill) }),
-            Pair(SkillId.MIAO_SHOU, BiPredicate { e, skill -> MiaoShou.ai(e, skill) }),
-            Pair(SkillId.SOU_JI, BiPredicate { e, skill -> SouJi.ai(e, skill) }),
-            Pair(SkillId.DUI_ZHENG_XIA_YAO, BiPredicate { e, skill -> DuiZhengXiaYao.ai(e, skill) }),
-            Pair(SkillId.DU_JI, BiPredicate { e, skill -> DuJi.ai(e, skill) }),
+            SkillId.TOU_TIAN to BiPredicate { e, skill -> TouTian.ai(e, skill) },
+            SkillId.JI_ZHI to BiPredicate { e, skill -> JiZhi.ai(e, skill) },
+            SkillId.YI_HUA_JIE_MU to BiPredicate { e, skill -> YiHuaJieMu.ai(e, skill) },
+            SkillId.JIE_DAO_SHA_REN to BiPredicate { e, skill -> JieDaoShaRen.ai(e, skill) },
+            SkillId.GUANG_FA_BAO to BiPredicate { e, skill -> GuangFaBao.ai(e, skill) },
+            SkillId.JI_SONG to BiPredicate { e, skill -> JiSong.ai(e, skill) },
+            SkillId.MIAO_BI_QIAO_BIAN to BiPredicate { e, skill -> MiaoBiQiaoBian.ai(e, skill) },
+            SkillId.JIN_KOU_YI_KAI to BiPredicate { e, skill -> JinKouYiKai.ai(e, skill) },
+            SkillId.MIAO_SHOU to BiPredicate { e, skill -> MiaoShou.ai(e, skill) },
+            SkillId.SOU_JI to BiPredicate { e, skill -> SouJi.ai(e, skill) },
+            SkillId.DUI_ZHENG_XIA_YAO to BiPredicate { e, skill -> DuiZhengXiaYao.ai(e, skill) },
+            SkillId.DU_JI to BiPredicate { e, skill -> DuJi.ai(e, skill) },
         )
         private val aiSkillReceivePhase = hashMapOf<SkillId, Predicate<Fsm>>(
-            Pair(SkillId.JIN_SHEN, Predicate { fsm -> JinShen.ai(fsm) }),
-            Pair(SkillId.LIAN_MIN, Predicate { fsm -> LianMin.ai(fsm) }),
-            Pair(SkillId.MIAN_LI_CANG_ZHEN, Predicate { fsm -> MianLiCangZhen.ai(fsm) }),
-            Pair(SkillId.QI_HUO_KE_JU, Predicate { fsm -> QiHuoKeJu.ai(fsm) }),
-            Pair(SkillId.YI_YA_HUAN_YA, Predicate { fsm -> YiYaHuanYa.ai(fsm) }),
-            Pair(SkillId.JING_MENG, Predicate { fsm -> JingMeng.ai(fsm) }),
-            Pair(SkillId.JIAN_REN, Predicate { fsm -> JianRen.ai(fsm) }),
+            SkillId.JIN_SHEN to Predicate { fsm -> JinShen.ai(fsm) },
+            SkillId.LIAN_MIN to Predicate { fsm -> LianMin.ai(fsm) },
+            SkillId.MIAN_LI_CANG_ZHEN to Predicate { fsm -> MianLiCangZhen.ai(fsm) },
+            SkillId.QI_HUO_KE_JU to Predicate { fsm -> QiHuoKeJu.ai(fsm) },
+            SkillId.YI_YA_HUAN_YA to Predicate { fsm -> YiYaHuanYa.ai(fsm) },
+            SkillId.JING_MENG to Predicate { fsm -> JingMeng.ai(fsm) },
+            SkillId.JIAN_REN to Predicate { fsm -> JianRen.ai(fsm) },
         )
         private val aiMainPhase = hashMapOf<card_type, BiPredicate<MainPhaseIdle, Card>>(
-            Pair(card_type.Cheng_Qing, BiPredicate { e, card -> ChengQing.ai(e, card) }),
-            Pair(card_type.Li_You, BiPredicate { e, card -> LiYou.ai(e, card) }),
-            Pair(card_type.Ping_Heng, BiPredicate { e, card -> PingHeng.ai(e, card) }),
-            Pair(card_type.Shi_Tan, BiPredicate { e, card -> ShiTan.ai(e, card) }),
-            Pair(card_type.Wei_Bi, BiPredicate { e, card -> WeiBi.ai(e, card) }),
-            Pair(card_type.Feng_Yun_Bian_Huan, BiPredicate { e, card -> FengYunBianHuan.ai(e, card) }),
+            card_type.Cheng_Qing to BiPredicate { e, card -> ChengQing.ai(e, card) },
+            card_type.Li_You to BiPredicate { e, card -> LiYou.ai(e, card) },
+            card_type.Ping_Heng to BiPredicate { e, card -> PingHeng.ai(e, card) },
+            card_type.Shi_Tan to BiPredicate { e, card -> ShiTan.ai(e, card) },
+            card_type.Wei_Bi to BiPredicate { e, card -> WeiBi.ai(e, card) },
+            card_type.Feng_Yun_Bian_Huan to BiPredicate { e, card -> FengYunBianHuan.ai(e, card) },
         )
         private val aiSendPhase = hashMapOf<card_type, BiPredicate<SendPhaseIdle, Card>>(
-            Pair(card_type.Po_Yi, BiPredicate { e, card -> PoYi.ai(e, card) }),
+            card_type.Po_Yi to BiPredicate { e, card -> PoYi.ai(e, card) },
         )
         private val aiFightPhase = hashMapOf<card_type, BiPredicate<FightPhaseIdle, Card>>(
-            Pair(card_type.Diao_Bao, BiPredicate { e, card -> DiaoBao.ai(e, card) }),
-            Pair(card_type.Jie_Huo, BiPredicate { e, card -> JieHuo.ai(e, card) }),
-            Pair(card_type.Wu_Dao, BiPredicate { e, card -> WuDao.ai(e, card) }),
+            card_type.Diao_Bao to BiPredicate { e, card -> DiaoBao.ai(e, card) },
+            card_type.Jie_Huo to BiPredicate { e, card -> JieHuo.ai(e, card) },
+            card_type.Wu_Dao to BiPredicate { e, card -> WuDao.ai(e, card) },
         )
     }
 }
