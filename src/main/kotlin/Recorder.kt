@@ -2,9 +2,9 @@ package com.fengsheng
 
 import com.fengsheng.phase.StartGame
 import com.fengsheng.phase.WaitForSelectRole
-import com.fengsheng.protos.Errcode
+import com.fengsheng.protos.Errcode.error_code.*
 import com.fengsheng.protos.Errcode.error_code_toc
-import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Record.record_file
 import com.fengsheng.protos.Record.recorder_line
 import com.google.protobuf.ByteString
@@ -26,6 +26,7 @@ class Recorder {
     @Volatile
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
+        if ("reconnect_toc" == protoName) return
         if (!loading && ("wait_for_select_role_toc" == protoName || list.isNotEmpty())) list.add(
             recorder_line.newBuilder().setNanoTime(System.nanoTime()).setProtoName(protoName)
                 .setMessageBuf(ByteString.copyFrom(messageBuf)).build()
@@ -55,7 +56,7 @@ class Recorder {
             try {
                 DataOutputStream(FileOutputStream("records/$fileName")).use { os ->
                     os.write(recordFile.toByteArray())
-                    if (notify) p.send(Fengsheng.save_record_success_toc.newBuilder().setRecordId(recordId).build())
+                    if (notify) p.send(save_record_success_toc.newBuilder().setRecordId(recordId).build())
                     log.info("save record success: $recordId")
                 }
             } catch (e: IOException) {
@@ -69,7 +70,7 @@ class Recorder {
         if (!file.exists() || !file.isDirectory) {
             player.send(
                 error_code_toc.newBuilder()
-                    .setCode(Errcode.error_code.record_not_exists).build()
+                    .setCode(record_not_exists).build()
             )
             return
         }
@@ -77,7 +78,7 @@ class Recorder {
         if (files.isNullOrEmpty()) {
             player.send(
                 error_code_toc.newBuilder()
-                    .setCode(Errcode.error_code.record_not_exists).build()
+                    .setCode(record_not_exists).build()
             )
             return
         }
@@ -91,7 +92,7 @@ class Recorder {
                     if (version < recordVersion) {
                         player.send(
                             error_code_toc.newBuilder()
-                                .setCode(Errcode.error_code.record_version_not_match)
+                                .setCode(record_version_not_match)
                                 .addIntParams(recordVersion.toLong()).build()
                         )
                         loading = false
@@ -106,7 +107,7 @@ class Recorder {
                 log.error("load record failed", e)
                 player.send(
                     error_code_toc.newBuilder()
-                        .setCode(Errcode.error_code.load_record_failed).build()
+                        .setCode(load_record_failed).build()
                 )
                 loading = false
             }
@@ -132,7 +133,7 @@ class Recorder {
                 return
             }
             if (currentIndex >= list.size) {
-                player.send(Fengsheng.display_record_end_toc.getDefaultInstance())
+                player.send(display_record_end_toc.getDefaultInstance())
                 list = ArrayList()
                 loading = false
                 break
@@ -140,7 +141,7 @@ class Recorder {
             val line = list[currentIndex]
             player.send(line.protoName, line.messageBuf.toByteArray(), true)
             if (++currentIndex >= list.size) {
-                player.send(Fengsheng.display_record_end_toc.getDefaultInstance())
+                player.send(display_record_end_toc.getDefaultInstance())
                 list = ArrayList()
                 loading = false
                 break
@@ -158,10 +159,12 @@ class Recorder {
     }
 
     fun reconnect(player: HumanPlayer) {
+        player.send(reconnect_toc.newBuilder().setIsEnd(false).build())
         for (i in list.indices) {
             val line = list[i]
             player.send(line.protoName, line.messageBuf.toByteArray(), i == list.size - 1)
         }
+        player.send(reconnect_toc.newBuilder().setIsEnd(true).build())
     }
 
     fun loading(): Boolean {

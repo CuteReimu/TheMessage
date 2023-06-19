@@ -2,6 +2,10 @@ syntax = "proto3";
 option java_package = "com.fengsheng.protos";
 import "common.proto";
 
+message reconnect_toc {
+  bool is_end = 1; // false-开始，true-结束
+}
+
 message pause_record_tos {
   bool pause = 1; // true-暂停，false-继续
 }
