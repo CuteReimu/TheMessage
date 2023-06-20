@@ -37,7 +37,7 @@ class JiangHuLing : TriggeredSkill {
                     builder.playerId = player.getAlternativeLocation(r.location)
                     builder.waitingSecond = 15
                     if (player === r) {
-                        val seq2: Int = player.seq
+                        val seq2 = player.seq
                         builder.seq = seq2
                         GameExecutor.post(
                             player.game!!,
@@ -253,17 +253,10 @@ class JiangHuLing : TriggeredSkill {
         fun resetJiangHuLing(game: Game) {
             for (p in game.players) {
                 val skills = p!!.skills
-                var containsJiangHuLing = false
-                for (skill in skills) {
-                    if (skill.skillId == SkillId.JIANG_HU_LING2) {
-                        containsJiangHuLing = true
-                        break
-                    }
-                }
-                if (containsJiangHuLing) {
+                if (skills.any { it.skillId == SkillId.JIANG_HU_LING2 }) {
                     p.skills = skills.filterNot { it.skillId == SkillId.JIANG_HU_LING2 }.toTypedArray()
                     val listeningSkills = game.listeningSkills
-                    listeningSkills.removeAt(listeningSkills.indexOfLast { it is JiangHuLing2 })
+                    listeningSkills.removeAt(listeningSkills.indexOfLast { it.skillId == SkillId.JIANG_HU_LING2 })
                 }
             }
         }

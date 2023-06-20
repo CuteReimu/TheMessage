@@ -74,7 +74,7 @@ class JianRen : AbstractSkill(), TriggeredSkill {
     private data class executeJianRenB(val fsm: ReceivePhaseReceiverSkill, val cards: MutableList<Card>) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = fsm.inFrontOfWhom
-            val autoChoose = chooseBlackMessageCard(r)
+            val autoChoose = r.chooseBlackMessageCard()
             val card = cards[0]
             val isBlack = card.colors.contains(color.Black)
             if (isBlack) {
@@ -174,12 +174,12 @@ class JianRen : AbstractSkill(), TriggeredSkill {
     }
 
     companion object {
-        private fun chooseBlackMessageCard(r: Player): PlayerAndCard? {
-            for (card in r.messageCards) {
-                if (card.colors.contains(color.Black)) return PlayerAndCard(r, card)
+        private fun Player.chooseBlackMessageCard(): PlayerAndCard? {
+            for (card in messageCards) {
+                if (card.colors.contains(color.Black)) return PlayerAndCard(this, card)
             }
-            for (p in r.game!!.players) {
-                if (p !== r && p!!.alive) {
+            for (p in game!!.players) {
+                if (p !== this && p!!.alive) {
                     for (card in p.messageCards) {
                         if (card.colors.contains(color.Black)) return PlayerAndCard(p, card)
                     }

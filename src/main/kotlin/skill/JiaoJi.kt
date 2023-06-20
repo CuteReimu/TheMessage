@@ -9,7 +9,6 @@ import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 裴玲技能【交际】：出牌阶段限一次，你可以抽取一名角色的最多两张手牌。然后将等量手牌交给该角色。你每收集一张黑色情报，便可以少交一张牌。
@@ -56,7 +55,7 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
             cards = target.cards.toTypedArray()
             target.cards.clear()
         } else {
-            cards = Array(2) { target.deleteCard(target.cards[Random.nextInt(target.cards.size)].id)!! }
+            cards = Array(2) { target.deleteCard(target.cards.random().id)!! }
         }
         log.info("${r}对${target}发动了[交际]，抽取了${cards.contentToString()}")
         r.cards.addAll(cards)
@@ -166,12 +165,9 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.player
             if (player.getSkillUseCount(SkillId.JIAO_JI) > 0) return false
-            val players: MutableList<Player> = ArrayList()
-            for (p in player.game!!.players) {
-                if (p !== player && p!!.alive && p.cards.isNotEmpty()) players.add(p)
-            }
-            if (players.isEmpty()) return false
-            val target = players.random()
+            val players = player.game!!.players.filter { it !== player && it!!.alive && it.cards.isNotEmpty() }
+            val target = players.filter { player.isEnemy(it!!) }.randomOrNull()
+                ?: players.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_jiao_ji_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
