@@ -79,18 +79,13 @@ class Deck(private val game: Game) {
         cards.addAll(DefaultDeck)
         if (totalPlayerCount < 4) {
             cards.subList(0, 18).clear()
-        } else if (totalPlayerCount == 4 || totalPlayerCount == 5) {
+        } else if (totalPlayerCount <= 8) {
             cards.removeAt(16)
             cards.removeAt(13)
             cards.removeAt(11)
             cards.removeAt(8)
             cards.removeAt(3)
             cards.removeAt(0)
-        } else if (totalPlayerCount <= 8) {
-            cards.removeAt(16)
-            cards.removeAt(13)
-            cards.removeAt(11)
-            cards.removeAt(8)
         }
         nextId = DefaultDeck.last().id
         cards.shuffle()
@@ -200,18 +195,18 @@ class Deck(private val game: Game) {
             WuDao(100, listOf(color.Red, color.Black), direction.Right, false),
             FengYunBianHuan(101, listOf(color.Black), direction.Up, false),
             FengYunBianHuan(102, listOf(color.Black), direction.Up, false),
-//            MiLing(
-//                103, listOf(color.Blue, color.Black), direction.Up, true,
-//                listOf(color.Blue, color.Black, color.Red)
-//            ),
-//            MiLing(104, listOf(color.Blue), direction.Right, false, listOf(color.Black, color.Blue, color.Red)),
-//            MiLing(105, listOf(color.Blue), direction.Left, false, listOf(color.Blue, color.Red, color.Black)),
-//            MiLing(
-//                106, listOf(color.Red, color.Black), direction.Up, true,
-//                listOf(color.Red, color.Black, color.Blue)
-//            ),
-//            MiLing(107, listOf(color.Red), direction.Left, false, listOf(color.Blue, color.Red, color.Black)),
-//            MiLing(108, listOf(color.Red), direction.Right, false, listOf(color.Red, color.Blue, color.Black)),
+            MiLing(
+                103, listOf(color.Blue, color.Black), direction.Up, true,
+                listOf(color.Blue, color.Black, color.Red)
+            ),
+            MiLing(104, listOf(color.Blue), direction.Right, false, listOf(color.Black, color.Blue, color.Red)),
+            MiLing(105, listOf(color.Blue), direction.Left, false, listOf(color.Blue, color.Red, color.Black)),
+            MiLing(
+                106, listOf(color.Red, color.Black), direction.Up, true,
+                listOf(color.Red, color.Black, color.Blue)
+            ),
+            MiLing(107, listOf(color.Red), direction.Left, false, listOf(color.Blue, color.Red, color.Black)),
+            MiLing(108, listOf(color.Red), direction.Right, false, listOf(color.Red, color.Blue, color.Black)),
         )
     }
 }
