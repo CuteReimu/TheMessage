@@ -24,10 +24,24 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
      */
     var timeout: Timeout? = null
     private var timeoutCount = 0
-    private val recorder = Recorder()
+    private var recorder = Recorder()
     var device: String? = null
     private var autoPlay = false
     val limiter = Limiter(10, 100, TimeUnit.MILLISECONDS)
+
+    /**
+     * 游戏结束重置
+     */
+    override fun reset() {
+        super.reset()
+        seq = 0
+        timeout?.cancel()
+        timeout = null
+        timeoutCount = 0
+        recorder = Recorder()
+        device = null
+        autoPlay = false
+    }
 
     /**
      * 向玩家客户端发送协议
@@ -355,14 +369,14 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
 
     override fun incrSeq() {
         seq++
-        if (timeout != null) {
-            if (timeout!!.isExpired) {
+        timeout?.also { timeout ->
+            if (timeout.isExpired) {
                 if (!autoPlay && ++timeoutCount >= 3) setAutoPlay(true)
             } else {
-                timeout!!.cancel()
+                timeout.cancel()
             }
-            timeout = null
         }
+        timeout = null
     }
 
     fun clearTimeoutCount() {

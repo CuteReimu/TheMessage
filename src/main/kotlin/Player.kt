@@ -31,6 +31,16 @@ abstract class Player protected constructor() {
         }
     private val skillUseCount = HashMap<SkillId, Int>()
 
+    open fun reset() {
+        game = null
+        cards.clear()
+        messageCards.clear()
+        alive = true
+        lose = false
+        dieJustNow = false
+        skillUseCount.clear()
+    }
+
     fun deleteCard(id: Int): Card? {
         val index = cards.indexOfFirst { c -> c.id == id }
         return if (index >= 0) cards.removeAt(index) else null
