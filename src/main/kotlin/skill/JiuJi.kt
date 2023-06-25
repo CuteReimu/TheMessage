@@ -4,7 +4,7 @@ import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.OnUseCard
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.skill_jiu_ji_a_toc
 import org.apache.log4j.Logger
 
@@ -15,11 +15,12 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.JIU_JI
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard
-        if (fsm == null || fsm.askWhom.findSkill(skillId) == null || !fsm.askWhom.alive) return null
-        if (fsm.cardType != card_type.Shi_Tan && fsm.cardType != card_type.Wei_Bi && fsm.cardType != card_type.Li_You) return null
-        if (fsm.targetPlayer != fsm.askWhom) return null
-        if (fsm.targetPlayer.roleFaceUp) return null
+        val fsm = g.fsm as? OnUseCard ?: return null
+        fsm.askWhom.findSkill(skillId) != null || return null
+        fsm.askWhom.alive || return null
+        fsm.cardType in cardTypes || return null
+        fsm.targetPlayer === fsm.askWhom || return null
+        !fsm.askWhom.roleFaceUp || return null
         fsm.askWhom.addSkillUseCount(skillId)
         log.info("${fsm.askWhom}发动了[就计]")
         for (p in g.players) {
@@ -34,5 +35,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
 
     companion object {
         private val log = Logger.getLogger(JiuJi::class.java)
+
+        private val cardTypes = listOf(Shi_Tan, Wei_Bi, Li_You)
     }
 }

@@ -293,8 +293,7 @@ class Game private constructor(totalPlayerCount: Int) {
      */
     fun dealListeningSkill(): ResolveResult? {
         for (skill in listeningSkills) {
-            val result = skill.execute(this)
-            if (result != null) return result
+            skill.execute(this)?.let { return it }
         }
         return null
     }

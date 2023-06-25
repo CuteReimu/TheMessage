@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.phase.ReceivePhaseReceiverSkill
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -36,7 +36,7 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
                 log.error("不是你发技能的时机")
                 return null
             }
-            if (message is Fengsheng.end_receive_phase_tos) {
+            if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
                     log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                     return null

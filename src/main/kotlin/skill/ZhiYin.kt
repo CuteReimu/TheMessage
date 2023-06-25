@@ -4,7 +4,8 @@ import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.ReceivePhaseReceiverSkill
-import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.Blue
+import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.skill_zhi_yin_toc
 import org.apache.log4j.Logger
 
@@ -15,11 +16,12 @@ class ZhiYin : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.ZHI_YIN
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseReceiverSkill
-        if (fsm == null || fsm.inFrontOfWhom.findSkill(skillId) == null || !fsm.inFrontOfWhom.alive) return null
-        if (fsm.inFrontOfWhom.getSkillUseCount(skillId) > 0) return null
+        val fsm = g.fsm as? ReceivePhaseReceiverSkill ?: return null
+        fsm.inFrontOfWhom.findSkill(skillId) != null || return null
+        fsm.inFrontOfWhom.alive || return null
+        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         val colors = fsm.messageCard.colors
-        if (!colors.contains(color.Red) && !colors.contains(color.Blue)) return null
+        Red in colors || Blue in colors || return null
         fsm.inFrontOfWhom.addSkillUseCount(skillId)
         log.info("${fsm.inFrontOfWhom}发动了[知音]")
         for (p in g.players) {
