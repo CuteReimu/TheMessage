@@ -27,7 +27,7 @@ class Recorder {
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
         if ("reconnect_toc" == protoName) return
-        if (!loading && ("wait_for_select_role_toc" == protoName || list.isNotEmpty())) list.add(
+        if (!loading && ("init_toc" == protoName || list.isNotEmpty())) list.add(
             recorder_line.newBuilder().setNanoTime(System.nanoTime()).setProtoName(protoName)
                 .setMessageBuf(ByteString.copyFrom(messageBuf)).build()
         )

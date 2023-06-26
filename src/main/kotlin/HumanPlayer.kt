@@ -117,8 +117,10 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
 
     override fun init() {
         super.init()
-        val builder =
-            init_toc.newBuilder().setPlayerCount(game!!.players.size).setIdentity(identity).setSecretTask(secretTask)
+        val builder = init_toc.newBuilder()
+        builder.playerCount = game!!.players.size
+        builder.identity = identity
+        builder.secretTask = secretTask
         var l = location
         do {
             builder.addRoles(if (game!!.players[l]!!.roleFaceUp || l == location) game!!.players[l]!!.role else Common.role.unknown)
