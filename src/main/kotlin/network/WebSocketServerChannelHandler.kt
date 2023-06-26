@@ -23,7 +23,6 @@ import java.net.SocketException
 class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame>() {
     @Throws(Exception::class)
     public override fun channelRead0(ctx: ChannelHandlerContext, webSocketFrame: WebSocketFrame) {
-        log.debug("收到消息$webSocketFrame")
         if (webSocketFrame !is BinaryWebSocketFrame) {
             log.debug("仅支持二进制消息，不支持文本消息")
             throw UnsupportedOperationException("${webSocketFrame.javaClass.name} frame types not supported")
