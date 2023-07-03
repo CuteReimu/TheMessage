@@ -8,12 +8,13 @@ import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Record.record_file
 import com.fengsheng.protos.Record.recorder_line
 import com.google.protobuf.ByteString
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.apache.log4j.Logger
 import java.io.*
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class Recorder {
@@ -21,7 +22,8 @@ class Recorder {
     private var currentIndex = 0
 
     @Volatile
-    private var loading = false
+    var loading = false
+        private set
 
     @Volatile
     private var pausing = false
@@ -50,7 +52,7 @@ class Recorder {
         builder.clientVersion = Config.ClientVersion
         builder.addAllLines(list)
         val recordFile = builder.build()
-        saveLoadPool.submit {
+        saveLoadPool.trySend {
             val file = File("records/")
             if (!file.exists() && !file.isDirectory && !file.mkdir()) log.error("make dir failed: ${file.name}")
             try {
@@ -68,23 +70,17 @@ class Recorder {
     fun load(version: Int, recordId: String, player: HumanPlayer) {
         val file = File("records/")
         if (!file.exists() || !file.isDirectory) {
-            player.send(
-                error_code_toc.newBuilder()
-                    .setCode(record_not_exists).build()
-            )
+            player.send(error_code_toc.newBuilder().setCode(record_not_exists).build())
             return
         }
         val files = if (recordId.length == 6) file.listFiles { _, name -> name.endsWith("-$recordId") } else null
         if (files.isNullOrEmpty()) {
-            player.send(
-                error_code_toc.newBuilder()
-                    .setCode(record_not_exists).build()
-            )
+            player.send(error_code_toc.newBuilder().setCode(record_not_exists).build())
             return
         }
         val recordFile = files[0]
         loading = true
-        saveLoadPool.submit {
+        saveLoadPool.trySend {
             try {
                 DataInputStream(FileInputStream(recordFile)).use { `is` ->
                     val pb = record_file.parseFrom(`is`.readAllBytes())
@@ -96,7 +92,7 @@ class Recorder {
                                 .addIntParams(recordVersion.toLong()).build()
                         )
                         loading = false
-                        return@submit
+                        return@trySend
                     }
                     list = pb.linesList
                     currentIndex = 0
@@ -167,13 +163,19 @@ class Recorder {
         player.send(reconnect_toc.newBuilder().setIsEnd(true).build())
     }
 
-    fun loading(): Boolean {
-        return loading
-    }
-
     companion object {
         private val log = Logger.getLogger(Recorder::class.java)
-        private val saveLoadPool = Executors.newSingleThreadExecutor()
+        private val saveLoadPool = Channel<() -> Unit>(Channel.UNLIMITED)
+
+        init {
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch {
+                while (true) {
+                    val f = saveLoadPool.receive()
+                    withContext(Dispatchers.IO) { f() }
+                }
+            }
+        }
     }
 
     private fun String.addLeadingZero(totalLen: Int): String {

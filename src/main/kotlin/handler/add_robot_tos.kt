@@ -21,16 +21,16 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             r.send(error_code_toc.newBuilder().setCode(robot_not_allowed).build())
             return
         }
-        val count = Statistics.getPlayerGameCount(r.playerName)
-        if (count.winCount <= 0) {
-            val now = System.currentTimeMillis()
-            val startTrialTime: Long = Statistics.getTrialStartTime(r.device!!)
-            if (startTrialTime != 0L && now - 5 * 24 * 3600 * 1000 >= startTrialTime) {
-                r.send(error_code_toc.newBuilder().setCode(robot_not_allowed).build())
-                return
-            }
-            Statistics.setTrialStartTime(r.device!!, now)
-        }
+//        val count = Statistics.getPlayerGameCount(r.playerName)
+//        if (count.winCount <= 0) {
+//            val now = System.currentTimeMillis()
+//            val startTrialTime: Long = Statistics.getTrialStartTime(r.device!!)
+//            if (startTrialTime != 0L && now - 5 * 24 * 3600 * 1000 >= startTrialTime) {
+//                r.send(error_code_toc.newBuilder().setCode(robot_not_allowed).build())
+//                return
+//            }
+//            Statistics.setTrialStartTime(r.device!!, now)
+//        }
         val robotPlayer: Player = RobotPlayer()
         robotPlayer.playerName = Player.randPlayerName(r.game!!)
         robotPlayer.game = r.game

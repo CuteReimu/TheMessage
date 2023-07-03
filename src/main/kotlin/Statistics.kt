@@ -3,6 +3,8 @@ package com.fengsheng
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.get_record_list_toc
 import com.fengsheng.skill.RoleCache
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.apache.log4j.Logger
 import java.io.*
 import java.nio.charset.StandardCharsets
@@ -11,19 +13,29 @@ import java.security.NoSuchAlgorithmException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
 object Statistics {
-    private val pool = Executors.newSingleThreadExecutor()
+    private val pool = Channel<() -> Unit>(Channel.UNLIMITED)
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     private val playerInfoMap = ConcurrentHashMap<String, PlayerInfo>()
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
     private val trialStartTime = ConcurrentHashMap<String, Long>()
+
+    init {
+        @OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch {
+            while (true) {
+                val f = pool.receive()
+                withContext(Dispatchers.IO) { f() }
+            }
+        }
+    }
+
     fun add(records: List<Record>) {
-        pool.submit {
+        pool.trySend {
             try {
                 val time = dateFormat.format(Date())
                 val sb = StringBuilder()
@@ -43,7 +55,7 @@ object Statistics {
     }
 
     fun addPlayerGameCount(playerGameResultList: List<PlayerGameResult>) {
-        pool.submit {
+        pool.trySend {
             try {
                 var win = 0
                 var game = 0
@@ -77,7 +89,7 @@ object Statistics {
             return null
         }
         val playerInfo = playerInfoMap.getOrPut(name) {
-            pool.submit(::savePlayerInfo)
+            pool.trySend(::savePlayerInfo)
             PlayerInfo(name, deviceId, password, 0, 0)
         }.let {
             return@let if (it.password.isEmpty() && password.isNotEmpty()) it.copy(password = password) else it
@@ -163,7 +175,7 @@ object Statistics {
     }
 
     fun setTrialStartTime(device: String, time: Long) {
-        pool.submit {
+        pool.trySend {
             try {
                 trialStartTime[device] = time
                 saveTrials()
@@ -174,7 +186,7 @@ object Statistics {
     }
 
     fun displayRecordList(player: HumanPlayer) {
-        pool.submit {
+        pool.trySend {
             val builder = get_record_list_toc.newBuilder()
             val dir = File("records")
             val files = dir.list()

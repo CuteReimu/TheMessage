@@ -75,7 +75,7 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
     }
 
     val isLoadingRecord: Boolean
-        get() = recorder.loading()
+        get() = recorder.loading
 
     fun pauseRecord(pause: Boolean) {
         recorder.pause(pause)
