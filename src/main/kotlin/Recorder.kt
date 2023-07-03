@@ -16,6 +16,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 
 class Recorder {
     private var list: MutableList<recorder_line> = ArrayList()
@@ -173,6 +174,23 @@ class Recorder {
                 while (true) {
                     val f = saveLoadPool.receive()
                     withContext(Dispatchers.IO) { f() }
+                }
+            }
+
+            fixedRateTimer(daemon = true, period = 600000) {
+                val now = Date()
+                now.time -= 14 * 24 * 3600 * 1000
+                val localDateTime = now.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+                val timeStr = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"))
+                val file = File("records/")
+                if (!file.exists() || !file.isDirectory) {
+                    return@fixedRateTimer
+                }
+                val l = "yyyy-MM-dd-HH-mm-ss".length
+                file.listFiles()?.forEach {
+                    val fileName = it.name
+                    if (fileName.length > l && fileName.substring(0, l) <= timeStr)
+                        it.delete()
                 }
             }
         }
