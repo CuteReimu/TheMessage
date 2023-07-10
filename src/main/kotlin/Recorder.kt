@@ -29,8 +29,8 @@ class Recorder {
     @Volatile
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
-        if ("reconnect_toc" == protoName) return
-        if (!loading && ("init_toc" == protoName || list.isNotEmpty())) list.add(
+        if ("reconnect_toc" == protoName || "heart_toc" == protoName) return
+        if (!loading && ("wait_for_select_role_toc" == protoName || list.isNotEmpty())) list.add(
             recorder_line.newBuilder().setNanoTime(System.nanoTime()).setProtoName(protoName)
                 .setMessageBuf(ByteString.copyFrom(messageBuf)).build()
         )
@@ -87,11 +87,10 @@ class Recorder {
                     val pb = record_file.parseFrom(`is`.readAllBytes())
                     val recordVersion = pb.clientVersion
                     if (version < recordVersion) {
-                        player.send(
-                            error_code_toc.newBuilder()
-                                .setCode(record_version_not_match)
-                                .addIntParams(recordVersion.toLong()).build()
-                        )
+                        val builder = error_code_toc.newBuilder()
+                        builder.code = record_version_not_match
+                        builder.addIntParams(recordVersion.toLong())
+                        player.send(builder.build())
                         loading = false
                         return@trySend
                     }
@@ -136,6 +135,10 @@ class Recorder {
                 break
             }
             val line = list[currentIndex]
+            if ("wait_for_select_role_toc" == line.protoName || "select_role_toc" == line.protoName) {
+                currentIndex++
+                continue
+            }
             player.send(line.protoName, line.messageBuf.toByteArray(), true)
             if (++currentIndex >= list.size) {
                 player.send(display_record_end_toc.getDefaultInstance())
