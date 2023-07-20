@@ -17,20 +17,10 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
     override fun resolve(): ResolveResult? {
         for (player in game.players) {
             if (player is HumanPlayer) {
-                val builder = wait_for_select_role_toc.newBuilder()
-                builder.playerCount = game.players.size
-                builder.identity = player.identity
-                builder.secretTask = player.secretTask
-                builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(role.unknown) })
-                builder.waitingSecond = 30
-                player.send(builder.build())
-                player.timeout =
-                    GameExecutor.post(game, {
-                        game.tryContinueResolveProtocol(
-                            player,
-                            select_role_tos.newBuilder().setRole(builder.getRoles(0)).build()
-                        )
-                    }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                if (player.needWaitLoad)
+                    player.send(game_start_toc.getDefaultInstance())
+                else
+                    notifySelectRole(player)
             } else {
                 val prefer = if (player!!.identity == color.Black) blackPrefer else redBluePrefer
                 val disgust = if (player.identity == color.Black) blackDisgust else redBlueDisgust
@@ -67,6 +57,23 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         (player as? HumanPlayer)?.send(select_role_toc.newBuilder().setRole(roleSkillsData.role).build())
         for (role in selected) if (role == null) return null
         return ResolveResult(StartGame(game), true)
+    }
+
+    fun notifySelectRole(player: HumanPlayer) {
+        val builder = wait_for_select_role_toc.newBuilder()
+        builder.playerCount = game.players.size
+        builder.identity = player.identity
+        builder.secretTask = player.secretTask
+        builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(role.unknown) })
+        builder.waitingSecond = 30
+        player.send(builder.build())
+        player.timeout =
+            GameExecutor.post(game, {
+                game.tryContinueResolveProtocol(
+                    player,
+                    select_role_tos.newBuilder().setRole(builder.getRoles(0)).build()
+                )
+            }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
     }
 
     companion object {

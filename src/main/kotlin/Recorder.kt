@@ -97,14 +97,14 @@ class Recorder {
                     list = pb.linesList
                     currentIndex = 0
                     log.info("load record success: $recordId")
-                    displayNext(player)
+                    if (player.needWaitLoad)
+                        player.send(game_start_toc.getDefaultInstance())
+                    else
+                        displayNext(player)
                 }
             } catch (e: IOException) {
                 log.error("load record failed", e)
-                player.send(
-                    error_code_toc.newBuilder()
-                        .setCode(load_record_failed).build()
-                )
+                player.send(error_code_toc.newBuilder().setCode(load_record_failed).build())
                 loading = false
             }
         }
@@ -114,18 +114,14 @@ class Recorder {
         pausing = pause
     }
 
-    private fun displayNext(player: HumanPlayer) {
+    fun displayNext(player: HumanPlayer) {
         while (true) {
             if (!player.isActive) {
                 loading = false
                 return
             }
             if (pausing) {
-                GameExecutor.TimeWheel.newTimeout(
-                    { displayNext(player) },
-                    2,
-                    TimeUnit.SECONDS
-                )
+                GameExecutor.TimeWheel.newTimeout({ displayNext(player) }, 2, TimeUnit.SECONDS)
                 return
             }
             if (currentIndex >= list.size) {

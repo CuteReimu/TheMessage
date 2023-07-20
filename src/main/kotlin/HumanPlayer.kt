@@ -15,7 +15,11 @@ import io.netty.util.Timeout
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
-class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> Any) : Player() {
+class HumanPlayer(
+    var channel: Channel,
+    val needWaitLoad: Boolean = false,
+    val newBodyFun: (String, ByteArray) -> Any
+) : Player() {
     var seq = 0
         private set
 
@@ -76,6 +80,10 @@ class HumanPlayer(var channel: Channel, val newBodyFun: (String, ByteArray) -> A
 
     val isLoadingRecord: Boolean
         get() = recorder.loading
+
+    fun displayRecord() {
+        recorder.displayNext(this)
+    }
 
     fun pauseRecord(pause: Boolean) {
         recorder.pause(pause)

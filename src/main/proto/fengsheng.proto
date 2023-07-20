@@ -125,6 +125,15 @@ message leave_room_toc {
   uint32 position = 1;
 }
 
+// 通知客户端游戏开始了，可以加载场景了
+message game_start_toc {
+}
+
+// 通知服务器场景加载完了
+message game_init_finish_tos {
+  string record_id = 1; // 录像ID。如果不是播放录像而是开始游戏，则不传或者传空字符串。
+}
+
 // 等待客户端选角色
 message wait_for_select_role_toc {
   uint32        player_count = 1; // 玩家总人数（包括你）
