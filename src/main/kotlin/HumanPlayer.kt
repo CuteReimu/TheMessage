@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 class HumanPlayer(
     var channel: Channel,
-    val needWaitLoad: Boolean = false,
+    var needWaitLoad: Boolean = false,
     val newBodyFun: (String, ByteArray) -> Any
 ) : Player() {
     var seq = 0
@@ -32,6 +32,9 @@ class HumanPlayer(
     var device: String? = null
     private var autoPlay = false
     val limiter = Limiter(10, 100, TimeUnit.MILLISECONDS)
+
+    @Volatile
+    var isReconnecting = false
 
     /**
      * 游戏结束重置
@@ -90,6 +93,7 @@ class HumanPlayer(
     }
 
     fun reconnect() {
+        isReconnecting = false
         recorder.reconnect(this)
     }
 

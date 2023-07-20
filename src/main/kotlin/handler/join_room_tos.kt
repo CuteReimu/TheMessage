@@ -41,7 +41,12 @@ class join_room_tos : ProtoHandler {
                         }
                         Game.exchangePlayer(oldPlayer, player)
                         oldPlayer.setAutoPlay(false)
-                        oldPlayer.reconnect()
+                        if (oldPlayer.needWaitLoad) {
+                            oldPlayer.isReconnecting = true
+                            player.send(Fengsheng.game_start_toc.getDefaultInstance())
+                        } else {
+                            oldPlayer.reconnect()
+                        }
                         log.info("${oldPlayer}断线重连成功")
                         return@call false
                     }

@@ -11,6 +11,8 @@ class game_init_finish_tos : ProtoHandler {
         val pb = message as Fengsheng.game_init_finish_tos
         if (player.isLoadingRecord) {
             player.displayRecord()
+        } else if (player.isReconnecting) {
+            player.reconnect()
         } else {
             val game = player.game
             if (game == null) {

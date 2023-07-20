@@ -348,6 +348,7 @@ class Game private constructor(totalPlayerCount: Int) {
 
         fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
             oldPlayer.channel = newPlayer.channel
+            oldPlayer.needWaitLoad = newPlayer.needWaitLoad
             if (playerCache.put(newPlayer.channel.id().asLongText(), oldPlayer) == null) {
                 log.error("channel [id: ${newPlayer.channel.id().asLongText()}] not exists")
             }
