@@ -57,7 +57,7 @@ class HumanPlayer(
         val buf = message.toByteArray()
         val name = message.descriptorForType.name
         recorder.add(name, buf)
-        if (isActive) send(name, buf, true)
+        if (isActive && !isReconnecting) send(name, buf, true)
         log.debug(
             "send@${channel.id().asShortText()} len: ${buf.size} $name | " +
                     printer.printToString(message).replace(Regex("\n *"), " ")

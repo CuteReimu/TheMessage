@@ -29,7 +29,7 @@ class Recorder {
     @Volatile
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
-        if ("reconnect_toc" == protoName || "heart_toc" == protoName) return
+        if ("reconnect_toc" == protoName || "heart_toc" == protoName || "game_init_finish_tos" == protoName) return
         if (!loading && ("wait_for_select_role_toc" == protoName || list.isNotEmpty())) list.add(
             recorder_line.newBuilder().setNanoTime(System.nanoTime()).setProtoName(protoName)
                 .setMessageBuf(ByteString.copyFrom(messageBuf)).build()
