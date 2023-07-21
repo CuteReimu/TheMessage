@@ -131,7 +131,6 @@ message game_start_toc {
 
 // 通知服务器场景加载完了
 message game_init_finish_tos {
-  string record_id = 1; // 录像ID。如果不是播放录像而是开始游戏，则不传或者传空字符串。
 }
 
 // 等待客户端选角色
