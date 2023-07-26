@@ -172,7 +172,6 @@ class Game private constructor(totalPlayerCount: Int) {
         humanPlayers.forEach {
             it.saveRecord()
             deviceCache.remove(it.device)
-            it.reset()
         }
         if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
             val records = ArrayList<Statistics.Record>(players.size)
@@ -185,6 +184,7 @@ class Game private constructor(totalPlayerCount: Int) {
             Statistics.add(records)
             Statistics.addPlayerGameCount(playerGameResultList)
         }
+        humanPlayers.forEach { it.reset() }
         queue.close()
     }
 
