@@ -88,14 +88,29 @@ object Statistics {
             log.error("md5加密失败", e)
             return null
         }
-        val playerInfo = playerInfoMap.getOrPut(name) {
-            pool.trySend(::savePlayerInfo)
-            PlayerInfo(name, deviceId, password, 0, 0)
-        }.let {
-            return@let if (it.password.isEmpty() && password.isNotEmpty()) it.copy(password = password) else it
-        }
+        var changed = false
+        val playerInfo = playerInfoMap.compute(name) { _, v ->
+            if (v == null) {
+                changed = true
+                PlayerInfo(name, deviceId, password, 0, 0)
+            } else {
+                if (v.password.isEmpty() && password.isNotEmpty()) {
+                    changed = true
+                    v.copy(password = password)
+                } else v
+            }
+        }!!
+        if (changed) pool.trySend(::savePlayerInfo)
         if (password != playerInfo.password) return null
         return playerInfo
+    }
+
+    fun resetPassword(name: String): Boolean {
+        if (playerInfoMap.computeIfPresent(name) { _, v -> v.copy(password = "") } != null) {
+            pool.trySend(::savePlayerInfo)
+            return true
+        }
+        return false
     }
 
     fun getPlayerGameCount(name: String): PlayerGameCount {

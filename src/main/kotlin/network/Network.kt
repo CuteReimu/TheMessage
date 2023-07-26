@@ -62,10 +62,6 @@ object Network {
     }
 
     private fun initGmNetwork() {
-        if (!Config.IsGmEnable) {
-            cd.countDown()
-            return
-        }
         val bossGroup: EventLoopGroup = NioEventLoopGroup()
         val workerGroup: EventLoopGroup = NioEventLoopGroup()
         try {
