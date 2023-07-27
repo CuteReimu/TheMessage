@@ -35,7 +35,6 @@ class join_room_tos : ProtoHandler {
                     if (game.isStarted && !game.isEnd) { // 断线重连
                         if (oldPlayer.isActive) {
                             player.send(error_code_toc.newBuilder().setCode(already_online).build())
-                            player.channel.close()
                             return@call false
                         }
                         Game.exchangePlayer(oldPlayer, player)
@@ -60,7 +59,6 @@ class join_room_tos : ProtoHandler {
         }
         if (Game.GameCache.size > Config.MaxRoomCount) {
             player.send(error_code_toc.newBuilder().setCode(no_more_room).build())
-            player.channel.close()
             return
         }
         val newGame = Game.newGame
@@ -71,7 +69,6 @@ class join_room_tos : ProtoHandler {
                 playerName.contains("\n") || playerName.contains("\r")
             ) {
                 player.send(error_code_toc.newBuilder().setCode(login_failed).build())
-                player.channel.close()
                 return@post
             }
             val playerInfo = Statistics.login(playerName, pb.device, pb.password)
@@ -83,7 +80,6 @@ class join_room_tos : ProtoHandler {
             if (oldPlayer2 != null && oldPlayer2.game === newGame && playerName == oldPlayer2.playerName) {
                 log.warn("怀疑连续发送了两次连接请求。为了游戏体验，拒绝本次连接。想要单设备双开请修改不同的用户名。")
                 player.send(error_code_toc.newBuilder().setCode(join_room_too_fast).build())
-                player.channel.close()
                 return@post
             }
             val emptyCount = newGame.players.count { it == null }
