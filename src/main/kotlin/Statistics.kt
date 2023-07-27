@@ -63,12 +63,12 @@ object Statistics {
                 for (count in playerGameResultList) {
                     if (count.isWin) {
                         win++
-                        if (trialStartTime.remove(count.player.device) != null) updateTrial = true
+                        if (trialStartTime.remove(count.device) != null) updateTrial = true
                     }
                     game++
-                    playerInfoMap.computeIfPresent(count.player.playerName) { _, v ->
+                    playerInfoMap.computeIfPresent(count.playerName) { _, v ->
                         val addWin = if (count.isWin) 1 else 0
-                        PlayerInfo(v.name, v.deviceId, v.password, v.winCount + addWin, v.gameCount + 1)
+                        v.copy(winCount = v.winCount + addWin, gameCount = v.gameCount + 1)
                     }
                 }
                 totalWinCount.addAndGet(win)
@@ -222,7 +222,7 @@ object Statistics {
         }
     }
 
-    data class Record(
+    class Record(
         val role: role,
         val isWinner: Boolean,
         val identity: color,
@@ -230,7 +230,7 @@ object Statistics {
         val totalPlayerCount: Int
     )
 
-    data class PlayerGameResult(val player: HumanPlayer, val isWin: Boolean)
+    class PlayerGameResult(val device: String, val playerName: String, val isWin: Boolean)
 
     data class PlayerGameCount(val winCount: Int, val gameCount: Int) {
         fun random(): PlayerGameCount {

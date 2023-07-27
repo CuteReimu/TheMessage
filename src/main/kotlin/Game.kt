@@ -171,15 +171,15 @@ class Game private constructor(totalPlayerCount: Int) {
         val humanPlayers = players.filterIsInstance<HumanPlayer>()
         humanPlayers.forEach {
             it.saveRecord()
-            deviceCache.remove(it.device)
+            deviceCache.remove(it.device!!)
         }
         if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
             val records = ArrayList<Statistics.Record>(players.size)
             val playerGameResultList = ArrayList<PlayerGameResult>()
             for (p in players) {
-                val win = winners.contains(p!!)
+                val win = p!! in winners
                 records.add(Statistics.Record(p.role, win, p.originIdentity, p.originSecretTask, players.size))
-                if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p, win))
+                if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.device!!, p.playerName, win))
             }
             Statistics.add(records)
             Statistics.addPlayerGameCount(playerGameResultList)
