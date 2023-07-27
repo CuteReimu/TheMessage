@@ -3,7 +3,7 @@ package com.fengsheng.handler
 import com.fengsheng.*
 import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.handler.remove_robot_tos.Companion.removeOneRobot
-import com.fengsheng.protos.Errcode.error_code
+import com.fengsheng.protos.Errcode.error_code.*
 import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng
 import com.google.protobuf.GeneratedMessageV3
@@ -21,10 +21,9 @@ class join_room_tos : ProtoHandler {
         // 客户端版本号不对，直接返回错误码
         if (pb.version < Config.ClientVersion) {
             val builder = error_code_toc.newBuilder()
-            builder.code = error_code.client_version_not_match
+            builder.code = client_version_not_match
             builder.addIntParams(Config.ClientVersion.toLong())
             player.send(builder.build())
-            player.channel.close()
             return
         }
         val device = pb.device
@@ -35,7 +34,7 @@ class join_room_tos : ProtoHandler {
                 GameExecutor.call(game) {
                     if (game.isStarted && !game.isEnd) { // 断线重连
                         if (oldPlayer.isActive) {
-                            player.send(error_code_toc.newBuilder().setCode(error_code.already_online).build())
+                            player.send(error_code_toc.newBuilder().setCode(already_online).build())
                             player.channel.close()
                             return@call false
                         }
@@ -56,11 +55,11 @@ class join_room_tos : ProtoHandler {
             if (!continueLogin) return
         }
         if (pb.name.toByteArray(StandardCharsets.UTF_8).size > 24) {
-            player.send(error_code_toc.newBuilder().setCode(error_code.name_too_long).build())
+            player.send(error_code_toc.newBuilder().setCode(name_too_long).build())
             return
         }
         if (Game.GameCache.size > Config.MaxRoomCount) {
-            player.send(error_code_toc.newBuilder().setCode(error_code.no_more_room).build())
+            player.send(error_code_toc.newBuilder().setCode(no_more_room).build())
             player.channel.close()
             return
         }
@@ -71,19 +70,19 @@ class join_room_tos : ProtoHandler {
             if (playerName.isBlank() || playerName.contains(",") ||
                 playerName.contains("\n") || playerName.contains("\r")
             ) {
-                player.send(error_code_toc.newBuilder().setCode(error_code.login_failed).build())
+                player.send(error_code_toc.newBuilder().setCode(login_failed).build())
                 player.channel.close()
                 return@post
             }
             val playerInfo = Statistics.login(playerName, pb.device, pb.password)
             if (playerInfo == null) {
-                player.send(error_code_toc.newBuilder().setCode(error_code.login_failed).build())
+                player.send(error_code_toc.newBuilder().setCode(login_failed).build())
                 return@post
             }
             val oldPlayer2 = Game.deviceCache.putIfAbsent(pb.device, player)
             if (oldPlayer2 != null && oldPlayer2.game === newGame && playerName == oldPlayer2.playerName) {
                 log.warn("怀疑连续发送了两次连接请求。为了游戏体验，拒绝本次连接。想要单设备双开请修改不同的用户名。")
-                player.send(error_code_toc.newBuilder().setCode(error_code.join_room_too_fast).build())
+                player.send(error_code_toc.newBuilder().setCode(join_room_too_fast).build())
                 player.channel.close()
                 return@post
             }
