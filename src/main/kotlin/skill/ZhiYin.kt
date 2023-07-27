@@ -31,11 +31,11 @@ class ZhiYin : AbstractSkill(), TriggeredSkill {
                 p.send(builder.build())
             }
         }
-        if (fsm.inFrontOfWhom === fsm.whoseTurn) {
+        if (fsm.inFrontOfWhom === fsm.sender) {
             fsm.inFrontOfWhom.draw(2)
         } else {
             fsm.inFrontOfWhom.draw(1)
-            if (fsm.whoseTurn.alive) fsm.whoseTurn.draw(1)
+            if (fsm.sender.alive) fsm.sender.draw(1)
         }
         return null
     }

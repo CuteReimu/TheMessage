@@ -74,7 +74,7 @@ class YiYaHuanYa : AbstractSkill(), TriggeredSkill {
                 log.error("目标已死亡")
                 return null
             }
-            if (target !== fsm.whoseTurn && target !== fsm.whoseTurn.getNextLeftAlivePlayer() && target !== fsm.whoseTurn.getNextRightAlivePlayer()) {
+            if (target !== fsm.sender && target !== fsm.sender.getNextLeftAlivePlayer() && target !== fsm.sender.getNextRightAlivePlayer()) {
                 log.error("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
                 return null
             }

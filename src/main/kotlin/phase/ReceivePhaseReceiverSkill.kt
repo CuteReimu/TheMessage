@@ -15,6 +15,7 @@ import com.fengsheng.card.Card
  */
 data class ReceivePhaseReceiverSkill(
     val whoseTurn: Player,
+    val sender: Player,
     val messageCard: Card,
     val receiveOrder: ReceiveOrder,
     val inFrontOfWhom: Player

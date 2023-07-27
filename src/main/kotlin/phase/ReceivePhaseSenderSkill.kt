@@ -33,7 +33,7 @@ class ReceivePhaseSenderSkill(
     override fun resolve(): ResolveResult {
         val result = whoseTurn.game!!.dealListeningSkill()
         return result ?: ResolveResult(
-            ReceivePhaseReceiverSkill(whoseTurn, messageCard, receiveOrder, inFrontOfWhom),
+            ReceivePhaseReceiverSkill(whoseTurn, sender, messageCard, receiveOrder, inFrontOfWhom),
             true
         )
     }
