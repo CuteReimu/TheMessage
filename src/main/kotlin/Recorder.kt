@@ -30,10 +30,13 @@ class Recorder {
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
         if ("reconnect_toc" == protoName || "heart_toc" == protoName || "game_init_finish_tos" == protoName) return
-        if (!loading && ("wait_for_select_role_toc" == protoName || list.isNotEmpty())) list.add(
-            recorder_line.newBuilder().setNanoTime(System.nanoTime()).setProtoName(protoName)
-                .setMessageBuf(ByteString.copyFrom(messageBuf)).build()
-        )
+        if (!loading && ("wait_for_select_role_toc" == protoName || "init_toc" == protoName || list.isNotEmpty())) {
+            val builder = recorder_line.newBuilder()
+            builder.nanoTime = System.nanoTime()
+            builder.protoName = protoName
+            builder.messageBuf = ByteString.copyFrom(messageBuf)
+            list.add(builder.build())
+        }
     }
 
     fun save(g: Game, p: HumanPlayer, notify: Boolean) {
