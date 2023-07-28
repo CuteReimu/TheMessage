@@ -22,31 +22,6 @@ message get_record_list_toc {
   repeated string records = 1;
 }
 
-// 增加一个预约
-message add_order_tos {
-  uint32 time = 1; // 时间戳
-}
-
-// 返回增加预约成功的消息
-message add_order_toc {
-}
-
-message pb_order {
-  uint32 id = 1;
-  uint64 time = 2;
-  string name = 3;
-  bool is_mine = 4; // 是不是我的，是就可以删除
-}
-
-// 请求获取所有预约
-message get_orders_tos {
-}
-
-// 返回获取预约
-message get_orders_toc {
-  repeated pb_order orders = 1;
-}
-
 // 心跳：客户端发给服务器
 message heart_tos {
 }
