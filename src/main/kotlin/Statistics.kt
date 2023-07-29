@@ -300,7 +300,7 @@ object Statistics {
                 }
             }
         }
-        val lines = PriorityQueue<Pair<Double, String>> { a, b -> b.first.compareTo(a.first) }
+        val lines = ArrayList<Pair<Double, String>>()
         for ((key, value) in appearCount) {
             val sb = StringBuilder()
             val roleName = RoleCache.getRoleName(key) ?: ""
@@ -317,6 +317,7 @@ object Statistics {
             }
             lines.add(winRate!! to sb.toString())
         }
+        lines.sortByDescending { it.first }
         FileOutputStream("stat0.csv").use { os ->
             BufferedWriter(OutputStreamWriter(os)).use { writer ->
                 writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率")
