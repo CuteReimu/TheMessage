@@ -300,7 +300,7 @@ object Statistics {
                 }
             }
         }
-        val lines = TreeMap<Double, String>(Collections.reverseOrder())
+        val lines = PriorityQueue<Pair<Double, String>> { a, b -> b.first.compareTo(a.first) }
         for ((key, value) in appearCount) {
             val sb = StringBuilder()
             val roleName = RoleCache.getRoleName(key) ?: ""
@@ -315,7 +315,7 @@ object Statistics {
                     sb.append("%.2f%%".format(r))
                 }
             }
-            lines[winRate!!] = sb.toString()
+            lines.add(winRate!! to sb.toString())
         }
         FileOutputStream("stat0.csv").use { os ->
             BufferedWriter(OutputStreamWriter(os)).use { writer ->
@@ -327,8 +327,8 @@ object Statistics {
                     writer.write("%.2f%%".format(winCount.sum(i) * 100.0 / appearCount.sum(i)))
                 }
                 writer.newLine()
-                for (line in lines.values) {
-                    writer.write(line)
+                for (line in lines) {
+                    writer.write(line.second)
                     writer.newLine()
                 }
                 writer.newLine()
