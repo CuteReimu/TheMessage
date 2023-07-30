@@ -93,12 +93,13 @@ class join_room_tos : ProtoHandler {
             builder.onlineCount = Game.deviceCache.size
             for (p in player.game!!.players) {
                 builder.addNames(p?.playerName ?: "")
-                val winCount = when (p) {
-                    null -> 0
-                    is HumanPlayer -> Statistics.getPlayerGameCount(p.playerName).winCount
-                    else -> Statistics.totalPlayerGameCount.random().winCount
+                val c = when (p) {
+                    null -> Statistics.PlayerGameCount(0, 0)
+                    is HumanPlayer -> Statistics.getPlayerGameCount(p.playerName)
+                    else -> Statistics.totalPlayerGameCount.random()
                 }
-                builder.addWinCounts(winCount)
+                builder.addWinCounts(c.winCount)
+                builder.addGameCounts(c.gameCount)
             }
             player.send(builder.build())
         }

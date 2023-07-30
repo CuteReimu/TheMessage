@@ -77,6 +77,7 @@ message get_room_info_toc {
   uint32          my_position = 2;
   uint32          online_count = 3; // 当前在线人数
   repeated uint32 win_counts = 4; // 所有人的胜场数
+  repeated uint32 game_counts = 5; // 所有人的总场数
 }
 
 // 请求加一个机器人
