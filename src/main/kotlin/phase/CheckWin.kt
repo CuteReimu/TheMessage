@@ -3,9 +3,9 @@ package com.fengsheng.phase
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
-import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Common.secret_task
-import com.fengsheng.skill.SkillId
+import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.skill.SkillId.WEI_SHENG
 import org.apache.log4j.Logger
 
 /**
@@ -32,38 +32,38 @@ data class CheckWin(
     override fun resolve(): ResolveResult {
         val game = whoseTurn.game!!
         val players = game.players.filterNotNull().filter { !it.lose }
-        val stealer = players.find { it.identity == color.Black && it.secretTask == secret_task.Stealer } // 簒夺者
+        val stealer = players.find { it.identity == Black && it.secretTask == Stealer } // 簒夺者
         val mutator = // 诱变者
-            players.find { (it.alive || it.dieJustNow) && it.identity == color.Black && it.secretTask == secret_task.Mutator }
-        val redPlayers = players.filter { it.identity == color.Red }
-        val bluePlayers = players.filter { it.identity == color.Blue }
+            players.find { (it.alive || it.dieJustNow) && it.identity == Black && it.secretTask == Mutator }
+        val redPlayers = players.filter { it.identity == Red }
+        val bluePlayers = players.filter { it.identity == Blue }
         var declareWinner = ArrayList<Player>()
         var winner = ArrayList<Player>()
         var redWin = false
         var blueWin = false
         var mutatorMayWin = false
         players.forEach { player ->
-            val red = player.messageCards.count { it.colors.contains(color.Red) }
-            val blue = player.messageCards.count { it.colors.contains(color.Blue) }
+            val red = player.messageCards.count { it.colors.contains(Red) }
+            val blue = player.messageCards.count { it.colors.contains(Blue) }
             if (red >= 3 || blue >= 3) {
                 mutatorMayWin = true
             }
             when (player.identity) {
-                color.Black -> {
-                    if (player.secretTask == secret_task.Collector && (red >= 3 || blue >= 3)) {
+                Black -> {
+                    if (player.secretTask == Collector && (red >= 3 || blue >= 3)) {
                         declareWinner.add(player)
                         winner.add(player)
                     }
                 }
 
-                color.Red -> {
+                Red -> {
                     if (red >= 3) {
                         declareWinner.add(player)
                         redWin = true
                     }
                 }
 
-                color.Blue -> {
+                Blue -> {
                     if (blue >= 3) {
                         declareWinner.add(player)
                         blueWin = true
@@ -90,9 +90,8 @@ data class CheckWin(
             winner = ArrayList(declareWinner)
         }
         if (declareWinner.isNotEmpty()) {
-            if (winner.any { it.findSkill(SkillId.WEI_SHENG) != null && it.roleFaceUp }) {
-                winner.addAll(players.filter { it.identity == color.Has_No_Identity })
-            }
+            if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
+                winner.addAll(players.filter { it.identity == Has_No_Identity })
             val declareWinners = declareWinner.toTypedArray()
             val winners = winner.toTypedArray()
             log.info("${declareWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")

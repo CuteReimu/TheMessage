@@ -7,9 +7,11 @@ import com.fengsheng.card.Deck
 import com.fengsheng.network.Network
 import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.RoleCache
-import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.SkillId.WEI_SHENG
 import com.fengsheng.skill.TriggeredSkill
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
@@ -95,58 +97,52 @@ class Game private constructor(totalPlayerCount: Int) {
         var identities = ArrayList<color>()
         when (players.size) {
             2 -> identities = when (Random.nextInt(4)) {
-                0 -> arrayListOf(color.Red, color.Blue)
-                1 -> arrayListOf(color.Red, color.Black)
-                2 -> arrayListOf(color.Blue, color.Black)
-                else -> arrayListOf(color.Black, color.Black)
+                0 -> arrayListOf(Red, Blue)
+                1 -> arrayListOf(Red, Black)
+                2 -> arrayListOf(Blue, Black)
+                else -> arrayListOf(Black, Black)
             }
 
             3 -> {
-                identities.add(color.Red)
-                identities.add(color.Blue)
-                identities.add(color.Black)
+                identities.add(Red)
+                identities.add(Blue)
+                identities.add(Black)
             }
 
             4 -> {
-                identities.add(color.Red)
-                identities.add(color.Blue)
-                identities.add(color.Black)
-                identities.add(color.Black)
+                identities.add(Red)
+                identities.add(Blue)
+                identities.add(Black)
+                identities.add(Black)
             }
 
             5, 6, 7, 8 -> {
                 var i = 0
                 while (i < (players.size - 1) / 2) {
-                    identities.add(color.Red)
-                    identities.add(color.Blue)
+                    identities.add(Red)
+                    identities.add(Blue)
                     i++
                 }
-                identities.add(color.Black)
-                if (players.size % 2 == 0) identities.add(color.Black)
+                identities.add(Black)
+                if (players.size % 2 == 0) identities.add(Black)
             }
 
             else -> {
-                identities.add(color.Red)
-                identities.add(color.Red)
-                identities.add(color.Red)
-                identities.add(color.Blue)
-                identities.add(color.Blue)
-                identities.add(color.Blue)
-                repeat(players.size - identities.size) { identities.add(color.Black) }
+                identities.add(Red)
+                identities.add(Red)
+                identities.add(Red)
+                identities.add(Blue)
+                identities.add(Blue)
+                identities.add(Blue)
+                repeat(players.size - identities.size) { identities.add(Black) }
             }
         }
         identities.shuffle()
-        val tasks = listOf(
-            secret_task.Killer,
-            secret_task.Stealer,
-            secret_task.Collector,
-            secret_task.Mutator,
-            secret_task.Pioneer
-        ).shuffled()
+        val tasks = listOf(Killer, Stealer, Collector, Mutator, Pioneer, Disturber, Sweeper).shuffled()
         var secretIndex = 0
         for (i in players.indices) {
             val identity = identities[i]
-            val task = if (identity == color.Black) tasks[secretIndex++] else secret_task.forNumber(0)
+            val task = if (identity == Black) tasks[secretIndex++] else secret_task.forNumber(0)
             players[i]!!.identity = identity
             players[i]!!.secretTask = task
             players[i]!!.originIdentity = identity
@@ -308,27 +304,26 @@ class Game private constructor(totalPlayerCount: Int) {
             if (!it.alive) return@filter false
             when (identity) {
                 null -> identity = it.identity
-                color.Black -> return false
+                Black -> return false
                 it.identity -> {}
                 else -> {
-                    if (this.players.size != 4 || it.identity == color.Black) // 四人局潜伏和军情会同时获胜
+                    if (this.players.size != 4 || it.identity == Black) // 四人局潜伏和军情会同时获胜
                         return false
                 }
             }
             true
         }
         val winner =
-            if (identity == color.Red || identity == color.Blue) {
+            if (identity == Red || identity == Blue) {
                 if (this.players.size == 4) // 四人局潜伏和军情会同时获胜
-                    players.filter { it.identity == color.Red || it.identity == color.Blue }.toMutableList()
+                    players.filter { it.identity == Red || it.identity == Blue }.toMutableList()
                 else
                     players.filter { identity == it.identity }.toMutableList()
             } else {
                 alivePlayers.toMutableList()
             }
-        if (winner.any { it.findSkill(SkillId.WEI_SHENG) != null && it.roleFaceUp }) {
-            winner.addAll(players.filter { it.identity == color.Has_No_Identity })
-        }
+        if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
+            winner.addAll(players.filter { it.identity == Has_No_Identity })
         val winners = winner.toTypedArray()
         log.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
         allPlayerSetRoleFaceUp()

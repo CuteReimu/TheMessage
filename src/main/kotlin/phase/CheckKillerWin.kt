@@ -3,10 +3,11 @@ package com.fengsheng.phase
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
-import com.fengsheng.card.Card
-import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Common.secret_task
-import com.fengsheng.skill.SkillId
+import com.fengsheng.card.countTrueCard
+import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.color.Has_No_Identity
+import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.skill.SkillId.WEI_SHENG
 import org.apache.log4j.Logger
 
 /**
@@ -23,8 +24,9 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             return ResolveResult(afterDieResolve, true)
         }
         val players = whoseTurn.game!!.players.filterNotNull().filter { !it.lose }
-        val killer = players.find { it.identity == color.Black && it.secretTask == secret_task.Killer } // 镇压者
-        val stealer = players.find { it.identity == color.Black && it.secretTask == secret_task.Stealer } // 簒夺者
+        val killer = players.find { it.identity == Black && it.secretTask == Killer } // 镇压者
+        val stealer = players.find { it.identity == Black && it.secretTask == Stealer } // 簒夺者
+        val sweeper = players.find { it.identity == Black && it.secretTask == Sweeper } // 清道夫
         var declaredWinner = ArrayList<Player>()
         var winner = ArrayList<Player>()
         if (whoseTurn === killer) {
@@ -32,8 +34,13 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
                 declaredWinner.add(killer)
                 winner.add(killer)
             }
+        } else if (whoseTurn === sweeper) {
+            if (diedQueue.any { it.messageCards.countTrueCard() <= 1 }) {
+                declaredWinner.add(sweeper)
+                winner.add(sweeper)
+            }
         }
-        val pioneer = diedQueue.find { it.identity == color.Black && it.secretTask == secret_task.Pioneer } // 先行者
+        val pioneer = diedQueue.find { it.identity == Black && it.secretTask == Pioneer } // 先行者
         if (pioneer != null && pioneer.messageCards.countTrueCard() >= 1) {
             declaredWinner.add(pioneer)
             winner.add(pioneer)
@@ -43,9 +50,8 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             winner = arrayListOf(stealer)
         }
         if (declaredWinner.isNotEmpty()) {
-            if (winner.any { it.findSkill(SkillId.WEI_SHENG) != null && it.roleFaceUp }) {
-                winner.addAll(players.filter { it.identity == color.Has_No_Identity })
-            }
+            if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
+                winner.addAll(players.filter { it.identity == Has_No_Identity })
             val declaredWinners = declaredWinner.toTypedArray()
             val winners = winner.toTypedArray()
             log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
@@ -68,8 +74,5 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
 
     companion object {
         private val log = Logger.getLogger(CheckKillerWin::class.java)
-
-        private fun Collection<Card>.countTrueCard() =
-            count { card -> card.colors.any { c -> c != color.Black } }
     }
 }

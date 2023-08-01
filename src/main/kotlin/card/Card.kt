@@ -3,6 +3,8 @@ package com.fengsheng.card
 import com.fengsheng.Game
 import com.fengsheng.Player
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.*
+import com.fengsheng.protos.Common.color.*
 
 /**
  * 注意：一张卡牌一定是不能修改的
@@ -113,8 +115,8 @@ abstract class Card {
         ).addAllCardColor(c.colors).build()
     }
 
-    fun isBlack(): Boolean = color.Black in colors
-    fun isPureBlack(): Boolean = colors.size == 1 && colors.first() == color.Black
+    fun isBlack(): Boolean = Black in colors
+    fun isPureBlack(): Boolean = colors.size == 1 && colors.first() == Black
 
     companion object {
         /**
@@ -124,9 +126,9 @@ abstract class Card {
             val sb = StringBuilder()
             for (c in colors) {
                 when (c) {
-                    color.Red -> sb.append("红")
-                    color.Blue -> sb.append("蓝")
-                    color.Black -> sb.append("黑")
+                    Red -> sb.append("红")
+                    Blue -> sb.append("蓝")
+                    Black -> sb.append("黑")
                     else -> throw RuntimeException("unknown color: " + colors.toTypedArray().contentToString())
                 }
             }
@@ -140,15 +142,15 @@ abstract class Card {
 
         fun falseCard(falseType: card_type, originCard: Card): Card {
             return when (falseType) {
-                card_type.Cheng_Qing -> ChengQing(originCard)
-                card_type.Wei_Bi -> WeiBi(originCard)
-                card_type.Li_You -> LiYou(originCard)
-                card_type.Ping_Heng -> PingHeng(originCard)
-                card_type.Po_Yi -> PoYi(originCard)
-                card_type.Jie_Huo -> JieHuo(originCard)
-                card_type.Diao_Bao -> DiaoBao(originCard)
-                card_type.Wu_Dao -> WuDao(originCard)
-                card_type.Feng_Yun_Bian_Huan -> FengYunBianHuan(originCard)
+                Cheng_Qing -> ChengQing(originCard)
+                Wei_Bi -> WeiBi(originCard)
+                Li_You -> LiYou(originCard)
+                Ping_Heng -> PingHeng(originCard)
+                Po_Yi -> PoYi(originCard)
+                Jie_Huo -> JieHuo(originCard)
+                Diao_Bao -> DiaoBao(originCard)
+                Wu_Dao -> WuDao(originCard)
+                Feng_Yun_Bian_Huan -> FengYunBianHuan(originCard)
                 else -> throw IllegalStateException("Unexpected value: $falseType")
             }
         }
@@ -158,3 +160,5 @@ abstract class Card {
 fun Iterable<Card>.count(c: color) = count { c in it.colors }
 
 fun Iterable<Card>.filter(c: color) = filter { c in it.colors }
+
+fun Iterable<Card>.countTrueCard() = count { card -> card.colors.any { c -> c != Black } }
