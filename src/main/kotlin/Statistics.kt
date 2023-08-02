@@ -290,8 +290,8 @@ object Statistics {
                     if (line == null) break
                     val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
                     val role = role.valueOf(a[0])
-                    val appear = appearCount.computeIfAbsent(role) { IntArray(8) }
-                    val win = winCount.computeIfAbsent(role) { IntArray(8) }
+                    val appear = appearCount.computeIfAbsent(role) { IntArray(10) }
+                    val win = winCount.computeIfAbsent(role) { IntArray(10) }
                     val index =
                         if ("Black" == a[2]) secret_task.valueOf(a[3]).number + 3
                         else null
@@ -320,12 +320,14 @@ object Statistics {
         lines.sortByDescending { it.first }
         FileOutputStream("stat0.csv").use { os ->
             BufferedWriter(OutputStreamWriter(os)).use { writer ->
-                writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率")
+                writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率,清道夫胜率")
                 writer.newLine()
                 writer.write("全部,${appearCount.sum(0)}")
-                for (i in 0 until 8) {
+                for (i in 0 until 10) {
                     writer.write(",")
-                    writer.write("%.2f%%".format(winCount.sum(i) * 100.0 / appearCount.sum(i)))
+                    val winSum = winCount.sum(i)
+                    val appearSum = appearCount.sum(i)
+                    if (appearSum != 0) writer.write("%.2f%%".format(winSum * 100.0 / appearSum))
                 }
                 writer.newLine()
                 for (line in lines) {
