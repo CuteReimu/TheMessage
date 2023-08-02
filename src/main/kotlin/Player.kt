@@ -2,6 +2,8 @@ package com.fengsheng
 
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.RoleSkillsData
 import com.fengsheng.skill.Skill
 import com.fengsheng.skill.SkillId
@@ -15,10 +17,10 @@ abstract class Player protected constructor() {
     var location = 0
     val cards = ArrayList<Card>()
     val messageCards = ArrayList<Card>()
-    var identity = color.Black
-    var secretTask = secret_task.Killer
-    var originIdentity = color.Black
-    var originSecretTask = secret_task.Killer
+    var identity = Black
+    var secretTask = Killer
+    var originIdentity = Black
+    var originSecretTask = Killer
     var alive = true
     var lose = false
 
@@ -126,9 +128,9 @@ abstract class Player protected constructor() {
         for (card in cards) {
             for (c in card.colors) {
                 when (c) {
-                    color.Red -> red++
-                    color.Blue -> blue++
-                    color.Black -> black++
+                    Red -> red++
+                    Blue -> blue++
+                    Black -> black++
                     else -> {}
                 }
             }
@@ -139,9 +141,9 @@ abstract class Player protected constructor() {
         for (card in messageCards) {
             for (c in card.colors) {
                 when (c) {
-                    color.Red -> red++
-                    color.Blue -> blue++
-                    color.Black -> black++
+                    Red -> red++
+                    Blue -> blue++
+                    Black -> black++
                     else -> {}
                 }
             }
@@ -224,20 +226,20 @@ abstract class Player protected constructor() {
     }
 
     /** @return 如果other是队友（不含自己），则返回true。如果是自己，或者不是队友，则返回false */
-    fun isPartner(other: Player) = this !== other && identity != color.Black && identity == other.identity
+    fun isPartner(other: Player) = this !== other && identity != Black && identity == other.identity
 
     /** @return 如果other是队友或自己，则返回true。否则返回false */
-    fun isPartnerOrSelf(other: Player) = this === other || identity != color.Black && identity == other.identity
+    fun isPartnerOrSelf(other: Player) = this === other || identity != Black && identity == other.identity
 
     /** @return 如果other是敌人，则返回true。否则返回false */
     fun isEnemy(other: Player) = !isPartnerOrSelf(other)
 
     /** 亲密度。敌对阵营是0，神秘人是1，队友是2。如果自己是神秘人，则所有人都是1。 */
     private fun getFriendship(other: Player) =
-        if (identity == color.Black) 1
+        if (identity == Black) 1
         else when (other.identity) {
             identity -> 2
-            color.Black -> 1
+            Black -> 1
             else -> 0
         }
 
@@ -260,10 +262,10 @@ abstract class Player protected constructor() {
          */
         fun identityColorToString(c: color): String {
             return when (c) {
-                color.Red -> "红方"
-                color.Blue -> "蓝方"
-                color.Black -> "神秘人"
-                else -> throw RuntimeException("unknown color: $c")
+                Red -> "红方"
+                Blue -> "蓝方"
+                Black -> "神秘人"
+                else -> "未知身份：$c"
             }
         }
 
@@ -272,19 +274,21 @@ abstract class Player protected constructor() {
          */
         fun identityColorToString(c: color, task: secret_task): String {
             return when (c) {
-                color.Red -> "红方"
-                color.Blue -> "蓝方"
-                color.Black -> when (task) {
-                    secret_task.Killer -> "神秘人[镇压者]"
-                    secret_task.Stealer -> "神秘人[簒夺者]"
-                    secret_task.Collector -> "神秘人[双重间谍]"
-                    secret_task.Mutator -> "神秘人[诱变者]"
-                    secret_task.Pioneer -> "神秘人[先行者]"
-                    else -> throw RuntimeException("unknown secret task: $task")
+                Red -> "红方"
+                Blue -> "蓝方"
+                Black -> when (task) {
+                    Killer -> "神秘人[镇压者]"
+                    Stealer -> "神秘人[簒夺者]"
+                    Collector -> "神秘人[双重间谍]"
+                    Mutator -> "神秘人[诱变者]"
+                    Pioneer -> "神秘人[先行者]"
+                    Disturber -> "神秘人[搅局者]"
+                    Sweeper -> "神秘人[清道夫]"
+                    else -> "神秘人[未知任务：$task]"
                 }
 
-                color.Has_No_Identity -> "无身份"
-                else -> throw RuntimeException("unknown color: $c")
+                Has_No_Identity -> "无身份"
+                else -> "未知身份：$c"
             }
         }
 
