@@ -10,6 +10,7 @@ class skill_lian_min_tos : AbstractProtoHandler<Role.skill_lian_min_tos>() {
         val skill = r.findSkill(SkillId.LIAN_MIN)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

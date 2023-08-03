@@ -10,6 +10,7 @@ class skill_yi_xin_tos : AbstractProtoHandler<Role.skill_yi_xin_tos>() {
         val skill = r.findSkill(SkillId.YI_XIN)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

@@ -20,28 +20,34 @@ class SouJi : AbstractSkill(), ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             log.error("现在不是发动[搜辑]的时机")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[搜辑]的时机")
             return
         }
         if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[搜辑]")
+            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[搜辑]")
             return
         }
         val pb = message as skill_sou_ji_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             log.error("目标错误")
+            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             log.error("不能以自己为目标")
+            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         r.incrSeq()
@@ -96,31 +102,37 @@ class SouJi : AbstractSkill(), ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_sou_ji_b_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             val cards = Array(message.cardIdsCount) {
                 val card = target.findCard(message.getCardIds(it))
                 if (card == null) {
                     log.error("没有这张牌")
+                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
                 if (!card.colors.contains(color.Black)) {
                     log.error("这张牌不是黑色的")
+                    (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色的")
                     return null
                 }
                 card
             }
             if (message.messageCard && !fsm.messageCard.colors.contains(color.Black)) {
                 log.error("待收情报不是黑色的")
+                (player as? HumanPlayer)?.sendErrorMessage("待收情报不是黑色的")
                 return null
             }
             r.incrSeq()

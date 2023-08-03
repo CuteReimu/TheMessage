@@ -22,15 +22,18 @@ class JiZhi : AbstractSkill(), ActiveSkill {
         val fsm = g.fsm
         if ((fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) && (fsm !is WaitForChengQing || r !== fsm.askWhom)) {
             log.error("现在不是发动[急智]的时机")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[急智]的时机")
             return
         }
         if (r.roleFaceUp) {
             log.error("角色面朝上时不能发动[急智]")
+            (r as? HumanPlayer)?.sendErrorMessage("角色面朝上时不能发动[急智]")
             return
         }
         val pb = message as skill_ji_zhi_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            (r as? HumanPlayer)?.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()

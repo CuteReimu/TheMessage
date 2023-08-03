@@ -10,6 +10,7 @@ class skill_jin_shen_tos : AbstractProtoHandler<Role.skill_jin_shen_tos>() {
         val skill = r.findSkill(SkillId.JIN_SHEN)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

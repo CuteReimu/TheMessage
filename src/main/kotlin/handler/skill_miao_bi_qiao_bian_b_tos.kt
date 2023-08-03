@@ -10,6 +10,7 @@ class skill_miao_bi_qiao_bian_b_tos : AbstractProtoHandler<Role.skill_miao_bi_qi
         val skill = r.findSkill(SkillId.MIAO_BI_QIAO_BIAN)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

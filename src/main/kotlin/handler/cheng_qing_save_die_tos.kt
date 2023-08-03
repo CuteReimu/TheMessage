@@ -12,11 +12,13 @@ class cheng_qing_save_die_tos : AbstractProtoHandler<Fengsheng.cheng_qing_save_d
     override fun handle0(r: HumanPlayer, pb: Fengsheng.cheng_qing_save_die_tos) {
         if (!r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         val fsm = r.game!!.fsm as? WaitForChengQing
         if (r !== fsm?.askWhom) {
             log.error("现在不是使用澄清的时机")
+            r.sendErrorMessage("现在不是使用澄清的时机")
             return
         }
         if (!pb.use) {
@@ -27,10 +29,12 @@ class cheng_qing_save_die_tos : AbstractProtoHandler<Fengsheng.cheng_qing_save_d
         val card = r.findCard(pb.cardId)
         if (card == null) {
             log.error("没有这张牌")
+            r.sendErrorMessage("没有这张牌")
             return
         }
         if (card.type != Common.card_type.Cheng_Qing) {
             log.error("这张牌不是澄清，而是$card")
+            r.sendErrorMessage("这张牌不是澄清，而是$card")
             return
         }
         val target: Player = fsm.whoDie

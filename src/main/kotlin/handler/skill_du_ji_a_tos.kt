@@ -11,10 +11,12 @@ class skill_du_ji_a_tos : AbstractProtoHandler<Role.skill_du_ji_a_tos>() {
         val skill = r.findSkill(SkillId.DU_JI) as? ActiveSkill
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         if (HashSet(pb.targetPlayerIdsList).size != pb.targetPlayerIdsCount) {
             log.error("选择的角色重复${pb.targetPlayerIdsList.toTypedArray().contentToString()}")
+            r.sendErrorMessage("选择的角色重复${pb.targetPlayerIdsList.toTypedArray().contentToString()}")
             return
         }
         skill.executeProtocol(r.game!!, r, pb)

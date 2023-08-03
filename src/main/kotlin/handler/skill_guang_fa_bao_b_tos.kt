@@ -10,10 +10,12 @@ class skill_guang_fa_bao_b_tos : AbstractProtoHandler<Role.skill_guang_fa_bao_b_
         val skill = r.findSkill(SkillId.GUANG_FA_BAO)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         if (HashSet(pb.cardIdsList).size != pb.cardIdsCount) {
             log.error("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
+            r.sendErrorMessage("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

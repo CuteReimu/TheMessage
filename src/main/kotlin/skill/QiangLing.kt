@@ -84,14 +84,17 @@ class QiangLing : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_qiang_ling_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
@@ -99,12 +102,14 @@ class QiangLing : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message.typesCount == 0) {
-                log.error("enable为true时types不能为0")
+                log.error("enable为true时types不能为空")
+                (player as? HumanPlayer)?.sendErrorMessage("[强令]的卡牌类型不能为空")
                 return null
             }
             for (t in message.typesList) {
                 if (t == UNRECOGNIZED || t == null) {
                     log.error("未知的卡牌类型$t")
+                    (player as? HumanPlayer)?.sendErrorMessage("未知的卡牌类型$t")
                     return null
                 }
             }

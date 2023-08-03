@@ -20,20 +20,24 @@ class XinSiChao : AbstractSkill(), ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("现在不是出牌阶段空闲时点")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             log.error("[新思潮]一回合只能发动一次")
+            (r as? HumanPlayer)?.sendErrorMessage("[新思潮]一回合只能发动一次")
             return
         }
         val pb = message as skill_xin_si_chao_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
             log.error("没有这张卡")
+            (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
             return
         }
         r.incrSeq()

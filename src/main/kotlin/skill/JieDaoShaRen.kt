@@ -20,32 +20,39 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             log.error("现在不是发动[借刀杀人]的时机")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[借刀杀人]的时机")
             return
         }
         if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[借刀杀人]")
+            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[借刀杀人]")
             return
         }
         val pb = message as skill_jie_dao_sha_ren_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             log.error("目标错误")
+            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             log.error("不能以自己为目标")
+            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         if (target.cards.isEmpty()) {
             log.error("目标没有手牌")
+            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
             return
         }
         r.incrSeq()
@@ -112,15 +119,18 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jie_dao_sha_ren_b_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
@@ -129,11 +139,13 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
+                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()

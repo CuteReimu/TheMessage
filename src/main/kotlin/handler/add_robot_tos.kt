@@ -12,7 +12,8 @@ import org.apache.log4j.Logger
 class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.add_robot_tos) {
         if (r.game!!.isStarted) {
-            log.error("game is already started")
+            log.error("the game has already started")
+            r.sendErrorMessage("游戏已经开始了")
             return
         }
         val humanCount = r.game!!.players.count { it is HumanPlayer }

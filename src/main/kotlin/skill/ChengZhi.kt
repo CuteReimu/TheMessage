@@ -74,10 +74,12 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.askWhom) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cheng_zhi_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = fsm.askWhom
@@ -85,6 +87,7 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {

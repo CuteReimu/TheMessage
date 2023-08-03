@@ -23,11 +23,13 @@ class TouTian : AbstractSkill(), ActiveSkill {
         if (!JieHuo.canUse(g, r)) return
         if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[偷天]")
+            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[偷天]")
             return
         }
         val pb = message as skill_tou_tian_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()

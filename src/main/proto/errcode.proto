@@ -7,6 +7,10 @@ message error_code_toc {
   repeated string str_params = 3;
 }
 
+message error_message_toc {
+  string msg = 1;
+}
+
 enum error_code {
   client_version_not_match = 0; // 客户端版本号不匹配，int_params[0]为服务器版本号
   no_more_room = 1; // 没有更多的房间了

@@ -20,32 +20,39 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
         val fsm = g.fsm as? MainPhaseIdle
         if (r !== fsm?.player) {
             log.error("现在不是出牌阶段空闲时点")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             log.error("[交际]一回合只能发动一次")
+            (r as? HumanPlayer)?.sendErrorMessage("[交际]一回合只能发动一次")
             return
         }
         val pb = message as skill_jiao_ji_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             log.error("目标错误")
+            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             log.error("不能以自己为目标")
+            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         if (target.cards.isEmpty()) {
             log.error("目标没有手牌")
+            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
             return
         }
         r.incrSeq()
@@ -111,26 +118,31 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.player) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jiao_ji_b_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (message.cardIdsCount !in needReturnCount) {
                 log.error("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
+                (player as? HumanPlayer)?.sendErrorMessage("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
                 return null
             }
             val r = fsm.player
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             val cards = Array(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     log.error("没有这张卡")
+                    (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card

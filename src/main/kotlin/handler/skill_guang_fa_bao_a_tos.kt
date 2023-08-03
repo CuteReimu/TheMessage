@@ -11,6 +11,7 @@ class skill_guang_fa_bao_a_tos : AbstractProtoHandler<Role.skill_guang_fa_bao_a_
         val skill = r.findSkill(SkillId.GUANG_FA_BAO) as? ActiveSkill
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         skill.executeProtocol(r.game!!, r, pb)

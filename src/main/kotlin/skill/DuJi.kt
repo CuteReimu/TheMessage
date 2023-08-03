@@ -22,39 +22,47 @@ class DuJi : AbstractSkill(), ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             log.error("现在不是发动[毒计]的时机")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[毒计]的时机")
             return
         }
         if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[毒计]")
+            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[毒计]")
             return
         }
         val pb = message as skill_du_ji_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerIdsCount != 2) {
             log.error("[毒计]必须选择两名角色为目标")
+            (r as? HumanPlayer)?.sendErrorMessage("[毒计]必须选择两名角色为目标")
             return
         }
         val idx1 = pb.getTargetPlayerIds(0)
         val idx2 = pb.getTargetPlayerIds(1)
         if (idx1 < 0 || idx1 >= g.players.size || idx2 < 0 || idx2 >= g.players.size) {
             log.error("目标错误")
+            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         if (idx1 == 0 || idx2 == 0) {
             log.error("不能以自己为目标")
+            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
             return
         }
         val target1 = g.players[r.getAbstractLocation(idx1)]!!
         val target2 = g.players[r.getAbstractLocation(idx2)]!!
         if (!target1.alive || !target2.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         if (target1.cards.isEmpty() || target2.cards.isEmpty()) {
             log.error("目标没有手牌")
+            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
             return
         }
         r.incrSeq()
@@ -138,15 +146,18 @@ class DuJi : AbstractSkill(), ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ji_b_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
@@ -164,6 +175,7 @@ class DuJi : AbstractSkill(), ActiveSkill {
             val index = playerAndCards.indexOfFirst { it.card.id == message.cardId }
             if (index < 0) {
                 log.error("目标卡牌不存在")
+                (player as? HumanPlayer)?.sendErrorMessage("目标卡牌不存在")
                 return null
             }
             val selection = playerAndCards.removeAt(index)
@@ -219,15 +231,18 @@ class DuJi : AbstractSkill(), ActiveSkill {
             val r = selection.waitingPlayer
             if (player !== r) {
                 log.error("当前没有轮到你结算[毒计]")
+                (player as? HumanPlayer)?.sendErrorMessage("当前没有轮到你结算[毒计]")
                 return null
             }
             if (message !is skill_du_ji_c_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             r.incrSeq()

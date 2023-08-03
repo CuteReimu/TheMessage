@@ -28,14 +28,17 @@ class DiaoBao : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("调包被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("调包被禁止使用了")
             return false
         }
         if (r !== (g.fsm as? FightPhaseIdle)?.whoseFightTurn) {
             log.error("调包的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("调包的使用时机不对")
             return false
         }
         return true

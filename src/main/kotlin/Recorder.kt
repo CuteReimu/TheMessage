@@ -29,7 +29,7 @@ class Recorder {
     @Volatile
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
-        if ("reconnect_toc" == protoName || "heart_toc" == protoName || "game_init_finish_tos" == protoName || "notify_kicked_toc" == protoName) return
+        if (protoName in ignoredProtoNames) return
         if (!loading && ("wait_for_select_role_toc" == protoName || "init_toc" == protoName || list.isNotEmpty())) {
             val builder = recorder_line.newBuilder()
             builder.nanoTime = System.nanoTime()
@@ -169,6 +169,8 @@ class Recorder {
     companion object {
         private val log = Logger.getLogger(Recorder::class.java)
         private val saveLoadPool = Channel<() -> Unit>(Channel.UNLIMITED)
+        private val ignoredProtoNames =
+            listOf("reconnect_toc", "heart_toc", "game_init_finish_tos", "notify_kicked_toc", "error_message_toc")
 
         init {
             @OptIn(DelicateCoroutinesApi::class)

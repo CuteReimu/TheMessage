@@ -4,6 +4,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Errcode.error_message_toc
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
 import com.google.protobuf.GeneratedMessageV3
@@ -48,6 +49,13 @@ class HumanPlayer(
         recorder = Recorder()
         device = null
         autoPlay = false
+    }
+
+    /**
+     * 向玩家客户端发送[error_message_toc]
+     */
+    fun sendErrorMessage(message: String) {
+        send(error_message_toc.newBuilder().setMsg(message).build())
     }
 
     /**

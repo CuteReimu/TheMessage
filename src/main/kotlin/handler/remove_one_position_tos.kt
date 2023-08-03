@@ -10,6 +10,7 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
     override fun handle0(r: HumanPlayer, pb: Fengsheng.remove_one_position_tos) {
         if (r.game!!.isStarted) {
             log.error("game already started")
+            r.sendErrorMessage("游戏已经开始了")
             return
         }
         val oldPlayers = r.game!!.players

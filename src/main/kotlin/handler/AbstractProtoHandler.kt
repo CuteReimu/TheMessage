@@ -12,6 +12,7 @@ abstract class AbstractProtoHandler<T : GeneratedMessageV3> : ProtoHandler {
         val game = player.game
         if (game == null) {
             log.error("player didn't not join room, current msg: " + message.descriptorForType.name)
+            player.sendErrorMessage("找不到房间")
         } else {
             GameExecutor.post(game) {
                 player.clearTimeoutCount()

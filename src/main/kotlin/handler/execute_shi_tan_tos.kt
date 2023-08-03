@@ -8,6 +8,7 @@ class execute_shi_tan_tos : AbstractProtoHandler<Fengsheng.execute_shi_tan_tos>(
     override fun handle0(r: HumanPlayer, pb: Fengsheng.execute_shi_tan_tos) {
         if (!r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

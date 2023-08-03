@@ -7,7 +7,8 @@ import org.apache.log4j.Logger
 class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.add_one_position_tos) {
         if (r.game!!.isStarted) {
-            log.error("game already started")
+            log.error("the game has already started")
+            r.sendErrorMessage("游戏已经开始了")
             return
         }
         val players = r.game!!.players

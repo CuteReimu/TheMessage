@@ -13,6 +13,7 @@ class get_record_list_tos : ProtoHandler {
     override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
         if (player.game != null || player.isLoadingRecord) {
             log.error("player is already in a room")
+            player.sendErrorMessage("你已经在房间里了")
             return
         }
         val pb = message as Fengsheng.get_record_list_tos

@@ -16,28 +16,34 @@ class JinBi : AbstractSkill(), ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("现在不是出牌阶段空闲时点")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             log.error("[禁闭]一回合只能发动一次")
+            (r as? HumanPlayer)?.sendErrorMessage("[禁闭]一回合只能发动一次")
             return
         }
         val pb = message as skill_jin_bi_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            (r as? HumanPlayer)?.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             log.error("目标错误")
+            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             log.error("不能以自己为目标")
+            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         r.incrSeq()
@@ -90,15 +96,18 @@ class JinBi : AbstractSkill(), ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== target) {
                 log.error("你不是被禁闭的目标")
+                (player as? HumanPlayer)?.sendErrorMessage("你不是被禁闭的目标")
                 return null
             }
             if (message !is skill_jin_bi_b_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = target.game!!
             if (target is HumanPlayer && !target.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${target.seq}, actual Seq: ${message.seq}")
+                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.cardIdsCount == 0) {
@@ -107,12 +116,14 @@ class JinBi : AbstractSkill(), ActiveSkill {
                 return ResolveResult(MainPhaseIdle(r), true)
             } else if (message.cardIdsCount != 2) {
                 log.error("给的牌数量不对：${message.cardIdsCount}")
+                (player as? HumanPlayer)?.sendErrorMessage("给的牌数量不对：${message.cardIdsCount}")
                 return null
             }
             val cards = Array(2) {
                 val card = target.findCard(message.getCardIds(it))
                 if (card == null) {
                     log.error("没有这张牌")
+                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
                 card

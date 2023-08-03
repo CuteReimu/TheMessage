@@ -28,19 +28,23 @@ class PoYi : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("破译被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("破译被禁止使用了")
             return false
         }
         val fsm = g.fsm as? SendPhaseIdle
         if (r !== fsm?.inFrontOfWhom) {
             log.error("破译的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("破译的使用时机不对")
             return false
         }
         if (fsm.isMessageCardFaceUp) {
             log.error("破译不能对已翻开的情报使用")
+            (r as? HumanPlayer)?.sendErrorMessage("破译不能对已翻开的情报使用")
             return false
         }
         return true
@@ -91,14 +95,17 @@ class PoYi : Card {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is Fengsheng.po_yi_show_tos) {
                 log.error("现在正在结算破译")
+                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算破译")
                 return null
             }
             if (player !== sendPhase.inFrontOfWhom) {
                 log.error("你不是破译的使用者")
+                (player as? HumanPlayer)?.sendErrorMessage("你不是破译的使用者")
                 return null
             }
             if (message.show && !sendPhase.messageCard.colors.contains(color.Black)) {
                 log.error("非黑牌不能翻开")
+                (player as? HumanPlayer)?.sendErrorMessage("非黑牌不能翻开")
                 return null
             }
             player.incrSeq()

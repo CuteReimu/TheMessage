@@ -11,10 +11,12 @@ class skill_qiang_ling_tos : AbstractProtoHandler<Role.skill_qiang_ling_tos>() {
         val skill = r.findSkill(SkillId.QIANG_LING)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         if (pb.typesCount != 0 && EnumSet.copyOf(pb.typesList).size != pb.typesCount) {
             log.error("宣言的卡牌类型重复${pb.typesValueList.toTypedArray().contentToString()}")
+            r.sendErrorMessage("宣言的卡牌类型重复${pb.typesValueList.toTypedArray().contentToString()}")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

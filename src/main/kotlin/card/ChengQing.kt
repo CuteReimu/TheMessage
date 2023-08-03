@@ -30,10 +30,12 @@ class ChengQing : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("澄清被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("澄清被禁止使用了")
             return false
         }
         val target = args[0] as Player
@@ -42,28 +44,34 @@ class ChengQing : Card {
         if (fsm is MainPhaseIdle) {
             if (r !== fsm.player) {
                 log.error("澄清的使用时机不对")
+                (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
                 return false
             }
         } else if (fsm is WaitForChengQing) {
             if (r !== fsm.askWhom) {
                 log.error("澄清的使用时机不对")
+                (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
                 return false
             }
         } else {
             log.error("澄清的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
             return false
         }
         if (!target.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return false
         }
         val targetCard = target.messageCards.find { c -> c.id == targetCardId }
         if (targetCard == null) {
             log.error("没有这张情报")
+            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
             return false
         }
         if (!targetCard.colors.contains(color.Black)) {
             log.error("澄清只能对黑情报使用")
+            (r as? HumanPlayer)?.sendErrorMessage("澄清只能对黑情报使用")
             return false
         }
         return true

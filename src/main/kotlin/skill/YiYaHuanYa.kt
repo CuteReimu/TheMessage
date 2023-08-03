@@ -36,11 +36,13 @@ class YiYaHuanYa : AbstractSkill(), TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
                     log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    player.sendErrorMessage("操作太晚了")
                     return null
                 }
                 player.incrSeq()
@@ -48,34 +50,41 @@ class YiYaHuanYa : AbstractSkill(), TriggeredSkill {
             }
             if (message !is skill_yi_ya_huan_ya_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = fsm.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             val card = r.findCard(message.cardId)
             if (card == null) {
                 log.error("没有这张卡")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
             if (!card.colors.contains(color.Black)) {
                 log.error("你只能选择黑色手牌")
+                (player as? HumanPlayer)?.sendErrorMessage("你只能选择黑色手牌")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
+                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target !== fsm.sender && target !== fsm.sender.getNextLeftAlivePlayer() && target !== fsm.sender.getNextRightAlivePlayer()) {
                 log.error("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
+                (player as? HumanPlayer)?.sendErrorMessage("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
                 return null
             }
             r.incrSeq()

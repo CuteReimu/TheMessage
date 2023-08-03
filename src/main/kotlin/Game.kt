@@ -257,6 +257,7 @@ class Game private constructor(totalPlayerCount: Int) {
                     "时机错误，当前时点为：$fsm，收到: ${pb.javaClass.simpleName} | " +
                             printer.printToString(pb).replace("\n *".toRegex(), " ")
                 )
+                (player as? HumanPlayer)?.sendErrorMessage("时机错误")
                 return@post
             }
             val result = (fsm as WaitingFsm).resolveProtocol(player, pb)

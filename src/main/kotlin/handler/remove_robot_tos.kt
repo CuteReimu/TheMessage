@@ -10,6 +10,7 @@ class remove_robot_tos : AbstractProtoHandler<Fengsheng.remove_robot_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.remove_robot_tos) {
         if (r.game!!.isStarted) {
             log.error("game is already started")
+            r.sendErrorMessage("游戏已经开始了")
             return
         }
         r.game!!.removeOneRobot()

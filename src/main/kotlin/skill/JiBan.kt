@@ -16,15 +16,18 @@ class JiBan : AbstractSkill(), ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("现在不是出牌阶段空闲时点")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             log.error("[羁绊]一回合只能发动一次")
+            (r as? HumanPlayer)?.sendErrorMessage("[羁绊]一回合只能发动一次")
             return
         }
         val pb = message as skill_ji_ban_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()
@@ -62,38 +65,46 @@ class JiBan : AbstractSkill(), ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_ji_ban_b_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.cardIdsCount == 0) {
                 log.error("至少需要选择一张卡牌")
+                (player as? HumanPlayer)?.sendErrorMessage("至少需要选择一张卡牌")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
+                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             if (message.targetPlayerId == 0) {
                 log.error("不能以自己为目标")
+                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             val cards = Array(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     log.error("没有这张卡")
+                    (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card

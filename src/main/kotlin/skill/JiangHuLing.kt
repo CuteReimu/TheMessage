@@ -74,14 +74,17 @@ class JiangHuLing : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jiang_hu_ling_a_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
@@ -90,6 +93,7 @@ class JiangHuLing : TriggeredSkill {
             }
             if (message.color == color.UNRECOGNIZED) {
                 log.error("未知的颜色类型")
+                (player as? HumanPlayer)?.sendErrorMessage("未知的颜色类型")
                 return null
             }
             r.incrSeq()
@@ -194,11 +198,13 @@ class JiangHuLing : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.sender) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
                     log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    player.sendErrorMessage("操作太晚了")
                     return null
                 }
                 player.incrSeq()
@@ -211,20 +217,24 @@ class JiangHuLing : TriggeredSkill {
             val r = fsm.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             val target = fsm.inFrontOfWhom
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.cardId)
             if (card == null) {
                 log.error("没有这张卡")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
             if (!card.colors.contains(color)) {
                 log.error("你选择的情报不是宣言的颜色")
+                (player as? HumanPlayer)?.sendErrorMessage("你选择的情报不是宣言的颜色")
                 return null
             }
             r.incrSeq()

@@ -46,10 +46,12 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
     override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
         if (message !is select_role_tos) {
             log.error("正在等待选择角色")
+            (player as? HumanPlayer)?.sendErrorMessage("正在等待选择角色")
             return null
         }
         if (selected[player.location] != null) {
             log.error("你已经选了角色")
+            (player as? HumanPlayer)?.sendErrorMessage("你已经选了角色")
             return null
         }
         val roleSkillsData =
@@ -57,6 +59,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             else options[player.location].find { o -> o.role == message.role }
         if (roleSkillsData == null) {
             log.error("你没有这个角色")
+            (player as? HumanPlayer)?.sendErrorMessage("你没有这个角色")
             return null
         }
         player.incrSeq()

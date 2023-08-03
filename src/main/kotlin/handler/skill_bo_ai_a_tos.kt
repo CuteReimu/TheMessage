@@ -11,6 +11,7 @@ class skill_bo_ai_a_tos : AbstractProtoHandler<Role.skill_bo_ai_a_tos>() {
         val skill = r.findSkill(SkillId.BO_AI) as? ActiveSkill
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         skill.executeProtocol(r.game!!, r, pb)

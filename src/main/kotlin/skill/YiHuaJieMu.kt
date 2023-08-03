@@ -23,42 +23,51 @@ class YiHuaJieMu : AbstractSkill(), ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             log.error("[移花接木]的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("[移花接木]的使用时机不对")
             return
         }
         if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[移花接木]")
+            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[移花接木]")
             return
         }
         val pb = message as skill_yi_hua_jie_mu_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.fromPlayerId < 0 || pb.fromPlayerId >= g.players.size) {
             log.error("目标错误")
+            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         val fromPlayer = r.game!!.players[r.getAbstractLocation(pb.fromPlayerId)]!!
         if (!fromPlayer.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         if (pb.toPlayerId < 0 || pb.toPlayerId >= g.players.size) {
             log.error("目标错误")
+            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         val toPlayer = r.game!!.players[r.getAbstractLocation(pb.toPlayerId)]!!
         if (!toPlayer.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         if (pb.fromPlayerId == pb.toPlayerId) {
             log.error("选择的两个目标不能相同")
+            (r as? HumanPlayer)?.sendErrorMessage("选择的两个目标不能相同")
             return
         }
         val card = fromPlayer.findMessageCard(pb.cardId)
         if (card == null) {
             log.error("没有这张卡")
+            (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
             return
         }
         r.incrSeq()

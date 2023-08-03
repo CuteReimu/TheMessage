@@ -10,6 +10,7 @@ class skill_qi_huo_ke_ju_tos : AbstractProtoHandler<Role.skill_qi_huo_ke_ju_tos>
         val skill = r.findSkill(SkillId.QI_HUO_KE_JU)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

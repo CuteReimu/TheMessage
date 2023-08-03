@@ -34,11 +34,13 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
                     log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                     return null
                 }
                 player.incrSeq()
@@ -46,29 +48,35 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
             }
             if (message !is skill_jing_meng_a_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = fsm.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误：${message.targetPlayerId}")
+                (player as? HumanPlayer)?.sendErrorMessage("目标错误：${message.targetPlayerId}")
                 return null
             }
             if (message.targetPlayerId == 0) {
                 log.error("不能以自己为目标")
+                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target.cards.isEmpty()) {
                 log.error("目标没有手牌")
+                (player as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
                 return null
             }
             r.incrSeq()
@@ -120,21 +128,25 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jing_meng_b_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = fsm.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                 return null
             }
             val card = target.findCard(message.cardId)
             if (card == null) {
                 log.error("没有这张牌")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             r.incrSeq()

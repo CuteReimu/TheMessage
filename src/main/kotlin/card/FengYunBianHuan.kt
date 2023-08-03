@@ -27,14 +27,17 @@ class FengYunBianHuan : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("风云变幻被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("风云变幻被禁止使用了")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("风云变幻的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("风云变幻的使用时机不对")
             return false
         }
         return true
@@ -109,21 +112,25 @@ class FengYunBianHuan : Card {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is feng_yun_bian_huan_choose_card_tos) {
                 log.error("现在正在结算风云变幻")
+                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                 return null
             }
             val chooseCard = drawCards.find { c -> c.id == message.cardId }
             if (chooseCard == null) {
                 log.error("没有这张牌")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             if (player !== players.first()) {
                 log.error("还没轮到你选牌")
+                (player as? HumanPlayer)?.sendErrorMessage("还没轮到你选牌")
                 return null
             }
             if (message.asMessageCard) {
                 val containsSame = player.messageCards.any { c -> c.hasSameColor(chooseCard) }
                 if (containsSame) {
                     log.error("已有相同颜色情报，不能作为情报牌")
+                    (player as? HumanPlayer)?.sendErrorMessage("已有相同颜色情报，不能作为情报牌")
                     return null
                 }
             }

@@ -29,22 +29,26 @@ class WuDao : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("误导被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("误导被禁止使用了")
             return false
         }
         val target = args[0] as Player
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null) {
             log.error("误导的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机不对")
             return false
         }
         val left: Player = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
         val right: Player = fsm.inFrontOfWhom.getNextRightAlivePlayer()
         if (target === fsm.inFrontOfWhom || target !== left && target !== right) {
             log.error("误导只能选择情报当前人左右两边的人作为目标")
+            (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
             return false
         }
         return true

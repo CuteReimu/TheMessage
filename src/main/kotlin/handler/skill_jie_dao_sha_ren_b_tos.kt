@@ -10,6 +10,7 @@ class skill_jie_dao_sha_ren_b_tos : AbstractProtoHandler<Role.skill_jie_dao_sha_
         val skill = r.findSkill(SkillId.JIE_DAO_SHA_REN)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

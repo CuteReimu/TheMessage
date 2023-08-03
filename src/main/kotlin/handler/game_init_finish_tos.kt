@@ -15,6 +15,7 @@ class game_init_finish_tos : ProtoHandler {
             val game = player.game
             if (game == null) {
                 log.error("can not find game")
+                player.sendErrorMessage("找不到房间")
                 return
             }
             val fsm = game.fsm as? WaitForSelectRole ?: return

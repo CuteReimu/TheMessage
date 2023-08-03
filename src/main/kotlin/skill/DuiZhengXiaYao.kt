@@ -23,15 +23,18 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             log.error("现在不是发动[对症下药]的时机")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[对症下药]的时机")
             return
         }
         if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[对症下药]")
+            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[对症下药]")
             return
         }
         val pb = message as skill_dui_zheng_xia_yao_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            (r as? HumanPlayer)?.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()
@@ -96,15 +99,18 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_dui_zheng_xia_yao_b_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
@@ -121,12 +127,14 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             }
             if (message.cardIdsCount != 2) {
                 log.error("enable为true时必须要发两张牌")
+                (player as? HumanPlayer)?.sendErrorMessage("不足两张牌")
                 return null
             }
             val cards = Array(2) { i ->
                 val card = r.findCard(message.getCardIds(i))
                 if (card == null) {
                     log.error("没有这张卡")
+                    (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card
@@ -134,11 +142,13 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             val colors = getSameColors(cards[0], cards[1])
             if (colors.isEmpty()) {
                 log.error("两张牌没有相同的颜色")
+                (player as? HumanPlayer)?.sendErrorMessage("两张牌没有相同的颜色")
                 return null
             }
             val playerAndCard = findColorMessageCard(g, colors)
             if (playerAndCard == null) {
                 log.error("场上没有选择的颜色的情报牌")
+                (player as? HumanPlayer)?.sendErrorMessage("场上没有选择的颜色的情报牌")
                 (player as? HumanPlayer)?.send(error_code_toc.newBuilder().setCode(no_color_message_card).build())
                 return null
             }
@@ -197,29 +207,35 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_dui_zheng_xia_yao_c_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
+                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.messageCardId)
             if (card == null) {
                 log.error("没有这张牌")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             var contains = false
@@ -231,6 +247,7 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             }
             if (!contains) {
                 log.error("选择的情报不含有指定的颜色")
+                (player as? HumanPlayer)?.sendErrorMessage("选择的情报不含有指定的颜色")
                 return null
             }
             r.incrSeq()

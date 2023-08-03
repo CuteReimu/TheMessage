@@ -8,6 +8,7 @@ class end_receive_phase_tos : AbstractProtoHandler<Fengsheng.end_receive_phase_t
     override fun handle0(r: HumanPlayer, pb: Fengsheng.end_receive_phase_tos) {
         if (!r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

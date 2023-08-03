@@ -35,11 +35,13 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.sender) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
                     log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    player.sendErrorMessage("操作太晚了")
                     return null
                 }
                 player.incrSeq()
@@ -47,25 +49,30 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
             }
             if (message !is skill_mian_li_cang_zhen_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = fsm.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             val card = r.findCard(message.cardId)
             if (card == null) {
                 log.error("没有这张卡")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
             if (!card.colors.contains(color.Black)) {
                 log.error("你选择的不是黑色手牌")
+                (player as? HumanPlayer)?.sendErrorMessage("你选择的不是黑色手牌")
                 return null
             }
             val target = fsm.inFrontOfWhom
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()

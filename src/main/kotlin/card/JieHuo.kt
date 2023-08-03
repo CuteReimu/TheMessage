@@ -29,10 +29,12 @@ class JieHuo : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("截获被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("截获被禁止使用了")
             return false
         }
         return Companion.canUse(g, r)
@@ -54,10 +56,12 @@ class JieHuo : Card {
             val fsm = g.fsm as? FightPhaseIdle
             if (r !== fsm?.whoseFightTurn) {
                 log.error("截获的使用时机不对")
+                (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机不对")
                 return false
             }
             if (r === fsm.inFrontOfWhom) {
                 log.error("情报在自己面前不能使用截获")
+                (r as? HumanPlayer)?.sendErrorMessage("情报在自己面前不能使用截获")
                 return false
             }
             return true

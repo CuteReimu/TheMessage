@@ -11,10 +11,12 @@ class skill_ji_song_tos : AbstractProtoHandler<Role.skill_ji_song_tos>() {
         val skill = r.findSkill(SkillId.JI_SONG) as? ActiveSkill
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         if (HashSet(pb.cardIdsList).size != pb.cardIdsCount) {
             log.error("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
+            r.sendErrorMessage("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
             return
         }
         skill.executeProtocol(r.game!!, r, pb)

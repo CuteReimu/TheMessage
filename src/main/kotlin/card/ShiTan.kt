@@ -34,23 +34,28 @@ class ShiTan : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("试探被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("试探被禁止使用了")
             return false
         }
         val target = args[0] as Player
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("试探的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("试探的使用时机不对")
             return false
         }
         if (r === target) {
             log.error("试探不能对自己使用")
+            (r as? HumanPlayer)?.sendErrorMessage("试探不能对自己使用")
             return false
         }
         if (!target.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return false
         }
         return true
@@ -156,26 +161,31 @@ class ShiTan : Card {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is Fengsheng.execute_shi_tan_tos) {
                 log.error("现在正在结算试探：$card")
+                (r as? HumanPlayer)?.sendErrorMessage("现在正在结算试探：$card")
                 return null
             }
             if (target !== player) {
                 log.error("你不是试探的目标：$card")
+                (r as? HumanPlayer)?.sendErrorMessage("你不是试探的目标：$card")
                 return null
             }
             var discardCard: Card? = null
             if (card.checkDrawCard(target) || target.cards.isEmpty()) {
                 if (message.cardIdCount != 0) {
                     log.error("${target}被使用${card}时不应该弃牌")
+                    (r as? HumanPlayer)?.sendErrorMessage("${target}被使用${card}时不应该弃牌")
                     return null
                 }
             } else {
                 if (message.cardIdCount != 1) {
                     log.error("${target}被使用${card}时应该弃一张牌")
+                    (r as? HumanPlayer)?.sendErrorMessage("${target}被使用${card}时应该弃一张牌")
                     return null
                 }
                 discardCard = target.findCard(message.getCardId(0))
                 if (discardCard == null) {
                     log.error("没有这张牌")
+                    (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
             }

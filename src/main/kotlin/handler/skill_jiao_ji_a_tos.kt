@@ -11,6 +11,7 @@ class skill_jiao_ji_a_tos : AbstractProtoHandler<Role.skill_jiao_ji_a_tos>() {
         val skill = r.findSkill(SkillId.JIAO_JI) as? ActiveSkill
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         skill.executeProtocol(r.game!!, r, pb)

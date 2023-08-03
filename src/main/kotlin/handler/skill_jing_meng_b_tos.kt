@@ -10,6 +10,7 @@ class skill_jing_meng_b_tos : AbstractProtoHandler<Role.skill_jing_meng_b_tos>()
         val skill = r.findSkill(SkillId.JING_MENG)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

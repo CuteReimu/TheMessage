@@ -30,10 +30,12 @@ class WeiBi : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("威逼被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("威逼被禁止使用了")
             return false
         }
         val target = args[0] as Player
@@ -85,16 +87,19 @@ class WeiBi : Card {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is wei_bi_give_card_tos) {
                 log.error("现在正在结算威逼")
+                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算威逼")
                 return null
             }
             if (target !== player) {
                 log.error("你不是威逼的目标")
+                (player as? HumanPlayer)?.sendErrorMessage("你不是威逼的目标")
                 return null
             }
             val cardId: Int = message.cardId
             val c = target.findCard(cardId)
             if (c == null) {
                 log.error("没有这张牌")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             target.incrSeq()
@@ -134,18 +139,22 @@ class WeiBi : Card {
         fun canUse(g: Game, r: Player, target: Player, wantType: card_type): Boolean {
             if (r !== (g.fsm as? MainPhaseIdle)?.player) {
                 log.error("威逼的使用时机不对")
+                (r as? HumanPlayer)?.sendErrorMessage("威逼的使用时机不对")
                 return false
             }
             if (r === target) {
                 log.error("威逼不能对自己使用")
+                (r as? HumanPlayer)?.sendErrorMessage("威逼不能对自己使用")
                 return false
             }
             if (!target.alive) {
                 log.error("目标已死亡")
+                (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return false
             }
             if (!availableCardType.contains(wantType)) {
                 log.error("威逼选择的卡牌类型错误：$wantType")
+                (r as? HumanPlayer)?.sendErrorMessage("威逼选择的卡牌类型错误：$wantType")
                 return false
             }
             return true

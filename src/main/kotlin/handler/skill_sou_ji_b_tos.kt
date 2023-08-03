@@ -10,10 +10,12 @@ class skill_sou_ji_b_tos : AbstractProtoHandler<Role.skill_sou_ji_b_tos>() {
         val skill = r.findSkill(SkillId.SOU_JI)
         if (skill == null) {
             log.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
             return
         }
         if (HashSet(pb.cardIdsList).size != pb.cardIdsCount) {
             log.error("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
+            r.sendErrorMessage("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

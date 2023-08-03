@@ -11,11 +11,13 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.die_give_card_tos) {
         if (!r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         val fsm = r.game!!.fsm as? WaitForDieGiveCard
         if (r !== fsm?.diedQueue?.get(fsm.diedIndex)) {
             log.error("你没有死亡")
+            r.sendErrorMessage("你没有死亡")
             return
         }
         if (pb.targetPlayerId == 0) {
@@ -24,14 +26,17 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
             return
         } else if (pb.targetPlayerId < 0 || pb.targetPlayerId >= r.game!!.players.size) {
             log.error("目标错误: ${pb.targetPlayerId}")
+            r.sendErrorMessage("目标错误: ${pb.targetPlayerId}")
             return
         }
         if (HashSet(pb.cardIdList).size != pb.cardIdList.size) {
             log.error("卡牌重复${pb.cardIdList.toTypedArray().contentToString()}")
+            r.sendErrorMessage("卡牌重复${pb.cardIdList.toTypedArray().contentToString()}")
             return
         }
         if (pb.cardIdCount == 0) {
             log.warn("参数似乎有些不对，姑且认为不给牌吧")
+            r.sendErrorMessage("参数似乎有些不对，姑且认为不给牌吧")
             r.incrSeq()
             r.game!!.resolve(AfterDieGiveCard(fsm))
             return
@@ -41,6 +46,7 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
             val card = r.findCard(cardId)
             if (card == null) {
                 log.error("没有这张牌")
+                r.sendErrorMessage("没有这张牌")
                 return
             }
             cards.add(card)
@@ -49,6 +55,7 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
         val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             log.error("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         target.cards.addAll(cards)

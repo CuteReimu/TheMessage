@@ -82,16 +82,19 @@ class YiXin : AbstractSkill(), TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.askWhom) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yi_xin_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = fsm.askWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
@@ -104,19 +107,23 @@ class YiXin : AbstractSkill(), TriggeredSkill {
             val card = r.findCard(message.cardId)
             if (card == null) {
                 log.error("没有这张卡")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
+                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             if (message.targetPlayerId == 0) {
                 log.error("不能以自己为目标")
+                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()

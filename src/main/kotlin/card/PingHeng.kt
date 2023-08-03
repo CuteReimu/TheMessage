@@ -29,23 +29,28 @@ class PingHeng : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
             log.error("你被禁闭了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
         if (g.qiangLingTypes.contains(type)) {
             log.error("平衡被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("平衡被禁止使用了")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("平衡的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("平衡的使用时机不对")
             return false
         }
         val target = args[0] as Player
         if (r === target) {
             log.error("平衡不能对自己使用")
+            (r as? HumanPlayer)?.sendErrorMessage("平衡不能对自己使用")
             return false
         }
         if (!target.alive) {
             log.error("目标已死亡")
+            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return false
         }
         return true

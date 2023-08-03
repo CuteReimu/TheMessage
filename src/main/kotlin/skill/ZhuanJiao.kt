@@ -100,16 +100,19 @@ class ZhuanJiao : AbstractSkill(), TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== fsm.askWhom) {
                 log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_zhuan_jiao_tos) {
                 log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = fsm.askWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
@@ -119,27 +122,33 @@ class ZhuanJiao : AbstractSkill(), TriggeredSkill {
             val card = r.findMessageCard(message.cardId)
             if (card == null) {
                 log.error("没有这张卡")
+                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
             if (card.colors.contains(color.Black)) {
                 log.error("不是非黑色情报")
+                (player as? HumanPlayer)?.sendErrorMessage("不是非黑色情报")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
+                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             if (message.targetPlayerId == 0) {
                 log.error("不能以自己为目标")
+                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = r.game!!.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target.checkThreeSameMessageCard(card)) {
                 log.error("你不能通过此技能让任何角色收集三张或更多同色情报")
+                (player as? HumanPlayer)?.sendErrorMessage("你不能通过此技能让任何角色收集三张或更多同色情报")
                 return null
             }
             r.incrSeq()
