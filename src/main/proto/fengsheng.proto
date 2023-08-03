@@ -109,6 +109,10 @@ message game_start_toc {
 message game_init_finish_tos {
 }
 
+// 通知客户端被顶号了
+message notify_kicked_toc {
+}
+
 // 等待客户端选角色
 message wait_for_select_role_toc {
   uint32        player_count = 1; // 玩家总人数（包括你）
