@@ -207,20 +207,22 @@ abstract class Player protected constructor() {
 
     fun getNextLeftAlivePlayer(): Player {
         var left = location - 1
+        if (left < 0) left += game!!.players.size
         while (left != location) {
-            if (left < 0) left += game!!.players.size
             if (game!!.players[left]!!.alive) break
             left--
+            if (left < 0) left += game!!.players.size
         }
         return game!!.players[left]!!
     }
 
     fun getNextRightAlivePlayer(): Player {
         var right = location + 1
+        if (right >= game!!.players.size) right -= game!!.players.size
         while (right != location) {
-            if (right >= game!!.players.size) right -= game!!.players.size
             if (game!!.players[right]!!.alive) break
             right++
+            if (right >= game!!.players.size) right -= game!!.players.size
         }
         return game!!.players[right]!!
     }
