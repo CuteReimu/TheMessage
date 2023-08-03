@@ -29,7 +29,7 @@ class Recorder {
     @Volatile
     private var pausing = false
     fun add(protoName: String, messageBuf: ByteArray?) {
-        if ("reconnect_toc" == protoName || "heart_toc" == protoName || "game_init_finish_tos" == protoName) return
+        if ("reconnect_toc" == protoName || "heart_toc" == protoName || "game_init_finish_tos" == protoName || "notify_kicked_toc" == protoName) return
         if (!loading && ("wait_for_select_role_toc" == protoName || "init_toc" == protoName || list.isNotEmpty())) {
             val builder = recorder_line.newBuilder()
             builder.nanoTime = System.nanoTime()

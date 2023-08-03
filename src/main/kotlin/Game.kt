@@ -167,7 +167,7 @@ class Game private constructor(totalPlayerCount: Int) {
         val humanPlayers = players.filterIsInstance<HumanPlayer>()
         humanPlayers.forEach {
             it.saveRecord()
-            deviceCache.remove(it.device!!)
+            playerNameCache.remove(it.playerName)
         }
         if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
             val records = ArrayList<Statistics.Record>(players.size)
@@ -336,7 +336,7 @@ class Game private constructor(totalPlayerCount: Int) {
         private val log = Logger.getLogger(Game::class.java)
         val playerCache = ConcurrentHashMap<String, HumanPlayer>()
         val GameCache = ConcurrentHashMap<Int, Game>()
-        val deviceCache = ConcurrentHashMap<String, HumanPlayer>()
+        val playerNameCache = ConcurrentHashMap<String, HumanPlayer>()
         private var increaseId = 0
         private var lastTotalPlayerCount = Config.TotalPlayerCount
         var newGame = Game(lastTotalPlayerCount)

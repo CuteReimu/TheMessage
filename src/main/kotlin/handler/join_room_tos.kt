@@ -26,17 +26,23 @@ class join_room_tos : ProtoHandler {
             player.send(builder.build())
             return
         }
-        val device = pb.device
-        val oldPlayer = Game.deviceCache[device]
+        val playerName = pb.name
+        if (playerName.toByteArray(StandardCharsets.UTF_8).size > 24) {
+            player.send(error_code_toc.newBuilder().setCode(name_too_long).build())
+            return
+        }
+        val playerInfo = Statistics.login(playerName, pb.device, pb.password)
+        if (playerInfo == null) {
+            player.send(error_code_toc.newBuilder().setCode(login_failed).build())
+            return
+        }
+        val oldPlayer = Game.playerNameCache[playerName]
         val game = oldPlayer?.game
         if (game != null) {
             val continueLogin = runBlocking {
                 GameExecutor.call(game) {
                     if (game.isStarted && !game.isEnd) { // 断线重连
-                        if (oldPlayer.isActive) {
-                            player.send(error_code_toc.newBuilder().setCode(already_online).build())
-                            return@call false
-                        }
+                        oldPlayer.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
                         Game.exchangePlayer(oldPlayer, player)
                         oldPlayer.setAutoPlay(false)
                         if (oldPlayer.needWaitLoad) {
@@ -53,10 +59,6 @@ class join_room_tos : ProtoHandler {
             }
             if (!continueLogin) return
         }
-        if (pb.name.toByteArray(StandardCharsets.UTF_8).size > 24) {
-            player.send(error_code_toc.newBuilder().setCode(name_too_long).build())
-            return
-        }
         if (Game.GameCache.size > Config.MaxRoomCount) {
             player.send(error_code_toc.newBuilder().setCode(no_more_room).build())
             return
@@ -64,23 +66,19 @@ class join_room_tos : ProtoHandler {
         val newGame = Game.newGame
         GameExecutor.post(newGame) {
             player.device = pb.device
-            val playerName = pb.name
             if (playerName.isBlank() || playerName.contains(",") ||
                 playerName.contains("\n") || playerName.contains("\r")
             ) {
                 player.send(error_code_toc.newBuilder().setCode(login_failed).build())
                 return@post
             }
-            val playerInfo = Statistics.login(playerName, pb.device, pb.password)
-            if (playerInfo == null) {
-                player.send(error_code_toc.newBuilder().setCode(login_failed).build())
-                return@post
-            }
-            val oldPlayer2 = Game.deviceCache.putIfAbsent(pb.device, player)
-            if (oldPlayer2 != null && oldPlayer2.game === newGame && playerName == oldPlayer2.playerName) {
-                log.warn("怀疑连续发送了两次连接请求。为了游戏体验，拒绝本次连接。想要单设备双开请修改不同的用户名。")
-                player.send(error_code_toc.newBuilder().setCode(join_room_too_fast).build())
-                return@post
+            val oldPlayer2 = Game.playerNameCache.put(playerName, player)
+            if (oldPlayer2 != null) {
+                oldPlayer2.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
+                log.info("${player.playerName}离开了房间")
+                newGame.players[player.location] = null
+                val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(player.location).build()
+                newGame.players.forEach { (it as? HumanPlayer)?.send(reply) }
             }
             val emptyCount = newGame.players.count { it == null }
             if (emptyCount == 1) newGame.removeOneRobot()
@@ -90,11 +88,11 @@ class join_room_tos : ProtoHandler {
             player.game!!.onPlayerJoinRoom(player, count)
             val builder = Fengsheng.get_room_info_toc.newBuilder()
             builder.myPosition = player.location
-            builder.onlineCount = Game.deviceCache.size
+            builder.onlineCount = Game.playerNameCache.size
             for (p in player.game!!.players) {
                 builder.addNames(p?.playerName ?: "")
                 val c = when (p) {
-                    null -> Statistics.PlayerGameCount(0, 0)
+                    null -> PlayerGameCount(0, 0)
                     is HumanPlayer -> Statistics.getPlayerGameCount(p.playerName)
                     else -> Statistics.totalPlayerGameCount.random()
                 }

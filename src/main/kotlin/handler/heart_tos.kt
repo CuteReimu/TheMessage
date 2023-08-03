@@ -7,7 +7,7 @@ import com.google.protobuf.GeneratedMessageV3
 
 class heart_tos : ProtoHandler {
     override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
-        val buf = Fengsheng.heart_toc.newBuilder().setOnlineCount(Game.deviceCache.size).build().toByteArray()
+        val buf = Fengsheng.heart_toc.newBuilder().setOnlineCount(Game.playerNameCache.size).build().toByteArray()
         player.send("heart_toc", buf, true)
     }
 }
