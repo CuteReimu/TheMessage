@@ -138,7 +138,9 @@ class Game private constructor(totalPlayerCount: Int) {
             }
         }
         identities.shuffle()
-        val tasks = listOf(Killer, Stealer, Collector, Mutator, Pioneer, Disturber, Sweeper).shuffled()
+        val tasks = arrayListOf(Killer, Stealer, Collector, Mutator, Pioneer, Sweeper)
+        if (players.size >= 5) tasks.add(Disturber)
+        tasks.shuffle()
         var secretIndex = 0
         for (i in players.indices) {
             val identity = identities[i]
