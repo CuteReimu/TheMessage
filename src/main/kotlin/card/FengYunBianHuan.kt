@@ -2,6 +2,7 @@ package com.fengsheng.card
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
@@ -151,6 +152,8 @@ class FengYunBianHuan : Card {
                     p.send(builder.build())
                 }
             }
+            if (message.asMessageCard)
+                return ResolveResult(OnAddMessageCard(mainPhaseIdle.player, this, false), true)
             return ResolveResult(this, true)
         }
 

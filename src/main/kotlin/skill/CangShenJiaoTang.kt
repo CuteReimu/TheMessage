@@ -3,6 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.ReceivePhaseSenderSkill
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
@@ -184,6 +185,8 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
+            if (message.asMessageCard)
+                return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
             return ResolveResult(fsm, true)
         }
 

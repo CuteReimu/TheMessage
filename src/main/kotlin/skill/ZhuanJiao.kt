@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
@@ -166,7 +167,7 @@ class ZhuanJiao : AbstractSkill(), TriggeredSkill {
                 }
             }
             r.draw(2)
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
         }
 
         companion object {

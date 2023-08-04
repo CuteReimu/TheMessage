@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -44,10 +45,10 @@ class GuangFaBao : AbstractSkill(), ActiveSkill {
             )
         }
         r.draw(3)
-        g.resolve(executeGuangFaBao(fsm, r))
+        g.resolve(executeGuangFaBao(fsm, r, false))
     }
 
-    private data class executeGuangFaBao(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
+    private data class executeGuangFaBao(val fsm: FightPhaseIdle, val r: Player, val putCard: Boolean) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {
@@ -127,7 +128,10 @@ class GuangFaBao : AbstractSkill(), ActiveSkill {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
+                val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+                if (putCard)
+                    return ResolveResult(OnAddMessageCard(fsm.whoseTurn, newFsm), true)
+                return ResolveResult(newFsm, true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
@@ -172,8 +176,12 @@ class GuangFaBao : AbstractSkill(), ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            if (r.cards.isNotEmpty()) return ResolveResult(this, true)
-            return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
+            if (r.cards.isNotEmpty())
+                return ResolveResult(copy(putCard = true), true)
+            val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+            if (putCard)
+                return ResolveResult(OnAddMessageCard(fsm.whoseTurn, newFsm), true)
+            return ResolveResult(newFsm, true)
         }
 
         companion object {

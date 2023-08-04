@@ -6,6 +6,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_yi_hua_jie_mu_toc
 import com.fengsheng.protos.Role.skill_yi_hua_jie_mu_tos
@@ -94,7 +95,9 @@ class YiHuaJieMu : AbstractSkill(), ActiveSkill {
                 p.send(builder.build())
             }
         }
-        g.resolve(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom))
+        val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+        if (!joinIntoHand) g.resolve(OnAddMessageCard(fsm.whoseTurn, newFsm))
+        else g.resolve(newFsm)
     }
 
     companion object {

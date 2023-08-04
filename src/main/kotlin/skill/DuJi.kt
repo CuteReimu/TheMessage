@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -262,7 +263,7 @@ class DuJi : AbstractSkill(), ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnAddMessageCard(fsm.fsm.whoseTurn, fsm), true)
         }
 
         companion object {

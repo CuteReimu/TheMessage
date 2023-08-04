@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.DieSkill
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -125,7 +126,7 @@ class RuGui : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
         }
 
         companion object {

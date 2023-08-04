@@ -5,6 +5,7 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
@@ -116,7 +117,8 @@ class LiYou : Card {
                 } else {
                     if (card != null) g.deck.discard(card.getOriginCard())
                 }
-                MainPhaseIdle(r)
+                if (!joinIntoHand) OnAddMessageCard(r, MainPhaseIdle(r), false)
+                else MainPhaseIdle(r)
             }
             if (card != null)
                 g.resolve(OnUseCard(r, r, target, card, card_type.Li_You, r, resolveFunc))

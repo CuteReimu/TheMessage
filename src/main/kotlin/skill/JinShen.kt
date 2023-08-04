@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.ReceivePhaseReceiverSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -82,7 +83,7 @@ class JinShen : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
         }
 
         companion object {

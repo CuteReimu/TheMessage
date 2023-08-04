@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.count
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.ReceivePhaseSenderSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -90,7 +91,7 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
                 }
             }
             r.draw(1)
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
         }
 
         companion object {

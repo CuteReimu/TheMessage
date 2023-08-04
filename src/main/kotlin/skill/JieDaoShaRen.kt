@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -164,7 +165,7 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
                 }
             }
             g.playerSetRoleFaceUp(r, false)
-            return ResolveResult(newFsm, true)
+            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, newFsm), true)
         }
 
         companion object {
