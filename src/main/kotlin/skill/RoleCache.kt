@@ -38,7 +38,8 @@ object RoleCache {
         RoleSkillsData("黄济仁", role.huang_ji_ren, false, false, DuiZhengXiaYao()),
         RoleSkillsData("白昆山", role.bai_kun_shan, false, false, DuJi()),
         RoleSkillsData("SP顾小梦", role.sp_gu_xiao_meng, true, true, JiBan()),
-        RoleSkillsData("SP李宁玉", role.sp_li_ning_yu, true, true, YingBian(), YouDao())
+        RoleSkillsData("SP李宁玉", role.sp_li_ning_yu, true, true, YingBian(), YouDao()),
+        RoleSkillsData("玛利亚", role.ma_li_ya, true, true, CangShenJiaoTang())
     )
     private val mapCache = HashMap<role, RoleSkillsData>()
 

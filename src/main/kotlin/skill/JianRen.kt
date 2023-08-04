@@ -85,7 +85,7 @@ class JianRen : AbstractSkill(), TriggeredSkill {
             if (isBlack) {
                 cards.clear()
                 r.cards.add(card)
-                log.info("${r}将${card}加入手牌")
+                log.info("${r}将${card}加入了手牌")
             }
             val g = r.game!!
             for (p in g.players) {

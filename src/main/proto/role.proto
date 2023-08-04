@@ -812,20 +812,24 @@ message skill_cang_shen_jiao_tang_b_tos {
 
 // 广播使用【藏身教堂】B
 message skill_cang_shen_jiao_tang_b_toc {
-  uint32 player_id = 1; // 玛利亚的ID
-  uint32 target_player_id = 2;
+  bool enable = 1; // 是否发动
+  uint32 player_id = 2; // 玛利亚的ID
+  uint32 target_player_id = 3;
 }
 
 // 【藏身教堂】C（对方是公开角色）：在A之后，将其一张黑色情报加入你的手牌或置入你的情报区
 message skill_cang_shen_jiao_tang_c_tos {
   bool enable = 1; // 是否发动
   uint32 card_id = 2;
-  uint32 seq = 3;
+  bool as_message_card = 3; // 是否作为情报牌
+  uint32 seq = 4;
 }
 
 // 广播使用【藏身教堂】C
 message skill_cang_shen_jiao_tang_c_toc {
-  uint32 player_id = 1; // 玛利亚的ID
-  uint32 target_player_id = 2;
-  uint32 card_id = 3;
+  bool enable = 1; // 是否发动
+  uint32 player_id = 2; // 玛利亚的ID
+  uint32 target_player_id = 3;
+  uint32 card_id = 4;
+  bool as_message_card = 5; // 是否作为情报牌
 }

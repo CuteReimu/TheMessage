@@ -181,6 +181,7 @@ abstract class Player protected constructor() {
             roleSkillsData.isFaceUp = value
         }
     val isFemale: Boolean get() = roleSkillsData.isFemale
+    val isPublicRole: Boolean get() = roleSkillsData.isPublicRole
 
     fun addSkillUseCount(skillId: SkillId) {
         addSkillUseCount(skillId, 1)
