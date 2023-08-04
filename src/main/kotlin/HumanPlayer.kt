@@ -325,28 +325,25 @@ class HumanPlayer(
 
     override fun notifyDying(location: Int, loseGame: Boolean) {
         super.notifyDying(location, loseGame)
-        send(notify_dying_toc.newBuilder().setPlayerId(getAlternativeLocation(location)).setLoseGame(loseGame).build())
+        val builder = notify_dying_toc.newBuilder()
+        builder.playerId = getAlternativeLocation(location)
+        builder.loseGame = loseGame
+        send(builder.build())
     }
 
     override fun notifyDie(location: Int) {
         super.notifyDie(location)
-        send(notify_die_toc.newBuilder().setPlayerId(getAlternativeLocation(location)).build())
+        val builder = notify_die_toc.newBuilder()
+        builder.playerId = getAlternativeLocation(location)
+        send(builder.build())
     }
 
     override fun notifyWin(declareWinners: Array<Player>, winners: Array<Player>) {
         val builder = notify_winner_toc.newBuilder()
-        val declareWinnerIds: MutableList<Int> = ArrayList()
-        for (p in declareWinners) declareWinnerIds.add(getAlternativeLocation(p.location))
-        declareWinnerIds.sort()
-        builder.addAllDeclarePlayerIds(declareWinnerIds)
-        val winnerIds: MutableList<Int> = ArrayList()
-        for (p in winners) winnerIds.add(getAlternativeLocation(p.location))
-        winnerIds.sort()
-        builder.addAllWinnerIds(winnerIds)
-        for (i in game!!.players.indices) {
-            val p = game!!.players[(location + i) % game!!.players.size]!!
-            builder.addIdentity(p.identity).addSecretTasks(p.secretTask)
-        }
+        builder.addAllDeclarePlayerIds(declareWinners.map { getAlternativeLocation(it.location) }.sorted())
+        builder.addAllWinnerIds(winners.map { getAlternativeLocation(it.location) }.sorted())
+        builder.addAllIdentity(game!!.players.indices.map { game!!.players[getAbstractLocation(it)]!!.identity })
+        builder.addAllSecretTasks(game!!.players.indices.map { game!!.players[getAbstractLocation(it)]!!.secretTask })
         send(builder.build())
     }
 
