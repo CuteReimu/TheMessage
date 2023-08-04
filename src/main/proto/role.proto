@@ -793,3 +793,39 @@ message skill_du_ji_c_toc {
   uint32 target_player_id = 3; // 放在谁的面前
   card card = 4;
 }
+
+// 广播使用【藏身教堂】A：当你传出的情报被接受后，若接收者是隐藏角色，则你摸一张牌（摸牌走摸牌协议），并可以将该角色翻至面朝下；
+// 若是公开角色，则可以将其一张黑色情报加入你的手牌或置入你的情报区。
+message skill_cang_shen_jiao_tang_a_toc {
+  uint32 player_id = 1; // 玛利亚的ID
+  uint32 target_player_id = 2; // 接收者的ID
+  bool is_hidden_role = 3; // 是否是隐藏角色
+  uint32 waiting_second = 4; // 如果对方是隐藏角色但是是面朝下，或者是公开角色但是没有黑色情报，就不用选，最后两个字段都为0
+  uint32 seq = 5;
+}
+
+// 【藏身教堂】B（对方是隐藏角色）：在A之后，将该角色翻至面朝下
+message skill_cang_shen_jiao_tang_b_tos {
+  bool enable = 1; // 是否发动
+  uint32 seq = 2;
+}
+
+// 广播使用【藏身教堂】B
+message skill_cang_shen_jiao_tang_b_toc {
+  uint32 player_id = 1; // 玛利亚的ID
+  uint32 target_player_id = 2;
+}
+
+// 【藏身教堂】C（对方是公开角色）：在A之后，将其一张黑色情报加入你的手牌或置入你的情报区
+message skill_cang_shen_jiao_tang_c_tos {
+  bool enable = 1; // 是否发动
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【藏身教堂】C
+message skill_cang_shen_jiao_tang_c_toc {
+  uint32 player_id = 1; // 玛利亚的ID
+  uint32 target_player_id = 2;
+  uint32 card_id = 3;
+}
