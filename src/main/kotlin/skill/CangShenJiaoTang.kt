@@ -103,6 +103,10 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
+
+        companion object {
+            private val log = Logger.getLogger(executeCangShenJiaoTangB::class.java)
+        }
     }
 
     private data class executeCangShenJiaoTangC(val fsm: ReceivePhaseSenderSkill, val timeoutSecond: Int) : WaitingFsm {
@@ -181,6 +185,10 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
                 }
             }
             return ResolveResult(fsm, true)
+        }
+
+        companion object {
+            private val log = Logger.getLogger(executeCangShenJiaoTangC::class.java)
         }
     }
 
