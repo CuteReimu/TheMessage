@@ -19,7 +19,7 @@ class RoleSkillsData private constructor(
         this.skills = arrayOf(*skills)
     }
 
-    var isFaceUp = !isPublicRole
+    var isFaceUp = isPublicRole
 
     var skills: Array<Skill> = arrayOf() // 角色技能
 
