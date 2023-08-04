@@ -402,11 +402,10 @@ class HumanPlayer(
         timeoutCount = 0
     }
 
-    fun getWaitSeconds(seconds: Int): Int {
-        if (!isActive) {
-            return 5
-        }
-        return if (autoPlay) 1 else seconds
+    fun getWaitSeconds(seconds: Int) = when {
+        !isActive -> 5
+        autoPlay -> 1
+        else -> seconds
     }
 
     companion object {
