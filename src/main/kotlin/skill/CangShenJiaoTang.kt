@@ -152,7 +152,7 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
             }
             val target = fsm.inFrontOfWhom
             if (message.enable) {
-                val card = target.deleteMessageCard(message.cardId)
+                val card = target.findMessageCard(message.cardId)
                 if (card == null) {
                     log.error("没有这张情报")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张情报")
@@ -163,13 +163,21 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
                     (player as? HumanPlayer)?.sendErrorMessage("目标情报不是黑色的")
                     return null
                 }
-                fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target)
                 if (message.asMessageCard) {
+                    if (target === player) {
+                        log.error("你不能把情报从自己面前移到自己面前")
+                        (player as? HumanPlayer)?.sendErrorMessage("你不能把情报从自己面前移到自己面前")
+                        return null
+                    }
                     log.info("${player}发动了[藏身教堂]，将${target}面前的${card}移到自己面前")
+                    target.deleteMessageCard(message.cardId)
+                    fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target)
                     player.messageCards.add(card)
                     fsm.receiveOrder.addPlayerIfHasThreeBlack(player)
                 } else {
                     log.info("${player}发动了[藏身教堂]，将${target}面前的${card}加入了手牌")
+                    target.deleteMessageCard(message.cardId)
+                    fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target)
                     player.cards.add(card)
                 }
             }
