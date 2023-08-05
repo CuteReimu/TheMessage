@@ -53,6 +53,11 @@ class ChengQing : Card {
                 (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
                 return false
             }
+            if (target !== fsm.whoDie) {
+                log.error("正在求澄清的人是${fsm.whoDie}")
+                (r as? HumanPlayer)?.sendErrorMessage("正在求澄清的人是${fsm.whoDie}")
+                return false
+            }
         } else {
             log.error("澄清的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
