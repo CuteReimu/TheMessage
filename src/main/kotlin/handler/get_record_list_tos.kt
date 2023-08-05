@@ -3,8 +3,6 @@ package com.fengsheng.handler
 import com.fengsheng.Config
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Statistics
-import com.fengsheng.protos.Errcode.error_code.client_version_not_match
-import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -17,12 +15,9 @@ class get_record_list_tos : ProtoHandler {
             return
         }
         val pb = message as Fengsheng.get_record_list_tos
-        // 客户端版本号不对，get_record_list_tos
+        // 客户端版本号不对，直接返回错误信息
         if (pb.version < Config.ClientVersion) {
-            val builder = error_code_toc.newBuilder()
-            builder.code = client_version_not_match
-            builder.addIntParams(Config.ClientVersion.toLong())
-            player.send(builder.build())
+            player.sendErrorMessage("客户端版本号过低，请更新客户端")
             return
         }
         Statistics.displayRecordList(player)

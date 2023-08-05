@@ -2,8 +2,6 @@ package com.fengsheng
 
 import com.fengsheng.phase.StartGame
 import com.fengsheng.phase.WaitForSelectRole
-import com.fengsheng.protos.Errcode.error_code.*
-import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Record.record_file
 import com.fengsheng.protos.Record.recorder_line
@@ -74,12 +72,12 @@ class Recorder {
     fun load(version: Int, recordId: String, player: HumanPlayer) {
         val file = File("records/")
         if (!file.exists() || !file.isDirectory) {
-            player.send(error_code_toc.newBuilder().setCode(record_not_exists).build())
+            player.sendErrorMessage("录像不存在")
             return
         }
         val files = if (recordId.length == 6) file.listFiles { _, name -> name.endsWith("-$recordId") } else null
         if (files.isNullOrEmpty()) {
-            player.send(error_code_toc.newBuilder().setCode(record_not_exists).build())
+            player.sendErrorMessage("录像不存在")
             return
         }
         val recordFile = files[0]
@@ -90,10 +88,7 @@ class Recorder {
                     val pb = record_file.parseFrom(`is`.readAllBytes())
                     val recordVersion = pb.clientVersion
                     if (version < recordVersion) {
-                        val builder = error_code_toc.newBuilder()
-                        builder.code = record_version_not_match
-                        builder.addIntParams(recordVersion.toLong())
-                        player.send(builder.build())
+                        player.sendErrorMessage("客户端版本号过低，请更新客户端")
                         loading = false
                         return@trySend
                     }
@@ -107,7 +102,7 @@ class Recorder {
                 }
             } catch (e: IOException) {
                 log.error("load record failed", e)
-                player.send(error_code_toc.newBuilder().setCode(load_record_failed).build())
+                player.sendErrorMessage("播放录像失败")
                 loading = false
             }
         }

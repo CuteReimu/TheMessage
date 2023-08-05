@@ -5,8 +5,6 @@ import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Errcode.error_code.no_color_message_card
-import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -149,7 +147,6 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             if (playerAndCard == null) {
                 log.error("场上没有选择的颜色的情报牌")
                 (player as? HumanPlayer)?.sendErrorMessage("场上没有选择的颜色的情报牌")
-                (player as? HumanPlayer)?.send(error_code_toc.newBuilder().setCode(no_color_message_card).build())
                 return null
             }
             r.incrSeq()

@@ -3,8 +3,6 @@ package com.fengsheng.handler
 import com.fengsheng.*
 import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.handler.remove_robot_tos.Companion.removeOneRobot
-import com.fengsheng.protos.Errcode.error_code.*
-import com.fengsheng.protos.Errcode.error_code_toc
 import com.fengsheng.protos.Fengsheng
 import com.google.protobuf.GeneratedMessageV3
 import kotlinx.coroutines.runBlocking
@@ -19,22 +17,19 @@ class join_room_tos : ProtoHandler {
             return
         }
         val pb = message as Fengsheng.join_room_tos
-        // 客户端版本号不对，直接返回错误码
+        // 客户端版本号不对，直接返回错误信息
         if (pb.version < Config.ClientVersion) {
-            val builder = error_code_toc.newBuilder()
-            builder.code = client_version_not_match
-            builder.addIntParams(Config.ClientVersion.toLong())
-            player.send(builder.build())
+            player.sendErrorMessage("客户端版本号过低，请更新客户端")
             return
         }
         val playerName = pb.name
         if (playerName.toByteArray(StandardCharsets.UTF_8).size > 24) {
-            player.send(error_code_toc.newBuilder().setCode(name_too_long).build())
+            player.sendErrorMessage("名字太长了")
             return
         }
         val playerInfo = Statistics.login(playerName, pb.device, pb.password)
         if (playerInfo == null) {
-            player.send(error_code_toc.newBuilder().setCode(login_failed).build())
+            player.sendErrorMessage("用户名或密码错误")
             return
         }
         val oldPlayer = Game.playerNameCache[playerName]
@@ -61,7 +56,7 @@ class join_room_tos : ProtoHandler {
             if (!continueLogin) return
         }
         if (Game.GameCache.size > Config.MaxRoomCount) {
-            player.send(error_code_toc.newBuilder().setCode(no_more_room).build())
+            player.sendErrorMessage("没有更多的房间了")
             return
         }
         val newGame = Game.newGame
@@ -70,7 +65,7 @@ class join_room_tos : ProtoHandler {
             if (playerName.isBlank() || playerName.contains(",") ||
                 playerName.contains("\n") || playerName.contains("\r")
             ) {
-                player.send(error_code_toc.newBuilder().setCode(login_failed).build())
+                player.sendErrorMessage("用户名不合法")
                 return@post
             }
             val oldPlayer2 = Game.playerNameCache.put(playerName, player)
