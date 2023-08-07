@@ -26,10 +26,6 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
         if (r.getSkillUseCount(skillId) > 0) return null
         r.addSkillUseCount(skillId)
         val isHiddenRole = !target.isPublicRole
-        if (isHiddenRole) {
-            log.info("${r}发动了[藏身教堂]")
-            r.draw(1)
-        }
         val timeoutSecond = 15
         for (player in g.players) {
             if (player is HumanPlayer) {
@@ -43,6 +39,10 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
                 }
                 player.send(builder.build())
             }
+        }
+        if (isHiddenRole) {
+            log.info("${r}发动了[藏身教堂]")
+            r.draw(1)
         }
         if (isHiddenRole && target.roleFaceUp)
             return ResolveResult(executeCangShenJiaoTangB(fsm, timeoutSecond), true)
