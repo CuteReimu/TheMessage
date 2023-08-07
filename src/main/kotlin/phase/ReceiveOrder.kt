@@ -19,3 +19,7 @@ class ReceiveOrder : LinkedList<Player>() {
         if (count < 3) remove(player)
     }
 }
+
+interface HasReceiveOrder {
+    val receiveOrder: ReceiveOrder
+}

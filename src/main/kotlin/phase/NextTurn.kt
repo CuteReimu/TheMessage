@@ -8,6 +8,7 @@ import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.color.Has_No_Identity
 import com.fengsheng.protos.Common.secret_task.Disturber
+import com.fengsheng.skill.InvalidSkill
 import com.fengsheng.skill.JiangHuLing
 import com.fengsheng.skill.JinBi
 import com.fengsheng.skill.QiangLing
@@ -32,6 +33,7 @@ data class NextTurn(val player: Player) : Fsm {
             val player = game.players[whoseTurn]!!
             if (player.alive) {
                 game.players.forEach { it!!.resetSkillUseCount() }
+                InvalidSkill.reset(game)
                 JinBi.resetJinBi(game)
                 QiangLing.resetQiangLing(game)
                 JiangHuLing.resetJiangHuLing(game)

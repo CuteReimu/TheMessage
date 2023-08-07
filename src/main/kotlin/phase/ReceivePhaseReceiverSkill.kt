@@ -17,9 +17,9 @@ data class ReceivePhaseReceiverSkill(
     val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,
-    val receiveOrder: ReceiveOrder,
+    override val receiveOrder: ReceiveOrder,
     val inFrontOfWhom: Player
-) : Fsm {
+) : Fsm, HasReceiveOrder {
     override fun resolve(): ResolveResult {
         val result = inFrontOfWhom.game!!.dealListeningSkill()
         return result ?: ResolveResult(CheckWin(whoseTurn, receiveOrder, NextTurn(whoseTurn)), true)

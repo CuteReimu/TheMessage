@@ -6,10 +6,11 @@ enum class SkillId(private val cName: String) {
     YI_HUA_JIE_MU("移花接木"), LIAN_MIN("怜悯"), FU_HEI("腹黑"), SHI_SI("视死"), RU_GUI("如归"),
     JI_ZHI("集智"), CHENG_ZHI("承志"), WEI_SHENG("尾声"), JIU_JI("就计"), CHENG_FU("城府"), YI_XIN("遗信"),
     ZHI_YIN("知音"), JING_MENG("惊梦"), JIE_DAO_SHA_REN("借刀杀人"), JIAO_JI("交际"), JI_SONG("急送"),
-    ZHUAN_JIAO("转交"), MIAO_BI_QIAO_BIAN("妙笔巧辩"), JIN_BI("禁闭"), BEI_JIN_BI("被禁闭"), JIN_KOU_YI_KAI("金口一开"),
+    ZHUAN_JIAO("转交"), MIAO_BI_QIAO_BIAN("妙笔巧辩"), JIN_BI("禁闭"), INVALID("被无效"), JIN_KOU_YI_KAI("金口一开"),
     JI_BAN("羁绊"), YING_BIAN("应变"), YOU_DAO("诱导"), BO_AI("博爱"), GUANG_FA_BAO("广发报"),
     QIANG_LING("强令"), JIAN_REN("坚韧"), MIAO_SHOU("妙手"), SOU_JI("搜辑"), JIANG_HU_LING("江湖令"),
-    JIANG_HU_LING2("江湖令2"), DUI_ZHENG_XIA_YAO("对症下药"), DU_JI("毒计"), CANG_SHEN_JIAO_TANG("藏身教堂");
+    JIANG_HU_LING2("江湖令2"), DUI_ZHENG_XIA_YAO("对症下药"), DU_JI("毒计"), CANG_SHEN_JIAO_TANG("藏身教堂"),
+    XIAN_FA_ZHI_REN("先发制人");
 
     override fun toString(): String {
         return cName

@@ -21,12 +21,12 @@ data class CheckWin(
     /**
      * 接收第三张黑色情报的顺序
      */
-    val receiveOrder: ReceiveOrder,
+    override val receiveOrder: ReceiveOrder,
     /**
      * 濒死结算后的下一个动作
      */
     val afterDieResolve: Fsm
-) : Fsm {
+) : Fsm, HasReceiveOrder {
     constructor(whoseTurn: Player, afterDieResolve: Fsm) : this(whoseTurn, ReceiveOrder(), afterDieResolve)
 
     override fun resolve(): ResolveResult {
