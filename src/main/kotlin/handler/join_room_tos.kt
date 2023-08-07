@@ -27,6 +27,12 @@ class join_room_tos : ProtoHandler {
             player.sendErrorMessage("名字太长了")
             return
         }
+        if (playerName.isBlank() || playerName.contains(",") ||
+            playerName.contains("\n") || playerName.contains("\r")
+        ) {
+            player.sendErrorMessage("用户名不合法")
+            return
+        }
         val playerInfo = Statistics.login(playerName, pb.device, pb.password)
         if (playerInfo == null) {
             player.sendErrorMessage("用户名或密码错误")
@@ -62,18 +68,12 @@ class join_room_tos : ProtoHandler {
         val newGame = Game.newGame
         GameExecutor.post(newGame) {
             player.device = pb.device
-            if (playerName.isBlank() || playerName.contains(",") ||
-                playerName.contains("\n") || playerName.contains("\r")
-            ) {
-                player.sendErrorMessage("用户名不合法")
-                return@post
-            }
             val oldPlayer2 = Game.playerNameCache.put(playerName, player)
             if (oldPlayer2 != null) {
                 oldPlayer2.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
-                log.info("${player.playerName}离开了房间")
-                newGame.players[player.location] = null
-                val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(player.location).build()
+                log.info("${oldPlayer2.playerName}离开了房间")
+                newGame.players[oldPlayer2.location] = null
+                val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(oldPlayer2.location).build()
                 newGame.players.forEach { (it as? HumanPlayer)?.send(reply) }
             }
             val emptyCount = newGame.players.count { it == null }
