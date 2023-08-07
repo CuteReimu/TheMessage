@@ -21,14 +21,19 @@ data class OnAddMessageCard(
         val game = whoseTurn.game!!
         val result = game.dealListeningSkill()
         if (result != null) return result
+        return ResolveResult(resolveNext(), true)
+    }
+
+    fun resolveNext(): Fsm {
+        val game = whoseTurn.game!!
         var index = resolvingWhom.location
         while (true) {
             index = (index + 1) % game.players.size
             val player = game.players[index]!!
             if (player === whoseTurn)
-                return ResolveResult(afterResolve, true)
+                return afterResolve
             if (player.alive)
-                return ResolveResult(copy(resolvingWhom = player), true)
+                return copy(resolvingWhom = player)
         }
     }
 }

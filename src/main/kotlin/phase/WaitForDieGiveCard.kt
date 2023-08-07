@@ -19,12 +19,12 @@ data class WaitForDieGiveCard(
     /**
      * 在结算死亡技能时，又有新的人获得三张黑色情报的顺序
      */
-    val receiveOrder: ReceiveOrder,
+    override val receiveOrder: ReceiveOrder,
     /**
      * 死亡结算后的下一个动作
      */
     val afterDieResolve: Fsm
-) : Fsm {
+) : Fsm, HasReceiveOrder {
     /**
      * 结算到dieQueue的第几个人的死亡给三张牌了
      */

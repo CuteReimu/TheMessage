@@ -179,12 +179,10 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
             if (player.getSkillUseCount(SkillId.JIE_DAO_SHA_REN) >= 2) return false
-            val players = player.game!!.players.filter {
+            val target = player.game!!.players.filter {
                 it !== player && it!!.alive && it.cards.isNotEmpty() &&
                         it.cards.all { card -> card.colors.contains(color.Black) }
-            }
-            if (players.isEmpty()) return false
-            val target = players.random()!!
+            }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_jie_dao_sha_ren_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)

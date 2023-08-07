@@ -151,8 +151,7 @@ class JinBi : AbstractSkill(), ActiveSkill {
             log.info("${target}进入了[禁闭]状态")
             val g = r.game!!
             g.jinBiPlayer = target
-            val skills = target.skills
-            for (i in skills.indices) skills[i] = JinBiSkill(skills[i])
+            InvalidSkill.deal(target)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jin_bi_b_toc.newBuilder()
@@ -168,21 +167,10 @@ class JinBi : AbstractSkill(), ActiveSkill {
         }
     }
 
-    private class JinBiSkill(val originSkill: Skill) : AbstractSkill() {
-        override val skillId = SkillId.BEI_JIN_BI
-    }
-
     companion object {
         private val log = Logger.getLogger(JinBi::class.java)
         fun resetJinBi(game: Game) {
-            val player = game.jinBiPlayer
-            if (player != null) {
-                val skills = player.skills
-                for ((i, skill) in skills.withIndex()) {
-                    if (skill is JinBiSkill) skills[i] = skill.originSkill
-                }
-                game.jinBiPlayer = null
-            }
+            game.jinBiPlayer = null
         }
 
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {

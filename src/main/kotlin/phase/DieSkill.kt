@@ -32,8 +32,8 @@ data class DieSkill(
     /**
      * 在结算死亡技能时，又有新的人获得三张黑色情报的顺序
      */
-    val receiveOrder: ReceiveOrder = ReceiveOrder()
-) : Fsm {
+    override val receiveOrder: ReceiveOrder = ReceiveOrder()
+) : Fsm, HasReceiveOrder {
     override fun resolve(): ResolveResult {
         if (askWhom !== diedQueue[diedIndex] && !askWhom.alive) return ResolveResult(DieSkillNext(this), true)
         val result = askWhom.game!!.dealListeningSkill()

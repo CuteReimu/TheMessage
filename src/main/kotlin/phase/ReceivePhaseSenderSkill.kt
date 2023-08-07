@@ -28,8 +28,8 @@ class ReceivePhaseSenderSkill(
     /**
      * 接收第三张黑色情报牌的顺序（也就是后续结算死亡的顺序）
      */
-    val receiveOrder: ReceiveOrder = ReceiveOrder()
-) : Fsm {
+    override val receiveOrder: ReceiveOrder = ReceiveOrder()
+) : Fsm, HasReceiveOrder {
     override fun resolve(): ResolveResult {
         val result = whoseTurn.game!!.dealListeningSkill()
         return result ?: ResolveResult(
