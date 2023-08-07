@@ -804,7 +804,7 @@ message skill_cang_shen_jiao_tang_a_toc {
   uint32 seq = 5;
 }
 
-// 【藏身教堂】B（对方是隐藏角色）：在A之后，将该角色翻至面朝下
+// 玛利亚【藏身教堂】B（对方是隐藏角色）：在A之后，将该角色翻至面朝下
 message skill_cang_shen_jiao_tang_b_tos {
   bool enable = 1; // 是否发动
   uint32 seq = 2;
@@ -817,7 +817,7 @@ message skill_cang_shen_jiao_tang_b_toc {
   uint32 target_player_id = 3;
 }
 
-// 【藏身教堂】C（对方是公开角色）：在A之后，将其一张黑色情报加入你的手牌或置入你的情报区
+// 玛利亚【藏身教堂】C（对方是公开角色）：在A之后，将其一张黑色情报加入你的手牌或置入你的情报区
 message skill_cang_shen_jiao_tang_c_tos {
   bool enable = 1; // 是否发动
   uint32 card_id = 2;
@@ -832,4 +832,43 @@ message skill_cang_shen_jiao_tang_c_toc {
   uint32 target_player_id = 3;
   uint32 card_id = 4;
   bool as_message_card = 5; // 是否作为情报牌
+}
+
+// 广播询问客户端使用【先发制人】A（仅在一张牌因角色技能置入情报区后才会发送，争夺阶段没有这个，由客户端主动发送）
+message wait_for_skill_xian_fa_zhi_ren_a_toc {
+  // 这种情况下，需要全场读条，客户端需要自己知道自己是不是钱敏，来判断自己是否也读条
+  uint32 waiting_second = 1; // 所有人都能看到这个字段
+  uint32 seq = 2; // 只有自己是钱敏时才能看到这个字段
+}
+
+// 钱敏【先发制人】A：一张牌因角色技能置入情报区后，或争夺阶段，你可以翻开此角色，然后弃置一名角色情报区的一张情报
+message skill_xian_fa_zhi_ren_a_tos {
+  bool enable = 1; // 如果是被上一条协议触发的，需要发一个enable=false的协议来表示不发动
+  uint32 target_player_id = 2;
+  uint32 card_id = 3;
+  uint32 seq = 4;
+}
+
+// 广播使用【先发制人】A，并广播询问客户端使用【先发制人】B
+message skill_xian_fa_zhi_ren_a_toc {
+  bool enable = 1; // 如果是被上一条协议触发的，需要发一个enable=false的协议来表示不发动，取消全场读条
+  uint32 player_id = 2; // 钱敏的ID
+  uint32 target_player_id = 3;
+  uint32 card_id = 4;
+  uint32 waiting_second = 5;
+  uint32 seq = 6;
+}
+
+// 钱敏【先发制人】B：并令一张角色牌本回合所有技能无效，若其是面朝下的隐藏角色牌，你可以将其翻开（超时会选择A的目标角色，不翻开）
+message skill_xian_fa_zhi_ren_b_tos {
+  uint32 target_player_id = 1;
+  bool face_up = 2; // 是否翻开
+  uint32 seq = 3;
+}
+
+// 广播使用【先发制人】B
+message skill_xian_fa_zhi_ren_b_toc {
+  uint32 player_id = 1; // 钱敏的ID
+  uint32 target_player_id = 2;
+  bool face_up = 3; // 是否翻开
 }

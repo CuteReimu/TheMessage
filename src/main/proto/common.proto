@@ -34,6 +34,7 @@ enum role {
   bai_kun_shan = 29; // 白昆山
   shang_yu = 30; // 商玉
   ma_li_ya = 31; // 玛利亚
+  qian_min = 32; // 钱敏
   sp_gu_xiao_meng = 1020; // SP顾小梦
   sp_li_ning_yu = 1028; // SP李宁玉
 }
