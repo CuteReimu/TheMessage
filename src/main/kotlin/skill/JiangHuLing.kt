@@ -126,14 +126,7 @@ class JiangHuLing : TriggeredSkill {
                 val r = fsm.sender
                 if (r.findSkill(skillId) == null) return null
                 if (r.getSkillUseCount(skillId) >= 1) return null
-                var containsColor = false
-                for (card in fsm.inFrontOfWhom.messageCards) {
-                    if (card.colors.contains(color)) {
-                        containsColor = true
-                        break
-                    }
-                }
-                if (!containsColor) return null
+                if (fsm.inFrontOfWhom.messageCards.all { color !in it.colors }) return null
                 r.addSkillUseCount(skillId)
                 return ResolveResult(executeJiangHuLingB(fsm, color), true)
             }
