@@ -29,7 +29,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
         return ResolveResult(executeXianFaZhiRenA(fsm), true)
     }
 
-    data class executeXianFaZhiRenA(val fsm: OnAddMessageCard) : WaitingFsm {
+    private data class executeXianFaZhiRenA(val fsm: OnAddMessageCard) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = fsm.resolvingWhom
             val g = r.game!!
@@ -189,7 +189,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
         r.game!!.resolve(executeXianFaZhiRenB(fsm, r, target))
     }
 
-    data class executeXianFaZhiRenB(val fsm: Fsm, val r: Player, val defaultTarget: Player) : WaitingFsm {
+    private data class executeXianFaZhiRenB(val fsm: Fsm, val r: Player, val defaultTarget: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (r is HumanPlayer) {
                 val seq = r.seq
