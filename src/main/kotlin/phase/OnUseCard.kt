@@ -8,36 +8,26 @@ import com.fengsheng.protos.Common.card_type
 
 /**
  * 使用卡牌时，成为卡牌目标时
+ *
+ * @param whoseTurn 谁的回合
+ * @param player 出牌的
+ * @param targetPlayer 目标角色
+ * @param card 出的牌，有可能没出牌
+ * @param cardType 出的牌的类型
+ * @param askWhom 遍历到了谁的技能
+ * @param resolveFunc 卡牌效果的结算函数
+ * @param currentFsm 使用卡牌前的状态
  */
 data class OnUseCard(
-    /**
-     * 谁的回合
-     */
     val whoseTurn: Player,
-    /**
-     * 出牌的人
-     */
     val player: Player,
-    /**
-     * 目标角色
-     */
     val targetPlayer: Player?,
-    /**
-     * 出的牌，有可能没出牌
-     */
     val card: Card?,
-    /**
-     * 出的牌的类型
-     */
     val cardType: card_type,
-    /**
-     * 遍历到了谁的技能
-     */
     val askWhom: Player,
-    /**
-     * 卡牌效果的结算函数
-     */
-    val resolveFunc: () -> Fsm
+    val resolveFunc: (Boolean) -> Fsm,
+    val currentFsm: Fsm,
+    val valid: Boolean = true,
 ) : Fsm {
     override fun resolve(): ResolveResult {
         val result = whoseTurn.game!!.dealListeningSkill()
@@ -55,7 +45,7 @@ data class OnUseCard(
             while (true) {
                 askWhom = (askWhom + 1) % players.size
                 if (askWhom == onUseCard.player.location) {
-                    return ResolveResult(onUseCard.resolveFunc(), true)
+                    return ResolveResult(onUseCard.resolveFunc(onUseCard.valid), true)
                 }
                 if (players[askWhom]!!.alive) {
                     return ResolveResult(onUseCard.copy(askWhom = players[askWhom]!!), true)

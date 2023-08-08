@@ -3,6 +3,7 @@ package com.fengsheng.phase
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
+import com.fengsheng.skill.SkillId.LENG_XUE_XUN_LIAN
 import org.apache.log4j.Logger
 
 /**
@@ -11,7 +12,7 @@ import org.apache.log4j.Logger
 data class SendPhaseStart(val player: Player) : Fsm {
     override fun resolve(): ResolveResult? {
         val game = player.game!!
-        if (player.alive && player.cards.isEmpty()) {
+        if (player.alive && player.cards.isEmpty() && player.findSkill(LENG_XUE_XUN_LIAN) == null) {
             log.info("${player}没有情报可传，输掉了游戏")
             val messageCards = player.messageCards.toTypedArray()
             player.messageCards.clear()

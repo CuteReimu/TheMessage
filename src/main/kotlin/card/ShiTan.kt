@@ -65,7 +65,7 @@ class ShiTan : Card {
         val target = args[0] as Player
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = func@{
+        val resolveFunc = { _: Boolean ->
             if (target.roleFaceUp && target.findSkill(SkillId.CHENG_FU) != null) {
                 log.info("${target}触发了[城府]，试探无效")
                 for (player in g.players) {
@@ -108,7 +108,7 @@ class ShiTan : Card {
                 executeShiTan(r, target, this@ShiTan)
             }
         }
-        g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, r, resolveFunc))
+        g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, r, resolveFunc, g.fsm!!))
     }
 
     private fun checkDrawCard(target: Player): Boolean {

@@ -67,10 +67,10 @@ class FengYunBianHuan : Card {
                 player.send(builder.build())
             }
         }
-        val resolveFunc = {
+        val resolveFunc = { _: Boolean ->
             executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
-        g.resolve(OnUseCard(r, r, null, this, card_type.Feng_Yun_Bian_Huan, r, resolveFunc))
+        g.resolve(OnUseCard(r, r, null, this, card_type.Feng_Yun_Bian_Huan, r, resolveFunc, fsm))
     }
 
     private data class executeFengYunBianHuan(

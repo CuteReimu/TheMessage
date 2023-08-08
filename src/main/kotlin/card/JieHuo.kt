@@ -74,22 +74,26 @@ class JieHuo : Card {
          */
         fun execute(card: JieHuo?, g: Game, r: Player) {
             val fsm = g.fsm as FightPhaseIdle
-            val resolveFunc = {
+            val resolveFunc = { valid: Boolean ->
                 if (card != null) g.deck.discard(card.getOriginCard())
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        val builder = Fengsheng.use_jie_huo_toc.newBuilder()
-                        builder.playerId = player.getAlternativeLocation(r.location)
-                        if (card != null) builder.card = card.toPbCard()
-                        player.send(builder.build())
+                if (valid) {
+                    for (player in g.players) {
+                        if (player is HumanPlayer) {
+                            val builder = Fengsheng.use_jie_huo_toc.newBuilder()
+                            builder.playerId = player.getAlternativeLocation(r.location)
+                            if (card != null) builder.card = card.toPbCard()
+                            player.send(builder.build())
+                        }
                     }
+                    fsm.copy(inFrontOfWhom = r, whoseFightTurn = r)
+                } else {
+                    fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
                 }
-                fsm.copy(inFrontOfWhom = r, whoseFightTurn = r)
             }
             if (card != null)
-                g.resolve(OnUseCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, resolveFunc))
+                g.resolve(OnUseCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, resolveFunc, fsm))
             else
-                g.resolve(resolveFunc())
+                g.resolve(resolveFunc(true))
         }
 
         fun ai(e: FightPhaseIdle, card: Card): Boolean {

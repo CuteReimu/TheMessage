@@ -166,7 +166,7 @@ class WeiBi : Card {
          * @param card 使用的那张【威逼】卡牌。可以为 `null` ，因为肥原龙川技能【诡诈】可以视为使用了【威逼】。
          */
         fun execute(card: WeiBi?, g: Game, r: Player, target: Player, wantType: card_type) {
-            val resolveFunc = {
+            val resolveFunc = { _: Boolean ->
                 if (target.roleFaceUp && target.findSkill(SkillId.CHENG_FU) != null) {
                     log.info("${target}触发了[城府]，威逼无效")
                     for (player in g.players) {
@@ -217,7 +217,7 @@ class WeiBi : Card {
                     MainPhaseIdle(r)
                 }
             }
-            g.resolve(OnUseCard(r, r, target, card, card_type.Wei_Bi, r, resolveFunc))
+            g.resolve(OnUseCard(r, r, target, card, card_type.Wei_Bi, r, resolveFunc, g.fsm!!))
         }
 
         private fun hasCard(player: Player, cardType: card_type): Boolean {

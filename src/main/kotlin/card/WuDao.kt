@@ -59,20 +59,24 @@ class WuDao : Card {
         log.info("${r}对${target}使用了$this")
         val fsm = g.fsm as FightPhaseIdle
         r.deleteCard(id)
-        val resolveFunc = {
+        val resolveFunc = { valid: Boolean ->
             g.deck.discard(getOriginCard())
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    val builder = use_wu_dao_toc.newBuilder()
-                    builder.card = toPbCard()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    player.send(builder.build())
+            if (valid) {
+                for (player in g.players) {
+                    if (player is HumanPlayer) {
+                        val builder = use_wu_dao_toc.newBuilder()
+                        builder.card = toPbCard()
+                        builder.playerId = player.getAlternativeLocation(r.location)
+                        builder.targetPlayerId = player.getAlternativeLocation(target.location)
+                        player.send(builder.build())
+                    }
                 }
+                fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
+            } else {
+                fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
             }
-            fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
         }
-        g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Wu_Dao, r, resolveFunc))
+        g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Wu_Dao, r, resolveFunc, fsm))
     }
 
     override fun toString(): String {

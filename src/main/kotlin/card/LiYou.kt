@@ -76,7 +76,7 @@ class LiYou : Card {
          * @param card 使用的那张【利诱】卡牌。可以为 `null` ，因为肥原龙川技能【诡诈】可以视为使用了【利诱】。
          */
         fun execute(card: LiYou?, g: Game, r: Player, target: Player) {
-            val resolveFunc = {
+            val resolveFunc = { _: Boolean ->
                 val deckCards = g.deck.draw(1)
                 var joinIntoHand = false
                 if (deckCards.isNotEmpty()) {
@@ -121,9 +121,9 @@ class LiYou : Card {
                 else MainPhaseIdle(r)
             }
             if (card != null)
-                g.resolve(OnUseCard(r, r, target, card, card_type.Li_You, r, resolveFunc))
+                g.resolve(OnUseCard(r, r, target, card, card_type.Li_You, r, resolveFunc, g.fsm!!))
             else
-                g.resolve(resolveFunc())
+                g.resolve(resolveFunc(true))
         }
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {

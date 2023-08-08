@@ -88,7 +88,7 @@ class ChengQing : Card {
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val fsm = g.fsm
-        val resolveFunc = {
+        val resolveFunc = { _: Boolean ->
             val targetCard = target.deleteMessageCard(targetCardId)!!
             log.info("${target}面前的${targetCard}被置入弃牌堆")
             g.deck.discard(targetCard)
@@ -107,9 +107,9 @@ class ChengQing : Card {
             else UseChengQingOnDying(fsm as WaitForChengQing)
         }
         if (fsm is MainPhaseIdle) g.resolve(
-            OnUseCard(fsm.player, r, target, this, card_type.Cheng_Qing, r, resolveFunc)
+            OnUseCard(fsm.player, r, target, this, card_type.Cheng_Qing, r, resolveFunc, fsm)
         ) else if (fsm is WaitForChengQing) g.resolve(
-            OnUseCard(fsm.whoseTurn, r, target, this, card_type.Cheng_Qing, r, resolveFunc)
+            OnUseCard(fsm.whoseTurn, r, target, this, card_type.Cheng_Qing, r, resolveFunc, fsm)
         )
     }
 

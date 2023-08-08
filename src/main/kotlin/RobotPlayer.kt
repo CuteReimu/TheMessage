@@ -40,9 +40,15 @@ class RobotPlayer : Player() {
     override fun notifySendPhaseStart(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseStart
         if (this !== fsm.player) return
+        for (skill in skills) {
+            val ai = aiSkillSendPhaseStart[skill.skillId]
+            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+        }
+        for (card in cards) {
+            val ai = aiSendPhaseStart[card.type]
+            if (ai != null && ai.test(fsm, card)) return
+        }
         GameExecutor.post(game!!, {
-            for (card in cards)
-                if (card is MiLing && MiLing.ai(fsm, card)) return@post
             autoSendMessageCard(this)
         }, 2, TimeUnit.SECONDS)
     }
@@ -253,6 +259,9 @@ class RobotPlayer : Player() {
             SkillId.JI_BAN to BiPredicate { e, skill -> JiBan.ai(e, skill) },
             SkillId.BO_AI to BiPredicate { e, skill -> BoAi.ai(e, skill) },
         )
+        private val aiSkillSendPhaseStart = hashMapOf<SkillId, BiPredicate<SendPhaseStart, ActiveSkill>>(
+            SkillId.LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) }
+        )
         private val aiSkillFightPhase = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
             SkillId.TOU_TIAN to BiPredicate { e, skill -> TouTian.ai(e, skill) },
             SkillId.JI_ZHI to BiPredicate { e, skill -> JiZhi.ai(e, skill) },
@@ -284,6 +293,9 @@ class RobotPlayer : Player() {
             card_type.Shi_Tan to BiPredicate { e, card -> ShiTan.ai(e, card) },
             card_type.Wei_Bi to BiPredicate { e, card -> WeiBi.ai(e, card) },
             card_type.Feng_Yun_Bian_Huan to BiPredicate { e, card -> FengYunBianHuan.ai(e, card) },
+        )
+        private val aiSendPhaseStart = hashMapOf<card_type, BiPredicate<SendPhaseStart, Card>>(
+            card_type.Mi_Ling to BiPredicate { e, card -> MiLing.ai(e, card) }
         )
         private val aiSendPhase = hashMapOf<card_type, BiPredicate<SendPhaseIdle, Card>>(
             card_type.Po_Yi to BiPredicate { e, card -> PoYi.ai(e, card) },

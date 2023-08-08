@@ -48,7 +48,7 @@ class DiaoBao : Card {
         val fsm = g.fsm as FightPhaseIdle
         log.info("${r}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = {
+        val resolveFunc = { _: Boolean ->
             val oldCard = fsm.messageCard
             g.deck.discard(oldCard)
             for (player in g.players) {
@@ -66,7 +66,7 @@ class DiaoBao : Card {
                 whoseFightTurn = fsm.inFrontOfWhom
             )
         }
-        g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Diao_Bao, r, resolveFunc))
+        g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Diao_Bao, r, resolveFunc, fsm))
     }
 
     override fun toString(): String {

@@ -60,7 +60,7 @@ class PingHeng : Card {
         val target = args[0] as Player
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = {
+        val resolveFunc = { _: Boolean ->
             for (player in g.players) {
                 (player as? HumanPlayer)?.send(
                     use_ping_heng_toc.newBuilder()
@@ -76,7 +76,7 @@ class PingHeng : Card {
             g.deck.discard(getOriginCard())
             MainPhaseIdle(r)
         }
-        g.resolve(OnUseCard(r, r, target, this, card_type.Ping_Heng, r, resolveFunc))
+        g.resolve(OnUseCard(r, r, target, this, card_type.Ping_Heng, r, resolveFunc, g.fsm!!))
     }
 
     override fun toString(): String {

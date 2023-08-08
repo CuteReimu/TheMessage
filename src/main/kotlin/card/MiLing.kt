@@ -6,6 +6,8 @@ import com.fengsheng.phase.OnUseCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Role
+import com.fengsheng.skill.LengXueXunLian
 import com.fengsheng.skill.SkillId
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -69,7 +71,7 @@ class MiLing : Card {
         r.deleteCard(id)
         val color = this.secret[secret]
         val hasColor = target.cards.any { color in it.colors }
-        val resolveFunc = {
+        val resolveFunc = { _: Boolean ->
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = use_mi_ling_toc.newBuilder()
@@ -92,7 +94,7 @@ class MiLing : Card {
             else
                 miLingChooseCard(this@MiLing, r, target, secret, fsm)
         }
-        g.resolve(OnUseCard(r, r, null, this, card_type.Mi_Ling, r, resolveFunc))
+        g.resolve(OnUseCard(r, r, null, this, card_type.Mi_Ling, r, resolveFunc, fsm))
     }
 
     private data class miLingChooseCard(
@@ -159,7 +161,7 @@ class MiLing : Card {
         }
     }
 
-    private data class executeMiLing(
+    data class executeMiLing(
         val card: MiLing,
         val target: Player,
         val secret: Int,
@@ -187,11 +189,20 @@ class MiLing : Card {
                 }, target.getWaitSeconds(15 + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(target.game!!, {
-                    val builder = send_message_card_tos.newBuilder()
-                    builder.cardId = card.id
-                    builder.targetPlayerId = target.getAlternativeLocation(messageTarget.location)
-                    builder.cardDir = card.direction
-                    target.game!!.tryContinueResolveProtocol(target, builder.build())
+                    val skill = target.findSkill(SkillId.LENG_XUE_XUN_LIAN) as? LengXueXunLian
+                    if (skill != null) {
+                        skill.executeProtocol(
+                            target.game!!,
+                            target,
+                            Role.skill_leng_xue_xun_lian_a_tos.getDefaultInstance()
+                        )
+                    } else {
+                        val builder = send_message_card_tos.newBuilder()
+                        builder.cardId = card.id
+                        builder.targetPlayerId = target.getAlternativeLocation(messageTarget.location)
+                        builder.cardDir = card.direction
+                        target.game!!.tryContinueResolveProtocol(target, builder.build())
+                    }
                 }, 2, TimeUnit.SECONDS)
             }
             return null
@@ -321,7 +332,7 @@ class MiLing : Card {
 
     companion object {
         private val log = Logger.getLogger(MiLing::class.java)
-        fun ai(e: SendPhaseStart, card: MiLing): Boolean {
+        fun ai(e: SendPhaseStart, card: Card): Boolean {
             val player = e.player
             if (player.game!!.qiangLingTypes.contains(card_type.Mi_Ling)) return false
             val target = player.game!!.players.filter {
