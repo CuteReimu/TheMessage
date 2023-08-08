@@ -31,9 +31,9 @@ class YouDao : AbstractSkill(), TriggeredSkill {
         }
         r.draw(1)
         val oldResolveFunc = fsm.resolveFunc
-        val newFsm = fsm.copy(resolveFunc = {
+        val newFsm = fsm.copy(resolveFunc = { valid ->
             r.resetSkillUseCount(skillId)
-            oldResolveFunc()
+            oldResolveFunc(valid)
         })
         return ResolveResult(newFsm, true)
     }
