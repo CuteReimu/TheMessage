@@ -2,9 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.count
+import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
-import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -77,6 +78,8 @@ class SouJi : AbstractSkill(), ActiveSkill {
                             {
                                 if (p.checkSeq(seq2)) {
                                     val builder2 = skill_sou_ji_b_tos.newBuilder()
+                                    builder2.addAllCardIds(target.cards.filter(Black).map { it.id })
+                                    if (fsm.messageCard.isBlack()) builder2.messageCard = true
                                     builder2.seq = seq2
                                     g.tryContinueResolveProtocol(r, builder2.build())
                                 }
@@ -91,8 +94,8 @@ class SouJi : AbstractSkill(), ActiveSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder = skill_sou_ji_b_tos.newBuilder()
-                    target.cards.filter { it.colors.contains(color.Black) }.forEach { builder.addCardIds(it.id) }
-                    if (fsm.messageCard.colors.contains(color.Black)) builder.messageCard = true
+                    builder.addAllCardIds(target.cards.filter(Black).map { it.id })
+                    if (fsm.messageCard.isBlack()) builder.messageCard = true
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -123,14 +126,14 @@ class SouJi : AbstractSkill(), ActiveSkill {
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
-                if (!card.colors.contains(color.Black)) {
+                if (!card.colors.contains(Black)) {
                     log.error("这张牌不是黑色的")
                     (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色的")
                     return null
                 }
                 card
             }
-            if (message.messageCard && !fsm.messageCard.colors.contains(color.Black)) {
+            if (message.messageCard && !fsm.messageCard.colors.contains(Black)) {
                 log.error("待收情报不是黑色的")
                 (player as? HumanPlayer)?.sendErrorMessage("待收情报不是黑色的")
                 return null
@@ -170,8 +173,7 @@ class SouJi : AbstractSkill(), ActiveSkill {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
             if (!player.game!!.players.any {
-                    it!!.alive && player.isEnemy(it)
-                            && it.identity != color.Black && it.messageCards.count(it.identity) >= 2
+                    it!!.alive && player.isEnemy(it) && it.identity != Black && it.messageCards.count(it.identity) >= 2
                 }) return false
             val players = player.game!!.players.filter { it!!.alive && player.isEnemy(it) }
             val p = players.maxByOrNull { it!!.cards.size } ?: return false
