@@ -2,7 +2,6 @@ package com.fengsheng.handler
 
 import com.fengsheng.*
 import com.fengsheng.Statistics.PlayerGameCount
-import com.fengsheng.handler.remove_robot_tos.Companion.removeOneRobot
 import com.fengsheng.protos.Fengsheng
 import com.google.protobuf.GeneratedMessageV3
 import kotlinx.coroutines.runBlocking
@@ -76,8 +75,8 @@ class join_room_tos : ProtoHandler {
                 val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(oldPlayer2.location).build()
                 newGame.players.forEach { (it as? HumanPlayer)?.send(reply) }
             }
-            val emptyCount = newGame.players.count { it == null }
-            if (emptyCount == 1) newGame.removeOneRobot()
+            val humanCount = newGame.players.count { it is HumanPlayer }
+            if (humanCount >= 2) newGame.removeAllRobot()
             player.playerName = playerName
             player.game = newGame
             val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
@@ -101,5 +100,22 @@ class join_room_tos : ProtoHandler {
 
     companion object {
         private val log = Logger.getLogger(join_room_tos::class.java)
+
+        private fun Game.removeAllRobot() {
+            for ((index, robotPlayer) in players.withIndex()) {
+                if (robotPlayer is RobotPlayer) {
+                    players[index] = null
+                    log.info("${robotPlayer.playerName}离开了房间")
+                    val builder = Fengsheng.leave_room_toc.newBuilder()
+                    builder.position = robotPlayer.location
+                    val reply = builder.build()
+                    for (p in players) {
+                        if (p is HumanPlayer) {
+                            p.send(reply)
+                        }
+                    }
+                }
+            }
+        }
     }
 }

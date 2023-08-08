@@ -15,8 +15,7 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             return
         }
         val humanCount = r.game!!.players.count { it is HumanPlayer }
-        val emptyCount = r.game!!.players.count { it == null }
-        if (humanCount >= 2 && emptyCount == 1) {
+        if (humanCount >= 2) {
             r.sendErrorMessage("禁止添加机器人")
             return
         }
@@ -30,7 +29,7 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
 //            }
 //            Statistics.setTrialStartTime(r.device!!, now)
 //        }
-        val robotPlayer: Player = RobotPlayer()
+        val robotPlayer = RobotPlayer()
         robotPlayer.playerName = Player.randPlayerName(r.game!!)
         robotPlayer.game = r.game
         robotPlayer.game!!.onPlayerJoinRoom(robotPlayer, Statistics.totalPlayerGameCount.random())
