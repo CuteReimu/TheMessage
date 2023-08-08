@@ -6,6 +6,7 @@ import com.fengsheng.ResolveResult
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.SkillId.WEI_SHENG
+import com.fengsheng.skill.SkillId.ZUO_YOU_FENG_YUAN
 import org.apache.log4j.Logger
 
 /**
@@ -92,6 +93,9 @@ data class CheckWin(
         if (declareWinner.isNotEmpty()) {
             if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
                 winner.addAll(players.filter { it.identity == Has_No_Identity })
+            if (whoseTurn.findSkill(ZUO_YOU_FENG_YUAN) != null && whoseTurn.roleFaceUp && whoseTurn !in winner &&
+                declareWinner.size == 1 && declareWinner[0].isMale
+            ) winner = arrayListOf(declareWinner[0], whoseTurn)
             val declareWinners = declareWinner.toTypedArray()
             val winners = winner.toTypedArray()
             log.info("${declareWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")

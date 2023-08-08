@@ -42,7 +42,7 @@ data class NextTurn(val player: Player) : Fsm {
         }
     }
 
-    private fun checkDisturberWin(game: Game): Boolean { // 无需判断簒夺者，因为簒夺者和搅局者都要求是自己回合
+    private fun checkDisturberWin(game: Game): Boolean { // 无需判断簒夺者和左右逢源，因为簒夺者、搅局者、左右逢源都要求是自己回合
         val players = game.players.filterNotNull().filter { !it.lose }
         val disturber = players.find { it.identity == Black && it.secretTask == Disturber } // 搅局者
         if (player !== disturber) return false

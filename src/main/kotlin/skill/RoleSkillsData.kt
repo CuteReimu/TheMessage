@@ -31,7 +31,8 @@ class RoleSkillsData private constructor(
     }
 
     val isFemale: Boolean
-        get() {
-            return isFaceUp && female
-        }
+        get() = isFaceUp && female
+
+    val isMale: Boolean
+        get() = isFaceUp && !female
 }
