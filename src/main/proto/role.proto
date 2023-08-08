@@ -891,8 +891,7 @@ message skill_leng_xue_xun_lian_b_tos {
   uint32 send_card_id = 1;
   uint32 target_player_id = 2;
   uint32 lock_player_id = 3;
-  direction card_dir = 4;
-  uint32 seq = 5;
+  uint32 seq = 4;
 }
 
 // 广播使用【冷血训练】B
@@ -900,14 +899,14 @@ message skill_leng_xue_xun_lian_b_toc {
   card send_card = 1; // 传出的那张牌
   uint32 sender_id = 2; // SP韩梅的ID
   uint32 target_player_id = 3; // 目标
-  uint32 lock_player_ids = 4; // 被锁定的玩家ID
-  direction card_dir = 5; // 传递的方向
-  card hand_card = 6; // 加入手牌的那张牌
+  uint32 lock_player_id = 4; // 被锁定的玩家ID
+  card hand_card = 5; // 加入手牌的那张牌
 }
 
 // 池镜海【观海】：你使用【截获】或【误导】时，在结算前先查看待收情报。
 message skill_guan_hai_toc {
-  card card = 1; // 只有池镜海能看到这张牌
+  uint32 player_id = 1; // 池镜海的id
+  card card = 2; // 只有池镜海能看到这张牌
 }
 
 // 广播询问使用【避风】
