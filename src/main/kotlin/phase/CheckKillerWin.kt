@@ -4,10 +4,9 @@ import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.card.countTrueCard
-import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Common.color.Has_No_Identity
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.SkillId.BI_YI_SHUANG_FEI
 import com.fengsheng.skill.SkillId.WEI_SHENG
 import org.apache.log4j.Logger
 
@@ -53,9 +52,15 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
         if (declaredWinner.isNotEmpty()) {
             if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
                 winner.addAll(players.filter { it.identity == Has_No_Identity })
-            if (whoseTurn.findSkill(SkillId.ZUO_YOU_FENG_YUAN) != null && whoseTurn.roleFaceUp && whoseTurn !in winner &&
-                declaredWinner.size == 1 && declaredWinner[0].isMale
-            ) winner = arrayListOf(declaredWinner[0], whoseTurn)
+            if (whoseTurn.findSkill(BI_YI_SHUANG_FEI) != null && whoseTurn.roleFaceUp && whoseTurn !in winner) {
+                val declaredWinnerMale = declaredWinner.filter { it.isMale }
+                if (declaredWinnerMale.size == 1) {
+                    val target = declaredWinnerMale[0]
+                    if (target.identity == Red || target.identity == Blue)
+                        winner.removeIf { it !== target && it.identity == target.identity }
+                    winner.add(whoseTurn)
+                }
+            }
             val declaredWinners = declaredWinner.toTypedArray()
             val winners = winner.toTypedArray()
             log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
