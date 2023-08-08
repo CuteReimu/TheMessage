@@ -25,9 +25,9 @@ class ZhuanJiao : AbstractSkill(), TriggeredSkill {
         fsm.askWhom.addSkillUseCount(skillId)
         val r = fsm.askWhom
         val oldResolveFunc = fsm.resolveFunc
-        return ResolveResult(executeZhuanJiao(fsm.copy(resolveFunc = {
+        return ResolveResult(executeZhuanJiao(fsm.copy(resolveFunc = { valid ->
             r.resetSkillUseCount(skillId)
-            oldResolveFunc()
+            oldResolveFunc(valid)
         })), true)
     }
 
