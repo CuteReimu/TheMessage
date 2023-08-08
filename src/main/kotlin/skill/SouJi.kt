@@ -79,7 +79,7 @@ class SouJi : AbstractSkill(), ActiveSkill {
                                 if (p.checkSeq(seq2)) {
                                     val builder2 = skill_sou_ji_b_tos.newBuilder()
                                     builder2.addAllCardIds(target.cards.filter(Black).map { it.id })
-                                    if (fsm.messageCard.isBlack()) builder2.messageCard = true
+                                    builder2.messageCard = false
                                     builder2.seq = seq2
                                     g.tryContinueResolveProtocol(r, builder2.build())
                                 }
