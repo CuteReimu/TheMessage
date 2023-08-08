@@ -157,6 +157,13 @@ message notify_role_update_toc {
   role   role = 2; // 值为unknown=0时表示盖上角色
 }
 
+// 通知客户端玩家变化
+message notify_player_update_toc {
+  uint32 player_id = 1;
+  bool is_auto = 2;
+  bool is_offline = 3;
+}
+
 // 通知客户端：某个玩家摸了一张卡
 message add_card_toc {
   uint32        player_id = 1; // 自己是0，右手方第一名玩家是1，以此类推
