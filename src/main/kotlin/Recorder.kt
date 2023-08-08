@@ -159,8 +159,6 @@ class Recorder {
             player.send(line.protoName, line.messageBuf.toByteArray(), i == list.size - 1)
         }
         player.send(reconnect_toc.newBuilder().setIsEnd(true).build())
-        for (p in player.game!!.players)
-            (p as? HumanPlayer)?.notifyPlayerUpdateStatus(true)
     }
 
     companion object {
