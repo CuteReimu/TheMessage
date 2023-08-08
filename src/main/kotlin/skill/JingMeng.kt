@@ -40,7 +40,7 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
                     log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
-                    (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                    player.sendErrorMessage("操作太晚了")
                     return null
                 }
                 player.incrSeq()
@@ -55,7 +55,7 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
-                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
@@ -140,7 +140,7 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
-                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             val card = target.findCard(message.cardId)

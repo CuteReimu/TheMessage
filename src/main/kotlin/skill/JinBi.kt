@@ -27,7 +27,7 @@ class JinBi : AbstractSkill(), ActiveSkill {
         val pb = message as skill_jin_bi_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
-            (r as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
@@ -107,7 +107,7 @@ class JinBi : AbstractSkill(), ActiveSkill {
             val g = target.game!!
             if (target is HumanPlayer && !target.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${target.seq}, actual Seq: ${message.seq}")
-                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                target.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.cardIdsCount == 0) {

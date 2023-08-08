@@ -95,7 +95,7 @@ class YiXin : AbstractSkill(), TriggeredSkill {
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
-                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
