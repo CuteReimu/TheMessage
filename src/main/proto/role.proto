@@ -872,3 +872,60 @@ message skill_xian_fa_zhi_ren_b_toc {
   uint32 target_player_id = 2;
   bool face_up = 3; // 是否翻开
 }
+
+// SP韩梅【冷血训练】A：你需要传出情报时，可以改为展示牌堆顶的两张牌
+message skill_leng_xue_xun_lian_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【冷血训练】A
+message skill_leng_xue_xun_lian_a_toc {
+  uint32 player_id = 1; // SP韩梅的ID
+  repeated card cards = 2;
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// SP韩梅【冷血训练】B：从中选择一张（若有黑色牌则必须选择一张黑色牌）作为情报面朝上传出，并锁定一名角色，且令所有角色本回合中不能使用【调包】，之后将未选择的那张加入你的手牌。
+message skill_leng_xue_xun_lian_b_tos {
+  uint32 send_card_id = 1;
+  uint32 target_player_id = 2;
+  uint32 lock_player_id = 3;
+  direction card_dir = 4;
+  uint32 seq = 5;
+}
+
+// 广播使用【冷血训练】B
+message skill_leng_xue_xun_lian_b_toc {
+  card send_card = 1; // 传出的那张牌
+  uint32 sender_id = 2; // SP韩梅的ID
+  uint32 target_player_id = 3; // 目标
+  uint32 lock_player_ids = 4; // 被锁定的玩家ID
+  direction card_dir = 5; // 传递的方向
+  card hand_card = 6; // 加入手牌的那张牌
+}
+
+// 池镜海【观海】：你使用【截获】或【误导】时，在结算前先查看待收情报。
+message skill_guan_hai_toc {
+  card card = 1; // 只有池镜海能看到这张牌
+}
+
+// 广播询问使用【避风】
+message wait_for_skill_bi_feng_toc {
+  uint32 player_id = 1; // 池镜海的id
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 池镜海【避风】：争夺阶段限一次，“观海”后你可以无效你使用的【截获】或【误导】，然后摸两张牌。
+message skill_bi_feng_tos {
+  bool enable = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【避风】，不发动就有效，不走这条协议，走正常结算协议；发动后的摸牌走摸牌协议。
+message skill_bi_feng_toc {
+  uint32 player_id = 1; // 池镜海的id
+  card card = 2; // 被无效的那张牌
+  uint32 target_player_id = 3; // 如果是误导，显示一下误导的目标
+}
