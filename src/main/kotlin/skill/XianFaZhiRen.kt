@@ -118,6 +118,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                     builder.enable = message.enable
                     builder.playerId = p.getAlternativeLocation(player.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                    builder.cardId = card.id
                     builder.waitingSecond = SKILL_TIMEOUT
                     if (p === player) builder.seq = p.seq
                     p.send(builder.build())
@@ -181,6 +182,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                 builder.enable = message.enable
                 builder.playerId = p.getAlternativeLocation(r.location)
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                builder.cardId = card.id
                 builder.waitingSecond = SKILL_TIMEOUT
                 if (p === r) builder.seq = p.seq
                 p.send(builder.build())
