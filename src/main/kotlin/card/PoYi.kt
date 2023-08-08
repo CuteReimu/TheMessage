@@ -42,11 +42,6 @@ class PoYi : Card {
             (r as? HumanPlayer)?.sendErrorMessage("破译的使用时机不对")
             return false
         }
-        if (fsm.isMessageCardFaceUp) {
-            log.error("破译不能对已翻开的情报使用")
-            (r as? HumanPlayer)?.sendErrorMessage("破译不能对已翻开的情报使用")
-            return false
-        }
         return true
     }
 
@@ -66,18 +61,23 @@ class PoYi : Card {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
                     val builder = use_po_yi_toc.newBuilder()
-                    builder.setCard(card.toPbCard()).playerId = player.getAlternativeLocation(r.location)
-                    builder.setMessageCard(sendPhase.messageCard.toPbCard()).waitingSecond = 15
+                    builder.card = card.toPbCard()
+                    builder.playerId = player.getAlternativeLocation(r.location)
+                    if (!sendPhase.isMessageCardFaceUp) builder.waitingSecond = 15
                     if (player === r) {
-                        val seq2: Int = player.seq
-                        builder.setSeq(seq2).card = card.toPbCard()
+                        val seq2 = player.seq
+                        builder.messageCard = sendPhase.messageCard.toPbCard()
+                        builder.seq = seq2
+                        val waitingSecond =
+                            if (builder.waitingSecond == 0) 0
+                            else player.getWaitSeconds(builder.waitingSecond + 2)
                         player.timeout = GameExecutor.post(r.game!!, {
                             if (player.checkSeq(seq2)) {
                                 player.incrSeq()
                                 showAndDrawCard(false)
                                 r.game!!.resolve(sendPhase)
                             }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, waitingSecond.toLong(), TimeUnit.SECONDS)
                     }
                     player.send(builder.build())
                 }
