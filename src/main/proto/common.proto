@@ -36,6 +36,7 @@ enum role {
   ma_li_ya = 31; // 玛利亚
   qian_min = 32; // 钱敏
   chi_jing_hai = 33; // 池镜海
+  qin_yuan_yuan = 34; // 秦圆圆
   sp_han_mei = 1014; // SP韩梅
   sp_gu_xiao_meng = 1020; // SP顾小梦
   sp_li_ning_yu = 1028; // SP李宁玉

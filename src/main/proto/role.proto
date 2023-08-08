@@ -928,3 +928,15 @@ message skill_bi_feng_toc {
   card card = 2; // 被无效的那张牌
   uint32 target_player_id = 3; // 如果是误导，显示一下误导的目标
 }
+
+// 秦圆圆【左右逢源】：争夺阶段，你可以翻开此角色牌，然后指定两名角色，他们弃置所有手牌，然后摸三张牌（由你指定的角色先摸）。
+message skill_zuo_you_feng_yuan_tos {
+  repeated uint32 target_player_ids = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【左右逢源】，弃牌和摸牌走各自的协议
+message skill_zuo_you_feng_yuan_toc {
+  uint32 player_id = 1; // 秦圆圆的ID
+  repeated uint32 target_player_ids = 2;
+}
