@@ -31,7 +31,8 @@ class HumanPlayer(
     private var timeoutCount = 0
     private var recorder = Recorder()
     var device: String? = null
-    private var autoPlay = false
+    var autoPlay = false
+        private set
     val limiter = Limiter(10, 100, TimeUnit.MILLISECONDS)
 
     @Volatile
@@ -133,6 +134,7 @@ class HumanPlayer(
             }
         }
         send("auto_play_toc", auto_play_toc.newBuilder().setEnable(autoPlay).build().toByteArray(), true)
+        notifyPlayerUpdateStatus()
     }
 
     override fun init() {
@@ -380,6 +382,24 @@ class HumanPlayer(
             }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
         }
         send(builder.build())
+    }
+
+    /**
+     * 通知客户端更新托管、掉线状态
+     *
+     * @param ignoreZero 如果为true，则当玩家没有掉线也没有托管时，不广播
+     */
+    fun notifyPlayerUpdateStatus(ignoreZero: Boolean = false) {
+        if (ignoreZero && !autoPlay && isActive) return
+        for (p in game!!.players) {
+            if (p is HumanPlayer) {
+                val builder = notify_player_update_toc.newBuilder()
+                builder.playerId = p.getAlternativeLocation(location)
+                builder.isAuto = autoPlay
+                builder.isOffline = !isActive
+                p.send(builder.build())
+            }
+        }
     }
 
     fun checkSeq(seq: Int): Boolean {

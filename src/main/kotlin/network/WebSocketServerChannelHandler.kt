@@ -93,6 +93,8 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
             if (game.isStarted) {
                 if (game.players.all { it !is HumanPlayer || !it.isActive })
                     game.end(null)
+                else
+                    player.notifyPlayerUpdateStatus()
             } else {
                 log.info("${player.playerName}离开了房间")
                 game.players[player.location] = null

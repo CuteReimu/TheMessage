@@ -159,13 +159,21 @@ class Recorder {
             player.send(line.protoName, line.messageBuf.toByteArray(), i == list.size - 1)
         }
         player.send(reconnect_toc.newBuilder().setIsEnd(true).build())
+        for (p in player.game!!.players)
+            (p as? HumanPlayer)?.notifyPlayerUpdateStatus(true)
     }
 
     companion object {
         private val log = Logger.getLogger(Recorder::class.java)
         private val saveLoadPool = Channel<() -> Unit>(Channel.UNLIMITED)
-        private val ignoredProtoNames =
-            listOf("reconnect_toc", "heart_toc", "game_init_finish_tos", "notify_kicked_toc", "error_message_toc")
+        private val ignoredProtoNames = listOf(
+            "reconnect_toc",
+            "heart_toc",
+            "game_init_finish_tos",
+            "notify_kicked_toc",
+            "error_message_toc",
+            "notify_player_update_toc"
+        )
 
         init {
             @OptIn(DelicateCoroutinesApi::class)

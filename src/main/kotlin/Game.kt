@@ -197,10 +197,9 @@ class Game private constructor(totalPlayerCount: Int) {
         deck.discard(*cards)
         for (p in players) {
             if (p is HumanPlayer) {
-                val builder = discard_card_toc.newBuilder().setPlayerId(p.getAlternativeLocation(player.location))
-                for (card in cards) {
-                    builder.addCards(card.toPbCard())
-                }
+                val builder = discard_card_toc.newBuilder()
+                builder.playerId = p.getAlternativeLocation(player.location)
+                cards.forEach { builder.addCards(it.toPbCard()) }
                 p.send(builder.build())
             }
         }
