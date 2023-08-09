@@ -278,6 +278,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
             if (player.roleFaceUp) return false
             val g = player.game!!
             val target = e.inFrontOfWhom
+            if (!target.alive) return false
             val card = target.messageCards.run {
                 if (target.isPartnerOrSelf(player)) {
                     if (count(Black) >= 2 && Black in e.messageCard.colors)

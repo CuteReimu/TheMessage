@@ -72,14 +72,15 @@ class ZuoYouFengYuan : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
             if (r.roleFaceUp) return false
-            val players = r.game!!.players
+            val players = r.game!!.players.toMutableList()
+            players.removeIf { !it!!.alive }
+            if (players.size < 2) return false
             if (Random.nextInt(players.size) != 0) return false
-            val playersList = players.toMutableList()
-            playersList.shuffle()
+            players.shuffle()
             GameExecutor.post(r.game!!, {
                 val builder = skill_zuo_you_feng_yuan_tos.newBuilder()
-                builder.addTargetPlayerIds(r.getAlternativeLocation(playersList[0]!!.location))
-                builder.addTargetPlayerIds(r.getAlternativeLocation(playersList[1]!!.location))
+                builder.addTargetPlayerIds(r.getAlternativeLocation(players[0]!!.location))
+                builder.addTargetPlayerIds(r.getAlternativeLocation(players[1]!!.location))
                 skill.executeProtocol(r.game!!, r, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true

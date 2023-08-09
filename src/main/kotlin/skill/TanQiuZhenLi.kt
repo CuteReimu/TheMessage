@@ -196,7 +196,7 @@ class TanQiuZhenLi : AbstractSkill(), ActiveSkill {
             fun isPureColor(c: Card) = c.colors.size == 1 && c.colors.first() == color
 
             val target = e.player.game!!.players.filter {
-                it!!.isEnemy(e.player) && it.messageCards.any(::isPureColor)
+                it!!.isEnemy(e.player) && it.alive && it.messageCards.any(::isPureColor)
             }.randomOrNull() ?: return false
             val card = target.cards.filter(::isPureColor).randomOrNull() ?: return false
             val cardId = card.id
