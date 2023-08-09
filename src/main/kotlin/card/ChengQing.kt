@@ -74,7 +74,7 @@ class ChengQing : Card {
             (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
             return false
         }
-        if (!targetCard.colors.contains(color.Black)) {
+        if (!targetCard.isBlack()) {
             log.error("澄清只能对黑情报使用")
             (r as? HumanPlayer)?.sendErrorMessage("澄清只能对黑情报使用")
             return false

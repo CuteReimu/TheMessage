@@ -44,8 +44,8 @@ class WuDao : Card {
             (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机不对")
             return false
         }
-        val left: Player = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
-        val right: Player = fsm.inFrontOfWhom.getNextRightAlivePlayer()
+        val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
+        val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
         if (target === fsm.inFrontOfWhom || target !== left && target !== right) {
             log.error("误导只能选择情报当前人左右两边的人作为目标")
             (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")

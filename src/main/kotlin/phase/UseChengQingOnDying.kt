@@ -2,19 +2,15 @@ package com.fengsheng.phase
 
 import com.fengsheng.Fsm
 import com.fengsheng.ResolveResult
-import com.fengsheng.protos.Common
+import com.fengsheng.card.count
+import com.fengsheng.protos.Common.color.Black
 
 /**
  * 濒死求澄清时，使用了澄清
  */
 data class UseChengQingOnDying(val waitForChengQing: WaitForChengQing) : Fsm {
     override fun resolve(): ResolveResult {
-        var count = 0
-        for (card in waitForChengQing.whoDie.messageCards) {
-            for (color in card.colors) {
-                if (color == Common.color.Black) count++
-            }
-        }
+        val count = waitForChengQing.whoDie.messageCards.count(Black)
         return if (count >= 3) ResolveResult(waitForChengQing, true) else ResolveResult(
             StartWaitForChengQing(
                 waitForChengQing.whoseTurn,

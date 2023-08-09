@@ -1003,7 +1003,7 @@ message skill_ru_bi_zhi_shi_b_tos {
 message skill_ru_bi_zhi_shi_b_toc {
   bool enable = 1;
   card card = 2;
-  bool use_card = 3; // true使用，false弃掉
+  bool use_card = 3; // true使用，false弃掉，弃牌走弃牌协议
   uint32 target_player_id = 4;
   uint32 target_card_id = 5;
 }
