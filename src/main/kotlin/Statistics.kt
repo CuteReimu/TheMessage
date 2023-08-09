@@ -308,7 +308,8 @@ object Statistics {
             sb.append(",")
             sb.append(value[0])
             var winRate: Double? = null
-            for ((i, v) in value.withIndex()) {
+            for (i in 0 until 9) { // 不显示清道夫，所以这里只有9
+                val v = value[i]
                 sb.append(",")
                 winCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
                     if (winRate == null) winRate = r
