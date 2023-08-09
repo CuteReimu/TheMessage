@@ -207,6 +207,7 @@ class LengXueXunLian : AbstractSkill(), ActiveSkill {
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.lockPlayerId = p.getAlternativeLocation(lockPlayer.location)
                     builder.handCard = anotherCard.toPbCard()
+                    p.send(builder.build())
                 }
             }
             return ResolveResult(
