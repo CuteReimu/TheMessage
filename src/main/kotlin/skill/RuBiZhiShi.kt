@@ -248,13 +248,13 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
             if (r.roleFaceUp) return false
-            val target = r.game!!.players.filter { it !== r && it!!.alive }
-            GameExecutor.post(e.whoseFightTurn.game!!, {
-                skill.executeProtocol(
-                    e.whoseFightTurn.game!!,
-                    e.whoseFightTurn,
-                    skill_ru_bi_zhi_shi_a_tos.getDefaultInstance()
-                )
+            val target = r.game!!.players.filter {
+                it !== r && it!!.alive && it.cards.isNotEmpty() && it.isEnemy(r)
+            }.randomOrNull() ?: return false
+            GameExecutor.post(r.game!!, {
+                val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
+                builder.targetPlayerId = r.getAlternativeLocation(target.location)
+                skill.executeProtocol(r.game!!, r, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }
