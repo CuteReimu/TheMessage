@@ -94,6 +94,7 @@ class BiFeng : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
+            fsm.askWhom.draw(2)
             return ResolveResult(fsm.copy(valid = false), true)
         }
 
