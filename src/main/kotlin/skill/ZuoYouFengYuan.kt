@@ -4,7 +4,6 @@ import com.fengsheng.Game
 import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
-import com.fengsheng.card.JieHuo
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_toc
 import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_tos
@@ -20,7 +19,12 @@ class ZuoYouFengYuan : AbstractSkill(), ActiveSkill {
     override val skillId = SkillId.ZUO_YOU_FENG_YUAN
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (!JieHuo.canUse(g, r)) return
+        val fsm = g.fsm as? FightPhaseIdle
+        if (fsm == null || fsm.whoseFightTurn !== r) {
+            log.error("没有轮到你操作")
+            (r as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
+            return
+        }
         if (r.roleFaceUp) {
             log.error("你现在正面朝上，不能发动[左右逢源]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[左右逢源]")
