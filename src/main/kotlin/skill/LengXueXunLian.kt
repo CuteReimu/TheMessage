@@ -161,20 +161,20 @@ class LengXueXunLian : AbstractSkill(), ActiveSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("不能传给自己")
                 return null
             }
-            val target = player.game!!.players[player.getAbstractLocation(pb.targetPlayerId)]!!
-            if (!target.alive) {
-                log.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
-                return null
-            }
             val targetLocation = when (card.direction) {
-                Left -> target.getNextLeftAlivePlayer().location
-                Right -> target.getNextRightAlivePlayer().location
+                Left -> player.getNextLeftAlivePlayer().location
+                Right -> player.getNextRightAlivePlayer().location
                 else -> 0
             }
             if (card.direction != Up && pb.targetPlayerId != player.getAlternativeLocation(targetLocation)) {
                 log.error("不能传给那个人: ${pb.targetPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("不能传给那个人: ${pb.targetPlayerId}")
+                return null
+            }
+            val target = player.game!!.players[player.getAbstractLocation(pb.targetPlayerId)]!!
+            if (!target.alive) {
+                log.error("目标已死亡")
+                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (pb.lockPlayerId <= 0 || pb.lockPlayerId >= player.game!!.players.size) {
