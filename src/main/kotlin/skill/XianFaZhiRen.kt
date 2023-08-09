@@ -44,6 +44,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                             if (p.checkSeq(seq2)) {
                                 val builder2 = skill_xian_fa_zhi_ren_a_tos.newBuilder()
                                 builder2.enable = false
+                                builder2.seq = seq2
                                 g.tryContinueResolveProtocol(p, builder2.build())
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
