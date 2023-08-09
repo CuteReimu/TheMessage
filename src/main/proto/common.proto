@@ -37,6 +37,7 @@ enum role {
   qian_min = 32; // 钱敏
   chi_jing_hai = 33; // 池镜海
   qin_yuan_yuan = 34; // 秦圆圆
+  sheng_lao_ban = 35; // 盛老板
   sp_lian_yuan = 1003; // SP连鸢
   sp_han_mei = 1014; // SP韩梅
   sp_gu_xiao_meng = 1020; // SP顾小梦
