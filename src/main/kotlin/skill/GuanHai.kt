@@ -20,19 +20,25 @@ class GuanHai : AbstractSkill(), TriggeredSkill {
         val fsm = g.fsm as? OnUseCard ?: return null
         val fsm2 = fsm.currentFsm as? FightPhaseIdle ?: return null
         if (fsm.player != fsm.askWhom) return null
-        if (fsm.askWhom.findSkill(skillId) == null) return null
+        val r = fsm.askWhom
+        if (r.findSkill(skillId) == null) return null
         if (fsm.cardType != Jie_Huo && fsm.cardType != Wu_Dao) return null
-        log.info("${fsm.askWhom}发动了[观海]")
-        fsm.askWhom.addSkillUseCount(skillId)
+        if (r.getSkillUseCount(skillId) > 0) return null
+        log.info("${r}发动了[观海]")
+        r.addSkillUseCount(skillId)
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_guan_hai_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(fsm.askWhom.location)
+                builder.playerId = p.getAlternativeLocation(r.location)
                 builder.card = fsm2.messageCard.toPbCard()
                 p.send(builder.build())
             }
         }
-        return null
+        val oldResolveFunc = fsm.resolveFunc
+        return ResolveResult(fsm.copy(resolveFunc = { valid ->
+            r.resetSkillUseCount(skillId)
+            oldResolveFunc(valid)
+        }), true)
     }
 
     companion object {

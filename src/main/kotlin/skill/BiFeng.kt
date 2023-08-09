@@ -17,11 +17,16 @@ class BiFeng : AbstractSkill(), TriggeredSkill {
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
         if (fsm.player != fsm.askWhom) return null
-        if (fsm.askWhom.findSkill(skillId) == null) return null
+        val r = fsm.askWhom
+        if (r.findSkill(skillId) == null) return null
         if (fsm.cardType != Common.card_type.Jie_Huo && fsm.cardType != Common.card_type.Wu_Dao) return null
-        if (fsm.askWhom.getSkillUseCount(skillId) >= fsm.askWhom.getSkillUseCount(SkillId.GUAN_HAI)) return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        return ResolveResult(excuteBiFeng(fsm), true)
+        if (r.getSkillUseCount(skillId) > 0) return null
+        r.addSkillUseCount(skillId)
+        val oldResolveFunc = fsm.resolveFunc
+        return ResolveResult(excuteBiFeng(fsm.copy(resolveFunc = { valid ->
+            if (r.getSkillUseCount(skillId) == 1) r.resetSkillUseCount(skillId)
+            oldResolveFunc(valid)
+        })), true)
     }
 
     private data class excuteBiFeng(val fsm: OnUseCard) : WaitingFsm {
@@ -79,7 +84,7 @@ class BiFeng : AbstractSkill(), TriggeredSkill {
             if (!pb.enable)
                 return ResolveResult(fsm, true)
             log.info("${fsm.askWhom}发动了[避风]")
-            fsm.askWhom.addSkillUseCount(SkillId.BI_FENG, 99999)
+            fsm.askWhom.addSkillUseCount(SkillId.BI_FENG)
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_bi_feng_toc.newBuilder()
