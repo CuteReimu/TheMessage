@@ -940,3 +940,34 @@ message skill_zuo_you_feng_yuan_toc {
   uint32 player_id = 1; // 秦圆圆的ID
   repeated uint32 target_player_ids = 2;
 }
+
+// SP连鸢【探求真理】A：出牌阶段限一次，你可以从另一名角色的情报区中选择一张情报，将其置入你的情报区，但不能以此令你收集三张或更多同色情报。
+message skill_tan_qiu_zhen_li_a_tos {
+  uint32 target_player_id = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【探求真理】A
+message skill_tan_qiu_zhen_li_a_toc {
+  uint32 player_id = 1; // SP连鸢的ID
+  uint32 target_player_id = 2;
+  uint32 card_id = 3;
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// SP连鸢【探求真理】B：然后该角色可以将其手牌或情报区中的一张纯黑色牌置入你的情报区。
+message skill_tan_qiu_zhen_li_b_tos {
+  bool from_hand = 1; // true就是从手牌，false就是从情报区
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【探求真理】B
+message skill_tan_qiu_zhen_li_b_toc {
+  uint32 target_player_id = 1; // 该角色的ID
+  uint32 player_id = 2; // SP连鸢的ID
+  bool from_hand = 3; // true就是从手牌，false就是从情报区
+  card card = 4;
+}
