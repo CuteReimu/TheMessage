@@ -1,9 +1,6 @@
 package com.fengsheng.handler
 
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
-import com.fengsheng.RobotPlayer
-import com.fengsheng.Statistics
+import com.fengsheng.*
 import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
 
@@ -14,21 +11,23 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             r.sendErrorMessage("游戏已经开始了")
             return
         }
-        val humanCount = r.game!!.players.count { it is HumanPlayer }
-        if (humanCount >= 2) {
-            r.sendErrorMessage("禁止添加机器人")
-            return
-        }
-//        val count = Statistics.getPlayerGameCount(r.playerName)
-//        if (count.winCount <= 0) {
-//            val now = System.currentTimeMillis()
-//            val startTrialTime: Long = Statistics.getTrialStartTime(r.device!!)
-//            if (startTrialTime != 0L && now - 5 * 24 * 3600 * 1000 >= startTrialTime) {
-//                r.sendErrorMessage("禁止添加机器人")
-//                return
+        if (!Config.IsGmEnable) {
+            val humanCount = r.game!!.players.count { it is HumanPlayer }
+            if (humanCount >= 2) {
+                r.sendErrorMessage("禁止添加机器人")
+                return
+            }
+//            val count = Statistics.getPlayerGameCount(r.playerName)
+//            if (count.winCount <= 0) {
+//                val now = System.currentTimeMillis()
+//                val startTrialTime: Long = Statistics.getTrialStartTime(r.device!!)
+//                if (startTrialTime != 0L && now - 5 * 24 * 3600 * 1000 >= startTrialTime) {
+//                    r.sendErrorMessage("禁止添加机器人")
+//                    return
+//                }
+//                Statistics.setTrialStartTime(r.device!!, now)
 //            }
-//            Statistics.setTrialStartTime(r.device!!, now)
-//        }
+        }
         val robotPlayer = RobotPlayer()
         robotPlayer.playerName = Player.randPlayerName(r.game!!)
         robotPlayer.game = r.game

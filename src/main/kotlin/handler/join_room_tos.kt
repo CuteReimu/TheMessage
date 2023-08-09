@@ -75,8 +75,10 @@ class join_room_tos : ProtoHandler {
                 val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(oldPlayer2.location).build()
                 newGame.players.forEach { (it as? HumanPlayer)?.send(reply) }
             }
-            val humanCount = newGame.players.count { it is HumanPlayer }
-            if (humanCount >= 2) newGame.removeAllRobot()
+            if (!Config.IsGmEnable) {
+                val humanCount = newGame.players.count { it is HumanPlayer }
+                if (humanCount >= 2) newGame.removeAllRobot()
+            }
             player.playerName = playerName
             player.game = newGame
             val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
