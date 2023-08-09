@@ -63,7 +63,7 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
                         builder.seq = seq2
                         r.game!!.tryContinueResolveProtocol(r, builder.build())
                     }
-                }, r.getWaitSeconds(timeoutSecond).toLong(), TimeUnit.SECONDS)
+                }, r.getWaitSeconds(timeoutSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_cang_shen_jiao_tang_b_tos.newBuilder()
@@ -122,7 +122,7 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
                         builder.seq = seq2
                         r.game!!.tryContinueResolveProtocol(r, builder.build())
                     }
-                }, r.getWaitSeconds(timeoutSecond).toLong(), TimeUnit.SECONDS)
+                }, r.getWaitSeconds(timeoutSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()

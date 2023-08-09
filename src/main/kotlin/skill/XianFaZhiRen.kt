@@ -46,7 +46,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                                 builder2.enable = false
                                 g.tryContinueResolveProtocol(p, builder2.build())
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
                 }
             }
@@ -203,7 +203,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                         builder.seq = seq
                         r.game!!.tryContinueResolveProtocol(r, builder.build())
                     }
-                }, r.getWaitSeconds(SKILL_TIMEOUT).toLong(), TimeUnit.SECONDS)
+                }, r.getWaitSeconds(SKILL_TIMEOUT + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_xian_fa_zhi_ren_b_tos.newBuilder()

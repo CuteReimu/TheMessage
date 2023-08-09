@@ -42,7 +42,7 @@ class XinSiChao : AbstractSkill(), ActiveSkill {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info(r.toString() + "发动了[新思潮]")
+        log.info("${r}发动了[新思潮]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_xin_si_chao_toc.newBuilder()
