@@ -52,10 +52,9 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
         if (declaredWinner.isNotEmpty()) {
             if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
                 winner.addAll(players.filter { it.identity == Has_No_Identity })
-            if (whoseTurn.findSkill(BI_YI_SHUANG_FEI) != null && whoseTurn.roleFaceUp && whoseTurn !in winner) {
-                val declaredWinnerMale = declaredWinner.filter { it.isMale }
-                if (declaredWinnerMale.size == 1) {
-                    val target = declaredWinnerMale[0]
+            if (whoseTurn.findSkill(BI_YI_SHUANG_FEI) != null && whoseTurn.roleFaceUp && whoseTurn.alive && whoseTurn !in winner) {
+                val target = declaredWinner.filter { it.isMale }.randomOrNull()
+                if (target != null) {
                     if (target.identity == Red || target.identity == Blue)
                         winner.removeIf { it !== target && it.identity == target.identity }
                     winner.add(whoseTurn)

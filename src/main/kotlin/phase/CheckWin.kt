@@ -93,10 +93,9 @@ data class CheckWin(
         if (declareWinner.isNotEmpty()) {
             if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
                 winner.addAll(players.filter { it.identity == Has_No_Identity })
-            if (whoseTurn.findSkill(BI_YI_SHUANG_FEI) != null && whoseTurn.roleFaceUp && whoseTurn !in winner) {
-                val declareWinnerMale = declareWinner.filter { it.isMale }
-                if (declareWinnerMale.size == 1) {
-                    val target = declareWinnerMale[0]
+            if (whoseTurn.findSkill(BI_YI_SHUANG_FEI) != null && whoseTurn.roleFaceUp && whoseTurn.alive && whoseTurn !in winner) {
+                val target = declareWinner.filter { it.isMale }.randomOrNull()
+                if (target != null) {
                     if (target.identity == Red || target.identity == Blue)
                         winner.removeIf { it !== target && it.identity == target.identity }
                     winner.add(whoseTurn)
