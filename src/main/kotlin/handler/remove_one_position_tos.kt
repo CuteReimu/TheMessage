@@ -14,7 +14,10 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
             return
         }
         val oldPlayers = r.game!!.players
-        if (oldPlayers.size <= 2) return
+        if (oldPlayers.size <= 2) {
+            r.sendErrorMessage("至少2人局")
+            return
+        }
         val index = oldPlayers.indexOfFirst { p -> p == null }
         val players = oldPlayers.filterIndexed { i, _ -> i != index }.toTypedArray()
         r.game!!.players = players

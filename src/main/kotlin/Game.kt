@@ -358,7 +358,7 @@ class Game private constructor(totalPlayerCount: Int) {
         fun newInstance() {
             if (newGame.players.all { it is HumanPlayer })
                 lastTotalPlayerCount = newGame.players.size + 1
-            newGame = Game(lastTotalPlayerCount.coerceIn(5..8))
+            newGame = Game(lastTotalPlayerCount.coerceIn(minOf(5, Config.TotalPlayerCount)..8))
         }
 
         @Throws(IOException::class, ClassNotFoundException::class)

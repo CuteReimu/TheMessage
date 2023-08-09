@@ -12,7 +12,10 @@ class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos
             return
         }
         val players = r.game!!.players
-        if (players.size >= 9) return
+        if (players.size >= 9) {
+            r.sendErrorMessage("最多9人局")
+            return
+        }
         val newPlayers = arrayOf(*players, null)
         r.game!!.players = newPlayers
         for (p in players) {
