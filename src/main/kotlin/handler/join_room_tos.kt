@@ -69,9 +69,10 @@ class join_room_tos : ProtoHandler {
             player.device = pb.device
             val oldPlayer2 = Game.playerNameCache.put(playerName, player)
             if (oldPlayer2 != null) {
-                oldPlayer2.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
                 log.info("${oldPlayer2.playerName}离开了房间")
                 newGame.players[oldPlayer2.location] = null
+                oldPlayer2.game = null
+                oldPlayer2.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
                 val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(oldPlayer2.location).build()
                 newGame.players.forEach { (it as? HumanPlayer)?.send(reply) }
             }
