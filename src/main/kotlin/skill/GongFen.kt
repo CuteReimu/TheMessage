@@ -53,7 +53,7 @@ class GongFen : AbstractSkill(), ActiveSkill {
         val asMessage: Boolean = false
     ) : Fsm {
         override fun resolve(): ResolveResult? {
-            val target = q.removeLastOrNull()
+            val target = q.removeFirstOrNull()
             if (target == null) {
                 if (asMessage) return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
                 return ResolveResult(fsm, true)
