@@ -55,7 +55,12 @@ class GongFen : AbstractSkill(), ActiveSkill {
         override fun resolve(): ResolveResult? {
             val target = q.removeFirstOrNull()
             if (target == null) {
-                if (asMessage) return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+                if (asMessage) return ResolveResult(
+                    OnAddMessageCard(
+                        fsm.whoseTurn,
+                        fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+                    ), true
+                )
                 return ResolveResult(fsm, true)
             }
             val r = fsm.whoseFightTurn
