@@ -108,11 +108,15 @@ abstract class Card {
         return other.id == id
     }
 
-    open fun toPbCard(): card? {
+    open fun toPbCard(): card {
         val c = getOriginCard()
-        return card.newBuilder().setCardId(c.id).setCardDir(c.direction).setCanLock(c.lockable).setCardType(
-            c.type
-        ).addAllCardColor(c.colors).build()
+        val builder = card.newBuilder()
+        builder.cardId = c.id
+        builder.cardDir = c.direction
+        builder.canLock = c.lockable
+        builder.cardType = c.type
+        builder.addAllCardColor(c.colors)
+        return builder.build()
     }
 
     fun isBlack(): Boolean = Black in colors

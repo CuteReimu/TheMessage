@@ -315,7 +315,7 @@ class MiLing : Card {
         }
     }
 
-    override fun toPbCard(): card? {
+    override fun toPbCard(): card {
         val builder = card.newBuilder()
         builder.cardId = id
         builder.cardDir = direction
