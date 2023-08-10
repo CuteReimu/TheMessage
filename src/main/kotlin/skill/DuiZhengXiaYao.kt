@@ -32,7 +32,7 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
         val pb = message as skill_dui_zheng_xia_yao_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
-            (r as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()
@@ -108,7 +108,7 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
-                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (!message.enable) {
@@ -215,7 +215,7 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
-                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {

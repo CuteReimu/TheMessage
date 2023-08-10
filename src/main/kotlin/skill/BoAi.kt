@@ -27,7 +27,7 @@ class BoAi : AbstractSkill(), ActiveSkill {
         val pb = message as skill_bo_ai_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
-            (r as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+            r.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()

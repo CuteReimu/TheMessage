@@ -113,7 +113,7 @@ class FengYunBianHuan : Card {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is feng_yun_bian_huan_choose_card_tos) {
                 log.error("现在正在结算风云变幻")
-                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算风云变幻")
                 return null
             }
             val chooseCard = drawCards.find { c -> c.id == message.cardId }
