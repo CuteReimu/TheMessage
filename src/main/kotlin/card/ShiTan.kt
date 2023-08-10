@@ -10,6 +10,7 @@ import com.fengsheng.protos.Fengsheng.show_shi_tan_toc
 import com.fengsheng.protos.Fengsheng.use_shi_tan_toc
 import com.fengsheng.protos.Role.skill_cheng_fu_toc
 import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
+import com.fengsheng.skill.CongRongYingDui
 import com.fengsheng.skill.SkillId
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -78,7 +79,7 @@ class ShiTan : Card {
                         player.send(builder.build())
                     }
                 }
-                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
+                if (target.getSkillUseCount(SkillId.JIU_JI) % 2 == 1) {
                     target.addSkillUseCount(SkillId.JIU_JI)
                     target.cards.add(this@ShiTan)
                     log.info(target.toString() + "将使用的${this@ShiTan}加入了手牌")
@@ -94,7 +95,7 @@ class ShiTan : Card {
                 } else {
                     g.deck.discard(this@ShiTan.getOriginCard())
                 }
-                MainPhaseIdle(r)
+                CongRongYingDui.check(r, target) ?: MainPhaseIdle(r)
             } else {
                 for (p in g.players) {
                     if (p is HumanPlayer) {
@@ -200,7 +201,7 @@ class ShiTan : Card {
                 if (discardCard != null)
                     target.game!!.playerDiscardCard(target, discardCard)
             }
-            return ResolveResult(MainPhaseIdle(r), true)
+            return ResolveResult(CongRongYingDui.check(r, target) ?: MainPhaseIdle(r), true)
         }
 
         private fun autoSelect() {

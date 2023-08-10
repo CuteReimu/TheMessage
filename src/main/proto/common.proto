@@ -39,10 +39,13 @@ enum role {
   qin_yuan_yuan = 34; // 秦圆圆
   sheng_lao_ban = 35; // 盛老板
   gao_qiao_zhi_zi = 36; // 高桥智子
+  jian_xian_sheng = 37; // 简先生
+  lao_hu = 38; // 老虎
   sp_cheng_xiao_die = 1002; // SP程小蝶
   sp_lian_yuan = 1003; // SP连鸢
   sp_han_mei = 1014; // SP韩梅
   sp_gu_xiao_meng = 1020; // SP顾小梦
+  sp_xiao_jiu = 1027; // SP小九
   sp_li_ning_yu = 1028; // SP李宁玉
 }
 

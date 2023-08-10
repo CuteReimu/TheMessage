@@ -19,7 +19,7 @@ class LianMin : AbstractSkill(), TriggeredSkill {
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSenderSkill
         if (fsm?.sender?.findSkill(skillId) == null) return null
-        if (fsm.messageCard.colors.contains(color.Black)) return null
+        if (fsm.messageCard.isBlack()) return null
         if (fsm.sender.getSkillUseCount(skillId) > 0) return null
         fsm.sender.addSkillUseCount(skillId)
         return ResolveResult(executeLianMin(fsm), true)
@@ -86,10 +86,9 @@ class LianMin : AbstractSkill(), TriggeredSkill {
                 return null
             }
             r.incrSeq()
-            log.info("${r}发动了[怜悯]")
+            log.info("${r}发动了[怜悯]，将${target}面前的${card}加入了手牌")
             target.deleteMessageCard(card.id)
             r.cards.add(card)
-            log.info("${target}面前的${card}加入了${r}的手牌")
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_lian_min_toc.newBuilder()

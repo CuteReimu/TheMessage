@@ -66,10 +66,10 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
                     val builder = skill_miao_shou_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 20
+                    builder.waitingSecond = 15
                     builder.messageCard = fsm.messageCard.toPbCard()
                     if (p === r) {
-                        for (card in target.cards) builder.addCards(card.toPbCard())
+                        target.cards.forEach { builder.addCards(it.toPbCard()) }
                         val seq2 = p.seq
                         builder.seq = seq2
                         p.timeout = GameExecutor.post(g, {

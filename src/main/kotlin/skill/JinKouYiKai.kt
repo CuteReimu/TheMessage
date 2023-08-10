@@ -46,7 +46,7 @@ class JinKouYiKai : AbstractSkill(), ActiveSkill {
         g.resolve(executeJinKouYiKai(fsm, r, cards))
     }
 
-    private data class executeJinKouYiKai(val fsm: FightPhaseIdle, val r: Player, val cards: MutableList<Card>) :
+    private data class executeJinKouYiKai(val fsm: FightPhaseIdle, val r: Player, val cards: List<Card>) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
@@ -111,7 +111,8 @@ class JinKouYiKai : AbstractSkill(), ActiveSkill {
             return if (message.exchange) {
                 val temp = cards.first()
                 log.info("${r}将待接收情报${fsm.messageCard}与牌堆顶的${temp}互换")
-                cards[0] = fsm.messageCard
+                g.deck.draw(1)
+                g.deck.addFirst(fsm.messageCard)
                 ResolveResult(
                     fsm.copy(
                         whoseFightTurn = fsm.inFrontOfWhom,

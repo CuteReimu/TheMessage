@@ -76,14 +76,14 @@ class JianRen : AbstractSkill(), TriggeredSkill {
         }
     }
 
-    private data class executeJianRenB(val fsm: ReceivePhaseReceiverSkill, val cards: MutableList<Card>) : WaitingFsm {
+    private data class executeJianRenB(val fsm: ReceivePhaseReceiverSkill, val cards: List<Card>) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = fsm.inFrontOfWhom
             val autoChoose = r.chooseBlackMessageCard()
             val card = cards[0]
             val isBlack = card.colors.contains(color.Black)
             if (isBlack) {
-                cards.clear()
+                r.game!!.deck.draw(1)
                 r.cards.add(card)
                 log.info("${r}将${card}加入了手牌")
             }

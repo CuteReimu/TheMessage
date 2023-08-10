@@ -41,10 +41,20 @@ class Deck(private val game: Game) {
      * @return 返回查看的牌，它是牌堆的一个 [subList][List.subList] ，其中 [List.first] 是观看的最后一张牌，
      * [List.last] 是牌堆顶第一张牌。它的 [size][List.size] 可能小于n。
      */
-    fun peek(n: Int): MutableList<Card> {
+    fun peek(n: Int): List<Card> {
         if (n > cards.size) shuffle()
         val from = if (n > cards.size) 0 else cards.size - n
         return cards.subList(from, cards.size)
+    }
+
+    /**
+     * 往牌堆顶放牌
+     *
+     * @param cards 排在数组后面的牌将会放在上面
+     */
+    fun addFirst(vararg cards: Card) {
+        this.cards.addAll(cards)
+        notifyDeckCount(false)
     }
 
     /**

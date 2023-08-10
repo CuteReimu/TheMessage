@@ -260,6 +260,7 @@ class RobotPlayer : Player() {
             SkillId.BO_AI to BiPredicate { e, skill -> BoAi.ai(e, skill) },
             SkillId.TAN_QIU_ZHEN_LI to BiPredicate { e, skill -> TanQiuZhenLi.ai(e, skill) },
             SkillId.HUO_XIN to BiPredicate { e, skill -> HuoXin.ai(e, skill) },
+            SkillId.YUN_CHOU_WEI_WO to BiPredicate { e, skill -> YunChouWeiWo.ai(e, skill) },
         )
         private val aiSkillSendPhaseStart = hashMapOf<SkillId, BiPredicate<SendPhaseStart, ActiveSkill>>(
             SkillId.LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) }
@@ -280,6 +281,7 @@ class RobotPlayer : Player() {
             SkillId.XIAN_FA_ZHI_REN to BiPredicate { e, skill -> XianFaZhiRen.ai(e, skill) },
             SkillId.ZUO_YOU_FENG_YUAN to BiPredicate { e, skill -> ZuoYouFengYuan.ai(e, skill) },
             SkillId.GONG_FEN to BiPredicate { e, skill -> GongFen.ai(e, skill) },
+            SkillId.YUN_CHOU_WEI_WO to BiPredicate { e, skill -> YunChouWeiWo.ai(e, skill) },
         )
         private val aiSkillReceivePhase = hashMapOf<SkillId, Predicate<Fsm>>(
             SkillId.JIN_SHEN to Predicate { fsm -> JinShen.ai(fsm) },
@@ -289,6 +291,7 @@ class RobotPlayer : Player() {
             SkillId.YI_YA_HUAN_YA to Predicate { fsm -> YiYaHuanYa.ai(fsm) },
             SkillId.JING_MENG to Predicate { fsm -> JingMeng.ai(fsm) },
             SkillId.JIAN_REN to Predicate { fsm -> JianRen.ai(fsm) },
+            SkillId.CHI_ZI_ZHI_XIN to Predicate { fsm -> ChiZiZhiXin.ai(fsm) },
         )
         private val aiMainPhase = hashMapOf<card_type, BiPredicate<MainPhaseIdle, Card>>(
             card_type.Cheng_Qing to BiPredicate { e, card -> ChengQing.ai(e, card) },

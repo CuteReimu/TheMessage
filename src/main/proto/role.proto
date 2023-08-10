@@ -1053,3 +1053,66 @@ message skill_huo_xin_b_toc {
   card discard_card = 3; // 因为可能加入手牌，所以不走弃牌协议，这条协议自己处理
   bool join_into_hand = 4;
 }
+
+// 广播询问使用【从容应对】
+message wait_for_skill_cong_rong_ying_dui_toc {
+  uint32 player_id = 1; // 简先生的ID
+  uint32 target_player_id = 2;
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// 简先生【从容应对】：你对一名角色使用的【试探】结算后，或一名角色对你使用的【试探】结算后，你可以抽取该角色的一张手牌，或令你和该角色各摸一张牌。
+message skill_cong_rong_ying_dui_tos {
+  bool enable = 1; // 是否发动
+  bool draw_card = 2; // false就是你抽取对方一张手牌，true就是双方各摸一张牌
+  uint32 seq = 3;
+}
+
+// 广播使用【从容应对】
+message skill_cong_rong_ying_dui_toc {
+  uint32 player_id = 1; // 简先生的ID
+  uint32 target_player_id = 2;
+  bool enable = 3; // 是否发动
+  bool draw_card = 4; // 同上，摸牌走摸牌协议
+  card card = 5; // 被抽取的手牌，只有简先生和那名玩家可以看见
+}
+
+// SP小九【赤子之心】：你传出的非黑色情报被其他角色接收后，你可以摸两张牌，或从手牌中选择一张含有该情报颜色的牌，将其置入你的情报区。
+message skill_chi_zi_zhi_xin_tos {
+  bool draw_card = 1; // true就是摸两张牌
+  uint32 card_id = 2; // 上面为false时，这个就是目标牌
+  uint32 seq = 3;
+}
+
+// 广播使用【赤子之心】
+message skill_chi_zi_zhi_xin_toc {
+  uint32 player_id = 1; // SP小九的ID
+  bool draw_card = 2; // 同上，摸牌走摸牌协议
+  card card = 3; // 上面为false时，这个就是目标牌
+}
+
+// 老虎【运筹帷幄】A：出牌阶段或争夺阶段，你可以翻开此角色牌，然后查看牌堆顶的五张牌
+message skill_yun_chou_wei_wo_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【运筹帷幄】A，并询问使用【运筹帷幄】B
+message skill_yun_chou_wei_wo_a_toc {
+  uint32 player_id = 1; // 老虎的ID
+  repeated card cards = 2; // 五张牌，只有老虎能看见
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// 老虎【运筹帷幄】B：从中选择三张加入手牌，其余的卡牌按任意顺序放回牌堆顶
+message skill_yun_chou_wei_wo_b_tos {
+  repeated uint32 deck_card_ids = 1; // 放回牌堆顶的两张牌，index=0是上面一张，index=1是下面一张
+  uint32 seq = 2;
+}
+
+// 广播使用【运筹帷幄】B
+message skill_yun_chou_wei_wo_b_toc {
+  uint32 player_id = 1;
+  repeated card cards = 2; // 摸的三张牌，只有老虎能看见
+}
