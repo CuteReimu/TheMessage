@@ -1018,9 +1018,39 @@ message skill_gong_fen_tos {
   uint32 seq = 1;
 }
 
-// 广播使用【共焚】3
+// 广播使用【共焚】
 message skill_gong_fen_toc {
   uint32 player_id = 1; // SP程小蝶的ID
   uint32 target_player_id = 2;
   card card = 3;
+}
+
+// 高桥智子【惑心】A：出牌阶段限一次，展示牌堆顶的一张牌，然后查看一名角色的手牌
+message skill_huo_xin_a_tos {
+  uint32 target_player_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【惑心】A
+message skill_huo_xin_a_toc {
+  uint32 player_id = 1; // 高桥智子的ID
+  uint32 target_player_id = 2;
+  card show_card = 3; // 展示的牌
+  repeated card cards = 4; // 目标角色的手牌，只有高桥智子能看见
+  uint32 waiting_second = 5;
+  uint32 seq = 6;
+}
+
+// 高桥智子【惑心】B：从中选择一张弃置，若弃置了含有展示牌颜色的牌，则将该弃置牌加入你的手牌。
+message skill_huo_xin_b_tos {
+  uint32 discard_card_id = 1; // 弃置的牌的id
+  uint32 seq = 2;
+}
+
+// 广播使用【惑心】B
+message skill_huo_xin_b_toc {
+  uint32 player_id = 1; // 高桥智子的ID
+  uint32 target_player_id = 2;
+  card discard_card = 3; // 因为可能加入手牌，所以不走弃牌协议，这条协议自己处理
+  bool join_into_hand = 4;
 }

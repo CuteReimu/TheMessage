@@ -90,14 +90,8 @@ abstract class Card {
      * @param args 根据不同的卡牌，传入的其他不同参数
      */
     abstract fun execute(g: Game, r: Player, vararg args: Any)
-    fun hasSameColor(card2: Card): Boolean {
-        for (color1 in colors) {
-            if (card2.colors.contains(color1)) {
-                return true
-            }
-        }
-        return false
-    }
+
+    fun hasSameColor(card2: Card) = colors.any { it in card2.colors }
 
     override fun hashCode(): Int {
         return id

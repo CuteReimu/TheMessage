@@ -259,6 +259,7 @@ class RobotPlayer : Player() {
             SkillId.JI_BAN to BiPredicate { e, skill -> JiBan.ai(e, skill) },
             SkillId.BO_AI to BiPredicate { e, skill -> BoAi.ai(e, skill) },
             SkillId.TAN_QIU_ZHEN_LI to BiPredicate { e, skill -> TanQiuZhenLi.ai(e, skill) },
+            SkillId.HUO_XIN to BiPredicate { e, skill -> HuoXin.ai(e, skill) },
         )
         private val aiSkillSendPhaseStart = hashMapOf<SkillId, BiPredicate<SendPhaseStart, ActiveSkill>>(
             SkillId.LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) }
