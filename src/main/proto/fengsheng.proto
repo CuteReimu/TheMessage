@@ -549,3 +549,8 @@ message mi_ling_choose_card_toc {
   uint32 waiting_second = 4; // 读多少秒
   uint32 seq = 5;
 }
+
+// 有人要发技能，全场读条
+message unknown_waiting_toc {
+  uint32 waiting_second = 1;
+}

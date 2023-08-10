@@ -8,6 +8,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.HasReceiveOrder
 import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -35,21 +36,25 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = wait_for_skill_xian_fa_zhi_ren_a_toc.newBuilder()
-                    builder.waitingSecond = 15
                     if (p === r) {
-                        val seq2 = p.seq
-                        builder.seq = seq2
+                        val builder = wait_for_skill_xian_fa_zhi_ren_a_toc.newBuilder()
+                        builder.waitingSecond = 15
+                        val seq = p.seq
+                        builder.seq = seq
                         p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
+                            if (p.checkSeq(seq)) {
                                 val builder2 = skill_xian_fa_zhi_ren_a_tos.newBuilder()
                                 builder2.enable = false
-                                builder2.seq = seq2
+                                builder2.seq = seq
                                 g.tryContinueResolveProtocol(p, builder2.build())
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        p.send(builder.build())
+                    } else {
+                        val builder = unknown_waiting_toc.newBuilder()
+                        builder.waitingSecond = 15
+                        p.send(builder.build())
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
