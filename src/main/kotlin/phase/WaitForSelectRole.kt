@@ -65,6 +65,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         player.incrSeq()
         selected[player.location] = roleSkillsData
         player.roleSkillsData = roleSkillsData
+        player.originRole = roleSkillsData.role
         (player as? HumanPlayer)?.send(select_role_toc.newBuilder().setRole(roleSkillsData.role).build())
         for (role in selected) if (role == null) return null
         return ResolveResult(StartGame(game), true)

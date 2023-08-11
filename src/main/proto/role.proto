@@ -1116,3 +1116,30 @@ message skill_yun_chou_wei_wo_b_toc {
   uint32 player_id = 1;
   repeated card cards = 2; // 摸的三张牌，只有老虎能看见
 }
+
+// SP端木静【后来人】A：你濒死时，可以翻开此角色牌并将其移出游戏，弃置你情报区中的情报，直到剩下一张红色或蓝色情报为止，然后从角色牌堆顶秘密抽取三张牌
+message skill_hou_lai_ren_a_tos {
+  uint32 remain_card_id = 1; // 保留的那张情报
+  uint32 seq = 2;
+}
+
+// 广播使用【后来人】A，并询问使用【后来人】B
+message skill_hou_lai_ren_a_toc {
+  uint32 player_id = 1; // SP端木静的ID
+  uint32 remain_card_id = 2; // 保留的那张情报
+  repeated role roles = 3; // 三张角色牌，只有SP端木静可以看到
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// SP端木静【后来人】B：从中选择一张作为你的新角色牌（隐藏角色则面朝下），剩余的角色牌放回角色牌堆底。
+message skill_hou_lai_ren_b_tos {
+  role role = 1; // 选择的角色
+  uint32 seq = 2;
+}
+
+// 广播使用【后来人】B
+message skill_hou_lai_ren_b_toc {
+  uint32 player_id = 1; // SP端木静的ID
+  role role = 2; // 选择的角色。如果是隐藏角色则其它人看到是枚举unknown，但是端木静自己可以看到
+}

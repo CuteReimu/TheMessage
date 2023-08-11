@@ -3,6 +3,7 @@ package com.fengsheng
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.RoleSkillsData
 import com.fengsheng.skill.Skill
@@ -22,6 +23,7 @@ abstract class Player protected constructor() {
     var secretTask = Killer
     var originIdentity = Black
     var originSecretTask = Killer
+    var originRole = unknown
     var alive = true
     var lose = false
 

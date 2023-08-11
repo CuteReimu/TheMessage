@@ -45,6 +45,7 @@ enum role {
   sp_lian_yuan = 1003; // SP连鸢
   sp_han_mei = 1014; // SP韩梅
   sp_gu_xiao_meng = 1020; // SP顾小梦
+  sp_duan_mu_jing = 1022; // SP端木静
   sp_xiao_jiu = 1027; // SP小九
   sp_li_ning_yu = 1028; // SP李宁玉
 }

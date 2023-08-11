@@ -4,6 +4,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Errcode.error_message_toc
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
@@ -146,7 +147,7 @@ class HumanPlayer(
         builder.secretTask = secretTask
         var l = location
         do {
-            builder.addRoles(if (game!!.players[l]!!.roleFaceUp || l == location) game!!.players[l]!!.role else Common.role.unknown)
+            builder.addRoles(if (game!!.players[l]!!.roleFaceUp || l == location) game!!.players[l]!!.role else unknown)
             builder.addNames(game!!.players[l]!!.playerName)
             l = (l + 1) % game!!.players.size
         } while (l != location)

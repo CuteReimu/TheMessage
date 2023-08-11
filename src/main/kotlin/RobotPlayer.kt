@@ -147,6 +147,10 @@ class RobotPlayer : Player() {
     override fun notifyAskForChengQing(whoDie: Player, askWhom: Player, waitSecond: Int) {
         val fsm = game!!.fsm as WaitForChengQing
         if (askWhom !== this) return
+        for (skill in skills) {
+            val ai = aiSkillWaitForChengQing[skill.skillId]
+            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+        }
         run {
             if (identity == color.Black || identity != whoDie.identity) return@run
             val card = cards.find { it is ChengQing } ?: return@run
@@ -292,6 +296,9 @@ class RobotPlayer : Player() {
             SkillId.JING_MENG to Predicate { fsm -> JingMeng.ai(fsm) },
             SkillId.JIAN_REN to Predicate { fsm -> JianRen.ai(fsm) },
             SkillId.CHI_ZI_ZHI_XIN to Predicate { fsm -> ChiZiZhiXin.ai(fsm) },
+        )
+        private val aiSkillWaitForChengQing = hashMapOf<SkillId, BiPredicate<WaitForChengQing, ActiveSkill>>(
+            SkillId.HOU_LAI_REN to BiPredicate { e, skill -> HouLaiRen.ai(e, skill) },
         )
         private val aiMainPhase = hashMapOf<card_type, BiPredicate<MainPhaseIdle, Card>>(
             card_type.Cheng_Qing to BiPredicate { e, card -> ChengQing.ai(e, card) },

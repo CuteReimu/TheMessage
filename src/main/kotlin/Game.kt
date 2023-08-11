@@ -177,7 +177,7 @@ class Game private constructor(totalPlayerCount: Int) {
             val playerGameResultList = ArrayList<PlayerGameResult>()
             for (p in players) {
                 val win = p!! in winners
-                records.add(Statistics.Record(p.role, win, p.originIdentity, p.originSecretTask, players.size))
+                records.add(Statistics.Record(p.originRole, win, p.originIdentity, p.originSecretTask, players.size))
                 if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.device!!, p.playerName, win))
             }
             Statistics.add(records)

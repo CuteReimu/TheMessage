@@ -51,6 +51,7 @@ object RoleCache {
         RoleSkillsData("简先生", role.jian_xian_sheng, false, true, CongRongYingDui()),
         RoleSkillsData("SP小九", role.sp_xiao_jiu, false, true, ChiZiZhiXin()),
         RoleSkillsData("老虎", role.lao_hu, false, false, YunChouWeiWo()),
+        RoleSkillsData("SP端木静", role.sp_duan_mu_jing, true, false, HouLaiRen()),
     )
     private val mapCache = HashMap<role, RoleSkillsData>()
 
@@ -64,6 +65,16 @@ object RoleCache {
      * @return 长度为 `n` 的数组
      */
     fun getRandomRoles(n: Int): Array<RoleSkillsData> {
+        val indexArray = Array(cache.size) { i -> i }
+        indexArray.shuffle()
+        return Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
+    }
+
+    /**
+     * @return 长度为 `n` 的数组
+     */
+    fun getRandomRoles(n: Int, except: Set<role>): Array<RoleSkillsData> {
+        val cache = this.cache.filterNot { it.role in except }
         val indexArray = Array(cache.size) { i -> i }
         indexArray.shuffle()
         return Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
