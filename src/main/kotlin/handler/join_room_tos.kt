@@ -42,7 +42,11 @@ class join_room_tos : ProtoHandler {
         if (game != null) {
             val continueLogin = runBlocking {
                 GameExecutor.call(game) {
-                    if (game.isStarted && !game.isEnd) { // 断线重连
+                    if (game !== oldPlayer.game) {
+                        log.info("${oldPlayer}登录异常")
+                        oldPlayer.sendErrorMessage("登录异常，请稍后重试")
+                        false
+                    } else if (game.isStarted && !game.isEnd) { // 断线重连
                         oldPlayer.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
                         Game.exchangePlayer(oldPlayer, player)
                         oldPlayer.setAutoPlay(false)
@@ -53,9 +57,8 @@ class join_room_tos : ProtoHandler {
                             oldPlayer.reconnect()
                         }
                         log.info("${oldPlayer}断线重连成功")
-                        return@call false
-                    }
-                    return@call true
+                        false
+                    } else true
                 }
             }
             if (!continueLogin) return
@@ -66,6 +69,11 @@ class join_room_tos : ProtoHandler {
         }
         val newGame = Game.newGame
         GameExecutor.post(newGame) {
+            if (player.game !== null) {
+                log.info("${player}登录异常")
+                player.sendErrorMessage("登录异常，请稍后重试")
+                return@post
+            }
             player.device = pb.device
             val oldPlayer2 = Game.playerNameCache.put(playerName, player)
             if (oldPlayer2 != null) {
