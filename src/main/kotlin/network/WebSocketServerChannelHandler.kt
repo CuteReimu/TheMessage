@@ -90,6 +90,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         }
         val game = player.game ?: return
         GameExecutor.post(game) {
+            if (player.game !== game) return@post
             if (game.isStarted) {
                 if (game.players.all { it !is HumanPlayer || !it.isActive })
                     game.end(null)

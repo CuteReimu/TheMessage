@@ -12,6 +12,7 @@ import org.apache.log4j.Logger
 import kotlin.random.Random
 
 abstract class Player protected constructor() {
+    @Volatile
     var game: Game? = null
     var playerName = ""
     var location = 0
