@@ -200,7 +200,7 @@ class TanQiuZhenLi : AbstractSkill(), ActiveSkill {
             val target = e.player.game!!.players.filter {
                 it!!.isEnemy(e.player) && it.alive && it.messageCards.any(::isPureColor)
             }.randomOrNull() ?: return false
-            val card = target.cards.filter(::isPureColor).randomOrNull() ?: return false
+            val card = target.messageCards.filter(::isPureColor).randomOrNull() ?: return false
             val cardId = card.id
             GameExecutor.post(e.player.game!!, {
                 val builder = skill_tan_qiu_zhen_li_a_tos.newBuilder()
