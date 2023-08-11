@@ -95,7 +95,7 @@ class ShiTan : Card {
                 } else {
                     g.deck.discard(this@ShiTan.getOriginCard())
                 }
-                CongRongYingDui.check(r, target) ?: MainPhaseIdle(r)
+                CongRongYingDui.check(MainPhaseIdle(r), r, target)
             } else {
                 for (p in g.players) {
                     if (p is HumanPlayer) {
@@ -141,7 +141,7 @@ class ShiTan : Card {
                             if (p.checkSeq(seq2)) {
                                 p.incrSeq()
                                 autoSelect()
-                                r.game!!.resolve(CongRongYingDui.check(r, target) ?: MainPhaseIdle(r))
+                                r.game!!.resolve(CongRongYingDui.check(MainPhaseIdle(r), r, target))
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS))
                     } else if (p === r) {
@@ -153,7 +153,7 @@ class ShiTan : Card {
             if (target is RobotPlayer) {
                 GameExecutor.post(target.game!!, {
                     autoSelect()
-                    target.game!!.resolve(CongRongYingDui.check(r, target) ?: MainPhaseIdle(r))
+                    target.game!!.resolve(CongRongYingDui.check(MainPhaseIdle(r), r, target))
                 }, 2, TimeUnit.SECONDS)
             }
             return null
@@ -201,7 +201,7 @@ class ShiTan : Card {
                 if (discardCard != null)
                     target.game!!.playerDiscardCard(target, discardCard)
             }
-            return ResolveResult(CongRongYingDui.check(r, target) ?: MainPhaseIdle(r), true)
+            return ResolveResult(CongRongYingDui.check(MainPhaseIdle(r), r, target), true)
         }
 
         private fun autoSelect() {

@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 class CongRongYingDui : AbstractSkill() {
     override val skillId = SkillId.CONG_RONG_YING_DUI
 
-    private data class executeCongRongYingDui(val r: Player, val target: Player) : WaitingFsm {
+    private data class executeCongRongYingDui(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -93,7 +93,7 @@ class CongRongYingDui : AbstractSkill() {
                 r.draw(1)
                 target.draw(1)
             }
-            return ResolveResult(MainPhaseIdle(r), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -102,11 +102,11 @@ class CongRongYingDui : AbstractSkill() {
     }
 
     companion object {
-        fun check(r: Player, target: Player): Fsm? =
+        fun check(fsm: Fsm, r: Player, target: Player): Fsm =
             if (r.findSkill(SkillId.CONG_RONG_YING_DUI) != null)
-                executeCongRongYingDui(r, target)
+                executeCongRongYingDui(fsm, r, target)
             else if (target.findSkill(SkillId.CONG_RONG_YING_DUI) != null)
-                executeCongRongYingDui(target, r)
-            else null
+                executeCongRongYingDui(fsm, target, r)
+            else fsm
     }
 }
