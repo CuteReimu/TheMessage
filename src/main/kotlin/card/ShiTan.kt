@@ -135,13 +135,13 @@ class ShiTan : Card {
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.waitingSecond = 15
                     if (p === target) {
-                        val seq2: Int = p.seq
+                        val seq2 = p.seq
                         builder.setSeq(seq2).card = card.toPbCard()
                         p.timeout = (GameExecutor.post(r.game!!, {
                             if (p.checkSeq(seq2)) {
                                 p.incrSeq()
                                 autoSelect()
-                                r.game!!.resolve(MainPhaseIdle(r))
+                                r.game!!.resolve(CongRongYingDui.check(r, target) ?: MainPhaseIdle(r))
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS))
                     } else if (p === r) {
@@ -153,7 +153,7 @@ class ShiTan : Card {
             if (target is RobotPlayer) {
                 GameExecutor.post(target.game!!, {
                     autoSelect()
-                    target.game!!.resolve(MainPhaseIdle(r))
+                    target.game!!.resolve(CongRongYingDui.check(r, target) ?: MainPhaseIdle(r))
                 }, 2, TimeUnit.SECONDS)
             }
             return null
