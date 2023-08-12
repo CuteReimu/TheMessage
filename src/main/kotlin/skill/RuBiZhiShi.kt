@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.card_type.*
+import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -56,7 +57,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
         g.resolve(excuteRuBiZhiShi(fsm, r, target))
     }
 
-    private data class excuteRuBiZhiShi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
+    data class excuteRuBiZhiShi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {
@@ -86,7 +87,6 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     val builder2 = skill_ru_bi_zhi_shi_b_tos.newBuilder()
                     builder2.enable = true
                     builder2.cardId = target.cards.random().id
-                    builder2.useCard = false
                     g.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -99,143 +99,205 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
-            if (message !is skill_ru_bi_zhi_shi_b_tos) {
-                log.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
-                return null
-            }
-            val g = r.game!!
-            if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
-                r.sendErrorMessage("操作太晚了")
-                return null
-            }
-            if (!message.enable) {
+            if (message is skill_ru_bi_zhi_shi_b_tos) {
+                val g = r.game!!
+                if (r is HumanPlayer && !r.checkSeq(message.seq)) {
+                    log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                    r.sendErrorMessage("操作太晚了")
+                    return null
+                }
+                if (!message.enable) {
+                    r.incrSeq()
+                    return ResolveResult(fsm, true)
+                }
+                val card = target.findCard(message.cardId)
+                if (card == null) {
+                    log.error("没有这张牌")
+                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    return null
+                }
+                log.info("${r}选择弃掉${target}的$card")
                 r.incrSeq()
+                for (p in g.players) {
+                    if (p is HumanPlayer) {
+                        val builder = skill_ru_bi_zhi_shi_b_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                        builder.enable = message.enable
+                        p.send(builder.build())
+                    }
+                }
+                r.game!!.playerDiscardCard(target, card)
                 return ResolveResult(fsm, true)
             }
-            val card = target.findCard(message.cardId)
-            if (card == null) {
-                log.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
-                return null
-            }
-            var newFsm = fsm
-            var targetCardId: Int? = null
-            var targetPlayerLocation: Int? = null
-            if (!message.useCard) {
-                log.info("${r}弃掉了${target}的$card")
-                r.game!!.playerDiscardCard(target, card)
-            } else {
-                if (g.qiangLingTypes.contains(card.type)) {
-                    log.error("${card}被禁止使用了")
-                    (r as? HumanPlayer)?.sendErrorMessage("${card}被禁止使用了")
-                    return null
-                }
-                if (card.type == Cheng_Qing && fsm !is WaitForChengQing || card.type != Cheng_Qing && fsm !is FightPhaseIdle) {
-                    log.error("${card}的使用时机错误")
-                    (r as? HumanPlayer)?.sendErrorMessage("${card}的使用时机错误")
-                    return null
-                }
-                when (card.type) {
-                    Jie_Huo -> {
-                        fsm as FightPhaseIdle
-                        if (fsm.inFrontOfWhom === target) {
-                            log.error("情报在目标角色面前，目标角色不能使用截获")
-                            (r as? HumanPlayer)?.sendErrorMessage("情报在目标角色面前，目标角色不能使用截获")
-                            return null
-                        }
-                        log.info("${r}让${target}使用了$card")
-                        GameExecutor.post(r.game!!) { card.execute(r.game!!, target) }
-                        newFsm = fsm.copy(whoseFightTurn = target)
-                    }
-
-                    Wu_Dao -> {
-                        fsm as FightPhaseIdle
-                        if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-                            log.error("目标错误")
-                            (player as? HumanPlayer)?.sendErrorMessage("目标错误")
-                            return null
-                        }
-                        val target2 = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
-                        if (!target2.alive) {
-                            log.error("目标已死亡")
-                            (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
-                            return null
-                        }
-                        val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
-                        val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
-                        if (target2 === fsm.inFrontOfWhom || target2 !== left && target2 !== right) {
-                            log.error("误导只能选择情报当前人左右两边的人作为目标")
-                            (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
-                            return null
-                        }
-                        targetPlayerLocation = target2.location
-                        log.info("${r}让${target}对${target2}使用了$card")
-                        GameExecutor.post(r.game!!) { card.execute(r.game!!, target, target2) }
-                        newFsm = fsm.copy(whoseFightTurn = target)
-                    }
-
-                    Diao_Bao -> {
-                        fsm as FightPhaseIdle
-                        log.info("${r}让${target}使用了$card")
-                        GameExecutor.post(r.game!!) { card.execute(r.game!!, target) }
-                        newFsm = fsm.copy(whoseFightTurn = target)
-                    }
-
-                    Cheng_Qing -> {
-                        fsm as WaitForChengQing
-                        if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-                            log.error("目标错误")
-                            (player as? HumanPlayer)?.sendErrorMessage("目标错误")
-                            return null
-                        }
-                        val target2 = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
-                        if (target2 !== fsm.whoDie) {
-                            log.error("正在求澄清的人是${fsm.whoDie}")
-                            (r as? HumanPlayer)?.sendErrorMessage("正在求澄清的人是${fsm.whoDie}")
-                            return null
-                        }
-                        val card2 = target2.messageCards.find { c -> c.id == message.targetCardId }
-                        if (card2 == null) {
-                            log.error("没有这张情报")
-                            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
-                            return null
-                        }
-                        if (!card2.isBlack()) {
-                            log.error("澄清只能对黑情报使用")
-                            (r as? HumanPlayer)?.sendErrorMessage("澄清只能对黑情报使用")
-                            return null
-                        }
-                        targetPlayerLocation = target2.location
-                        targetCardId = card2.id
-                        log.info("${r}让${target}对${target2}面前的${card2}使用了$card")
-                        GameExecutor.post(r.game!!) { card.execute(r.game!!, target, target2, card2) }
-                        newFsm = fsm
-                    }
-
-                    else -> {
-                        log.error("${card}的使用时机错误")
-                        (player as? HumanPlayer)?.sendErrorMessage("${card}的使用时机错误")
+            when (message) {
+                is use_jie_huo_tos -> {
+                    if (fsm !is FightPhaseIdle) {
+                        log.error("截获的使用时机错误")
+                        (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机错误")
                         return null
                     }
+                    if (Jie_Huo in r.game!!.qiangLingTypes) {
+                        log.error("截获被禁止使用了")
+                        (r as? HumanPlayer)?.sendErrorMessage("截获被禁止使用了")
+                        return null
+                    }
+                    if (fsm.inFrontOfWhom === target) {
+                        log.error("情报在目标角色面前，目标角色不能使用截获")
+                        (r as? HumanPlayer)?.sendErrorMessage("情报在目标角色面前，目标角色不能使用截获")
+                        return null
+                    }
+                    val card = target.findCard(message.cardId)
+                    if (card == null) {
+                        log.error("没有这张牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        return null
+                    }
+                    if (card.type != Jie_Huo) {
+                        log.error("这张牌不是截获")
+                        (r as? HumanPlayer)?.sendErrorMessage("这张牌不是截获")
+                        return null
+                    }
+                    log.info("${r}让${target}使用了$card")
+                    r.game!!.fsm = fsm.copy(whoseFightTurn = target)
+                    card.execute(r.game!!, target)
+                    return null
+                }
+
+                is use_wu_dao_tos -> {
+                    if (fsm !is FightPhaseIdle) {
+                        log.error("误导的使用时机错误")
+                        (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机错误")
+                        return null
+                    }
+                    if (Wu_Dao in r.game!!.qiangLingTypes) {
+                        log.error("误导被禁止使用了")
+                        (r as? HumanPlayer)?.sendErrorMessage("误导被禁止使用了")
+                        return null
+                    }
+                    val card = target.findCard(message.cardId)
+                    if (card == null) {
+                        log.error("没有这张牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        return null
+                    }
+                    if (card.type != Wu_Dao) {
+                        log.error("这张牌不是误导")
+                        (r as? HumanPlayer)?.sendErrorMessage("这张牌不是误导")
+                        return null
+                    }
+                    if (message.targetPlayerId < 0 || message.targetPlayerId >= r.game!!.players.size) {
+                        log.error("目标错误")
+                        (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                        return null
+                    }
+                    val target2 = r.game!!.players[r.getAbstractLocation(message.targetPlayerId)]!!
+                    if (!target2.alive) {
+                        log.error("目标已死亡")
+                        (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                        return null
+                    }
+                    val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
+                    val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
+                    if (target2 === fsm.inFrontOfWhom || target2 !== left && target2 !== right) {
+                        log.error("误导只能选择情报当前人左右两边的人作为目标")
+                        (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
+                        return null
+                    }
+                    log.info("${r}让${target}对${target2}使用了$card")
+                    r.game!!.fsm = fsm.copy(whoseFightTurn = target)
+                    card.execute(r.game!!, target, target2)
+                    return null
+                }
+
+                is use_diao_bao_tos -> {
+                    if (fsm !is FightPhaseIdle) {
+                        log.error("调包的使用时机错误")
+                        (r as? HumanPlayer)?.sendErrorMessage("调包的使用时机错误")
+                        return null
+                    }
+                    if (Diao_Bao in r.game!!.qiangLingTypes) {
+                        log.error("调包被禁止使用了")
+                        (r as? HumanPlayer)?.sendErrorMessage("调包被禁止使用了")
+                        return null
+                    }
+                    val card = target.findCard(message.cardId)
+                    if (card == null) {
+                        log.error("没有这张牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        return null
+                    }
+                    if (card.type != Diao_Bao) {
+                        log.error("这张牌不是调包")
+                        (r as? HumanPlayer)?.sendErrorMessage("这张牌不是调包")
+                        return null
+                    }
+                    log.info("${r}让${target}使用了$card")
+                    r.game!!.fsm = fsm.copy(whoseFightTurn = target)
+                    card.execute(r.game!!, target)
+                    return null
+                }
+
+                is use_cheng_qing_tos -> {
+                    if (fsm !is WaitForChengQing) {
+                        log.error("澄清的使用时机错误")
+                        (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机错误")
+                        return null
+                    }
+                    if (Cheng_Qing in r.game!!.qiangLingTypes) {
+                        log.error("澄清被禁止使用了")
+                        (r as? HumanPlayer)?.sendErrorMessage("澄清被禁止使用了")
+                        return null
+                    }
+                    val card = target.findCard(message.cardId)
+                    if (card == null) {
+                        log.error("没有这张牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        return null
+                    }
+                    if (card.type != Cheng_Qing) {
+                        log.error("这张牌不是澄清")
+                        (r as? HumanPlayer)?.sendErrorMessage("这张牌不是澄清")
+                        return null
+                    }
+                    if (message.playerId < 0 || message.playerId >= r.game!!.players.size) {
+                        log.error("目标错误")
+                        (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                        return null
+                    }
+                    val target2 = r.game!!.players[r.getAbstractLocation(message.playerId)]!!
+                    if (!target2.alive) {
+                        log.error("目标已死亡")
+                        (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                        return null
+                    }
+                    if (target2 !== fsm.whoDie) {
+                        log.error("正在求澄清的人是${fsm.whoDie}")
+                        (r as? HumanPlayer)?.sendErrorMessage("正在求澄清的人是${fsm.whoDie}")
+                        return null
+                    }
+                    val card2 = target2.messageCards.find { c -> c.id == message.targetCardId }
+                    if (card2 == null) {
+                        log.error("没有这张情报")
+                        (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                        return null
+                    }
+                    if (!card2.isBlack()) {
+                        log.error("澄清只能对黑情报使用")
+                        (r as? HumanPlayer)?.sendErrorMessage("澄清只能对黑情报使用")
+                        return null
+                    }
+                    log.info("${r}让${target}对${target2}面前的${card2}使用了$card")
+                    card.execute(r.game!!, target, target2, card2)
+                    return null
+                }
+
+                else -> {
+                    log.error("错误的协议")
+                    (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                    return null
                 }
             }
-            r.incrSeq()
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_ru_bi_zhi_shi_b_toc.newBuilder()
-                    builder.enable = message.enable
-                    builder.card = card.toPbCard()
-                    builder.useCard = message.useCard
-                    if (targetPlayerLocation != null)
-                        builder.targetPlayerId = p.getAlternativeLocation(targetPlayerLocation)
-                    if (targetCardId != null)
-                        builder.targetCardId = targetCardId
-                    p.send(builder.build())
-                }
-            }
-            return ResolveResult(newFsm, false)
         }
 
         companion object {

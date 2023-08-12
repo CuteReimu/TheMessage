@@ -4,6 +4,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
 import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
 
@@ -12,6 +13,10 @@ class use_wu_dao_tos : AbstractProtoHandler<Fengsheng.use_wu_dao_tos>() {
         if (!r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
+            return
+        }
+        if (r.game!!.fsm is excuteRuBiZhiShi) {
+            r.game!!.tryContinueResolveProtocol(r, pb)
             return
         }
         var card = r.findCard(pb.cardId)

@@ -39,7 +39,6 @@ class Game private constructor(totalPlayerCount: Int) {
     var players: Array<Player?>
     var deck = Deck(this)
     var fsm: Fsm? = null
-        private set
     val listeningSkills = ArrayList<TriggeredSkill>()
 
     /**
@@ -236,14 +235,10 @@ class Game private constructor(totalPlayerCount: Int) {
      * 继续处理当前状态机
      */
     fun continueResolve() {
-        GameExecutor.post(this) {
-            val result = fsm!!.resolve()
-            if (result != null) {
-                fsm = result.next
-                if (result.continueResolve) {
-                    continueResolve()
-                }
-            }
+        while (true) {
+            val result = fsm!!.resolve() ?: break
+            fsm = result.next
+            if (!result.continueResolve) break
         }
     }
 

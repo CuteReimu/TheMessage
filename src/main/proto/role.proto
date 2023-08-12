@@ -990,21 +990,16 @@ message skill_ru_bi_zhi_shi_a_toc {
 
 // 盛老板【如臂指使】B：然后可以从中选择一张弃置，或选择一张符合使用时机的牌，由该角色使用（若如【误导】等需要做出选择的，则由你选择）。
 message skill_ru_bi_zhi_shi_b_tos {
-  bool enable = 1;
-  uint32 card_id = 2;
-  bool use_card = 3; // true使用，false弃掉
-  uint32 target_player_id = 4;
-  uint32 target_card_id = 5;
-  uint32 seq = 6;
+  bool enable = 1; // 弃掉或者不发动才发这条协议，使用直接发使用牌的协议。
+  uint32 card_id = 2; // 弃的那张牌，弃牌走弃牌协议
+  uint32 seq = 3;
 }
 
-// 广播使用【如臂指使】B
+// 广播使用【如臂指使】B，弃牌走弃牌协议
 message skill_ru_bi_zhi_shi_b_toc {
-  bool enable = 1;
-  card card = 2;
-  bool use_card = 3; // true使用，false弃掉，弃牌走弃牌协议
-  uint32 target_player_id = 4;
-  uint32 target_card_id = 5;
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  bool enable = 3;
 }
 
 // 广播使用【深藏】：你使用【威逼】、【风云变幻】或【截获】后，可以将此角色牌翻至面朝下。
