@@ -37,6 +37,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                     filterNot { it.role in disgust }.ifEmpty { this }.firstOrNull() ?: RoleSkillsData()
                 }
                 player.roleSkillsData = selected[player.location]!!
+                player.originRole = selected[player.location]!!.role
             }
         }
         for (role in selected) if (role == null) return null
