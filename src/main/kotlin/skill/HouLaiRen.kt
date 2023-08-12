@@ -54,12 +54,13 @@ class HouLaiRen : AbstractSkill(), ActiveSkill {
         r.messageCards.add(card)
         g.deck.discard(*discardCards)
         log.info("${r}抽取了三张角色牌：${roles.map { it.name }.toTypedArray().contentToString()}")
-        g.resolve(executeHouLaiRen(fsm, r, roles))
+        g.resolve(executeHouLaiRen(fsm, r, message.remainCardId, roles))
     }
 
     private data class executeHouLaiRen(
         val fsm: WaitForChengQing,
         val r: Player,
+        val remainCardId: Int,
         val roles: Array<RoleSkillsData>
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
@@ -68,7 +69,7 @@ class HouLaiRen : AbstractSkill(), ActiveSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_hou_lai_ren_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.remainCardId
+                    builder.remainCardId = remainCardId
                     builder.waitingSecond = 30
                     if (p === r) {
                         roles.forEach { builder.addRoles(it.role) }
