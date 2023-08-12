@@ -5,6 +5,7 @@ import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Record.record_file
 import com.fengsheng.protos.Record.recorder_line
+import com.fengsheng.skill.RoleCache
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -45,7 +46,7 @@ class Recorder {
         val sb = StringBuilder()
         for (player in g.players) {
             if (sb.isNotEmpty()) sb.append("-")
-            sb.append(player!!.roleName)
+            sb.append(RoleCache.getRoleName(player!!.originRole))
         }
         val recordId = ((now.time / 1000 * 1000 + g.id % 100 * 10 + p.location) %
                 (36L * 36 * 36 * 36 * 36 * 36)).toString(Character.MAX_RADIX).addLeadingZero(6)
