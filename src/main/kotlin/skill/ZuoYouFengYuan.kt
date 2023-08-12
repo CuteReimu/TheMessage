@@ -68,7 +68,7 @@ class ZuoYouFengYuan : AbstractSkill(), ActiveSkill {
         }
         targets.forEach { g.playerDiscardCard(it, *it.cards.toTypedArray()) }
         targets.forEach { it.draw(3) }
-        g.continueResolve()
+        g.resolve(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom))
     }
 
     companion object {

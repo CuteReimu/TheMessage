@@ -268,6 +268,8 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
+            if (fsm is FightPhaseIdle)
+                return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             return ResolveResult(fsm, true)
         }
 
