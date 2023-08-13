@@ -58,6 +58,7 @@ class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
+            player.incrSeq()
             return ResolveResult(executeChiZiZhiXinB(fsm), true)
         }
 
