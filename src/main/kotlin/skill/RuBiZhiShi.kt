@@ -233,10 +233,15 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     return null
                 }
 
-                is use_cheng_qing_tos -> {
+                is cheng_qing_save_die_tos -> {
                     if (fsm !is WaitForChengQing) {
                         log.error("澄清的使用时机错误")
                         (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机错误")
+                        return null
+                    }
+                    if (!message.use) {
+                        log.error("参数错误")
+                        (r as? HumanPlayer)?.sendErrorMessage("参数错误")
                         return null
                     }
                     if (Cheng_Qing in r.game!!.qiangLingTypes) {
@@ -255,22 +260,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("这张牌不是澄清")
                         return null
                     }
-                    if (message.playerId < 0 || message.playerId >= r.game!!.players.size) {
-                        log.error("目标错误")
-                        (player as? HumanPlayer)?.sendErrorMessage("目标错误")
-                        return null
-                    }
-                    val target2 = r.game!!.players[r.getAbstractLocation(message.playerId)]!!
-                    if (!target2.alive) {
-                        log.error("目标已死亡")
-                        (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
-                        return null
-                    }
-                    if (target2 !== fsm.whoDie) {
-                        log.error("正在求澄清的人是${fsm.whoDie}")
-                        (r as? HumanPlayer)?.sendErrorMessage("正在求澄清的人是${fsm.whoDie}")
-                        return null
-                    }
+                    val target2 = fsm.whoDie
                     val card2 = target2.messageCards.find { c -> c.id == message.targetCardId }
                     if (card2 == null) {
                         log.error("没有这张情报")

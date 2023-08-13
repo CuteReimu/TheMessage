@@ -1,11 +1,11 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.phase.WaitNextForChengQing
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
 import org.apache.log4j.Logger
 
 class cheng_qing_save_die_tos : AbstractProtoHandler<Fengsheng.cheng_qing_save_die_tos>() {
@@ -13,6 +13,10 @@ class cheng_qing_save_die_tos : AbstractProtoHandler<Fengsheng.cheng_qing_save_d
         if (!r.checkSeq(pb.seq)) {
             log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
+            return
+        }
+        if (r.game!!.fsm is excuteRuBiZhiShi) {
+            r.game!!.tryContinueResolveProtocol(r, pb)
             return
         }
         val fsm = r.game!!.fsm as? WaitForChengQing
@@ -37,7 +41,7 @@ class cheng_qing_save_die_tos : AbstractProtoHandler<Fengsheng.cheng_qing_save_d
             r.sendErrorMessage("这张牌不是澄清，而是$card")
             return
         }
-        val target: Player = fsm.whoDie
+        val target = fsm.whoDie
         if (card.canUse(r.game!!, r, target, pb.targetCardId)) {
             r.incrSeq()
             card.execute(r.game!!, r, target, pb.targetCardId)
