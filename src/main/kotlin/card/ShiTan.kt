@@ -206,12 +206,8 @@ class ShiTan : Card {
 
         private fun autoSelect() {
             val builder = Fengsheng.execute_shi_tan_tos.newBuilder()
-            if (!card.checkDrawCard(target) && target.cards.isNotEmpty()) {
-                for (c in target.cards) {
-                    builder.addCardId(c.id)
-                    break
-                }
-            }
+            if (!card.checkDrawCard(target) && target.cards.isNotEmpty())
+                builder.addCardId(target.cards.random().id)
             resolveProtocol(target, builder.build())
         }
 

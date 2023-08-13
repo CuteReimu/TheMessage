@@ -73,7 +73,8 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
                                 val builder2 = skill_ru_bi_zhi_shi_b_tos.newBuilder()
-                                builder2.enable = false
+                                builder2.enable = true
+                                builder2.cardId = target.cards.random().id
                                 builder2.seq = seq
                                 g.tryContinueResolveProtocol(p, builder2.build())
                             }
