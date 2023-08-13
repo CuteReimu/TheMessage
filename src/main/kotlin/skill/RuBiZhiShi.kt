@@ -74,7 +74,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                             if (p.checkSeq(seq)) {
                                 val builder2 = skill_ru_bi_zhi_shi_b_tos.newBuilder()
                                 builder2.enable = false
-                                builder.seq = seq
+                                builder2.seq = seq
                                 g.tryContinueResolveProtocol(p, builder2.build())
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
