@@ -43,16 +43,28 @@ message skill_yi_ya_huan_ya_toc {
   card   card = 3;
 }
 
-// 韩梅【移花接木】：争夺阶段，你可以翻开此角色牌，然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情牌加入你的手牌。
-message skill_yi_hua_jie_mu_tos {
+// 韩梅【移花接木】A：争夺阶段，你可以翻开此角色牌
+message skill_yi_hua_jie_mu_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【移花接木】A，并广播询问使用【移花接木】B
+message skill_yi_hua_jie_mu_a_toc {
+  uint32 player_id = 1; // 韩梅的ID
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 韩梅【移花接木】B：然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情牌加入你的手牌。
+message skill_yi_hua_jie_mu_b_tos {
   uint32 from_player_id = 1;
   uint32 card_id = 2;
   uint32 to_player_id = 3;
   uint32 seq = 4;
 }
 
-// 广播使用【移花接木】
-message skill_yi_hua_jie_mu_toc {
+// 广播使用【移花接木】B
+message skill_yi_hua_jie_mu_b_toc {
   uint32 player_id = 1;
   uint32 from_player_id = 2;
   uint32 card_id = 3;
@@ -1073,15 +1085,28 @@ message skill_cong_rong_ying_dui_toc {
   card card = 5; // 被抽取的手牌，只有简先生和那名玩家可以看见
 }
 
-// SP小九【赤子之心】：你传出的非黑色情报被其他角色接收后，你可以摸两张牌，或从手牌中选择一张含有该情报颜色的牌，将其置入你的情报区。
-message skill_chi_zi_zhi_xin_tos {
+// SP小九【赤子之心】A：你传出的非黑色情报被其他角色接收后
+message skill_chi_zi_zhi_xin_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【赤子之心】A，并广播询问【赤子之心】B
+message skill_chi_zi_zhi_xin_a_toc {
+  uint32 player_id = 1; // 简先生的ID
+  card message_card = 2; // 那张接收的情报
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// SP小九【赤子之心】B：你可以摸两张牌，或从手牌中选择一张含有该情报颜色的牌，将其置入你的情报区。
+message skill_chi_zi_zhi_xin_b_tos {
   bool draw_card = 1; // true就是摸两张牌
   uint32 card_id = 2; // 上面为false时，这个就是目标牌
   uint32 seq = 3;
 }
 
-// 广播使用【赤子之心】
-message skill_chi_zi_zhi_xin_toc {
+// 广播使用【赤子之心】B
+message skill_chi_zi_zhi_xin_b_toc {
   uint32 player_id = 1; // SP小九的ID
   bool draw_card = 2; // 同上，摸牌走摸牌协议
   card card = 3; // 上面为false时，这个就是目标牌

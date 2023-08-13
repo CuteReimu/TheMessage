@@ -4,8 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.phase.ReceivePhaseSenderSkill
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_chi_zi_zhi_xin_toc
-import com.fengsheng.protos.Role.skill_chi_zi_zhi_xin_tos
+import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
@@ -23,10 +22,10 @@ class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
         if (fsm.inFrontOfWhom == fsm.sender) return null
         if (fsm.sender.getSkillUseCount(skillId) > 0) return null
         fsm.sender.addSkillUseCount(skillId)
-        return ResolveResult(executeChiZiZhiXin(fsm), true)
+        return ResolveResult(executeChiZiZhiXinA(fsm), true)
     }
 
-    private data class executeChiZiZhiXin(val fsm: ReceivePhaseSenderSkill) : WaitingFsm {
+    private data class executeChiZiZhiXinA(val fsm: ReceivePhaseSenderSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in fsm.sender.game!!.players)
                 p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender, 15)
@@ -48,7 +47,66 @@ class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
                 player.incrSeq()
                 return ResolveResult(fsm, true)
             }
-            if (message !is skill_chi_zi_zhi_xin_tos) {
+            if (message !is skill_chi_zi_zhi_xin_a_tos) {
+                log.error("错误的协议")
+                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                return null
+            }
+            val r = fsm.sender
+            if (r is HumanPlayer && !r.checkSeq(message.seq)) {
+                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                r.sendErrorMessage("操作太晚了")
+                return null
+            }
+            return ResolveResult(executeChiZiZhiXinB(fsm), true)
+        }
+
+        companion object {
+            private val log = Logger.getLogger(executeChiZiZhiXinA::class.java)
+        }
+    }
+
+    private data class executeChiZiZhiXinB(val fsm: ReceivePhaseSenderSkill) : WaitingFsm {
+        override fun resolve(): ResolveResult? {
+            val r = fsm.sender
+            for (p in r.game!!.players) {
+                if (p is HumanPlayer) {
+                    val builder = skill_chi_zi_zhi_xin_a_toc.newBuilder()
+                    builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.messageCard = fsm.messageCard.toPbCard()
+                    builder.waitingSecond = 15
+                    if (p === r) {
+                        val seq = r.seq
+                        builder.seq = seq
+                        p.timeout = GameExecutor.post(r.game!!, {
+                            if (p.checkSeq(seq)) {
+                                val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
+                                builder2.drawCard = true
+                                builder2.seq = seq
+                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                            }
+                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
+                    p.send(builder.build())
+                }
+            }
+            if (r is RobotPlayer) {
+                GameExecutor.post(r.game!!, {
+                    val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
+                    builder2.drawCard = true
+                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                }, 2, TimeUnit.SECONDS)
+            }
+            return null
+        }
+
+        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+            if (player !== fsm.sender) {
+                log.error("不是你发技能的时机")
+                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                return null
+            }
+            if (message !is skill_chi_zi_zhi_xin_b_tos) {
                 log.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
@@ -83,7 +141,7 @@ class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
             }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_chi_zi_zhi_xin_toc.newBuilder()
+                    val builder = skill_chi_zi_zhi_xin_b_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.drawCard = message.drawCard
                     if (card != null) builder.card = card.toPbCard()
@@ -95,18 +153,16 @@ class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeChiZiZhiXin::class.java)
+            private val log = Logger.getLogger(executeChiZiZhiXinB::class.java)
         }
     }
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeChiZiZhiXin) return false
+            if (fsm0 !is executeChiZiZhiXinA) return false
             val p = fsm0.fsm.sender
             GameExecutor.post(p.game!!, {
-                val builder = skill_chi_zi_zhi_xin_tos.newBuilder()
-                builder.drawCard = true
-                p.game!!.tryContinueResolveProtocol(p, builder.build())
+                p.game!!.tryContinueResolveProtocol(p, skill_chi_zi_zhi_xin_a_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)
             return true
         }
