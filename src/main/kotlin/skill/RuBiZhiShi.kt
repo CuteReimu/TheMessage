@@ -100,7 +100,6 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                 return null
             }
             if (message is skill_ru_bi_zhi_shi_b_tos) {
-                val g = r.game!!
                 if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                     log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                     r.sendErrorMessage("操作太晚了")
@@ -108,6 +107,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                 }
                 if (!message.enable) {
                     r.incrSeq()
+                    notifyUseSkill(enable = false, useCard = false)
                     return ResolveResult(fsm, true)
                 }
                 val card = target.findCard(message.cardId)
@@ -118,15 +118,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                 }
                 log.info("${r}选择弃掉${target}的$card")
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_ru_bi_zhi_shi_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                        builder.enable = message.enable
-                        p.send(builder.build())
-                    }
-                }
+                notifyUseSkill(enable = true, useCard = false)
                 r.game!!.playerDiscardCard(target, card)
                 return ResolveResult(fsm, true)
             }
@@ -159,6 +151,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         return null
                     }
                     log.info("${r}让${target}使用了$card")
+                    notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
                     card.execute(r.game!!, target)
                     return null
@@ -205,6 +198,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         return null
                     }
                     log.info("${r}让${target}对${target2}使用了$card")
+                    notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
                     card.execute(r.game!!, target, target2)
                     return null
@@ -233,6 +227,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         return null
                     }
                     log.info("${r}让${target}使用了$card")
+                    notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
                     card.execute(r.game!!, target)
                     return null
@@ -288,6 +283,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         return null
                     }
                     log.info("${r}让${target}对${target2}面前的${card2}使用了$card")
+                    notifyUseSkill(enable = true, useCard = true)
                     card.execute(r.game!!, target, target2, card2)
                     return null
                 }
@@ -296,6 +292,19 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     log.error("错误的协议")
                     (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                     return null
+                }
+            }
+        }
+
+        private fun notifyUseSkill(enable: Boolean, useCard: Boolean) {
+            for (p in r.game!!.players) {
+                if (p is HumanPlayer) {
+                    val builder = skill_ru_bi_zhi_shi_b_toc.newBuilder()
+                    builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                    builder.enable = enable
+                    builder.useCard = useCard
+                    p.send(builder.build())
                 }
             }
         }
