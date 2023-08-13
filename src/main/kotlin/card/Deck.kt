@@ -88,8 +88,12 @@ class Deck(private val game: Game) {
         cards.clear()
         cards.addAll(DefaultDeck)
         if (totalPlayerCount < 4) {
+            cards.removeAt(55)
+            cards.removeAt(54)
             cards.subList(0, 18).clear()
         } else if (totalPlayerCount <= 8) {
+            cards.removeAt(55)
+            cards.removeAt(54)
             cards.removeAt(16)
             cards.removeAt(13)
             cards.removeAt(11)
