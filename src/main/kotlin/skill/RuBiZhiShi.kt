@@ -284,7 +284,8 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     }
                     log.info("${r}让${target}对${target2}面前的${card2}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
-                    card.execute(r.game!!, target, target2, card2)
+                    r.game!!.fsm = fsm
+                    card.execute(r.game!!, target, target2, card2.id)
                     return null
                 }
 
