@@ -254,7 +254,9 @@ abstract class Player protected constructor() {
 
     override fun toString(): String {
         val hide = if (roleFaceUp) "" else "(隐)"
-        return "${location}号[$roleName$hide]"
+        val name = this.playerName.let { if (it.isEmpty()) "" else "($it)" }
+        val game = this.game?.run { "(rid=$id)" } ?: ""
+        return "${location}号[$roleName$hide]$name$game"
     }
 
     companion object {
