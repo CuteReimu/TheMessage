@@ -11,7 +11,7 @@ abstract class AbstractProtoHandler<T : GeneratedMessageV3> : ProtoHandler {
         // 因为player.setGame()只会join_room_tos调用，所以一定和这里的player.getGame()在同一线程，所以无需加锁
         val game = player.game
         if (game == null) {
-            log.error("player didn't not join room, current msg: " + message.descriptorForType.name)
+            log.error("player didn't join room, current msg: " + message.descriptorForType.name)
             player.sendErrorMessage("找不到房间")
         } else {
             GameExecutor.post(game) {
