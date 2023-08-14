@@ -151,6 +151,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("这张牌不是截获")
                         return null
                     }
+                    r.incrSeq()
                     log.info("${r}让${target}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
@@ -198,6 +199,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
                         return null
                     }
+                    r.incrSeq()
                     log.info("${r}让${target}对${target2}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
@@ -227,6 +229,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("这张牌不是调包")
                         return null
                     }
+                    r.incrSeq()
                     log.info("${r}让${target}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
@@ -273,6 +276,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("澄清只能对黑情报使用")
                         return null
                     }
+                    r.incrSeq()
                     log.info("${r}让${target}对${target2}面前的${card2}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm
