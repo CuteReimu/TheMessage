@@ -5,6 +5,7 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
 
 class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_position_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.remove_one_position_tos) {
@@ -29,7 +30,7 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
             if (p == null) return
         log.info("已满${players.size}个人，游戏开始。。。")
         r.game!!.isStarted = true
-        GameExecutor.post(r.game!!) { r.game!!.start() }
+        GameExecutor.post(r.game!!, { r.game!!.start() }, 500, TimeUnit.MILLISECONDS)
         Game.newInstance()
     }
 

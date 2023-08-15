@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import org.apache.log4j.Logger
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 class Game private constructor(totalPlayerCount: Int) {
@@ -85,7 +86,7 @@ class Game private constructor(totalPlayerCount: Int) {
         if (unready == 0) {
             log.info("${player.playerName}加入了。已加入${players.size}个人，游戏开始。。。")
             isStarted = true
-            GameExecutor.post(this) { start() }
+            GameExecutor.post(this, { start() }, 1, TimeUnit.SECONDS)
             newInstance()
         } else {
             log.info("${player.playerName}加入了。已加入${players.size - unready}个人，等待${unready}人加入。。。")
