@@ -280,6 +280,8 @@ object Statistics {
             return sum
         }
 
+        val playerCountAppearCount = TreeMap<Int, IntArray>()
+        val playerCountWinCount = TreeMap<Int, IntArray>()
         val appearCount = HashMap<role, IntArray>()
         val winCount = HashMap<role, IntArray>()
         FileInputStream("stat.csv").use { `is` ->
@@ -290,13 +292,20 @@ object Statistics {
                     if (line == null) break
                     val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
                     val role = role.valueOf(a[0])
+                    val playerCount = a[4].toInt()
+                    val playerCountAppear = playerCountAppearCount.computeIfAbsent(playerCount) { IntArray(10) }
+                    val playerCountWin = playerCountWinCount.computeIfAbsent(playerCount) { IntArray(10) }
                     val appear = appearCount.computeIfAbsent(role) { IntArray(10) }
                     val win = winCount.computeIfAbsent(role) { IntArray(10) }
                     val index =
                         if ("Black" == a[2]) secret_task.valueOf(a[3]).number + 3
                         else null
                     appear.inc(index)
-                    if (a[1].toBoolean()) win.inc(index)
+                    playerCountAppear.inc(index)
+                    if (a[1].toBoolean()) {
+                        win.inc(index)
+                        playerCountWin.inc(index)
+                    }
                 }
             }
         }
@@ -319,6 +328,31 @@ object Statistics {
             lines.add(winRate!! to sb.toString())
         }
         lines.sortByDescending { it.first }
+        val playerCountLines = ArrayList<String>()
+        for ((key, value) in playerCountAppearCount) {
+            val sb = StringBuilder()
+            sb.append("${key}人局")
+            sb.append(",")
+            sb.append(value[0] / key)
+            for (i in 0 until 9) { // 不显示清道夫，所以这里只有9
+                val v = value[i]
+                sb.append(",")
+                playerCountWinCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
+                    sb.append("%.2f%%".format(r))
+                }
+            }
+            playerCountLines.add(sb.toString())
+        }
+        val playerAppearCountLines = ArrayList<String>()
+        for ((key, value) in playerCountAppearCount) {
+            val sb = StringBuilder()
+            sb.append("${key}人局")
+            sb.append(",")
+            sb.append(value[0] / key)
+            for (i in 0 until 9) // 不显示清道夫，所以这里只有9
+                sb.append(",${value[i]}")
+            playerAppearCountLines.add(sb.toString())
+        }
         FileOutputStream("stat0.csv").use { os ->
             BufferedWriter(OutputStreamWriter(os)).use { writer ->
                 writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率")
@@ -336,6 +370,19 @@ object Statistics {
                     writer.newLine()
                 }
                 writer.newLine()
+                writer.write("人数,场次,人均胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率")
+                writer.newLine()
+                for (line in playerCountLines) {
+                    writer.write(line)
+                    writer.newLine()
+                }
+                writer.newLine()
+                writer.write("人数,场次,总出现次数,军潜出现次数,神秘人出现次数,镇压者出现次数,簒夺者出现次数,双重间谍出现次数,诱变者出现次数,先行者出现次数,搅局者出现次数")
+                writer.newLine()
+                for (line in playerAppearCountLines) {
+                    writer.write(line)
+                    writer.newLine()
+                }
             }
         }
     }
