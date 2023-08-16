@@ -86,7 +86,8 @@ class join_room_tos : ProtoHandler {
             }
             if (!Config.IsGmEnable) {
                 val humanCount = newGame.players.count { it is HumanPlayer }
-                if (humanCount >= 2) newGame.removeAllRobot()
+                if (humanCount >= 1) newGame.removeAllRobot()
+                if (humanCount >= 2) newGame.ensure5Position()
             }
             player.playerName = playerName
             player.game = newGame
@@ -125,6 +126,20 @@ class join_room_tos : ProtoHandler {
                             p.send(reply)
                         }
                     }
+                }
+            }
+        }
+
+        private fun Game.ensure5Position() {
+            if (players.size >= 5) return
+            players = Array(5) {
+                if (it < players.size) {
+                    players[it]
+                } else {
+                    for (p in players) {
+                        (p as? HumanPlayer)?.send(Fengsheng.add_one_position_toc.getDefaultInstance())
+                    }
+                    null
                 }
             }
         }

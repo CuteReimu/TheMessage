@@ -1,5 +1,6 @@
 package com.fengsheng.handler
 
+import com.fengsheng.Config
 import com.fengsheng.Game
 import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
@@ -18,6 +19,13 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
         if (oldPlayers.size <= 2) {
             r.sendErrorMessage("至少2人局")
             return
+        }
+        if (!Config.IsGmEnable) {
+            val humanCount = oldPlayers.count { it is HumanPlayer }
+            if (humanCount >= 3 && oldPlayers.size <= 5) {
+                r.sendErrorMessage("至少5人局")
+                return
+            }
         }
         val index = oldPlayers.indexOfFirst { p -> p == null }
         val players = oldPlayers.filterIndexed { i, _ -> i != index }.toTypedArray()

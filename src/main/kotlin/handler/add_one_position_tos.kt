@@ -19,7 +19,7 @@ class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos
         val newPlayers = arrayOf(*players, null)
         r.game!!.players = newPlayers
         for (p in players) {
-            if (p is HumanPlayer) p.send(Fengsheng.add_one_position_toc.getDefaultInstance())
+            (p as? HumanPlayer)?.send(Fengsheng.add_one_position_toc.getDefaultInstance())
         }
     }
 
