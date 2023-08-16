@@ -191,7 +191,8 @@ class HumanPlayer(
     }
 
     override fun notifySendPhaseStart(waitSecond: Int) {
-        val player = (game!!.fsm as SendPhaseStart).player
+        val fsm = game!!.fsm as SendPhaseStart
+        val player = fsm.player
         val playerId = getAlternativeLocation(player.location)
         val builder = notify_phase_toc.newBuilder()
         builder.setCurrentPlayerId(playerId).currentPhase = Common.phase.Send_Start_Phase
@@ -202,7 +203,8 @@ class HumanPlayer(
             timeout = GameExecutor.post(game!!, {
                 if (checkSeq(seq2)) {
                     incrSeq()
-                    autoSendMessageCard(this)
+                    if (cards.isEmpty()) game!!.resolve(fsm.copy(allowUseSkill = false))
+                    else autoSendMessageCard(this)
                 }
             }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
         }
