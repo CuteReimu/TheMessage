@@ -139,8 +139,10 @@ class FengYunBianHuan : Card {
             players.removeFirst()
             drawCards.removeAt(drawCards.indexOfFirst { c -> c.id == chooseCard.id })
             if (message.asMessageCard) {
+                log.info("${player}把${chooseCard}置入情报区")
                 player.messageCards.add(chooseCard)
             } else {
+                log.info("${player}把${chooseCard}加入手牌")
                 player.cards.add(chooseCard)
             }
             for (p in player.game!!.players) {
