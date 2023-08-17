@@ -1,5 +1,6 @@
 package com.fengsheng
 
+import com.fengsheng.ScoreFactory.calScore
 import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.Statistics.PlayerGameResult
 import com.fengsheng.card.Card
@@ -173,6 +174,8 @@ class Game private constructor(totalPlayerCount: Int) {
             playerNameCache.remove(it.playerName)
         }
         if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
+            for (p in humanPlayers)
+                log.info("${p}(${p.originIdentity},${p.originSecretTask})应得${p.calScore(winners.filterNotNull())}分")
             val records = ArrayList<Statistics.Record>(players.size)
             val playerGameResultList = ArrayList<PlayerGameResult>()
             for (p in players) {
@@ -361,6 +364,7 @@ class Game private constructor(totalPlayerCount: Int) {
         @JvmStatic
         fun main(args: Array<String>) {
             Class.forName("com.fengsheng.skill.RoleCache")
+            ScoreFactory.load()
             Statistics.load()
             Network.init()
         }

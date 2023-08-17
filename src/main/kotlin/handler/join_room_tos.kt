@@ -32,7 +32,7 @@ class join_room_tos : ProtoHandler {
             player.sendErrorMessage("用户名不合法")
             return
         }
-        val playerInfo = Statistics.login(playerName, pb.device, pb.password)
+        val playerInfo = Statistics.login(playerName, pb.password)
         if (playerInfo == null) {
             player.sendErrorMessage("用户名或密码错误")
             return

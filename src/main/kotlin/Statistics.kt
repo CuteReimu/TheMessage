@@ -35,6 +35,7 @@ object Statistics {
     }
 
     fun add(records: List<Record>) {
+        ScoreFactory.addWinCount(records)
         pool.trySend {
             try {
                 val time = dateFormat.format(Date())
@@ -81,7 +82,7 @@ object Statistics {
         }
     }
 
-    fun login(name: String, deviceId: String, pwd: String?): PlayerInfo? {
+    fun login(name: String, pwd: String?): PlayerInfo? {
         val password = try {
             if (pwd.isNullOrEmpty()) "" else md5(name + pwd)
         } catch (e: NoSuchAlgorithmException) {
@@ -92,7 +93,7 @@ object Statistics {
         val playerInfo = playerInfoMap.compute(name) { _, v ->
             if (v == null) {
                 changed = true
-                PlayerInfo(name, deviceId, password, 0, 0)
+                PlayerInfo(name, 0, password, 0, 0)
             } else {
                 if (v.password.isEmpty() && password.isNotEmpty()) {
                     changed = true
@@ -104,6 +105,8 @@ object Statistics {
         if (password != playerInfo.password) return null
         return playerInfo
     }
+
+    fun getScore(name: String) = playerInfoMap[name]?.score ?: 0
 
     fun resetPassword(name: String): Boolean {
         if (playerInfoMap.computeIfPresent(name) { _, v -> v.copy(password = "") } != null) {
@@ -127,7 +130,7 @@ object Statistics {
             sb.append(info.winCount).append(',')
             sb.append(info.gameCount).append(',')
             sb.append(info.name).append(',')
-            sb.append(info.deviceId).append(',')
+            sb.append(info.score).append(',')
             sb.append(info.password).append('\n')
         }
         writeFile("playerInfo.csv", sb.toString().toByteArray())
@@ -154,15 +157,12 @@ object Statistics {
                     if (line == null) break
                     val a = line.split(",".toRegex(), limit = 5).toTypedArray()
                     val password = a[4]
-                    val deviceId = a[3]
+                    val score = if (a[3].length < 6) a[3].toInt() else 0 // 以前这个位置是deviceId
                     val name = a[2]
                     val win = a[0].toInt()
                     val game = a[1].toInt()
-                    if (playerInfoMap.put(
-                            name,
-                            PlayerInfo(name, deviceId, password, win, game)
-                        ) != null
-                    ) throw RuntimeException("数据错误，有重复的玩家name")
+                    if (playerInfoMap.put(name, PlayerInfo(name, score, password, win, game)) != null)
+                        throw RuntimeException("数据错误，有重复的玩家name")
                     winCount += win
                     gameCount += game
                 }
@@ -237,11 +237,15 @@ object Statistics {
             val i = Random.nextInt(20)
             return PlayerGameCount(winCount * i / 100, gameCount * i / 100)
         }
+
+        fun inc(isWinner: Boolean) = PlayerGameCount(winCount + if (isWinner) 1 else 0, gameCount + 1)
+
+        val rate get() = if (gameCount == 0) 0.0 else winCount * 100.0 / gameCount
     }
 
     data class PlayerInfo(
         val name: String,
-        val deviceId: String,
+        val score: Int,
         val password: String,
         val winCount: Int,
         val gameCount: Int
