@@ -94,7 +94,7 @@ class MiLing : Card {
             else
                 miLingChooseCard(this@MiLing, r, target, secret, fsm)
         }
-        g.resolve(OnUseCard(r, r, null, this, card_type.Mi_Ling, r, resolveFunc, fsm))
+        g.resolve(OnUseCard(r, r, target, this, card_type.Mi_Ling, r, resolveFunc, fsm))
     }
 
     private data class miLingChooseCard(

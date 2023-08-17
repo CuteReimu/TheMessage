@@ -76,7 +76,7 @@ class WuDao : Card {
                 fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
             }
         }
-        g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Wu_Dao, r, resolveFunc, fsm))
+        g.resolve(OnUseCard(fsm.whoseTurn, r, target, this, card_type.Wu_Dao, r, resolveFunc, fsm))
     }
 
     override fun toString(): String {
