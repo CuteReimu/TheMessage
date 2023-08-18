@@ -1,5 +1,6 @@
 package com.fengsheng
 
+import com.fengsheng.ScoreFactory.addScore
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.get_record_list_toc
 import com.fengsheng.skill.RoleCache
@@ -107,6 +108,16 @@ object Statistics {
     }
 
     fun getScore(name: String) = playerInfoMap[name]?.score ?: 0
+
+    fun updateScore(name: String, score: Int, save: Boolean): Int {
+        var newScore = 0
+        playerInfoMap.computeIfPresent(name) { _, v ->
+            newScore = v.score addScore score
+            v.copy(score = newScore)
+        }
+        if (save) pool.trySend(::savePlayerInfo)
+        return newScore
+    }
 
     fun resetPassword(name: String): Boolean {
         if (playerInfoMap.computeIfPresent(name) { _, v -> v.copy(password = "") } != null) {

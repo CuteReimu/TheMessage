@@ -58,7 +58,7 @@ object ScoreFactory {
             if (originIdentity == Black) {
                 val index = if (players.size <= 6 && secretTask != Disturber) secretTask.number + 3 else 2
                 playerCountCount.computeIfPresent(players.size) { _, array ->
-                    if (array[index].gameCount > 0) score *= (1 - array[0].rate) / (1 - array[index].rate)
+                    if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - array[index].rate)
                     array
                 }
             }

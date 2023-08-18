@@ -174,8 +174,11 @@ class Game private constructor(totalPlayerCount: Int) {
             playerNameCache.remove(it.playerName)
         }
         if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
-            for (p in humanPlayers)
-                log.info("${p}(${p.originIdentity},${p.originSecretTask})应得${p.calScore(winners.filterNotNull())}分")
+            for ((i, p) in humanPlayers.withIndex()) {
+                val score = p.calScore(winners.filterNotNull())
+                val newScore = Statistics.updateScore(p.playerName, score, i == humanPlayers.size - 1)
+                log.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
+            }
             val records = ArrayList<Statistics.Record>(players.size)
             val playerGameResultList = ArrayList<PlayerGameResult>()
             for (p in players) {
