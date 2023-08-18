@@ -107,7 +107,7 @@ object Statistics {
         return playerInfo
     }
 
-    fun getScore(name: String) = playerInfoMap[name]?.score ?: 0
+    fun getScore(name: String) = playerInfoMap[name]?.score
 
     fun updateScore(name: String, score: Int, save: Boolean): Int {
         var newScore = 0

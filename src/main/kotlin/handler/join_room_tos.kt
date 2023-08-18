@@ -99,7 +99,7 @@ class join_room_tos : ProtoHandler {
             for (p in player.game!!.players) {
                 val name = p?.playerName
                 if (name != null)
-                    builder.addNames("${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name))}")
+                    builder.addNames("${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name) ?: 0)}")
                 else
                     builder.addNames("")
                 val c = when (p) {

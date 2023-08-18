@@ -79,7 +79,7 @@ class Game private constructor(totalPlayerCount: Int) {
         val unready = players.count { it == null }
         val builder = join_room_toc.newBuilder()
         val name = player.playerName
-        builder.name = "${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name))}"
+        builder.name = "${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name) ?: 0)}"
         builder.position = player.location
         builder.winCount = count.winCount
         builder.gameCount = count.gameCount
@@ -176,8 +176,8 @@ class Game private constructor(totalPlayerCount: Int) {
         }
         if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
             if (winners.isNotEmpty() && winners.size < players.size) {
-                val totalWinners = winners.sumOf { Statistics.getScore(it!!.playerName) }
-                val totalPlayers = players.sumOf { Statistics.getScore(it!!.playerName) }
+                val totalWinners = winners.sumOf { Statistics.getScore(it!!.playerName) ?: 0 }
+                val totalPlayers = players.sumOf { Statistics.getScore(it!!.playerName) ?: 0 }
                 val totalLoser = totalPlayers - totalWinners
                 val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
                 for ((i, p) in humanPlayers.withIndex()) {
