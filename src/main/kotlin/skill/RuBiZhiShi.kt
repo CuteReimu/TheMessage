@@ -109,6 +109,8 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                 if (!message.enable) {
                     r.incrSeq()
                     notifyUseSkill(enable = false, useCard = false)
+                    if (fsm is FightPhaseIdle)
+                        return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
                     return ResolveResult(fsm, true)
                 }
                 val card = target.findCard(message.cardId)
@@ -121,6 +123,8 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                 r.incrSeq()
                 notifyUseSkill(enable = true, useCard = false)
                 r.game!!.playerDiscardCard(target, card)
+                if (fsm is FightPhaseIdle)
+                    return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
                 return ResolveResult(fsm, true)
             }
             when (message) {
