@@ -9,8 +9,8 @@ class getscore : Function<Map<String, String?>, String> {
         return try {
             val name = form["name"]!!
             val score = Statistics.getScore(name)
-            if (score == null) "{\"result\": \"查无此人\"}"
-            else "{\"result\": \"name ${ScoreFactory.getRankNameByScore(score)} $score\"}"
+            if (score == null) "{\"result\": \"${name}已身死道消\"}"
+            else "{\"result\": \"$name ${ScoreFactory.getRankNameByScore(score)} $score\"}"
         } catch (e: NumberFormatException) {
             "{\"error\": \"invalid arguments\"}"
         } catch (e: NullPointerException) {
