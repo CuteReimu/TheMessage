@@ -98,10 +98,12 @@ class join_room_tos : ProtoHandler {
             builder.onlineCount = Game.playerNameCache.size
             for (p in player.game!!.players) {
                 val name = p?.playerName
-                if (name != null)
-                    builder.addNames("${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name) ?: 0)}")
-                else
+                if (name == null)
                     builder.addNames("")
+                else if (p is HumanPlayer)
+                    builder.addNames("${name}${ScoreFactory.getRankNameByScore(Statistics.getScore(name) ?: 0)}")
+                else
+                    builder.addNames(name)
                 val c = when (p) {
                     null -> PlayerGameCount(0, 0)
                     is HumanPlayer -> Statistics.getPlayerGameCount(p.playerName)

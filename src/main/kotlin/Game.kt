@@ -365,7 +365,7 @@ class Game private constructor(totalPlayerCount: Int) {
          * 不是线程安全的
          */
         fun newInstance() {
-            if (newGame.players.all { it is HumanPlayer })
+            if (newGame.players.all { it is HumanPlayer } && newGame.players.size >= 5)
                 lastTotalPlayerCount = newGame.players.size + 1
             newGame = Game(lastTotalPlayerCount.coerceIn(minOf(5, Config.TotalPlayerCount)..8))
         }
