@@ -78,7 +78,8 @@ class Game private constructor(totalPlayerCount: Int) {
         player.location = index
         val unready = players.count { it == null }
         val builder = join_room_toc.newBuilder()
-        builder.name = player.playerName
+        val name = player.playerName
+        builder.name = "${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name))}"
         builder.position = player.location
         builder.winCount = count.winCount
         builder.gameCount = count.gameCount
