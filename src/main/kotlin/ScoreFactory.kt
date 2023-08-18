@@ -13,6 +13,7 @@ import java.io.InputStreamReader
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
+import kotlin.math.round
 
 object ScoreFactory {
     private val subRankNames = arrayOf("I", "II", "III", "IV", "V")
@@ -34,37 +35,31 @@ object ScoreFactory {
         else -> (this + delta).coerceAtLeast(360) // 黄金以上不会掉到白银
     }
 
-    fun Player.calScore(winners: List<Player>): Int {
-        val players = game!!.players
-        if (winners.isEmpty() || winners.size == players.size) return 0
-        val totalWinners = winners.sumOf { Statistics.getScore(it.playerName) }
-        val totalPlayers = players.sumOf { Statistics.getScore(it!!.playerName) }
-        val totalLoser = totalPlayers - totalWinners
-        val delta = totalLoser.toDouble() / (players.size - winners.size) - totalWinners.toDouble() / winners.size
+    fun Player.calScore(players: List<Player>, winners: List<Player>, delta: Int): Int {
         var score: Double
         if (winners.any { it === this }) { // 赢了
             score = players.size.let { if (it <= 6) 7.0 * (it - 3) else 12.0 * (it - 5) }
             if (originIdentity == Black) {
                 val index = if (players.size <= 6 && secretTask != Disturber) secretTask.number + 3 else 2
-                playerCountCount.computeIfPresent(players.size) { _, array ->
+                playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
                     if (array[index].gameCount > 0) score *= array[0].rate / array[index].rate
                     array
                 }
             }
             if (identity == Has_No_Identity) score /= winners.count { it.identity == Has_No_Identity }.coerceAtLeast(1)
-            score = (score * (1 + delta / 10.0)).coerceAtLeast(1.0)
+            score = (score * (1 + delta / 100.0)).coerceAtLeast(1.0)
         } else {
             score = if (players.size <= 6) -7.0 else -12.0
             if (originIdentity == Black) {
                 val index = if (players.size <= 6 && secretTask != Disturber) secretTask.number + 3 else 2
-                playerCountCount.computeIfPresent(players.size) { _, array ->
+                playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
                     if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - array[index].rate)
                     array
                 }
             }
-            score = (score * (1 + delta / 10.0)).coerceAtMost(-1.0)
+            score = (score * (1 + delta / 100.0)).coerceAtMost(-1.0)
         }
-        return ceil(score).toInt()
+        return ceil(round(score * 10.0) / 10.0).toInt()
     }
 
     fun addWinCount(records: List<Record>) {

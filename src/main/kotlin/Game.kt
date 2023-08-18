@@ -175,10 +175,16 @@ class Game private constructor(totalPlayerCount: Int) {
             playerNameCache.remove(it.playerName)
         }
         if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
-            for ((i, p) in humanPlayers.withIndex()) {
-                val score = p.calScore(winners.filterNotNull())
-                val newScore = Statistics.updateScore(p.playerName, score, i == humanPlayers.size - 1)
-                log.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
+            if (winners.isNotEmpty() && winners.size < players.size) {
+                val totalWinners = winners.sumOf { Statistics.getScore(it!!.playerName) }
+                val totalPlayers = players.sumOf { Statistics.getScore(it!!.playerName) }
+                val totalLoser = totalPlayers - totalWinners
+                val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
+                for ((i, p) in humanPlayers.withIndex()) {
+                    val score = p.calScore(players.filterNotNull(), winners.filterNotNull(), delta)
+                    val newScore = Statistics.updateScore(p.playerName, score, i == humanPlayers.size - 1)
+                    log.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
+                }
             }
             val records = ArrayList<Statistics.Record>(players.size)
             val playerGameResultList = ArrayList<PlayerGameResult>()
