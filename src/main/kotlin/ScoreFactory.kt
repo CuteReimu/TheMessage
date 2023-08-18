@@ -36,6 +36,7 @@ object ScoreFactory {
 
     fun Player.calScore(winners: List<Player>): Int {
         val players = game!!.players
+        if (winners.isEmpty() || winners.size == players.size) return 0
         val totalWinners = winners.sumOf { Statistics.getScore(it.playerName) }
         val totalPlayers = players.sumOf { Statistics.getScore(it!!.playerName) }
         val totalLoser = totalPlayers - totalWinners
@@ -50,7 +51,7 @@ object ScoreFactory {
                     array
                 }
             }
-            if (identity == Has_No_Identity) score /= 2
+            if (identity == Has_No_Identity) score /= winners.count { it.identity == Has_No_Identity }.coerceAtLeast(1)
             score = (score * (1 + delta / 10.0)).coerceAtLeast(1.0)
         } else {
             score = if (players.size <= 6) -7.0 else -12.0
