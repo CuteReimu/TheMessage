@@ -79,7 +79,9 @@ class Game private constructor(totalPlayerCount: Int) {
         val unready = players.count { it == null }
         val builder = join_room_toc.newBuilder()
         val name = player.playerName
-        builder.name = "${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name) ?: 0)}"
+        builder.name =
+            if (player is HumanPlayer) "${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name) ?: 0)}"
+            else name
         builder.position = player.location
         builder.winCount = count.winCount
         builder.gameCount = count.gameCount
