@@ -5,7 +5,6 @@ import com.fengsheng.Statistics.Record
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.color.Has_No_Identity
 import com.fengsheng.protos.Common.secret_task
-import com.fengsheng.protos.Common.secret_task.Disturber
 import org.apache.log4j.Logger
 import java.io.BufferedReader
 import java.io.FileInputStream
@@ -45,7 +44,7 @@ object ScoreFactory {
         if (winners.any { it === this }) { // 赢了
             score = players.size.let { if (it <= 6) 7.0 * (it - 3) else 12.0 * (it - 5) }
             if (originIdentity == Black) {
-                val index = if (players.size <= 6 && secretTask != Disturber) secretTask.number + 3 else 2
+                val index = if (players.size <= 6) secretTask.number + 3 else 2
                 playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
                     if (array[index].gameCount > 0) score *= array[0].rate / array[index].rate
                     array
@@ -56,7 +55,7 @@ object ScoreFactory {
         } else {
             score = if (players.size <= 6) -7.0 else -12.0
             if (originIdentity == Black) {
-                val index = if (players.size <= 6 && secretTask != Disturber) secretTask.number + 3 else 2
+                val index = if (players.size <= 6) secretTask.number + 3 else 2
                 playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
                     if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - array[index].rate)
                     array
