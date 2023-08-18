@@ -119,6 +119,8 @@ object Statistics {
         return newScore
     }
 
+    fun getAllPlayerInfo() = playerInfoMap.map { (_, v) -> v }
+
     fun resetPassword(name: String): Boolean {
         if (playerInfoMap.computeIfPresent(name) { _, v -> v.copy(password = "") } != null) {
             pool.trySend(::savePlayerInfo)
