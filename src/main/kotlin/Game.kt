@@ -181,7 +181,7 @@ class Game private constructor(totalPlayerCount: Int) {
                 val totalLoser = totalPlayers - totalWinners
                 val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
                 for ((i, p) in humanPlayers.withIndex()) {
-                    val score = p.calScore(players.filterNotNull(), winners.filterNotNull(), delta)
+                    val score = p.calScore(players.filterNotNull(), winners.filterNotNull(), delta / 10)
                     val newScore = Statistics.updateScore(p.playerName, score, i == humanPlayers.size - 1)
                     log.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
                 }
