@@ -156,7 +156,7 @@ class YiHuaJieMu : AbstractSkill(), ActiveSkill {
             val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
             if (!joinIntoHand)
                 return ResolveResult(OnAddMessageCard(fsm.whoseTurn, newFsm), true)
-            return ResolveResult(fsm, true)
+            return ResolveResult(newFsm, true)
         }
 
         companion object {

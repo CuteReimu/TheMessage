@@ -64,7 +64,7 @@ class GongFen : AbstractSkill(), ActiveSkill {
                         CheckWin(fsm.whoseTurn, receiveOrder, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom))
                     ), true
                 )
-                return ResolveResult(fsm, true)
+                return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             val r = fsm.whoseFightTurn
             val g = r.game!!
