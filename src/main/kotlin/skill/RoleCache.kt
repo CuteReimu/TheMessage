@@ -1,12 +1,23 @@
 package com.fengsheng.skill
 
 import com.fengsheng.protos.Common.role
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import org.apache.log4j.Logger
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.*
 
 /**
  * 记录所有角色的工具类
  */
 object RoleCache {
-    private val cache = listOf(
+    private val mu = Mutex()
+    private val cache = arrayListOf(
         RoleSkillsData("端木静", role.duan_mu_jing, true, true, XinSiChao()),
         RoleSkillsData("金生火", role.jin_sheng_huo, false, true, JinShen()),
         RoleSkillsData("老鳖", role.lao_bie, false, true, LianLuo(), MingEr()),
@@ -53,31 +64,81 @@ object RoleCache {
         RoleSkillsData("老虎", role.lao_hu, false, false, YunChouWeiWo()),
         RoleSkillsData("SP端木静", role.sp_duan_mu_jing, true, false, HouLaiRen()),
     )
-    private val mapCache = HashMap<role, RoleSkillsData>()
+    private val mapCache: Map<role, RoleSkillsData>
+    private val pool = Channel<() -> Unit>(Channel.UNLIMITED)
+    private val forbiddenRoleCache = ArrayList<RoleSkillsData>()
 
     init {
+        mapCache = EnumMap(role::class.java)
         for (data in cache) {
-            if (mapCache.put(data.role, data) != null) throw RuntimeException("重复的角色：" + data.role)
+            if (mapCache.put(data.role, data) != null) throw RuntimeException("重复的角色：${data.role}")
+        }
+        try {
+            FileInputStream("forbiddenRoles.txt").use { `in` ->
+                String(`in`.readAllBytes()).split(",").forEach {
+                    if (it.isNotEmpty()) {
+                        val r = role.forNumber(it.toInt())!!
+                        val index = cache.indexOfFirst { data -> data.role == r }
+                        if (index < 0) throw RuntimeException("找不到角色：$r")
+                        forbiddenRoleCache.add(cache.removeAt(index))
+                    }
+                }
+            }
+        } catch (_: FileNotFoundException) {
+            // Do Nothing
+        }
+        @OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch {
+            while (true) {
+                val f = pool.receive()
+                withContext(Dispatchers.IO) { f() }
+            }
+        }
+    }
+
+    fun forbidRole(roleName: String): Boolean = runBlocking {
+        val (result, s) = mu.withLock {
+            if (forbiddenRoleCache.any { it.name == roleName }) return@withLock true to null
+            val index = cache.indexOfFirst { it.name == roleName }
+            if (index < 0) return@withLock false to null
+            forbiddenRoleCache.add(cache.removeAt(index))
+            true to forbiddenRoleCache.joinToString { it.role.number.toString() }
+        }
+        if (s != null) writeForbiddenRolesFile(s.toByteArray())
+        result
+    }
+
+    fun releaseRole(roleName: String): Boolean = runBlocking {
+        val (result, s) = mu.withLock {
+            if (cache.any { it.name == roleName }) return@withLock true to null
+            val index = forbiddenRoleCache.indexOfFirst { it.name == roleName }
+            if (index < 0) return@withLock false to null
+            cache.add(forbiddenRoleCache.removeAt(index))
+            true to forbiddenRoleCache.joinToString { it.role.number.toString() }
+        }
+        if (s != null) writeForbiddenRolesFile(s.toByteArray())
+        result
+    }
+
+    /**
+     * @return 长度为 `n` 的数组
+     */
+    fun getRandomRoles(n: Int): Array<RoleSkillsData> = runBlocking {
+        mu.withLock {
+            val indexArray = cache.indices.shuffled()
+            Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
         }
     }
 
     /**
      * @return 长度为 `n` 的数组
      */
-    fun getRandomRoles(n: Int): Array<RoleSkillsData> {
-        val indexArray = Array(cache.size) { i -> i }
-        indexArray.shuffle()
-        return Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
-    }
-
-    /**
-     * @return 长度为 `n` 的数组
-     */
-    fun getRandomRoles(n: Int, except: Set<role>): Array<RoleSkillsData> {
-        val cache = this.cache.filterNot { it.role in except }
-        val indexArray = Array(cache.size) { i -> i }
-        indexArray.shuffle()
-        return Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
+    fun getRandomRoles(n: Int, except: Set<role>): Array<RoleSkillsData> = runBlocking {
+        mu.withLock {
+            val cache = this@RoleCache.cache.filterNot { it.role in except }
+            val indexArray = cache.indices.shuffled()
+            Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
+        }
     }
 
     /**
@@ -88,14 +149,8 @@ object RoleCache {
         val roleSkillsDataArray = getRandomRoles(n)
         var roleIndex = 0
         while (roleIndex < roles.size && roleIndex < n) {
-            var index = -1
-            for (i in roleSkillsDataArray.indices) {
-                if (roles[roleIndex] == roleSkillsDataArray[i].role) {
-                    index = i
-                    break
-                }
-            }
-            if (index == -1) {
+            val index = roleSkillsDataArray.indexOfFirst { it.role == roles[roleIndex] }
+            if (index < 0) {
                 val data = mapCache[roles[roleIndex]]
                 roleSkillsDataArray[roleIndex] = data ?: RoleSkillsData()
             } else {
@@ -111,5 +166,14 @@ object RoleCache {
     fun getRoleName(role: role?): String? {
         val roleSkillsData = mapCache[role]
         return roleSkillsData?.name
+    }
+
+    private val log = Logger.getLogger(RoleCache::class.java)
+    private fun writeForbiddenRolesFile(buf: ByteArray) {
+        try {
+            FileOutputStream("forbiddenRoles.txt").use { fileOutputStream -> fileOutputStream.write(buf) }
+        } catch (e: IOException) {
+            log.error("write file failed", e)
+        }
     }
 }
