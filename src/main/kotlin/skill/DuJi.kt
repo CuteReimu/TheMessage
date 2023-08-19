@@ -14,7 +14,8 @@ import kotlin.random.Random
 
 /**
  * 白昆山技能【毒计】：争夺阶段，你可以翻开此角色牌，然后指定两名其他角色，令他们相互抽取对方的一张手牌并展示之，你将展示的牌加入你的手牌，若展示的是黑色牌，你可以改为令抽取者选择一项：
- *  * 将其置入自己的情报区 * 将其置入对方的情报区
+ *  * 将其置入自己的情报区
+ *  * 将其置入对方的情报区
  */
 class DuJi : AbstractSkill(), ActiveSkill {
     override val skillId = SkillId.DU_JI
