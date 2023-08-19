@@ -138,7 +138,7 @@ class MiaoBiQiaoBian : AbstractSkill(), ActiveSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                return ResolveResult(fsm, true)
+                return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
