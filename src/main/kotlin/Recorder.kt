@@ -52,7 +52,7 @@ class Recorder {
                 (36L * 36 * 36 * 36 * 36 * 36)).toString(Character.MAX_RADIX).addLeadingZero(6)
         val fileName = timeStr + "-" + sb + "-" + p.location + "-" + recordId
         val builder = record_file.newBuilder()
-        builder.clientVersion = Config.ClientVersion
+        builder.clientVersion = Config.ClientVersion.get()
         builder.addAllLines(list)
         val recordFile = builder.build()
         saveLoadPool.trySend {

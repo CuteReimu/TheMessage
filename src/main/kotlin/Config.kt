@@ -5,6 +5,7 @@ import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 object Config {
     val ListenPort: Int
@@ -14,7 +15,7 @@ object Config {
     val HandCardCountEachTurn: Int
     val IsGmEnable: Boolean
     val GmListenPort: Int
-    val ClientVersion: Int
+    val ClientVersion: AtomicInteger
     val MaxRoomCount: Int
     val DebugRoles: List<role>
     val RecordListSize: Int
@@ -46,7 +47,7 @@ object Config {
         HandCardCountEachTurn = pps.getProperty("rule.hand_card_count_each_turn").toInt()
         IsGmEnable = pps.getProperty("gm.enable").toBoolean()
         GmListenPort = pps.getProperty("gm.listen_port").toInt()
-        ClientVersion = pps.getProperty("client_version").toInt()
+        ClientVersion = AtomicInteger(pps.getProperty("client_version").toInt())
         MaxRoomCount = pps.getProperty("room_count").toInt()
         val debugRoleStr = pps.getProperty("gm.debug_roles")
         DebugRoles = if (debugRoleStr.isBlank()) {
@@ -60,6 +61,24 @@ object Config {
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         } catch (e: Exception) {
             throw RuntimeException(e)
+        }
+    }
+
+    fun save() {
+        synchronized(this) {
+            val pps = Properties()
+            pps["listen_port"] = ListenPort
+            pps["listen_websocket_port"] = ListenWebSocketPort
+            pps["player.total_count"] = TotalPlayerCount
+            pps["rule.hand_card_count_begin"] = HandCardCountBegin
+            pps["rule.hand_card_count_each_turn"] = HandCardCountEachTurn
+            pps["gm.enable"] = IsGmEnable
+            pps["gm.listen_port"] = GmListenPort
+            pps["client_version"] = ClientVersion.get()
+            pps["room_count"] = MaxRoomCount
+            pps["gm.debug_roles"] = DebugRoles
+            pps["record_list_size"] = RecordListSize
+            FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         }
     }
 }
