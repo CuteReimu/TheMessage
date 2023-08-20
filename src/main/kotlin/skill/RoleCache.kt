@@ -102,7 +102,7 @@ object RoleCache {
             val index = cache.indexOfFirst { it.name == roleName }
             if (index < 0) return@withLock false to null
             forbiddenRoleCache.add(cache.removeAt(index))
-            true to forbiddenRoleCache.joinToString { it.role.number.toString() }
+            true to forbiddenRoleCache.joinToString(separator = ",") { it.role.number.toString() }
         }
         if (s != null) writeForbiddenRolesFile(s.toByteArray())
         result
@@ -114,7 +114,7 @@ object RoleCache {
             val index = forbiddenRoleCache.indexOfFirst { it.name == roleName }
             if (index < 0) return@withLock false to null
             cache.add(forbiddenRoleCache.removeAt(index))
-            true to forbiddenRoleCache.joinToString { it.role.number.toString() }
+            true to forbiddenRoleCache.joinToString(separator = ",") { it.role.number.toString() }
         }
         if (s != null) writeForbiddenRolesFile(s.toByteArray())
         result
@@ -170,10 +170,12 @@ object RoleCache {
 
     private val log = Logger.getLogger(RoleCache::class.java)
     private fun writeForbiddenRolesFile(buf: ByteArray) {
-        try {
-            FileOutputStream("forbiddenRoles.txt").use { fileOutputStream -> fileOutputStream.write(buf) }
-        } catch (e: IOException) {
-            log.error("write file failed", e)
+        pool.trySend {
+            try {
+                FileOutputStream("forbiddenRoles.txt").use { fileOutputStream -> fileOutputStream.write(buf) }
+            } catch (e: IOException) {
+                log.error("write file failed", e)
+            }
         }
     }
 }

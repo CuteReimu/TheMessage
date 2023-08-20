@@ -67,17 +67,17 @@ object Config {
     fun save() {
         synchronized(this) {
             val pps = Properties()
-            pps["listen_port"] = ListenPort
-            pps["listen_websocket_port"] = ListenWebSocketPort
-            pps["player.total_count"] = TotalPlayerCount
-            pps["rule.hand_card_count_begin"] = HandCardCountBegin
-            pps["rule.hand_card_count_each_turn"] = HandCardCountEachTurn
-            pps["gm.enable"] = IsGmEnable
-            pps["gm.listen_port"] = GmListenPort
-            pps["client_version"] = ClientVersion.get()
-            pps["room_count"] = MaxRoomCount
-            pps["gm.debug_roles"] = DebugRoles
-            pps["record_list_size"] = RecordListSize
+            pps["listen_port"] = ListenPort.toString()
+            pps["listen_websocket_port"] = ListenWebSocketPort.toString()
+            pps["player.total_count"] = TotalPlayerCount.toString()
+            pps["rule.hand_card_count_begin"] = HandCardCountBegin.toString()
+            pps["rule.hand_card_count_each_turn"] = HandCardCountEachTurn.toString()
+            pps["gm.enable"] = IsGmEnable.toString()
+            pps["gm.listen_port"] = GmListenPort.toString()
+            pps["client_version"] = ClientVersion.get().toString()
+            pps["room_count"] = MaxRoomCount.toString()
+            pps["gm.debug_roles"] = DebugRoles.joinToString(separator = ",")
+            pps["record_list_size"] = RecordListSize.toString()
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         }
     }
