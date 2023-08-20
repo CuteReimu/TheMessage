@@ -128,6 +128,7 @@ class JinBi : AbstractSkill(), ActiveSkill {
                 }
                 card
             }
+            r.incrSeq()
             target.cards.removeAll(cards.toSet())
             r.cards.addAll(cards)
             log.info("${target}给了${r}${cards.contentToString()}")
