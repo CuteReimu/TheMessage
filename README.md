@@ -80,6 +80,7 @@ graph TD;
 | /resetpwd    | name=aaa                | 其中name参数是想要重置密码的玩家名字（重置为空，玩家可以自行重新设置）                               |
 | /forbidrole  | name=aaa                | 禁用角色，禁用的角色不会再出现在角色池里，其中name参数是想要禁用的中文角色名                            |
 | /releaserole | name=aaa                | 启用角色，其中name参数是想要启用的中文角色名                                            |
+| /setversion  | version=1               | 热更新客户端版本号，其中version字段就是要更新成多少                                       |
 
 ## 开发相关
 
