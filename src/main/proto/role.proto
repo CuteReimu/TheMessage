@@ -596,6 +596,7 @@ message skill_bo_ai_b_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
   card card = 3; // 给的牌，只有白沧浪和给的那个人能看到
+  bool enable = 4;
 }
 
 // 小九【广发报】A：争夺阶段，你可以翻开此角色牌，然后摸三张牌。

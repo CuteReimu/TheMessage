@@ -95,6 +95,14 @@ class BoAi : AbstractSkill(), ActiveSkill {
             }
             if (message.cardId == 0) {
                 r.incrSeq()
+                for (p in g.players) {
+                    if (p is HumanPlayer) {
+                        val builder = skill_bo_ai_b_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.enable = false
+                        p.send(builder.build())
+                    }
+                }
                 return ResolveResult(MainPhaseIdle(r), true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
@@ -127,6 +135,7 @@ class BoAi : AbstractSkill(), ActiveSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_bo_ai_b_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.enable = true
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     if (p === r || p === target) builder.card = card.toPbCard()
                     p.send(builder.build())

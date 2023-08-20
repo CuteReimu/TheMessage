@@ -136,6 +136,14 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
+                for (p in g.players) {
+                    if (p is HumanPlayer) {
+                        val builder = skill_jie_dao_sha_ren_b_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.enable = false
+                        p.send(builder.build())
+                    }
+                }
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
@@ -160,6 +168,7 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
                     val builder = skill_jie_dao_sha_ren_b_toc.newBuilder()
                     builder.card = card.toPbCard()
                     builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.enable = true
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     p.send(builder.build())
                 }
