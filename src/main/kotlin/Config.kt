@@ -76,7 +76,7 @@ object Config {
             pps["gm.listen_port"] = GmListenPort.toString()
             pps["client_version"] = ClientVersion.get().toString()
             pps["room_count"] = MaxRoomCount.toString()
-            pps["gm.debug_roles"] = DebugRoles.joinToString(separator = ",")
+            pps["gm.debug_roles"] = DebugRoles.joinToString(separator = ",") { it.number.toString() }
             pps["record_list_size"] = RecordListSize.toString()
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         }
