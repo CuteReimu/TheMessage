@@ -347,6 +347,7 @@ message skill_jie_dao_sha_ren_b_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
   card   card = 3; // 那张贴的牌
+  bool   enable = 4; // 是否发动
 }
 
 // 裴玲【交际】A：出牌阶段限一次，你可以抽取一名角色的最多两张手牌。
