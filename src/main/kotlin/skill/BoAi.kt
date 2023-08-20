@@ -39,7 +39,6 @@ class BoAi : AbstractSkill(), ActiveSkill {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             log.info("${r}发动了[博爱]")
-            r.draw(1)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_bo_ai_a_toc.newBuilder()
@@ -60,6 +59,7 @@ class BoAi : AbstractSkill(), ActiveSkill {
                     p.send(builder.build())
                 }
             }
+            r.draw(1)
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val player = r.game!!.players.find { it!!.alive && it.isPartner(r) && it.isFemale }
