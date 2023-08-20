@@ -42,9 +42,29 @@ object ScoreFactory {
 
     private val oldTasks = listOf(Killer, Stealer, Collector)
     fun Player.calScore(players: List<Player>, winners: List<Player>, delta: Int): Int {
-        var score: Double
+        class Score(var value: Double) {
+            var positiveMultiple = 0.0
+            var negativeMultiple = 1.0
+            operator fun timesAssign(multiple: Double) {
+                if (multiple >= 1.0) positiveMultiple += multiple - 1.0 // 加分加算
+                else negativeMultiple *= multiple.coerceAtLeast(0.01) // 减分乘算
+            }
+
+            operator fun divAssign(v: Int) {
+                value /= v
+            }
+
+            fun toInt(): Int {
+                var v = value * (negativeMultiple + positiveMultiple)
+                if (value > 0.0) v = v.coerceAtLeast(1.0)
+                else if (value < 0.0) v = v.coerceAtMost(-1.0)
+                return ceil(round(v * 10.0) / 10.0).toInt()
+            }
+        }
+
+        val score: Score
         if (winners.any { it === this }) { // 赢了
-            score = players.size.let { if (it <= 6) 7.0 * (it - 3) else 12.0 * (it - 5) }
+            score = Score(players.size.let { if (it <= 6) 7.0 * (it - 3) else 12.0 * (it - 5) })
             if (originIdentity == Black) {
                 val index = if (players.size <= 6 || originSecretTask in oldTasks) secretTask.number + 3 else 2
                 playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
@@ -53,9 +73,9 @@ object ScoreFactory {
                 }
             }
             if (identity == Has_No_Identity) score /= winners.count { it.identity == Has_No_Identity }.coerceAtLeast(1)
-            score = (score * (1 + delta / 100.0)).coerceAtLeast(1.0)
+            score *= 1 + delta / 100.0
         } else {
-            score = if (players.size <= 6) -7.0 else -12.0
+            score = Score(if (players.size <= 6) -7.0 else -12.0)
             if (originIdentity == Black) {
                 val index = if (players.size <= 6 || originSecretTask in oldTasks) secretTask.number + 3 else 2
                 playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
@@ -63,9 +83,9 @@ object ScoreFactory {
                     array
                 }
             }
-            score = (score * (1 + delta / 100.0)).coerceAtMost(-1.0)
+            score *= 1 + delta / 100.0
         }
-        return ceil(round(score * 10.0) / 10.0).toInt()
+        return score.toInt()
     }
 
     fun addWinCount(records: List<Record>) {
