@@ -10,7 +10,7 @@ class getscore : Function<Map<String, String?>, String> {
             val name = form["name"]!!
             val score = Statistics.getScore(name)
             if (score == null) "{\"result\": \"${name}已身死道消\"}"
-            else "{\"result\": \"$name ${ScoreFactory.getRankNameByScore(score)} $score\"}"
+            else "{\"result\": \"$name·${ScoreFactory.getRankNameByScore(score)}·$score\"}"
         } catch (e: NumberFormatException) {
             "{\"error\": \"invalid arguments\"}"
         } catch (e: NullPointerException) {

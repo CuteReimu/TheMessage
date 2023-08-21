@@ -16,20 +16,17 @@ import kotlin.math.ceil
 import kotlin.math.round
 
 object ScoreFactory {
+    private val rankString = listOf("I", "II", "III", "IV", "V")
+
     fun getRankNameByScore(score: Int): String {
-        fun String.multiple(times: Int): String {
-            val sb = StringBuilder()
-            repeat(times) { sb.append(this) }
-            return sb.toString()
-        }
         return when {
-            score < 180 -> "\uD83E\uDD49".multiple(score / 60 + 1)
-            score < 360 -> "\uD83E\uDD48".multiple((score - 180) / 60 + 1)
-            score < 680 -> "\uD83E\uDD47".multiple((score - 360) / 80 + 1)
-            score < 1000 -> "\uD83D\uDC8D".multiple((score - 680) / 80 + 1)
-            score < 1500 -> "\uD83D\uDCA0".multiple((score - 1000) / 100 + 1)
-            score < 2000 -> "\uD83D\uDC51".multiple((score - 1500) / 100 + 1)
-            else -> "\uD83D\uDC51".multiple(5)
+            score < 180 -> "\uD83E\uDD49" + rankString[2 - score / 60]
+            score < 360 -> "\uD83E\uDD48" + rankString[2 - (score - 180) / 60]
+            score < 680 -> "\uD83E\uDD47" + rankString[3 - (score - 360) / 80]
+            score < 1000 -> "\uD83D\uDC8D" + rankString[3 - (score - 680) / 80]
+            score < 1500 -> "\uD83D\uDCA0" + rankString[4 - (score - 1000) / 100]
+            score < 2000 -> "\uD83D\uDC51" + rankString[4 - (score - 1500) / 100]
+            else -> "\uD83D\uDC51" + rankString[0]
         }
     }
 
