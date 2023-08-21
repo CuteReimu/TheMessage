@@ -89,7 +89,7 @@ class join_room_tos : ProtoHandler {
                 if (humanCount >= 2) newGame.ensure5Position()
             }
             val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
-            if (!player.game!!.onPlayerJoinRoom(player, count)) {
+            if (newGame.onPlayerJoinRoom(player, count)) {
                 player.sendErrorMessage("房间已满，请稍后再试")
                 return@post
             }
