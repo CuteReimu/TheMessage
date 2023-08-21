@@ -82,6 +82,7 @@ graph TD;
 | /releaserole | name=aaa                | 启用角色，其中name参数是想要启用的中文角色名                                            |
 | /setnotice   | notice=aaa              | 热更新公告，其中notice字段就是要更新成什么                                            |
 | /setversion  | version=1               | 热更新客户端版本号，其中version字段就是要更新成多少                                       |
+| /register    | name=aaa                | 注册，其中name是用户名                                                       |
 
 ## 开发相关
 
