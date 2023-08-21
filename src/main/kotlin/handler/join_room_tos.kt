@@ -74,6 +74,8 @@ class join_room_tos : ProtoHandler {
                 player.sendErrorMessage("登录异常，请稍后重试")
                 return@post
             }
+            player.device = pb.device
+            player.playerName = playerName
             val oldPlayer2 = Game.playerNameCache.put(playerName, player)
             if (oldPlayer2 != null) {
                 log.info("${oldPlayer2.playerName}离开了房间")
@@ -89,12 +91,10 @@ class join_room_tos : ProtoHandler {
                 if (humanCount >= 2) newGame.ensure5Position()
             }
             val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
-            if (newGame.onPlayerJoinRoom(player, count)) {
+            if (!newGame.onPlayerJoinRoom(player, count)) {
                 player.sendErrorMessage("房间已满，请稍后再试")
                 return@post
             }
-            player.device = pb.device
-            player.playerName = playerName
             player.game = newGame
             val builder = Fengsheng.get_room_info_toc.newBuilder()
             builder.myPosition = player.location
