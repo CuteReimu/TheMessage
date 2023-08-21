@@ -18,9 +18,9 @@ class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos
         }
         val newPlayers = arrayOf(*players, null)
         r.game!!.players = newPlayers
-        for (p in players) {
+        for (p in players)
             (p as? HumanPlayer)?.send(Fengsheng.add_one_position_toc.getDefaultInstance())
-        }
+        r.game!!.cancelStartTimer()
     }
 
     companion object {

@@ -19,11 +19,9 @@ class remove_robot_tos : AbstractProtoHandler<Fengsheng.remove_robot_tos>() {
             players[index] = null
             log.info("${robotPlayer.playerName}离开了房间")
             val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(robotPlayer.location).build()
-            for (p in players) {
-                if (p is HumanPlayer) {
-                    p.send(reply)
-                }
-            }
+            for (p in players)
+                (p as? HumanPlayer)?.send(reply)
+            r.game!!.cancelStartTimer()
         }
     }
 

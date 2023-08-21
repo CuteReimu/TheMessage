@@ -64,17 +64,16 @@ class join_room_tos : ProtoHandler {
             if (!continueLogin) return
         }
         if (Game.GameCache.size > Config.MaxRoomCount) {
-            player.sendErrorMessage("没有更多的房间了")
+            player.sendErrorMessage("房间已满，请稍后再试")
             return
         }
         val newGame = Game.newGame
         GameExecutor.post(newGame) {
             if (player.game !== null) {
-                log.info("${player}登录异常")
+                log.warn("${player}登录异常")
                 player.sendErrorMessage("登录异常，请稍后重试")
                 return@post
             }
-            player.device = pb.device
             val oldPlayer2 = Game.playerNameCache.put(playerName, player)
             if (oldPlayer2 != null) {
                 log.info("${oldPlayer2.playerName}离开了房间")
@@ -89,10 +88,14 @@ class join_room_tos : ProtoHandler {
                 if (humanCount >= 1) newGame.removeAllRobot()
                 if (humanCount >= 2) newGame.ensure5Position()
             }
+            val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
+            if (!player.game!!.onPlayerJoinRoom(player, count)) {
+                player.sendErrorMessage("房间已满，请稍后再试")
+                return@post
+            }
+            player.device = pb.device
             player.playerName = playerName
             player.game = newGame
-            val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
-            player.game!!.onPlayerJoinRoom(player, count)
             val builder = Fengsheng.get_room_info_toc.newBuilder()
             builder.myPosition = player.location
             builder.onlineCount = Game.playerNameCache.size
@@ -148,9 +151,8 @@ class join_room_tos : ProtoHandler {
                 if (it < players.size) {
                     players[it]
                 } else {
-                    for (p in players) {
+                    for (p in players)
                         (p as? HumanPlayer)?.send(Fengsheng.add_one_position_toc.getDefaultInstance())
-                    }
                     null
                 }
             }

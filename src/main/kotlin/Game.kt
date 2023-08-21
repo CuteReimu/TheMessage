@@ -16,6 +16,7 @@ import com.fengsheng.skill.SkillId.WEI_SHENG
 import com.fengsheng.skill.TriggeredSkill
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
+import io.netty.util.Timeout
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
@@ -31,6 +32,8 @@ class Game private constructor(totalPlayerCount: Int) {
     val queue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
     val id: Int = ++increaseId
+
+    private var gameStartTimeout: Timeout? = null
 
     @Volatile
     var isStarted = false
@@ -69,11 +72,28 @@ class Game private constructor(totalPlayerCount: Int) {
         }
     }
 
+    fun setStartTimer() {
+        gameStartTimeout = GameExecutor.post(this, { start() }, 5, TimeUnit.SECONDS)
+    }
+
+    fun cancelStartTimer() {
+        gameStartTimeout?.cancel()
+        gameStartTimeout = null
+    }
+
     /**
      * 玩家进入房间时调用
      */
-    fun onPlayerJoinRoom(player: Player, count: PlayerGameCount) {
-        val index = players.indexOfFirst { it == null }
+    fun onPlayerJoinRoom(player: Player, count: PlayerGameCount): Boolean {
+        var index = players.indexOfFirst { it == null }
+        if (index < 0) {
+            if (players.size >= 9 || player is RobotPlayer) return false
+            players = arrayOf(*players, null)
+            for (p in players)
+                (p as? HumanPlayer)?.send(add_one_position_toc.getDefaultInstance())
+            index = players.size - 1
+            cancelStartTimer()
+        }
         players[index] = player
         player.location = index
         val unready = players.count { it == null }
@@ -90,16 +110,18 @@ class Game private constructor(totalPlayerCount: Int) {
         val msg = builder.build()
         players.forEach { if (it !== player && it is HumanPlayer) it.send(msg) }
         if (unready == 0) {
-            log.info("${player.playerName}加入了。已加入${players.size}个人，游戏开始。。。")
-            isStarted = true
-            GameExecutor.post(this, { start() }, 1, TimeUnit.SECONDS)
-            newInstance()
+            log.info("${player.playerName}加入了。已加入${players.size}个人，游戏将在5秒内开始。。。")
+            setStartTimer()
         } else {
             log.info("${player.playerName}加入了。已加入${players.size - unready}个人，等待${unready}人加入。。。")
         }
+        return true
     }
 
     fun start() {
+        if (players.any { it == null }) return
+        isStarted = true
+        newInstance()
         var identities = ArrayList<color>()
         when (players.size) {
             2 -> identities = when (Random.nextInt(4)) {
