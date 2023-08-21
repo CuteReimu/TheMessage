@@ -78,6 +78,9 @@ message get_room_info_toc {
   uint32          online_count = 3; // 当前在线人数
   repeated uint32 win_counts = 4; // 所有人的胜场数
   repeated uint32 game_counts = 5; // 所有人的总场数
+  repeated string ranks = 6; // 所有人的段位段数
+  repeated int32  scores = 7; // 所有人的段位分数
+  string          notice = 8; // 房间公告
 }
 
 // 请求加一个机器人
@@ -94,6 +97,8 @@ message join_room_toc {
   uint32 position = 2;
   uint32 win_count = 3;
   uint32 game_count = 4;
+  string rank = 5;
+  int32  score = 6;
 }
 
 // 通知谁离开的房间

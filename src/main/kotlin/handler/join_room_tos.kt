@@ -97,20 +97,25 @@ class join_room_tos : ProtoHandler {
             builder.myPosition = player.location
             builder.onlineCount = Game.playerNameCache.size
             for (p in player.game!!.players) {
-                val name = p?.playerName
-                if (name == null)
+                if (p == null) {
                     builder.addNames("")
-                else if (p is HumanPlayer)
-                    builder.addNames("${name}·${ScoreFactory.getRankNameByScore(Statistics.getScore(name) ?: 0)}")
-                else
-                    builder.addNames(name)
-                val c = when (p) {
-                    null -> PlayerGameCount(0, 0)
-                    is HumanPlayer -> Statistics.getPlayerGameCount(p.playerName)
-                    else -> Statistics.totalPlayerGameCount.random()
+                    builder.addWinCounts(0)
+                    builder.addGameCounts(0)
+                    builder.addRanks("")
+                    builder.addScores(0)
+                    continue
                 }
+                val name = p.playerName
+                val score = Statistics.getScore(name) ?: 0
+                val rank = if (p is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
+                builder.addNames(if (p is HumanPlayer) "${name}·${rank}" else name)
+                val c =
+                    if (p is HumanPlayer) Statistics.getPlayerGameCount(p.playerName)
+                    else Statistics.totalPlayerGameCount.random()
                 builder.addWinCounts(c.winCount)
                 builder.addGameCounts(c.gameCount)
+                builder.addRanks(rank)
+                builder.addScores(score)
             }
             player.send(builder.build())
         }
