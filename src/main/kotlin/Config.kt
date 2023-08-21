@@ -6,6 +6,7 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 object Config {
     val ListenPort: Int
@@ -19,6 +20,7 @@ object Config {
     val MaxRoomCount: Int
     val DebugRoles: List<role>
     val RecordListSize: Int
+    val Notice: AtomicReference<String>
 
     init {
         val pps = Properties()
@@ -40,6 +42,7 @@ object Config {
         pps.putIfAbsent("room_count", "200")
         pps.putIfAbsent("gm.debug_roles", "22,26")
         pps.putIfAbsent("record_list_size", "20")
+        pps.putIfAbsent("notice", "")
         ListenPort = pps.getProperty("listen_port").toInt()
         ListenWebSocketPort = pps.getProperty("listen_websocket_port").toInt()
         TotalPlayerCount = pps.getProperty("player.total_count").toInt()
@@ -57,6 +60,7 @@ object Config {
             List(debugRoles.size) { i -> role.forNumber(debugRoles[i].toInt()) ?: role.unknown }
         }
         RecordListSize = pps.getProperty("record_list_size").toInt()
+        Notice = AtomicReference(pps.getProperty("notice"))
         try {
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         } catch (e: Exception) {
@@ -78,6 +82,7 @@ object Config {
             pps["room_count"] = MaxRoomCount.toString()
             pps["gm.debug_roles"] = DebugRoles.joinToString(separator = ",") { it.number.toString() }
             pps["record_list_size"] = RecordListSize.toString()
+            pps["notice"] = Notice.get()
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         }
     }
