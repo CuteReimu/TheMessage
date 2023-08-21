@@ -34,7 +34,7 @@ class join_room_tos : ProtoHandler {
         }
         val playerInfo = Statistics.login(playerName, pb.password)
         if (playerInfo == null) {
-            player.sendErrorMessage("用户名或密码错误")
+            player.sendErrorMessage("用户名或密码错误，你可以在群里输入“注册”")
             return
         }
         val oldPlayer = Game.playerNameCache[playerName]

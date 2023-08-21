@@ -83,6 +83,12 @@ object Statistics {
         }
     }
 
+    fun register(name: String): Boolean {
+        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0)) != null
+        if (result) pool.trySend(::savePlayerInfo)
+        return result
+    }
+
     fun login(name: String, pwd: String?): PlayerInfo? {
         val password = try {
             if (pwd.isNullOrEmpty()) "" else md5(name + pwd)
@@ -91,17 +97,12 @@ object Statistics {
             return null
         }
         var changed = false
-        val playerInfo = playerInfoMap.compute(name) { _, v ->
-            if (v == null) {
+        val playerInfo = playerInfoMap.computeIfPresent(name) { _, v ->
+            if (v.password.isEmpty() && password.isNotEmpty()) {
                 changed = true
-                PlayerInfo(name, 0, password, 0, 0)
-            } else {
-                if (v.password.isEmpty() && password.isNotEmpty()) {
-                    changed = true
-                    v.copy(password = password)
-                } else v
-            }
-        }!!
+                v.copy(password = password)
+            } else v
+        } ?: return null
         if (changed) pool.trySend(::savePlayerInfo)
         if (password != playerInfo.password) return null
         return playerInfo
