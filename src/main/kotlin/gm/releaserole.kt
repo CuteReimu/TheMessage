@@ -9,8 +9,6 @@ class releaserole : Function<Map<String, String?>, String> {
             val name = form["name"]!!
             val result = RoleCache.releaseRole(name)
             "{\"result\": $result}"
-        } catch (e: NumberFormatException) {
-            "{\"error\": \"invalid arguments\"}"
         } catch (e: NullPointerException) {
             "{\"error\": \"invalid arguments\"}"
         }

@@ -17,8 +17,6 @@ class getscore : Function<Map<String, String?>, String> {
                 val winRate = "%.2f%%".format(playerInfo.winCount * 100.0 / playerInfo.gameCount)
                 "{\"result\": \"$name·$rank·$score，总场次：${playerInfo.gameCount}，胜率：$winRate\"}"
             }
-        } catch (e: NumberFormatException) {
-            "{\"error\": \"invalid arguments\"}"
         } catch (e: NullPointerException) {
             "{\"error\": \"invalid arguments\"}"
         }

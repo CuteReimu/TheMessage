@@ -11,8 +11,6 @@ class resetpwd : Function<Map<String, String?>, String> {
                 "{\"msg\": \"success\"}"
             else
                 "{\"error\": \"player not exists\"}"
-        } catch (e: NumberFormatException) {
-            "{\"error\": \"invalid arguments\"}"
         } catch (e: NullPointerException) {
             "{\"error\": \"invalid arguments\"}"
         }

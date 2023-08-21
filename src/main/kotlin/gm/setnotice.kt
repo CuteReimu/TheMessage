@@ -10,8 +10,6 @@ class setnotice : Function<Map<String, String?>, String> {
             Config.Notice.set(notice)
             Config.save()
             "{\"result\": true}"
-        } catch (e: NumberFormatException) {
-            "{\"error\": \"invalid arguments\"}"
         } catch (e: NullPointerException) {
             "{\"error\": \"invalid arguments\"}"
         }

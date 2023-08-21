@@ -10,8 +10,6 @@ class setversion : Function<Map<String, String?>, String> {
             Config.ClientVersion.set(name.toInt())
             Config.save()
             "{\"result\": true}"
-        } catch (e: NumberFormatException) {
-            "{\"error\": \"invalid arguments\"}"
         } catch (e: NullPointerException) {
             "{\"error\": \"invalid arguments\"}"
         }
