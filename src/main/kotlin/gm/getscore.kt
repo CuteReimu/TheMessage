@@ -8,9 +8,15 @@ class getscore : Function<Map<String, String?>, String> {
     override fun apply(form: Map<String, String?>): String {
         return try {
             val name = form["name"]!!
-            val score = Statistics.getScore(name)
-            if (score == null) "{\"result\": \"${name}已身死道消\"}"
-            else "{\"result\": \"$name·${ScoreFactory.getRankNameByScore(score)}·$score\"}"
+            val playerInfo = Statistics.getPlayerInfo(name)
+            if (playerInfo == null) {
+                "{\"result\": \"${name}已身死道消\"}"
+            } else {
+                val score = playerInfo.score
+                val rank = ScoreFactory.getRankNameByScore(score)
+                val winRate = "%.2f%%".format(playerInfo.winCount * 100.0 / playerInfo.gameCount)
+                "{\"result\": \"$name·$rank·$score，总场次：${playerInfo.gameCount}，胜率：$winRate\"}"
+            }
         } catch (e: NumberFormatException) {
             "{\"error\": \"invalid arguments\"}"
         } catch (e: NullPointerException) {
