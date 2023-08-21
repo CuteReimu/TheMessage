@@ -8,11 +8,11 @@ class resetpwd : Function<Map<String, String?>, String> {
         return try {
             val name = form["name"]!!
             if (Statistics.resetPassword(name))
-                "{\"msg\": \"success\"}"
+                "{\"msg\": \"成功\"}"
             else
-                "{\"error\": \"player not exists\"}"
+                "{\"error\": \"玩家不存在\"}"
         } catch (e: NullPointerException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         }
     }
 }

@@ -11,7 +11,7 @@ class setversion : Function<Map<String, String?>, String> {
             Config.save()
             "{\"result\": true}"
         } catch (e: NullPointerException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         }
     }
 }

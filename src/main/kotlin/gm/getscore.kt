@@ -18,7 +18,7 @@ class getscore : Function<Map<String, String?>, String> {
                 "{\"result\": \"$name·$rank·$score，总场次：${playerInfo.gameCount}，胜率：$winRate\"}"
             }
         } catch (e: NullPointerException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         }
     }
 }

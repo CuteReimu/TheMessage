@@ -10,7 +10,7 @@ class register : Function<Map<String, String?>, String> {
             val result = Statistics.register(name)
             "{\"result\": $result}"
         } catch (e: NullPointerException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         }
     }
 }

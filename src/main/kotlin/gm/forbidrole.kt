@@ -10,7 +10,7 @@ class forbidrole : Function<Map<String, String?>, String> {
             val result = RoleCache.forbidRole(name)
             "{\"result\": \"$result\"}"
         } catch (e: NullPointerException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         }
     }
 }

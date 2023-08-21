@@ -13,7 +13,7 @@ class addcard : Function<Map<String, String?>, String> {
             val playerId = if (form.containsKey("player")) form["player"]!!.toInt() else 0
             val cardTypeNum = form["card"]!!.toInt()
             val cardType = card_type.forNumber(cardTypeNum)
-            if (cardType == null || cardType == card_type.UNRECOGNIZED) return "{\"error\": \"invalid arguments\"}"
+            if (cardType == null || cardType == card_type.UNRECOGNIZED) return "{\"error\": \"参数错误\"}"
             val count = form["count"]
             val finalCount = count?.toInt()?.coerceIn(1..99) ?: 1
             val availableCards = Deck.DefaultDeck.filter { it.type == cardType }
@@ -53,11 +53,11 @@ class addcard : Function<Map<String, String?>, String> {
                     }
                 }
             }
-            "{\"msg\": \"success\"}"
+            "{\"msg\": \"成功\"}"
         } catch (e: NumberFormatException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         } catch (e: NullPointerException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         }
     }
 

@@ -22,9 +22,9 @@ class addrobot : Function<Map<String, String?>, String> {
             }
             "{\"msg\": \"success\"}"
         } catch (e: NumberFormatException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         } catch (e: NullPointerException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         }
     }
 }

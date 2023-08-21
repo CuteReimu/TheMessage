@@ -10,7 +10,7 @@ class releaserole : Function<Map<String, String?>, String> {
             val result = RoleCache.releaseRole(name)
             "{\"result\": $result}"
         } catch (e: NullPointerException) {
-            "{\"error\": \"invalid arguments\"}"
+            "{\"error\": \"参数错误\"}"
         }
     }
 }
