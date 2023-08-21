@@ -51,7 +51,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
             if (player.game !== game) return@post
             if (game.isStarted) {
                 if (game.players.all { it !is HumanPlayer || !it.isActive })
-                    game.end(null)
+                    game.end(null, null)
                 else
                     player.notifyPlayerUpdateStatus()
             } else {

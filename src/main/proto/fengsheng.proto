@@ -378,6 +378,9 @@ message notify_winner_toc {
   repeated uint32      winner_ids = 2;
   repeated color       identity = 3; // 所有人的身份，自己的下标为0，右手第一个人的下标为1
   repeated secret_task secret_tasks = 4; // 神秘人任务，下标同上一一对应，不是神秘人的那个位置会空出来
+  repeated int32       add_score = 5; // 增加的分数，负数就是减分，下标同上一一对应
+  repeated int32       new_score = 6; // 增加后的分数，下标同上一一对应
+  repeated string      new_rank = 7; // 增加后的段位，下标同上一一对应
 }
 
 // 濒死求澄清

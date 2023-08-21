@@ -344,12 +344,24 @@ class HumanPlayer(
         send(builder.build())
     }
 
-    override fun notifyWin(declareWinners: Array<Player>, winners: Array<Player>) {
+    override fun notifyWin(
+        declareWinners: List<Player>,
+        winners: List<Player>,
+        addScoreMap: HashMap<String, Int>,
+        newScoreMap: HashMap<String, Int>
+    ) {
         val builder = notify_winner_toc.newBuilder()
         builder.addAllDeclarePlayerIds(declareWinners.map { getAlternativeLocation(it.location) }.sorted())
         builder.addAllWinnerIds(winners.map { getAlternativeLocation(it.location) }.sorted())
-        builder.addAllIdentity(game!!.players.indices.map { game!!.players[getAbstractLocation(it)]!!.identity })
-        builder.addAllSecretTasks(game!!.players.indices.map { game!!.players[getAbstractLocation(it)]!!.secretTask })
+        game!!.players.indices.forEach {
+            val player = game!!.players[getAbstractLocation(it)]!!
+            builder.addIdentity(player.identity)
+            builder.addSecretTasks(player.secretTask)
+            builder.addAddScore(addScoreMap[player.playerName] ?: 0)
+            val newScore = newScoreMap[player.playerName] ?: 0
+            builder.addNewScore(newScore)
+            if (player is HumanPlayer) builder.addNewRank(ScoreFactory.getRankNameByScore(newScore))
+        }
         send(builder.build())
     }
 

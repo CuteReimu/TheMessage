@@ -64,17 +64,13 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             val winners = winner.toTypedArray()
             log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
             whoseTurn.game!!.allPlayerSetRoleFaceUp()
-            for (p in players) p.notifyWin(declaredWinners, winners)
-            whoseTurn.game!!.end(winner)
+            whoseTurn.game!!.end(declaredWinner, winner)
             return ResolveResult(null, false)
         }
         if (players.all { !it.alive }) {
             log.info("全部死亡，游戏结束")
             whoseTurn.game!!.allPlayerSetRoleFaceUp()
-            for (p in players) {
-                p.notifyWin(arrayOf(), arrayOf())
-            }
-            whoseTurn.game!!.end(emptyList())
+            whoseTurn.game!!.end(emptyList(), emptyList())
             return ResolveResult(null, false)
         }
         return ResolveResult(DieSkill(whoseTurn, diedQueue, whoseTurn, afterDieResolve), true)

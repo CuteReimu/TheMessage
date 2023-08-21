@@ -140,7 +140,12 @@ class RobotPlayer : Player() {
         }, 2, TimeUnit.SECONDS)
     }
 
-    override fun notifyWin(declareWinners: Array<Player>, winners: Array<Player>) {
+    override fun notifyWin(
+        declareWinners: List<Player>,
+        winners: List<Player>,
+        addScoreMap: HashMap<String, Int>,
+        newScoreMap: HashMap<String, Int>
+    ) {
         // Do nothing
     }
 

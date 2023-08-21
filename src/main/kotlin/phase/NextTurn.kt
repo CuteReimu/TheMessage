@@ -46,15 +46,15 @@ data class NextTurn(val player: Player) : Fsm {
         val players = game.players.filterNotNull().filter { !it.lose }
         if (player.identity != Black || player.secretTask != Disturber) return false // 不是搅局者
         if (players.any { it !== player && it.alive && it.messageCards.countTrueCard() < 2 }) return false
-        val declaredWinners = arrayOf(player)
+        val declaredWinner = listOf(player)
         val winner = arrayListOf(player)
         if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
             winner.addAll(players.filter { it.identity == Has_No_Identity })
+        val declaredWinners = declaredWinner.toTypedArray()
         val winners = winner.toTypedArray()
         log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
         game.allPlayerSetRoleFaceUp()
-        game.players.forEach { it!!.notifyWin(arrayOf(), winners) }
-        game.end(winner)
+        game.end(declaredWinner, winner)
         return true
     }
 

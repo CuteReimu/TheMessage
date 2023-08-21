@@ -162,7 +162,13 @@ abstract class Player protected constructor() {
         }
     }
 
-    abstract fun notifyWin(declareWinners: Array<Player>, winners: Array<Player>)
+    abstract fun notifyWin(
+        declareWinners: List<Player>,
+        winners: List<Player>,
+        addScoreMap: HashMap<String, Int>,
+        newScoreMap: HashMap<String, Int>
+    )
+
     abstract fun notifyAskForChengQing(whoDie: Player, askWhom: Player, waitSecond: Int)
     abstract fun waitForDieGiveCard(whoDie: Player, waitSecond: Int)
 

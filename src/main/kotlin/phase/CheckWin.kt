@@ -105,8 +105,7 @@ data class CheckWin(
             val winners = winner.toTypedArray()
             log.info("${declareWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
             game.allPlayerSetRoleFaceUp()
-            for (p in game.players) p!!.notifyWin(declareWinners, winners)
-            whoseTurn.game!!.end(winner)
+            whoseTurn.game!!.end(declareWinner, winner)
             return ResolveResult(null, false)
         }
         return ResolveResult(StartWaitForChengQing(whoseTurn, receiveOrder, afterDieResolve), true)
