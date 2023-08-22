@@ -101,7 +101,7 @@ class Game private constructor(totalPlayerCount: Int) {
         val name = player.playerName
         val score = Statistics.getScore(name) ?: 0
         val rank = ScoreFactory.getRankNameByScore(score)
-        builder.name = if (player is HumanPlayer) "${name}·${rank}" else name
+        builder.name = name
         builder.position = player.location
         builder.winCount = count.winCount
         builder.gameCount = count.gameCount

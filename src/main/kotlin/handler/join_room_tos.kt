@@ -111,7 +111,7 @@ class join_room_tos : ProtoHandler {
                 val name = p.playerName
                 val score = Statistics.getScore(name) ?: 0
                 val rank = if (p is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
-                builder.addNames(if (p is HumanPlayer) "${name}·${rank}" else name)
+                builder.addNames(name)
                 val c =
                     if (p is HumanPlayer) Statistics.getPlayerGameCount(p.playerName)
                     else Statistics.totalPlayerGameCount.random()
