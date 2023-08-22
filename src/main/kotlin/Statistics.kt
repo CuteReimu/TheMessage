@@ -111,14 +111,19 @@ object Statistics {
     fun getPlayerInfo(name: String) = playerInfoMap[name]
     fun getScore(name: String) = playerInfoMap[name]?.score
 
-    fun updateScore(name: String, score: Int, save: Boolean): Int {
+    /**
+     * @return Pair(score的新值, score的变化量)
+     */
+    fun updateScore(name: String, score: Int, save: Boolean): Pair<Int, Int> {
         var newScore = 0
+        var delta = 0
         playerInfoMap.computeIfPresent(name) { _, v ->
             newScore = v.score addScore score
+            delta = newScore - v.score
             v.copy(score = newScore)
         }
         if (save) pool.trySend(::savePlayerInfo)
-        return newScore
+        return newScore to delta
     }
 
     fun getAllPlayerInfo() = playerInfoMap.map { (_, v) -> v }
