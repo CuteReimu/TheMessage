@@ -84,7 +84,7 @@ object Statistics {
     }
 
     fun register(name: String): Boolean {
-        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0)) != null
+        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0)) == null
         if (result) pool.trySend(::savePlayerInfo)
         return result
     }
