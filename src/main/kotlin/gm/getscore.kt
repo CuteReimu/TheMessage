@@ -14,7 +14,9 @@ class getscore : Function<Map<String, String?>, String> {
             } else {
                 val score = playerInfo.score
                 val rank = ScoreFactory.getRankNameByScore(score)
-                val winRate = "%.2f%%".format(playerInfo.winCount * 100.0 / playerInfo.gameCount)
+                val winRate =
+                    if (playerInfo.gameCount == 0) "0.00%"
+                    else "%.2f%%".format(playerInfo.winCount * 100.0 / playerInfo.gameCount)
                 "{\"result\": \"$name·$rank·$score，总场次：${playerInfo.gameCount}，胜率：$winRate\"}"
             }
         } catch (e: NullPointerException) {
