@@ -198,7 +198,7 @@ class Game private constructor(totalPlayerCount: Int) {
         val humanPlayers = players.filterIsInstance<HumanPlayer>()
         val addScoreMap = HashMap<String, Int>()
         val newScoreMap = HashMap<String, Int>()
-        if (winners != null && players.size == humanPlayers.size && players.size >= 5) {
+        if (declaredWinners != null && winners != null && players.size == humanPlayers.size && players.size >= 5) {
             if (winners.isNotEmpty() && winners.size < players.size) {
                 val totalWinners = winners.sumOf { (Statistics.getScore(it.playerName) ?: 0).coerceIn(180..1900) }
                 val totalPlayers = players.sumOf { (Statistics.getScore(it!!.playerName) ?: 0).coerceIn(180..1900) }
@@ -221,6 +221,7 @@ class Game private constructor(totalPlayerCount: Int) {
             }
             Statistics.add(records)
             Statistics.addPlayerGameCount(playerGameResultList)
+            MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
         }
         if (declaredWinners != null && winners != null)
             this.players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }

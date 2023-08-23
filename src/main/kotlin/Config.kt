@@ -21,6 +21,11 @@ object Config {
     val DebugRoles: List<role>
     val RecordListSize: Int
     val Notice: AtomicReference<String>
+    val EnablePush: Boolean
+    val MiraiHttpUrl: String
+    val MiraiVerifyKey: String
+    val RobotQQ: Long
+    val PushQQGroups: LongArray
 
     init {
         val pps = Properties()
@@ -43,6 +48,11 @@ object Config {
         pps.putIfAbsent("gm.debug_roles", "22,26")
         pps.putIfAbsent("record_list_size", "20")
         pps.putIfAbsent("notice", "")
+        pps.putIfAbsent("push.enable_push", "false")
+        pps.putIfAbsent("push.mirai_http_url", "http://127.0.0.1:8080")
+        pps.putIfAbsent("push.mirai_verify_key", "")
+        pps.putIfAbsent("push.robot_qq", "12345678")
+        pps.putIfAbsent("push.push_qq_groups", "")
         ListenPort = pps.getProperty("listen_port").toInt()
         ListenWebSocketPort = pps.getProperty("listen_websocket_port").toInt()
         TotalPlayerCount = pps.getProperty("player.total_count").toInt()
@@ -61,6 +71,14 @@ object Config {
         }
         RecordListSize = pps.getProperty("record_list_size").toInt()
         Notice = AtomicReference(pps.getProperty("notice"))
+        EnablePush = pps.getProperty("push.enable_push").toBoolean()
+        MiraiHttpUrl = pps.getProperty("push.mirai_http_url")
+        MiraiVerifyKey = pps.getProperty("push.mirai_verify_key")
+        RobotQQ = pps.getProperty("push.robot_qq").toLong()
+        val pushQQGroupsStr = pps.getProperty("push.push_qq_groups")
+        PushQQGroups =
+            if (pushQQGroupsStr.isBlank()) longArrayOf()
+            else pushQQGroupsStr.split(",").map { it.toLong() }.toLongArray()
         try {
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         } catch (e: Exception) {
@@ -83,6 +101,11 @@ object Config {
             pps["gm.debug_roles"] = DebugRoles.joinToString(separator = ",") { it.number.toString() }
             pps["record_list_size"] = RecordListSize.toString()
             pps["notice"] = Notice.get()
+            pps["push.enable_push"] = EnablePush.toString()
+            pps["push.mirai_http_url"] = MiraiHttpUrl
+            pps["push.mirai_verify_key"] = MiraiVerifyKey
+            pps["push.robot_qq"] = RobotQQ.toString()
+            pps["push.push_qq_groups"] = PushQQGroups.joinToString(separator = ",")
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         }
     }
