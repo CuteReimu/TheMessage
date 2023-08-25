@@ -69,7 +69,7 @@ object MiraiPusher {
         val text = lines.joinToString(separator = "\n")
         val at = ArrayList<Long>()
         while (true) {
-            val qq = notifyQueueOnStart.poll() ?: break
+            val qq = notifyQueueOnEnd.poll() ?: break
             at.add(qq)
         }
         @OptIn(DelicateCoroutinesApi::class)
