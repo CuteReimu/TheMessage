@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.fixedRateTimer
 import kotlin.random.Random
 
 object Statistics {
@@ -32,6 +33,11 @@ object Statistics {
                 val f = pool.receive()
                 withContext(Dispatchers.IO) { f() }
             }
+        }
+
+        fixedRateTimer(daemon = true, period = 24 * 3600 * 1000) {
+            val file = File("playerInfo.csv")
+            if (file.exists()) file.copyTo(File("playerInfo.csv.bak"), true)
         }
     }
 
