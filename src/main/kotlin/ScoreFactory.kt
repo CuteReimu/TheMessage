@@ -5,7 +5,8 @@ import com.fengsheng.Statistics.Record
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.color.Has_No_Identity
 import com.fengsheng.protos.Common.secret_task
-import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.protos.Common.secret_task.Collector
+import com.fengsheng.protos.Common.secret_task.Mutator
 import org.apache.log4j.Logger
 import java.io.BufferedReader
 import java.io.FileInputStream
@@ -37,7 +38,6 @@ object ScoreFactory {
         else -> (this + delta).coerceAtLeast(360) // 黄金以上不会掉到白银
     }
 
-    private val oldTasks = listOf(Killer, Stealer, Collector)
     fun Player.calScore(players: List<Player>, winners: List<Player>, delta: Int): Int {
         class Score(var value: Double) {
             var positiveMultiple = 0.0
@@ -63,9 +63,13 @@ object ScoreFactory {
         if (winners.any { it === this }) { // 赢了
             score = Score(players.size.let { if (it <= 6) 7.0 * (it - 3) else 12.0 * (it - 5) })
             if (originIdentity == Black) {
-                val index = if (players.size <= 6 || originSecretTask in oldTasks) secretTask.number + 3 else 2
+                val index = originSecretTask.number + 3
                 playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
-                    if (array[index].gameCount > 0) score *= array[0].rate / array[index].rate
+                    val rate =
+                        if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
+                            array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
+                        else array[index].rate
+                    if (array[index].gameCount > 0) score *= array[0].rate / rate.coerceAtLeast(8.0) // 低于8%的胜率视为8%
                     array
                 }
             }
@@ -74,9 +78,13 @@ object ScoreFactory {
         } else {
             score = Score(if (players.size <= 6) -7.0 else -12.0)
             if (originIdentity == Black) {
-                val index = if (players.size <= 6 || originSecretTask in oldTasks) secretTask.number + 3 else 2
+                val index = originSecretTask.number + 3
                 playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
-                    if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - array[index].rate)
+                    val rate =
+                        if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
+                            array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
+                        else array[index].rate
+                    if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - rate.coerceAtLeast(8.0)) // 低于8%的胜率视为8%
                     array
                 }
             }
