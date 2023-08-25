@@ -1,12 +1,13 @@
 package com.fengsheng.gm
 
 import com.fengsheng.Config
+import java.net.URLDecoder
 import java.util.function.Function
 
 class setversion : Function<Map<String, String?>, String> {
     override fun apply(form: Map<String, String?>): String {
         return try {
-            val name = form["version"]!!
+            val name = URLDecoder.decode(form["version"]!!, Charsets.UTF_8)
             Config.ClientVersion.set(name.toInt())
             Config.save()
             "{\"result\": true}"
