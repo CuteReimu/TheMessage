@@ -10,8 +10,29 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.Duration
+import java.util.concurrent.ArrayBlockingQueue
 
 object MiraiPusher {
+    val notifyQueueOnStart = ArrayBlockingQueue<Long>(20)
+    val notifyQueueOnEnd = ArrayBlockingQueue<Long>(20)
+
+    fun notifyStart() {
+        val atMessages = ArrayList<String>()
+        while (true) {
+            val qq = notifyQueueOnStart.poll() ?: break
+            atMessages.add("{\"type\":\"At\",\"target\":$qq}")
+        }
+        if (atMessages.isNotEmpty()) {
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch {
+                val session = verify()
+                bind(session)
+                Config.PushQQGroups.forEach { sendGroupMessage(session, it, "开了${atMessages.joinToString()}") }
+                release(session)
+            }
+        }
+    }
+
     fun push(
         game: Game,
         declareWinners: List<Player>,
@@ -40,6 +61,12 @@ object MiraiPusher {
             val rank = ScoreFactory.getRankNameByScore(newScore)
             lines.add("$name,$roleName,$identity,$result,$rank,$newScore($addScoreStr)")
         }
+        val atMessages = ArrayList<String>()
+        while (true) {
+            val qq = notifyQueueOnEnd.poll() ?: break
+            atMessages.add("{\"type\":\"At\",\"target\":$qq}")
+        }
+        if (atMessages.isNotEmpty()) lines.add(atMessages.joinToString())
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
             val session = verify()
