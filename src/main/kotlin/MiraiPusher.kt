@@ -9,26 +9,31 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.apache.log4j.Logger
 import java.time.Duration
 import java.util.concurrent.ArrayBlockingQueue
 
 object MiraiPusher {
-    val notifyQueueOnStart = ArrayBlockingQueue<Long>(20)
-    val notifyQueueOnEnd = ArrayBlockingQueue<Long>(20)
+    val notifyQueueOnStart = ArrayBlockingQueue<Long>(5)
+    val notifyQueueOnEnd = ArrayBlockingQueue<Long>(5)
 
     fun notifyStart() {
-        val atMessages = ArrayList<String>()
+        val at = ArrayList<Long>()
         while (true) {
             val qq = notifyQueueOnStart.poll() ?: break
-            atMessages.add("{\"type\":\"At\",\"target\":$qq}")
+            at.add(qq)
         }
-        if (atMessages.isNotEmpty()) {
+        if (at.isNotEmpty()) {
             @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch {
-                val session = verify()
-                bind(session)
-                Config.PushQQGroups.forEach { sendGroupMessage(session, it, "开了${atMessages.joinToString()}") }
-                release(session)
+                try {
+                    val session = verify()
+                    bind(session)
+                    Config.PushQQGroups.forEach { sendGroupMessage(session, it, "开了", *at.toLongArray()) }
+                    release(session)
+                } catch (e: Throwable) {
+                    log.error("catch throwable", e)
+                }
             }
         }
     }
@@ -61,18 +66,22 @@ object MiraiPusher {
             val rank = ScoreFactory.getRankNameByScore(newScore)
             lines.add("$name,$roleName,$identity,$result,$rank,$newScore($addScoreStr)")
         }
-        val atMessages = ArrayList<String>()
+        val text = lines.joinToString(separator = "\n")
+        val at = ArrayList<Long>()
         while (true) {
-            val qq = notifyQueueOnEnd.poll() ?: break
-            atMessages.add("{\"type\":\"At\",\"target\":$qq}")
+            val qq = notifyQueueOnStart.poll() ?: break
+            at.add(qq)
         }
-        if (atMessages.isNotEmpty()) lines.add(atMessages.joinToString())
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
-            val session = verify()
-            bind(session)
-            Config.PushQQGroups.forEach { sendGroupMessage(session, it, lines.joinToString(separator = "\n")) }
-            release(session)
+            try {
+                val session = verify()
+                bind(session)
+                Config.PushQQGroups.forEach { sendGroupMessage(session, it, text, *at.toLongArray()) }
+                release(session)
+            } catch (e: Throwable) {
+                log.error("catch throwable", e)
+            }
         }
     }
 
@@ -95,11 +104,12 @@ object MiraiPusher {
         if (code != 0) throw Exception("bind failed: $code")
     }
 
-    private fun sendGroupMessage(sessionKey: String, groupId: Long, message: String) {
+    private fun sendGroupMessage(sessionKey: String, groupId: Long, message: String, vararg at: Long) {
+        val atStr = at.joinToString(separator = "") { ",{\"type\":\"At\",\"target\":$it}" }
         val postData = """{
             "sessionKey":"$sessionKey",
             "target":$groupId,
-            "messageChain":[{"type":"Plain","text":"$message"}]
+            "messageChain":[{"type":"Plain","text":"$message"}$atStr]
         }""".trimMargin().toRequestBody(contentType)
         val request = Request.Builder().url("${Config.MiraiHttpUrl}/sendGroupMessage").post(postData).build()
         val resp = client.newCall(request).execute()
@@ -120,4 +130,5 @@ object MiraiPusher {
     private val client = OkHttpClient().newBuilder().connectTimeout(Duration.ofMillis(20000)).build()
     private val contentType = "application/json; charset=utf-8".toMediaTypeOrNull()
     private val gson = Gson()
+    private val log = Logger.getLogger(MiraiPusher::class.java)
 }
