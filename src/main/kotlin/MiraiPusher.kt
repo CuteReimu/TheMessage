@@ -18,7 +18,7 @@ object MiraiPusher {
     val notifyQueueOnEnd = ArrayBlockingQueue<Long>(5)
 
     fun notifyStart() {
-        val at = ArrayList<Long>()
+        val at = HashSet<Long>()
         while (true) {
             val qq = notifyQueueOnStart.poll() ?: break
             at.add(qq)
@@ -67,7 +67,7 @@ object MiraiPusher {
             lines.add("$name,$roleName,$identity,$result,$rank,$newScore($addScoreStr)")
         }
         val text = lines.joinToString(separator = "\n")
-        val at = ArrayList<Long>()
+        val at = HashSet<Long>()
         while (true) {
             val qq = notifyQueueOnEnd.poll() ?: break
             at.add(qq)
