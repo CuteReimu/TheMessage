@@ -3,6 +3,7 @@ package com.fengsheng.phase
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
+import com.fengsheng.card.count
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.SkillId.BI_YI_SHUANG_FEI
@@ -36,76 +37,68 @@ data class CheckWin(
         val stealer = players.find { it.identity == Black && it.secretTask == Stealer } // 簒夺者
         val mutator = // 诱变者
             players.find { (it.alive || it.dieJustNow) && it.identity == Black && it.secretTask == Mutator }
-        val redPlayers = players.filter { it.identity == Red }
-        val bluePlayers = players.filter { it.identity == Blue }
-        var declareWinner = ArrayList<Player>()
-        var winner = ArrayList<Player>()
-        var redWin = false
-        var blueWin = false
-        var mutatorMayWin = false
+        var declareWinner = HashMap<Int, Player>()
+        var winner = HashMap<Int, Player>()
+        fun HashMap<Int, Player>.addPlayer(player: Player) = put(player.location, player)
+        fun HashMap<Int, Player>.addAllPlayers(players: Iterable<Player>) = players.forEach { addPlayer(it) }
+        fun HashMap<Int, Player>.containsPlayer(player: Player) = containsKey(player.location)
+        fun HashMap<Int, Player>.removePlayer(player: Player) = remove(player.location)
         players.forEach { player ->
-            val red = player.messageCards.count { it.colors.contains(Red) }
-            val blue = player.messageCards.count { it.colors.contains(Blue) }
-            if (red >= 3 || blue >= 3) {
-                mutatorMayWin = true
+            val red = player.messageCards.count(Red)
+            val blue = player.messageCards.count(Blue)
+            if (red >= 3) {
+                if (player.identity == Red) {
+                    declareWinner.addPlayer(player)
+                    winner.addAllPlayers(players.filter { it.identity == Red })
+                    if (game.players.size == 4) // 四人局潜伏和军情会同时获胜
+                        winner.addAllPlayers(players.filter { it.identity == Blue })
+                } else if (player.identity == Black && player.secretTask == Collector) {
+                    declareWinner.addPlayer(player)
+                    winner.addPlayer(player)
+                }
             }
-            when (player.identity) {
-                Black -> {
-                    if (player.secretTask == Collector && (red >= 3 || blue >= 3)) {
-                        declareWinner.add(player)
-                        winner.add(player)
-                    }
+            if (blue >= 3) {
+                if (player.identity == Blue) {
+                    declareWinner.addPlayer(player)
+                    winner.addAllPlayers(players.filter { it.identity == Blue })
+                    if (game.players.size == 4) // 四人局潜伏和军情会同时获胜
+                        winner.addAllPlayers(players.filter { it.identity == Red })
+                } else if (player.identity == Black && player.secretTask == Collector) {
+                    declareWinner.addPlayer(player)
+                    winner.addPlayer(player)
                 }
-
-                Red -> {
-                    if (red >= 3) {
-                        declareWinner.add(player)
-                        redWin = true
-                    }
-                }
-
-                Blue -> {
-                    if (blue >= 3) {
-                        declareWinner.add(player)
-                        blueWin = true
-                    }
-                }
-
-                else -> {}
             }
-        }
-        if (redWin) {
-            winner.addAll(redPlayers)
-            if (game.players.size == 4) winner.addAll(bluePlayers) // 四人局潜伏和军情会同时获胜
-        }
-        if (blueWin) {
-            winner.addAll(bluePlayers)
-            if (game.players.size == 4) winner.addAll(redPlayers) // 四人局潜伏和军情会同时获胜
-        }
-        if (declareWinner.isEmpty() && mutator != null && mutatorMayWin) {
-            declareWinner.add(mutator)
-            winner.add(mutator)
+            if ((red >= 3 || blue >= 3) && !declareWinner.containsPlayer(player)) {
+                mutator?.let {
+                    declareWinner.addPlayer(it)
+                    winner.addPlayer(it)
+                }
+            }
         }
         if (declareWinner.isNotEmpty() && stealer != null && stealer === whoseTurn) {
-            declareWinner = arrayListOf(stealer)
-            winner = ArrayList(declareWinner)
+            declareWinner = hashMapOf(stealer.location to stealer)
+            winner = hashMapOf(stealer.location to stealer)
         }
         if (declareWinner.isNotEmpty()) {
-            if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
-                winner.addAll(players.filter { it.identity == Has_No_Identity })
-            if (whoseTurn.findSkill(BI_YI_SHUANG_FEI) != null && whoseTurn.roleFaceUp && whoseTurn.alive && whoseTurn !in winner) {
-                val target = declareWinner.filter { it.isMale }.randomOrNull()
+            if (winner.any { (_, v) -> v.findSkill(WEI_SHENG) != null && v.roleFaceUp })
+                winner.addAllPlayers(players.filter { it.identity == Has_No_Identity })
+            if (whoseTurn.findSkill(BI_YI_SHUANG_FEI) != null && whoseTurn.roleFaceUp && whoseTurn.alive
+                && !winner.containsPlayer(whoseTurn) // 自己本来就是赢家，则不发动
+            ) {
+                val target = declareWinner.values.filter { it.isMale }.randomOrNull()
                 if (target != null) {
-                    if (target.identity == Red || target.identity == Blue)
-                        winner.removeIf { it !== target && it.identity == target.identity }
-                    winner.add(whoseTurn)
+                    if (target.identity == Red || target.identity == Blue) {
+                        winner.values.filter { it !== target && it.identity == target.identity }
+                            .forEach { winner.removePlayer(it) }
+                    }
+                    winner.addPlayer(whoseTurn)
                 }
             }
-            val declareWinners = declareWinner.toTypedArray()
-            val winners = winner.toTypedArray()
+            val declareWinners = declareWinner.values.toTypedArray()
+            val winners = winner.values.toTypedArray()
             log.info("${declareWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
             game.allPlayerSetRoleFaceUp()
-            whoseTurn.game!!.end(declareWinner, winner)
+            whoseTurn.game!!.end(declareWinner.values.toList(), winner.values.toList())
             return ResolveResult(null, false)
         }
         return ResolveResult(StartWaitForChengQing(whoseTurn, receiveOrder, afterDieResolve), true)
