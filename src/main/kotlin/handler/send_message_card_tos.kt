@@ -29,7 +29,7 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
         }
         if (pb.targetPlayerId <= 0 || pb.targetPlayerId >= r.game!!.players.size) {
             log.error("目标错误: ${pb.targetPlayerId}")
-            r.sendErrorMessage("目标错误: ${pb.targetPlayerId}")
+            r.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
             return
         }
         if (r.findSkill(SkillId.LIAN_LUO) == null && pb.cardDir != card.direction) {
