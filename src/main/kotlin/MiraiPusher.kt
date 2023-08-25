@@ -105,11 +105,11 @@ object MiraiPusher {
     }
 
     private fun sendGroupMessage(sessionKey: String, groupId: Long, message: String, vararg at: Long) {
-        val atStr = at.joinToString(separator = "") { ",{\"type\":\"At\",\"target\":$it}" }
+        val atStr = at.joinToString(separator = "") { "{\"type\":\"At\",\"target\":$it}," }
         val postData = """{
             "sessionKey":"$sessionKey",
             "target":$groupId,
-            "messageChain":[{"type":"Plain","text":"$message"}$atStr]
+            "messageChain":[$atStr{"type":"Plain","text":"$message"}]
         }""".trimMargin().toRequestBody(contentType)
         val request = Request.Builder().url("${Config.MiraiHttpUrl}/sendGroupMessage").post(postData).build()
         val resp = client.newCall(request).execute()
