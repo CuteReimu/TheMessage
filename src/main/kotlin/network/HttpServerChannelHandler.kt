@@ -27,7 +27,7 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
                     val uri = URI(msg.uri())
                     log.info("GM HTTP receive: $uri")
                     val form = HashMap<String, String>()
-                    val query = uri.query
+                    val query = uri.rawQuery
                     if (query != null) {
                         for (s in query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
                             val arr = s.split("=".toRegex(), limit = 2).toTypedArray()
