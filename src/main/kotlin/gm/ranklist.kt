@@ -4,8 +4,8 @@ import com.fengsheng.ScoreFactory
 import com.fengsheng.Statistics
 import java.util.function.Function
 
-class ranklist : Function<Map<String, String?>, String> {
-    override fun apply(form: Map<String, String?>): String {
+class ranklist : Function<Map<String, String>, String> {
+    override fun apply(form: Map<String, String>): String {
         val l1 = Statistics.getAllPlayerInfo().filter { it.score > 0 }.sortedByDescending { it.score }
         val l = if (l1.size > 10) l1.subList(0, 10) else l1
         var i = 0

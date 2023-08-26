@@ -1,14 +1,13 @@
 package com.fengsheng.gm
 
 import com.fengsheng.*
-import java.net.URLDecoder
 import java.util.function.Function
 import kotlin.math.min
 
-class addrobot : Function<Map<String, String?>, String> {
-    override fun apply(form: Map<String, String?>): String {
+class addrobot : Function<Map<String, String>, String> {
+    override fun apply(form: Map<String, String>): String {
         return try {
-            var count = URLDecoder.decode(form.getOrDefault("count", "0"), Charsets.UTF_8).toInt()
+            var count = form["count"]?.toInt() ?: 0
             count = if (count > 0) count else 99
             val g = Game.newGame
             GameExecutor.post(g) {

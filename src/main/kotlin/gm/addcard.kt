@@ -5,18 +5,17 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.card.*
 import com.fengsheng.protos.Common.card_type
 import org.apache.log4j.Logger
-import java.net.URLDecoder
 import java.util.function.Function
 
-class addcard : Function<Map<String, String?>, String> {
-    override fun apply(form: Map<String, String?>): String {
+class addcard : Function<Map<String, String>, String> {
+    override fun apply(form: Map<String, String>): String {
         return try {
-            val playerId = URLDecoder.decode(form.getOrDefault("player", "0"), Charsets.UTF_8).toInt()
-            val cardTypeNum = URLDecoder.decode(form["card"]!!, Charsets.UTF_8).toInt()
+            val playerId = form["player"]?.toInt() ?: 0
+            val cardTypeNum = form["card"]!!.toInt()
             val cardType = card_type.forNumber(cardTypeNum)
             if (cardType == null || cardType == card_type.UNRECOGNIZED) return "{\"error\": \"参数错误\"}"
-            val count = URLDecoder.decode(form.getOrDefault("count", "1"), Charsets.UTF_8)
-            val finalCount = count.toInt().coerceIn(1..99)
+            val count = form["count"]
+            val finalCount = count?.toInt()?.coerceIn(1..99) ?: 1
             val availableCards = Deck.DefaultDeck.filter { it.type == cardType }
             for (g in Game.GameCache.values) {
                 GameExecutor.post(g) {
