@@ -5,23 +5,35 @@ import com.google.gson.JsonElement
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.apache.log4j.Logger
 import java.time.Duration
-import java.util.concurrent.ArrayBlockingQueue
 
 object MiraiPusher {
-    val notifyQueueOnStart = ArrayBlockingQueue<Long>(5)
-    val notifyQueueOnEnd = ArrayBlockingQueue<Long>(5)
+    private val mu = Mutex()
+    private val notifyQueueOnStart = HashSet<Long>()
+    private val notifyQueueOnEnd = HashSet<Long>()
+
+    fun addIntoNotifyQueue(qq: Long, onStart: Boolean) = runBlocking {
+        mu.withLock {
+            val map = if (onStart) notifyQueueOnStart else notifyQueueOnEnd
+            map.size < 5 || return@withLock false
+            map.add(qq)
+            true
+        }
+    }
 
     fun notifyStart() {
-        val at = HashSet<Long>()
-        while (true) {
-            val qq = notifyQueueOnStart.poll() ?: break
-            at.add(qq)
+        val at = runBlocking {
+            mu.withLock {
+                notifyQueueOnStart.toLongArray().apply { notifyQueueOnStart.clear() }
+            }
         }
         if (at.isNotEmpty()) {
             @OptIn(DelicateCoroutinesApi::class)
@@ -29,7 +41,7 @@ object MiraiPusher {
                 try {
                     val session = verify()
                     bind(session)
-                    Config.PushQQGroups.forEach { sendGroupMessage(session, it, "开了", *at.toLongArray()) }
+                    Config.PushQQGroups.forEach { sendGroupMessage(session, it, "开了", *at) }
                     release(session)
                 } catch (e: Throwable) {
                     log.error("catch throwable", e)
@@ -67,17 +79,17 @@ object MiraiPusher {
             lines.add("$name,$roleName,$identity,$result,$rank,$newScore($addScoreStr)")
         }
         val text = lines.joinToString(separator = "\n")
-        val at = HashSet<Long>()
-        while (true) {
-            val qq = notifyQueueOnEnd.poll() ?: break
-            at.add(qq)
+        val at = runBlocking {
+            mu.withLock {
+                notifyQueueOnEnd.toLongArray().apply { notifyQueueOnEnd.clear() }
+            }
         }
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
             try {
                 val session = verify()
                 bind(session)
-                Config.PushQQGroups.forEach { sendGroupMessage(session, it, text, *at.toLongArray()) }
+                Config.PushQQGroups.forEach { sendGroupMessage(session, it, text, *at) }
                 release(session)
             } catch (e: Throwable) {
                 log.error("catch throwable", e)
