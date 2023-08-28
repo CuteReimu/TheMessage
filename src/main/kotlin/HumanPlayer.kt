@@ -369,7 +369,8 @@ class HumanPlayer(
             builder.addIdentity(player.identity)
             builder.addSecretTasks(player.secretTask)
             builder.addAddScore(addScoreMap[player.playerName] ?: 0)
-            val newScore = newScoreMap[player.playerName] ?: 0
+            val newScore = newScoreMap[player.playerName]
+                ?: (player as? HumanPlayer)?.run { Statistics.getScore(playerName) } ?: 0
             builder.addNewScore(newScore)
             if (player is HumanPlayer) builder.addNewRank(ScoreFactory.getRankNameByScore(newScore))
         }

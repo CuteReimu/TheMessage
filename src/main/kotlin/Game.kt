@@ -199,33 +199,46 @@ class Game private constructor(totalPlayerCount: Int) {
         val humanPlayers = players.filterIsInstance<HumanPlayer>()
         val addScoreMap = HashMap<String, Int>()
         val newScoreMap = HashMap<String, Int>()
-        if (declaredWinners != null && winners != null && players.size == humanPlayers.size && players.size >= 5) {
-            if (winners.isNotEmpty() && winners.size < players.size) {
-                val totalWinners = winners.sumOf { (Statistics.getScore(it.playerName) ?: 0).coerceIn(180..1900) }
-                val totalPlayers = players.sumOf { (Statistics.getScore(it!!.playerName) ?: 0).coerceIn(180..1900) }
-                val totalLoser = totalPlayers - totalWinners
-                val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
-                for ((i, p) in humanPlayers.withIndex()) {
-                    val score = p.calScore(players.filterNotNull(), winners, delta / 10)
-                    val (newScore, deltaScore) = Statistics.updateScore(p.playerName, score, i == humanPlayers.size - 1)
-                    log.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
-                    addScoreMap[p.playerName] = deltaScore
-                    newScoreMap[p.playerName] = newScore
+        if (declaredWinners != null && winners != null) {
+            if (players.size == humanPlayers.size && players.size >= 5) {
+                if (winners.isNotEmpty() && winners.size < players.size) {
+                    val totalWinners = winners.sumOf { (Statistics.getScore(it.playerName) ?: 0).coerceIn(180..1900) }
+                    val totalPlayers = players.sumOf { (Statistics.getScore(it!!.playerName) ?: 0).coerceIn(180..1900) }
+                    val totalLoser = totalPlayers - totalWinners
+                    val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
+                    for ((i, p) in humanPlayers.withIndex()) {
+                        val score = p.calScore(players.filterNotNull(), winners, delta / 10)
+                        val (newScore, deltaScore) = Statistics.updateScore(
+                            p.playerName,
+                            score,
+                            i == humanPlayers.size - 1
+                        )
+                        log.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
+                        addScoreMap[p.playerName] = deltaScore
+                        newScoreMap[p.playerName] = newScore
+                    }
                 }
+                val records = ArrayList<Statistics.Record>(players.size)
+                val playerGameResultList = ArrayList<PlayerGameResult>()
+                for (p in players) {
+                    val win = p!! in winners
+                    records.add(
+                        Statistics.Record(
+                            p.originRole,
+                            win,
+                            p.originIdentity,
+                            p.originSecretTask,
+                            players.size
+                        )
+                    )
+                    if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.device!!, p.playerName, win))
+                }
+                Statistics.add(records)
+                Statistics.addPlayerGameCount(playerGameResultList)
+                MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
             }
-            val records = ArrayList<Statistics.Record>(players.size)
-            val playerGameResultList = ArrayList<PlayerGameResult>()
-            for (p in players) {
-                val win = p!! in winners
-                records.add(Statistics.Record(p.originRole, win, p.originIdentity, p.originSecretTask, players.size))
-                if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.device!!, p.playerName, win))
-            }
-            Statistics.add(records)
-            Statistics.addPlayerGameCount(playerGameResultList)
-            MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
-        }
-        if (declaredWinners != null && winners != null)
             this.players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }
+        }
         humanPlayers.forEach { it.saveRecord() }
         humanPlayers.forEach {
             playerNameCache.remove(it.playerName)
