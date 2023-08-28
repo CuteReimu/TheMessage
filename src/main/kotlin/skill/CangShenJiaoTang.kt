@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.ReceivePhaseSenderSkill
+import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -18,13 +18,14 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.CANG_SHEN_JIAO_TANG
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSenderSkill ?: return null
+        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
+        fsm.askWhom == fsm.sender || return null
         val r = fsm.sender
-        if (r.findSkill(skillId) == null) return null
-        val target = fsm.inFrontOfWhom
-        if (!r.alive || !target.alive) return null
-        if (r.getSkillUseCount(skillId) > 0) return null
+        r.alive || return null
+        r.findSkill(skillId) != null || return null
+        r.getSkillUseCount(skillId) == 0 || return null
         r.addSkillUseCount(skillId)
+        val target = fsm.inFrontOfWhom
         val isHiddenRole = !target.isPublicRole
         val timeoutSecond = 15
         for (player in g.players) {
@@ -51,7 +52,7 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
         return ResolveResult(fsm, true)
     }
 
-    private data class executeCangShenJiaoTangB(val fsm: ReceivePhaseSenderSkill, val timeoutSecond: Int) : WaitingFsm {
+    private data class executeCangShenJiaoTangB(val fsm: ReceivePhaseSkill, val timeoutSecond: Int) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = fsm.sender
             if (r is HumanPlayer) {
@@ -110,7 +111,7 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
         }
     }
 
-    private data class executeCangShenJiaoTangC(val fsm: ReceivePhaseSenderSkill, val timeoutSecond: Int) : WaitingFsm {
+    private data class executeCangShenJiaoTangC(val fsm: ReceivePhaseSkill, val timeoutSecond: Int) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = fsm.sender
             if (r is HumanPlayer) {

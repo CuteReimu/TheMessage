@@ -26,7 +26,7 @@ data class ReceivePhase(
             player.messageCards.add(messageCard)
             log.info("${player}成功接收情报")
             for (p in player.game!!.players) p!!.notifyReceivePhase()
-            val next = ReceivePhaseSenderSkill(whoseTurn, sender, messageCard, inFrontOfWhom)
+            val next = ReceivePhaseSkill(whoseTurn, sender, messageCard, inFrontOfWhom)
             next.receiveOrder.addPlayerIfHasThreeBlack(inFrontOfWhom)
             return ResolveResult(next, true)
         }

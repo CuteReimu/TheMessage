@@ -12,7 +12,7 @@ import org.apache.log4j.Logger
 
 /**
  * 判断是否有人胜利
- *  * 只有接收阶段正常接收情报才会进入 [ReceivePhaseSenderSkill]
+ *  * 只有接收阶段正常接收情报才会进入 [ReceivePhaseSkill]
  *  * 其它情况均为置入情报区，一律进入这里。
  */
 data class CheckWin(

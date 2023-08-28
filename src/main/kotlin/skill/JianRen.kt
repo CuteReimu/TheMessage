@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
-import com.fengsheng.phase.ReceivePhaseReceiverSkill
+import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role.*
@@ -18,15 +18,17 @@ class JianRen : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.JIAN_REN
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseReceiverSkill
-        if (fsm == null || fsm.inFrontOfWhom.findSkill(skillId) == null) return null
-        if (fsm.inFrontOfWhom.getSkillUseCount(skillId) > 0) return null
-        if (!fsm.messageCard.colors.contains(color.Black)) return null
+        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
+        fsm.askWhom == fsm.inFrontOfWhom || return null
+        fsm.inFrontOfWhom.alive || return null
+        fsm.inFrontOfWhom.findSkill(skillId) != null || return null
+        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
+        fsm.messageCard.isBlack() || return null
         fsm.inFrontOfWhom.addSkillUseCount(skillId)
         return ResolveResult(executeJianRenA(fsm), true)
     }
 
-    private data class executeJianRenA(val fsm: ReceivePhaseReceiverSkill) : WaitingFsm {
+    private data class executeJianRenA(val fsm: ReceivePhaseSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in fsm.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom, 15)
@@ -76,7 +78,7 @@ class JianRen : AbstractSkill(), TriggeredSkill {
         }
     }
 
-    private data class executeJianRenB(val fsm: ReceivePhaseReceiverSkill, val cards: List<Card>) : WaitingFsm {
+    private data class executeJianRenB(val fsm: ReceivePhaseSkill, val cards: List<Card>) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = fsm.inFrontOfWhom
             val autoChoose = r.chooseBlackMessageCard()

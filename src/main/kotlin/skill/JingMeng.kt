@@ -1,8 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.ReceivePhaseReceiverSkill
-import com.fengsheng.protos.Common.color
+import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -16,15 +15,17 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.JING_MENG
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseReceiverSkill
-        if (fsm?.inFrontOfWhom?.findSkill(skillId) == null) return null
-        if (fsm.inFrontOfWhom.getSkillUseCount(skillId) > 0) return null
-        if (!fsm.messageCard.colors.contains(color.Black)) return null
+        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
+        fsm.askWhom == fsm.inFrontOfWhom || return null
+        fsm.inFrontOfWhom.alive || return null
+        fsm.inFrontOfWhom.findSkill(skillId) != null || return null
+        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
+        fsm.messageCard.isBlack() || return null
         fsm.inFrontOfWhom.addSkillUseCount(skillId)
         return ResolveResult(executeJingMengA(fsm), true)
     }
 
-    private data class executeJingMengA(val fsm: ReceivePhaseReceiverSkill) : WaitingFsm {
+    private data class executeJingMengA(val fsm: ReceivePhaseSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in fsm.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom, 15)
@@ -89,7 +90,7 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
         }
     }
 
-    private data class executeJingMengB(val fsm: ReceivePhaseReceiverSkill, val target: Player) : WaitingFsm {
+    private data class executeJingMengB(val fsm: ReceivePhaseSkill, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = fsm.inFrontOfWhom
             val g = r.game!!

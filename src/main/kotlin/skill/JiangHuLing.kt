@@ -2,7 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.OnSendCard
-import com.fengsheng.phase.ReceivePhaseSenderSkill
+import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -18,15 +18,12 @@ class JiangHuLing : TriggeredSkill {
     override val skillId = SkillId.JIANG_HU_LING
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm
-        if (fsm is OnSendCard) {
-            val r = fsm.sender
-            if (r.findSkill(skillId) == null) return null
-            if (r.getSkillUseCount(skillId) >= 1) return null
-            r.addSkillUseCount(skillId)
-            return ResolveResult(executeJiangHuLingA(fsm, r), true)
-        }
-        return null
+        val fsm = g.fsm as? OnSendCard ?: return null
+        val r = fsm.sender
+        r.findSkill(skillId) != null || return null
+        r.getSkillUseCount(skillId) == 0 || return null
+        r.addSkillUseCount(skillId)
+        return ResolveResult(executeJiangHuLingA(fsm, r), true)
     }
 
     private data class executeJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
@@ -121,20 +118,19 @@ class JiangHuLing : TriggeredSkill {
         override val skillId = SkillId.JIANG_HU_LING2
 
         override fun execute(g: Game): ResolveResult? {
-            val fsm = g.fsm
-            if (fsm is ReceivePhaseSenderSkill) {
-                val r = fsm.sender
-                if (r.findSkill(skillId) == null) return null
-                if (r.getSkillUseCount(skillId) >= 1) return null
-                if (fsm.inFrontOfWhom.messageCards.all { color !in it.colors }) return null
-                r.addSkillUseCount(skillId)
-                return ResolveResult(executeJiangHuLingB(fsm, color), true)
-            }
-            return null
+            val fsm = g.fsm as? ReceivePhaseSkill ?: return null
+            fsm.askWhom == fsm.sender || return null
+            val r = fsm.sender
+            r.alive || return null
+            r.findSkill(skillId) != null || return null
+            r.getSkillUseCount(skillId) == 0 || return null
+            fsm.inFrontOfWhom.messageCards.any { color in it.colors } || return null
+            r.addSkillUseCount(skillId)
+            return ResolveResult(executeJiangHuLingB(fsm, color), true)
         }
     }
 
-    private data class executeJiangHuLingB(val fsm: ReceivePhaseSenderSkill, val color: color) : WaitingFsm {
+    private data class executeJiangHuLingB(val fsm: ReceivePhaseSkill, val color: color) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in fsm.sender.game!!.players) {
                 if (p is HumanPlayer) {

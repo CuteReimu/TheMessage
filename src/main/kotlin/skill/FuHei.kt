@@ -3,8 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
-import com.fengsheng.phase.ReceivePhaseSenderSkill
-import com.fengsheng.protos.Common.color
+import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Role.skill_fu_hei_toc
 import org.apache.log4j.Logger
 
@@ -15,11 +14,12 @@ class FuHei : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.FU_HEI
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSenderSkill
-        if (fsm == null || fsm.sender.findSkill(skillId) == null || !fsm.sender.alive) return null
-        if (fsm.sender.getSkillUseCount(skillId) > 0) return null
-        val colors = fsm.messageCard.colors
-        if (!colors.contains(color.Black)) return null
+        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
+        fsm.askWhom == fsm.sender || return null
+        fsm.sender.alive || return null
+        fsm.sender.findSkill(skillId) != null || return null
+        fsm.sender.getSkillUseCount(skillId) == 0 || return null
+        fsm.messageCard.isBlack() || return null
         fsm.sender.addSkillUseCount(skillId)
         log.info("${fsm.sender}发动了[腹黑]")
         for (p in g.players) {

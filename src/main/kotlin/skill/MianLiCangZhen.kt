@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.count
 import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.ReceivePhaseSenderSkill
+import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_mian_li_cang_zhen_toc
@@ -19,14 +19,17 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.MIAN_LI_CANG_ZHEN
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSenderSkill
-        if (fsm?.sender?.findSkill(skillId) == null) return null
-        if (fsm.sender.getSkillUseCount(skillId) > 0) return null
+        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
+        fsm.askWhom == fsm.sender || return null
+        fsm.sender.alive || return null
+        fsm.sender.findSkill(skillId) != null || return null
+        fsm.sender.cards.isNotEmpty() || return null
+        fsm.sender.getSkillUseCount(skillId) == 0 || return null
         fsm.sender.addSkillUseCount(skillId)
         return ResolveResult(executeMianLiCangZhen(fsm), true)
     }
 
-    private data class executeMianLiCangZhen(val fsm: ReceivePhaseSenderSkill) : WaitingFsm {
+    private data class executeMianLiCangZhen(val fsm: ReceivePhaseSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in fsm.sender.game!!.players)
                 p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender, 15)

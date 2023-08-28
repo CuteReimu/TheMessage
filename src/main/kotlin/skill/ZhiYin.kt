@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
-import com.fengsheng.phase.ReceivePhaseReceiverSkill
+import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.skill_zhi_yin_toc
@@ -16,9 +16,10 @@ class ZhiYin : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.ZHI_YIN
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseReceiverSkill ?: return null
-        fsm.inFrontOfWhom.findSkill(skillId) != null || return null
+        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
+        fsm.askWhom == fsm.inFrontOfWhom || return null
         fsm.inFrontOfWhom.alive || return null
+        fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         val colors = fsm.messageCard.colors
         Red in colors || Blue in colors || return null
