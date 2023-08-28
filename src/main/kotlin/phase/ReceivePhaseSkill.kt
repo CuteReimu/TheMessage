@@ -23,7 +23,7 @@ data class ReceivePhaseSkill(
     override val receiveOrder: ReceiveOrder = ReceiveOrder()
 ) : Fsm, HasReceiveOrder {
     override fun resolve(): ResolveResult {
-        val result = whoseTurn.game!!.dealListeningSkill()
+        val result = if (askWhom.alive) whoseTurn.game!!.dealListeningSkill() else null
         return result ?: ResolveResult(ReceivePhaseSkillNext(this), true)
     }
 

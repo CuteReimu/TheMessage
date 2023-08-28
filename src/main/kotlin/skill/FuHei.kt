@@ -16,7 +16,6 @@ class FuHei : AbstractSkill(), TriggeredSkill {
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
         fsm.askWhom == fsm.sender || return null
-        fsm.sender.alive || return null
         fsm.sender.findSkill(skillId) != null || return null
         fsm.sender.getSkillUseCount(skillId) == 0 || return null
         fsm.messageCard.isBlack() || return null
