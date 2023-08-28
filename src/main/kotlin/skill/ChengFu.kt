@@ -5,6 +5,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.Shi_Tan
+import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Role.skill_cheng_fu_toc
 import org.apache.log4j.Logger
 
@@ -17,8 +18,8 @@ class ChengFu : AbstractSkill(), TriggeredSkill {
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
         val r = fsm.askWhom
-        if (fsm.targetPlayer !== r || r.findSkill(skillId) == null)
-            return null
+        fsm.cardType == Shi_Tan || fsm.cardType == Wei_Bi || return null
+        fsm.targetPlayer === r && r.findSkill(skillId) != null || return null
         r.roleFaceUp || return null
         r.getSkillUseCount(skillId) == 0 || return null
         r.addSkillUseCount(skillId)
