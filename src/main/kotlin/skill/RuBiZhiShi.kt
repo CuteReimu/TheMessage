@@ -134,6 +134,11 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机错误")
                         return null
                     }
+                    if (target === r.game!!.jinBiPlayer) {
+                        log.error("对方被禁闭了，不能让他出牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
+                        return null
+                    }
                     if (Jie_Huo in r.game!!.qiangLingTypes) {
                         log.error("截获被禁止使用了")
                         (r as? HumanPlayer)?.sendErrorMessage("截获被禁止使用了")
@@ -167,6 +172,11 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     if (fsm !is FightPhaseIdle) {
                         log.error("误导的使用时机错误")
                         (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机错误")
+                        return null
+                    }
+                    if (target === r.game!!.jinBiPlayer) {
+                        log.error("对方被禁闭了，不能让他出牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
                         return null
                     }
                     if (Wu_Dao in r.game!!.qiangLingTypes) {
@@ -217,6 +227,11 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("调包的使用时机错误")
                         return null
                     }
+                    if (target === r.game!!.jinBiPlayer) {
+                        log.error("对方被禁闭了，不能让他出牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
+                        return null
+                    }
                     if (Diao_Bao in r.game!!.qiangLingTypes) {
                         log.error("调包被禁止使用了")
                         (r as? HumanPlayer)?.sendErrorMessage("调包被禁止使用了")
@@ -250,6 +265,11 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     if (!message.use) {
                         log.error("参数错误")
                         (r as? HumanPlayer)?.sendErrorMessage("参数错误")
+                        return null
+                    }
+                    if (target === r.game!!.jinBiPlayer) {
+                        log.error("对方被禁闭了，不能让他出牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
                         return null
                     }
                     if (Cheng_Qing in r.game!!.qiangLingTypes) {
