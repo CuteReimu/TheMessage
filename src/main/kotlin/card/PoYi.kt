@@ -1,6 +1,7 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.*
@@ -110,7 +111,11 @@ class PoYi : Card {
             }
             player.incrSeq()
             showAndDrawCard(message.show)
-            return ResolveResult(sendPhase.copy(isMessageCardFaceUp = message.show), true)
+            val newFsm = sendPhase.copy(isMessageCardFaceUp = message.show)
+            return ResolveResult(
+                OnFinishResolveCard(sendPhase.whoseTurn, player, null, card, card_type.Po_Yi, player, newFsm),
+                true
+            )
         }
 
         private fun showAndDrawCard(show: Boolean) {
@@ -128,7 +133,6 @@ class PoYi : Card {
                     player.send(builder.build())
                 }
             }
-            r.game!!.deck.discard(card.getOriginCard())
         }
 
         companion object {

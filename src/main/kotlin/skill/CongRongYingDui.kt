@@ -2,6 +2,8 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnFinishResolveCard
+import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -10,8 +12,24 @@ import java.util.concurrent.TimeUnit
 /**
  * 简先生技能【从容应对】：你对一名角色使用的【试探】结算后，或一名角色对你使用的【试探】结算后，你可以抽取该角色的一张手牌，或令你和该角色各摸一张牌。
  */
-class CongRongYingDui : AbstractSkill() {
+class CongRongYingDui : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.CONG_RONG_YING_DUI
+
+    override fun execute(g: Game): ResolveResult? {
+        val fsm = g.fsm as? OnFinishResolveCard ?: return null
+        fsm.cardType == card_type.Shi_Tan || return null
+        fsm.askWhom == fsm.player || fsm.askWhom == fsm.targetPlayer || return null
+        val r = fsm.askWhom
+        r.findSkill(skillId) != null || return null
+        r.getSkillUseCount(skillId) == 0 || return null
+        r.addSkillUseCount(skillId)
+        val oldWhereToGoFunc = fsm.whereToGoFunc
+        val f = {
+            r.resetSkillUseCount(skillId)
+            oldWhereToGoFunc()
+        }
+        return ResolveResult(executeCongRongYingDui(fsm.copy(whereToGoFunc = f), fsm.player, fsm.targetPlayer!!), true)
+    }
 
     private data class executeCongRongYingDui(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
@@ -99,14 +117,5 @@ class CongRongYingDui : AbstractSkill() {
         companion object {
             private val log = Logger.getLogger(executeCongRongYingDui::class.java)
         }
-    }
-
-    companion object {
-        fun check(fsm: Fsm, r: Player, target: Player): Fsm =
-            if (r.findSkill(SkillId.CONG_RONG_YING_DUI) != null)
-                executeCongRongYingDui(fsm, r, target)
-            else if (target.findSkill(SkillId.CONG_RONG_YING_DUI) != null)
-                executeCongRongYingDui(fsm, target, r)
-            else fsm
     }
 }

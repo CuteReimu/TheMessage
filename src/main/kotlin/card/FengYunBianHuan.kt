@@ -3,6 +3,7 @@ package com.fengsheng.card
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnAddMessageCard
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
@@ -83,8 +84,17 @@ class FengYunBianHuan : Card {
             val r = players.firstOrNull()
             if (r == null) {
                 mainPhaseIdle.player.game!!.deck.discard(*drawCards.toTypedArray())
-                mainPhaseIdle.player.game!!.deck.discard(card.getOriginCard())
-                return ResolveResult(mainPhaseIdle, true)
+                return ResolveResult(
+                    OnFinishResolveCard(
+                        mainPhaseIdle.player,
+                        mainPhaseIdle.player,
+                        null,
+                        card,
+                        card_type.Feng_Yun_Bian_Huan,
+                        mainPhaseIdle.player,
+                        mainPhaseIdle,
+                    ), true
+                )
             }
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {

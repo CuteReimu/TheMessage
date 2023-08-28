@@ -5,6 +5,7 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
@@ -60,7 +61,6 @@ class WuDao : Card {
         val fsm = g.fsm as FightPhaseIdle
         r.deleteCard(id)
         val resolveFunc = { valid: Boolean ->
-            g.deck.discard(getOriginCard())
             if (valid) {
                 for (player in g.players) {
                     if (player is HumanPlayer) {
@@ -71,9 +71,11 @@ class WuDao : Card {
                         player.send(builder.build())
                     }
                 }
-                fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
+                val newFsm = fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
+                OnFinishResolveCard(fsm.whoseTurn, r, target, this, card_type.Wu_Dao, r, newFsm)
             } else {
-                fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+                val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+                OnFinishResolveCard(fsm.whoseTurn, r, target, this, card_type.Wu_Dao, r, newFsm)
             }
         }
         g.resolve(OnUseCard(fsm.whoseTurn, r, target, this, card_type.Wu_Dao, r, resolveFunc, fsm))

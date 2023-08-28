@@ -3,9 +3,12 @@ package com.fengsheng.skill
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
+import com.fengsheng.card.Card
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.skill_jiu_ji_a_toc
+import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
 import org.apache.log4j.Logger
 
 /**
@@ -24,13 +27,47 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
         fsm.askWhom.addSkillUseCount(skillId)
         log.info("${fsm.askWhom}发动了[就计]")
         for (p in g.players) {
-            (p as? HumanPlayer)?.send(
-                skill_jiu_ji_a_toc.newBuilder().setPlayerId(p.getAlternativeLocation(fsm.askWhom.location)).build()
-            )
+            if (p is HumanPlayer) {
+                val builder = skill_jiu_ji_a_toc.newBuilder()
+                builder.playerId = p.getAlternativeLocation(fsm.askWhom.location)
+                p.send(builder.build())
+            }
         }
         g.playerSetRoleFaceUp(fsm.askWhom, true)
         fsm.askWhom.draw(2)
+        fsm.card?.let {
+            val skill = JiuJi2(it)
+            skill.init(g)
+            fsm.askWhom.skills = arrayOf(*fsm.askWhom.skills, skill)
+        }
         return null
+    }
+
+    private class JiuJi2(val card: Card) : TriggeredSkill {
+        override val skillId = SkillId.JIU_JI2
+
+        override fun execute(g: Game): ResolveResult? {
+            val fsm = g.fsm as? OnFinishResolveCard ?: return null
+            fsm.askWhom === fsm.targetPlayer || return null
+            fsm.askWhom.cards.add(card.getOriginCard())
+            log.info("${fsm.askWhom}将使用的${card.getOriginCard()}加入了手牌")
+            fsm.askWhom.skills = fsm.askWhom.skills.filterNot { it.skillId == skillId }.toTypedArray()
+            val listeningSkills = g.listeningSkills
+            listeningSkills.removeAt(listeningSkills.indexOfLast { it.skillId == skillId })
+            for (player in g.players) {
+                if (player is HumanPlayer) {
+                    val builder = skill_jiu_ji_b_toc.newBuilder()
+                    builder.playerId = player.getAlternativeLocation(fsm.askWhom.location)
+                    builder.card = card.toPbCard()
+                    player.send(builder.build())
+                }
+            }
+            return ResolveResult(fsm.copy(whereToGoFunc = {}), true)
+        }
+
+        companion object {
+            private val log = Logger.getLogger(JiuJi::class.java)
+        }
     }
 
     companion object {

@@ -6,11 +6,10 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnAddMessageCard
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
-import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
-import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
@@ -100,25 +99,9 @@ class LiYou : Card {
                         player.send(builder.build())
                     }
                 }
-                if (target.getSkillUseCount(SkillId.JIU_JI) == 1) {
-                    target.addSkillUseCount(SkillId.JIU_JI)
-                    if (card != null) {
-                        target.cards.add(card)
-                        log.info("${target}将使用的${card}加入了手牌")
-                        for (player in g.players) {
-                            if (player is HumanPlayer) {
-                                val builder = skill_jiu_ji_b_toc.newBuilder()
-                                builder.playerId = player.getAlternativeLocation(target.location)
-                                builder.card = card.toPbCard()
-                                player.send(builder.build())
-                            }
-                        }
-                    }
-                } else {
-                    if (card != null) g.deck.discard(card.getOriginCard())
-                }
-                if (!joinIntoHand) OnAddMessageCard(r, MainPhaseIdle(r), false)
-                else MainPhaseIdle(r)
+                val newFsm = OnFinishResolveCard(r, r, target, card, card_type.Li_You, r, MainPhaseIdle(r))
+                if (!joinIntoHand) OnAddMessageCard(r, newFsm, false)
+                else newFsm
             }
             if (card != null)
                 g.resolve(OnUseCard(r, r, target, card, card_type.Li_You, r, resolveFunc, g.fsm!!))

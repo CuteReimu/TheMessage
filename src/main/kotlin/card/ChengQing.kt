@@ -4,10 +4,7 @@ import com.fengsheng.Game
 import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
-import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnUseCard
-import com.fengsheng.phase.UseChengQingOnDying
-import com.fengsheng.phase.WaitForChengQing
+import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
 import org.apache.log4j.Logger
@@ -102,9 +99,12 @@ class ChengQing : Card {
                     player.send(builder.build())
                 }
             }
-            g.deck.discard(getOriginCard())
-            if (fsm is MainPhaseIdle) fsm
-            else UseChengQingOnDying(fsm as WaitForChengQing)
+            if (fsm is MainPhaseIdle) {
+                OnFinishResolveCard(fsm.player, r, target, this, card_type.Cheng_Qing, r, fsm)
+            } else {
+                val newFsm = UseChengQingOnDying(fsm as WaitForChengQing)
+                OnFinishResolveCard(fsm.whoseTurn, r, target, this, card_type.Cheng_Qing, r, newFsm)
+            }
         }
         if (fsm is MainPhaseIdle) g.resolve(
             OnUseCard(fsm.player, r, target, this, card_type.Cheng_Qing, r, resolveFunc, fsm)

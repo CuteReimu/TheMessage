@@ -5,6 +5,7 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng
@@ -75,7 +76,6 @@ class JieHuo : Card {
         fun execute(card: JieHuo?, g: Game, r: Player) {
             val fsm = g.fsm as FightPhaseIdle
             val resolveFunc = { valid: Boolean ->
-                if (card != null) g.deck.discard(card.getOriginCard())
                 if (valid) {
                     for (player in g.players) {
                         if (player is HumanPlayer) {
@@ -85,9 +85,11 @@ class JieHuo : Card {
                             player.send(builder.build())
                         }
                     }
-                    fsm.copy(inFrontOfWhom = r, whoseFightTurn = r)
+                    val newFsm = fsm.copy(inFrontOfWhom = r, whoseFightTurn = r)
+                    OnFinishResolveCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, newFsm)
                 } else {
-                    fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+                    val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+                    OnFinishResolveCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, newFsm)
                 }
             }
             if (card != null)

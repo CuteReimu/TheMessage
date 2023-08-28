@@ -1,6 +1,7 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.phase.SendPhaseStart
@@ -302,11 +303,14 @@ class MiLing : Card {
                 lockPlayers.add(lockPlayer)
             }
             player.incrSeq()
+            val newFsm = OnSendCard(
+                sendPhase.player, target, messageCard, pb.cardDir, target.game!!.players[targetLocation]!!,
+                lockPlayers.toTypedArray()
+            )
+            val whoPlayCard = sendPhase.player
             return ResolveResult(
-                OnSendCard(
-                    sendPhase.player, target, messageCard, pb.cardDir, target.game!!.players[targetLocation]!!,
-                    lockPlayers.toTypedArray()
-                ), true
+                OnFinishResolveCard(whoPlayCard, whoPlayCard, target, card, card_type.Mi_Ling, whoPlayCard, newFsm) {},
+                true
             )
         }
 

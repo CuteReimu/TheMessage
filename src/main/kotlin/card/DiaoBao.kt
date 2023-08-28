@@ -5,6 +5,7 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
@@ -60,11 +61,12 @@ class DiaoBao : Card {
                     player.send(builder.build())
                 }
             }
-            fsm.copy(
+            val newFsm = fsm.copy(
                 messageCard = getOriginCard(),
                 isMessageCardFaceUp = false,
                 whoseFightTurn = fsm.inFrontOfWhom
             )
+            OnFinishResolveCard(fsm.whoseTurn, r, null, this, card_type.Diao_Bao, r, newFsm) {}
         }
         g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Diao_Bao, r, resolveFunc, fsm))
     }

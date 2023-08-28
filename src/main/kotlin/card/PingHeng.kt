@@ -5,6 +5,7 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_ping_heng_toc
@@ -73,8 +74,7 @@ class PingHeng : Card {
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(3)
             target.draw(3)
-            g.deck.discard(getOriginCard())
-            MainPhaseIdle(r)
+            OnFinishResolveCard(r, r, target, this, card_type.Ping_Heng, r, MainPhaseIdle(r))
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Ping_Heng, r, resolveFunc, g.fsm!!))
     }

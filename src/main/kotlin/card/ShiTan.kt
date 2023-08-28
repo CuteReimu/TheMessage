@@ -2,15 +2,11 @@ package com.fengsheng.card
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.*
-import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.show_shi_tan_toc
-import com.fengsheng.protos.Fengsheng.use_shi_tan_toc
-import com.fengsheng.protos.Role.skill_cheng_fu_toc
-import com.fengsheng.protos.Role.skill_jiu_ji_b_toc
-import com.fengsheng.skill.CongRongYingDui
+import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -66,35 +62,8 @@ class ShiTan : Card {
         val target = args[0] as Player
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
-        val resolveFunc = { _: Boolean ->
-            if (target.roleFaceUp && target.findSkill(SkillId.CHENG_FU) != null) {
-                log.info("${target}触发了[城府]，试探无效")
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        val builder = skill_cheng_fu_toc.newBuilder()
-                        builder.playerId = player.getAlternativeLocation(target.location)
-                        builder.fromPlayerId = player.getAlternativeLocation(r.location)
-                        if (player == r || player == target) builder.card = toPbCard()
-                        else builder.unknownCardCount = 1
-                        player.send(builder.build())
-                    }
-                }
-                if (target.getSkillUseCount(SkillId.JIU_JI) % 2 == 1) {
-                    target.addSkillUseCount(SkillId.JIU_JI)
-                    target.cards.add(this@ShiTan)
-                    log.info(target.toString() + "将使用的${this@ShiTan}加入了手牌")
-                    for (player in g.players) {
-                        if (player is HumanPlayer) {
-                            val builder = skill_jiu_ji_b_toc.newBuilder()
-                            builder.playerId = player.getAlternativeLocation(target.location)
-                            if (player == r || player == target) builder.card = toPbCard()
-                            else builder.unknownCardCount = 1
-                            player.send(builder.build())
-                        }
-                    }
-                }
-                CongRongYingDui.check(MainPhaseIdle(r), r, target)
-            } else {
+        val resolveFunc = { valid: Boolean ->
+            if (valid) {
                 for (p in g.players) {
                     if (p is HumanPlayer) {
                         val builder = use_shi_tan_toc.newBuilder()
@@ -105,6 +74,8 @@ class ShiTan : Card {
                     }
                 }
                 executeShiTan(r, target, this@ShiTan)
+            } else {
+                OnFinishResolveCard(r, r, target, this, card_type.Shi_Tan, r, MainPhaseIdle(r)) {}
             }
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, r, resolveFunc, g.fsm!!))
@@ -117,10 +88,12 @@ class ShiTan : Card {
 
     private fun notifyResult(target: Player, draw: Boolean) {
         for (player in target.game!!.players) {
-            (player as? HumanPlayer)?.send(
-                Fengsheng.execute_shi_tan_toc.newBuilder()
-                    .setPlayerId(player.getAlternativeLocation(target.location)).setIsDrawCard(draw).build()
-            )
+            if (player is HumanPlayer) {
+                val builder = execute_shi_tan_toc.newBuilder()
+                builder.playerId = player.getAlternativeLocation(target.location)
+                builder.isDrawCard = draw
+                player.send(builder.build())
+            }
         }
     }
 
@@ -137,9 +110,7 @@ class ShiTan : Card {
                         builder.setSeq(seq2).card = card.toPbCard()
                         p.timeout = (GameExecutor.post(r.game!!, {
                             if (p.checkSeq(seq2)) {
-                                p.incrSeq()
                                 autoSelect()
-                                r.game!!.resolve(CongRongYingDui.check(MainPhaseIdle(r), r, target))
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS))
                     } else if (p === r) {
@@ -151,40 +122,39 @@ class ShiTan : Card {
             if (target is RobotPlayer) {
                 GameExecutor.post(target.game!!, {
                     autoSelect()
-                    target.game!!.resolve(CongRongYingDui.check(MainPhaseIdle(r), r, target))
                 }, 2, TimeUnit.SECONDS)
             }
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (message !is Fengsheng.execute_shi_tan_tos) {
+            if (message !is execute_shi_tan_tos) {
                 log.error("现在正在结算试探：$card")
-                (r as? HumanPlayer)?.sendErrorMessage("现在正在结算试探：$card")
+                (target as? HumanPlayer)?.sendErrorMessage("现在正在结算试探：$card")
                 return null
             }
             if (target !== player) {
                 log.error("你不是试探的目标：$card")
-                (r as? HumanPlayer)?.sendErrorMessage("你不是试探的目标：$card")
+                (target as? HumanPlayer)?.sendErrorMessage("你不是试探的目标：$card")
                 return null
             }
             var discardCard: Card? = null
             if (card.checkDrawCard(target) || target.cards.isEmpty()) {
                 if (message.cardIdCount != 0) {
                     log.error("${target}被使用${card}时不应该弃牌")
-                    (r as? HumanPlayer)?.sendErrorMessage("${target}被使用${card}时不应该弃牌")
+                    (target as? HumanPlayer)?.sendErrorMessage("${target}被使用${card}时不应该弃牌")
                     return null
                 }
             } else {
                 if (message.cardIdCount != 1) {
                     log.error("${target}被使用${card}时应该弃一张牌")
-                    (r as? HumanPlayer)?.sendErrorMessage("${target}被使用${card}时应该弃一张牌")
+                    (target as? HumanPlayer)?.sendErrorMessage("${target}被使用${card}时应该弃一张牌")
                     return null
                 }
                 discardCard = target.findCard(message.getCardId(0))
                 if (discardCard == null) {
                     log.error("没有这张牌")
-                    (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    (target as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
             }
@@ -199,14 +169,17 @@ class ShiTan : Card {
                 if (discardCard != null)
                     target.game!!.playerDiscardCard(target, discardCard)
             }
-            return ResolveResult(CongRongYingDui.check(MainPhaseIdle(r), r, target), true)
+            return ResolveResult(
+                OnFinishResolveCard(r, r, target, card, card_type.Shi_Tan, r, MainPhaseIdle(r)) {},
+                true
+            )
         }
 
         private fun autoSelect() {
-            val builder = Fengsheng.execute_shi_tan_tos.newBuilder()
+            val builder = execute_shi_tan_tos.newBuilder()
             if (!card.checkDrawCard(target) && target.cards.isNotEmpty())
                 builder.addCardId(target.cards.random().id)
-            resolveProtocol(target, builder.build())
+            target.game!!.tryContinueResolveProtocol(target, builder.build())
         }
 
         companion object {
