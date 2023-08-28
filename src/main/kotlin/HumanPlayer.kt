@@ -7,6 +7,8 @@ import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Errcode.error_message_toc
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Role.skill_leng_xue_xun_lian_a_tos
+import com.fengsheng.skill.ActiveSkill
 import com.fengsheng.skill.SkillId
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
@@ -195,20 +197,29 @@ class HumanPlayer(
         val player = fsm.player
         val playerId = getAlternativeLocation(player.location)
         val builder = notify_phase_toc.newBuilder()
-        builder.setCurrentPlayerId(playerId).currentPhase = Common.phase.Send_Start_Phase
-        builder.setWaitingPlayerId(playerId).waitingSecond = waitSecond
-        if (this === player) {
-            builder.seq = seq
-            val seq2 = seq
-            timeout = GameExecutor.post(game!!, {
-                if (checkSeq(seq2)) {
-                    incrSeq()
-                    if (cards.isEmpty()) game!!.resolve(fsm.copy(allowUseSkill = false))
-                    else autoSendMessageCard(this)
-                }
-            }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+        builder.currentPlayerId = playerId
+        builder.currentPhase = Common.phase.Send_Start_Phase
+        builder.waitingPlayerId = playerId
+        if (player.cards.isNotEmpty()) {
+            builder.waitingSecond = waitSecond
+            if (this === player) {
+                builder.seq = seq
+                val seq2 = seq
+                timeout = GameExecutor.post(game!!, {
+                    if (checkSeq(seq2)) {
+                        incrSeq()
+                        autoSendMessageCard(this)
+                    }
+                }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+            }
         }
         send(builder.build())
+        if (player.cards.isEmpty()) {
+            val skill = player.findSkill(SkillId.LENG_XUE_XUN_LIAN) as ActiveSkill
+            val builder2 = skill_leng_xue_xun_lian_a_tos.newBuilder()
+            builder2.seq = seq
+            skill.executeProtocol(game!!, player, builder2.build())
+        }
     }
 
     override fun notifySendMessageCard(

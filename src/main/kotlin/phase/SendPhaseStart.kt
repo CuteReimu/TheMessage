@@ -9,10 +9,10 @@ import org.apache.log4j.Logger
 /**
  * 情报传递阶段开始时，选择传递一张情报
  */
-data class SendPhaseStart(val player: Player, val allowUseSkill: Boolean = true) : Fsm {
+data class SendPhaseStart(val player: Player) : Fsm {
     override fun resolve(): ResolveResult? {
         val game = player.game!!
-        if (player.alive && player.cards.isEmpty() && (!allowUseSkill || player.findSkill(LENG_XUE_XUN_LIAN) == null)) {
+        if (player.alive && player.cards.isEmpty() && player.findSkill(LENG_XUE_XUN_LIAN) == null) {
             log.info("${player}没有情报可传，输掉了游戏")
             val messageCards = player.messageCards.toTypedArray()
             player.messageCards.clear()
