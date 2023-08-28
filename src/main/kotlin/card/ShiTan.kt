@@ -72,10 +72,10 @@ class ShiTan : Card {
                 for (player in g.players) {
                     if (player is HumanPlayer) {
                         val builder = skill_cheng_fu_toc.newBuilder()
-                            .setPlayerId(player.getAlternativeLocation(target.location))
+                        builder.playerId = player.getAlternativeLocation(target.location)
                         builder.fromPlayerId = player.getAlternativeLocation(r.location)
-                        if (player == r || player == target || target.getSkillUseCount(SkillId.JIU_JI) != 1) builder.card =
-                            toPbCard() else builder.unknownCardCount = 1
+                        if (player == r || player == target) builder.card = toPbCard()
+                        else builder.unknownCardCount = 1
                         player.send(builder.build())
                     }
                 }
@@ -86,14 +86,12 @@ class ShiTan : Card {
                     for (player in g.players) {
                         if (player is HumanPlayer) {
                             val builder = skill_jiu_ji_b_toc.newBuilder()
-                                .setPlayerId(player.getAlternativeLocation(target.location))
+                            builder.playerId = player.getAlternativeLocation(target.location)
                             if (player == r || player == target) builder.card = toPbCard()
                             else builder.unknownCardCount = 1
                             player.send(builder.build())
                         }
                     }
-                } else {
-                    g.deck.discard(this@ShiTan.getOriginCard())
                 }
                 CongRongYingDui.check(MainPhaseIdle(r), r, target)
             } else {
