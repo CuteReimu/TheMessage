@@ -6,6 +6,7 @@ import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
 import com.fengsheng.protos.Fengsheng.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -24,7 +25,7 @@ class FengYunBianHuan : Card {
     internal constructor(originCard: Card) : super(originCard)
 
     override val type: card_type
-        get() = card_type.Feng_Yun_Bian_Huan
+        get() = Feng_Yun_Bian_Huan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
@@ -71,30 +72,23 @@ class FengYunBianHuan : Card {
         val resolveFunc = { _: Boolean ->
             executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
-        g.resolve(OnUseCard(r, r, null, this, card_type.Feng_Yun_Bian_Huan, r, resolveFunc, fsm))
+        g.resolve(OnUseCard(r, r, null, this, Feng_Yun_Bian_Huan, r, resolveFunc, fsm))
     }
 
     private data class executeFengYunBianHuan(
         val card: FengYunBianHuan,
         val drawCards: ArrayList<Card>,
         val players: LinkedList<Player>,
-        val mainPhaseIdle: MainPhaseIdle
+        val mainPhaseIdle: MainPhaseIdle,
+        val asMessageCard: Boolean = false
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
+            val p = mainPhaseIdle.player
             val r = players.firstOrNull()
             if (r == null) {
                 mainPhaseIdle.player.game!!.deck.discard(*drawCards.toTypedArray())
-                return ResolveResult(
-                    OnFinishResolveCard(
-                        mainPhaseIdle.player,
-                        mainPhaseIdle.player,
-                        null,
-                        card,
-                        card_type.Feng_Yun_Bian_Huan,
-                        mainPhaseIdle.player,
-                        mainPhaseIdle,
-                    ), true
-                )
+                val newFsm = if (asMessageCard) OnAddMessageCard(p, mainPhaseIdle, false) else mainPhaseIdle
+                return ResolveResult(OnFinishResolveCard(p, p, null, card, Feng_Yun_Bian_Huan, p, newFsm), true)
             }
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -164,8 +158,8 @@ class FengYunBianHuan : Card {
                     p.send(builder.build())
                 }
             }
-            if (message.asMessageCard)
-                return ResolveResult(OnAddMessageCard(mainPhaseIdle.player, this, false), true)
+            if (!asMessageCard && message.asMessageCard)
+                return ResolveResult(copy(asMessageCard = true), true)
             return ResolveResult(this, true)
         }
 
@@ -192,7 +186,7 @@ class FengYunBianHuan : Card {
         private val log = Logger.getLogger(FengYunBianHuan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            if (player.game!!.qiangLingTypes.contains(card_type.Feng_Yun_Bian_Huan)) return false
+            if (player.game!!.qiangLingTypes.contains(Feng_Yun_Bian_Huan)) return false
             GameExecutor.post(
                 player.game!!,
                 { card.execute(player.game!!, player) },
