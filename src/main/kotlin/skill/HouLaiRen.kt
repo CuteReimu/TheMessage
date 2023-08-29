@@ -123,7 +123,6 @@ class HouLaiRen : AbstractSkill(), ActiveSkill {
             r.incrSeq()
             log.info("${r}变成了${roleSkillsData.name}")
             r.roleSkillsData = roleSkillsData
-            r.roleSkillsData.skills.filterIsInstance<TriggeredSkill>().forEach { it.init(r.game!!) }
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_hou_lai_ren_b_toc.newBuilder()

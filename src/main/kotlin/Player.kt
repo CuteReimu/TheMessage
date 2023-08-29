@@ -8,7 +8,6 @@ import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.RoleSkillsData
 import com.fengsheng.skill.Skill
 import com.fengsheng.skill.SkillId
-import com.fengsheng.skill.TriggeredSkill
 import org.apache.log4j.Logger
 import kotlin.random.Random
 
@@ -90,9 +89,6 @@ abstract class Player protected constructor() {
 
     open fun init() {
         log.info("${this}的身份是${identityColorToString(identity, secretTask)}")
-        for (skill in roleSkillsData.skills) {
-            (skill as? TriggeredSkill)?.init(game!!)
-        }
     }
 
     open fun incrSeq() {}

@@ -95,7 +95,6 @@ class JiangHuLing : TriggeredSkill {
             }
             r.incrSeq()
             val skill = JiangHuLing2(message.color)
-            skill.init(r.game!!)
             r.skills = arrayOf(*r.skills, skill)
             log.info("${r}发动了[江湖令]，宣言了${message.color}")
             for (p in r.game!!.players) {
@@ -251,11 +250,8 @@ class JiangHuLing : TriggeredSkill {
         fun resetJiangHuLing(game: Game) {
             for (p in game.players) {
                 val skills = p!!.skills
-                if (skills.any { it.skillId == SkillId.JIANG_HU_LING2 }) {
+                if (skills.any { it.skillId == SkillId.JIANG_HU_LING2 })
                     p.skills = skills.filterNot { it.skillId == SkillId.JIANG_HU_LING2 }.toTypedArray()
-                    val listeningSkills = game.listeningSkills
-                    listeningSkills.removeAt(listeningSkills.indexOfLast { it.skillId == SkillId.JIANG_HU_LING2 })
-                }
             }
         }
     }

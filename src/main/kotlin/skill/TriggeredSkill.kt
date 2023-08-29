@@ -9,13 +9,6 @@ import com.fengsheng.ResolveResult
  */
 interface TriggeredSkill : Skill {
     /**
-     * 初始化一场游戏时调用
-     */
-    fun init(g: Game) {
-        g.addListeningSkill(this)
-    }
-
-    /**
      *  * 对于自动发动的技能，判断并发动这个技能时会调用这个函数
      *  * 对于使用卡牌、接收情报、死亡前询问发动的技能，判断并询问这个技能时会调用这个函数
      *

@@ -44,7 +44,6 @@ class Game private constructor(totalPlayerCount: Int) {
     var players: Array<Player?>
     var deck = Deck(this)
     var fsm: Fsm? = null
-    val listeningSkills = ArrayList<TriggeredSkill>()
 
     /**
      * 用于王田香技能禁闭
@@ -338,18 +337,13 @@ class Game private constructor(totalPlayerCount: Int) {
     }
 
     /**
-     * 增加一个新的需要监听的技能。仅用于接收情报时、使用卡牌时、死亡时的技能
-     */
-    fun addListeningSkill(skill: TriggeredSkill) {
-        listeningSkills.add(skill)
-    }
-
-    /**
      * 遍历监听列表，结算技能
      */
     fun dealListeningSkill(): ResolveResult? {
-        for (skill in listeningSkills) {
-            skill.execute(this)?.let { return it }
+        players.forEach { player ->
+            player!!.skills.forEach { skill ->
+                (skill as? TriggeredSkill)?.execute(this)?.let { return it }
+            }
         }
         return null
     }

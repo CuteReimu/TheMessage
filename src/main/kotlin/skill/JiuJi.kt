@@ -37,7 +37,6 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
         fsm.askWhom.draw(2)
         fsm.card?.let {
             val skill = JiuJi2(it)
-            skill.init(g)
             fsm.askWhom.skills = arrayOf(*fsm.askWhom.skills, skill)
         }
         return ResolveResult(fsm, true)
@@ -54,8 +53,6 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
             fsm.askWhom.cards.add(card.getOriginCard())
             log.info("${fsm.askWhom}将使用的${card.getOriginCard()}加入了手牌")
             fsm.askWhom.skills = fsm.askWhom.skills.filterNot { it.skillId == skillId }.toTypedArray()
-            val listeningSkills = g.listeningSkills
-            listeningSkills.removeAt(listeningSkills.indexOfLast { it.skillId == skillId })
             for (player in g.players) {
                 if (player is HumanPlayer) {
                     val builder = skill_jiu_ji_b_toc.newBuilder()
