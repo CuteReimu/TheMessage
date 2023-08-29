@@ -30,7 +30,7 @@ class JianRen : AbstractSkill(), TriggeredSkill {
     private data class executeJianRenA(val fsm: ReceivePhaseSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom, 15)
+                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
             return null
         }
 
@@ -95,7 +95,7 @@ class JianRen : AbstractSkill(), TriggeredSkill {
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.card = card.toPbCard()
                     if (isBlack && autoChoose != null) {
-                        builder.waitingSecond = 15
+                        builder.waitingSecond = Config.WaitSecond
                         if (p === r) {
                             val seq2: Int = p.seq
                             builder.seq = seq2

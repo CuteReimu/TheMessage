@@ -38,7 +38,7 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
                 if (player is HumanPlayer) {
                     val builder = skill_wait_for_cheng_zhi_toc.newBuilder()
                     builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     builder.diePlayerId = player.getAlternativeLocation(whoDie.location)
                     if (player === r) {
                         for (card in cards) builder.addCards(card.toPbCard())

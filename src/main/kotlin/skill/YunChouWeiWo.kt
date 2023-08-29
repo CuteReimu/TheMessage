@@ -71,7 +71,7 @@ class YunChouWeiWo : AbstractSkill(), ActiveSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_yun_chou_wei_wo_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 30
+                    builder.waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
                         cards.forEach { builder.addCards(it.toPbCard()) }
                         val seq2 = p.seq

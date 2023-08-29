@@ -26,6 +26,9 @@ object Config {
     val MiraiVerifyKey: String
     val RobotQQ: Long
     val PushQQGroups: LongArray
+    val WaitingSecond: AtomicInteger
+
+    val WaitSecond: Int get() = WaitingSecond.get()
 
     init {
         val pps = Properties()
@@ -53,6 +56,7 @@ object Config {
         pps.putIfAbsent("push.mirai_verify_key", "")
         pps.putIfAbsent("push.robot_qq", "12345678")
         pps.putIfAbsent("push.push_qq_groups", "")
+        pps.putIfAbsent("waiting_second", "15")
         ListenPort = pps.getProperty("listen_port").toInt()
         ListenWebSocketPort = pps.getProperty("listen_websocket_port").toInt()
         TotalPlayerCount = pps.getProperty("player.total_count").toInt()
@@ -79,6 +83,7 @@ object Config {
         PushQQGroups =
             if (pushQQGroupsStr.isBlank()) longArrayOf()
             else pushQQGroupsStr.split(",").map { it.toLong() }.toLongArray()
+        WaitingSecond = AtomicInteger(pps.getProperty("waiting_second").toInt())
         try {
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         } catch (e: Exception) {
@@ -106,6 +111,7 @@ object Config {
             pps["push.mirai_verify_key"] = MiraiVerifyKey
             pps["push.robot_qq"] = RobotQQ.toString()
             pps["push.push_qq_groups"] = PushQQGroups.joinToString(separator = ",")
+            pps["waiting_second"] = WaitingSecond.get().toString()
             FileOutputStream("application.properties").use { out -> pps.store(out, "application.properties") }
         }
     }

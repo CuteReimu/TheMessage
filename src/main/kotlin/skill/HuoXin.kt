@@ -56,7 +56,7 @@ class HuoXin : AbstractSkill(), ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         log.info("${r}发动了[惑心]，展示了牌堆顶的${showCards[0]}，查看了${target}的手牌")
-        val waitingSecond = 15
+        val waitingSecond = Config.WaitSecond
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_huo_xin_a_toc.newBuilder()

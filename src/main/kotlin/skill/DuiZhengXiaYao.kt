@@ -50,7 +50,7 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_dui_zheng_xia_yao_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq2: Int = p.seq
                         builder.seq = seq2
@@ -173,7 +173,7 @@ class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
                     val builder = skill_dui_zheng_xia_yao_b_toc.newBuilder().setEnable(true)
                     for (card in cards) builder.addCards(card.toPbCard())
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq2: Int = p.seq
                         builder.seq = seq2

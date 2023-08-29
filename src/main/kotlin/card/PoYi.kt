@@ -64,7 +64,7 @@ class PoYi : Card {
                     val builder = use_po_yi_toc.newBuilder()
                     builder.card = card.toPbCard()
                     builder.playerId = player.getAlternativeLocation(r.location)
-                    if (!sendPhase.isMessageCardFaceUp) builder.waitingSecond = 15
+                    if (!sendPhase.isMessageCardFaceUp) builder.waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq2 = player.seq
                         builder.messageCard = sendPhase.messageCard.toPbCard()

@@ -1,5 +1,6 @@
 package com.fengsheng.phase
 
+import com.fengsheng.Config
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
@@ -34,7 +35,7 @@ data class WaitForDieGiveCard(
         val whoDie = diedQueue[diedIndex]
         if (whoDie.cards.isEmpty()) return ResolveResult(AfterDieGiveCard(this), true)
         for (p in whoDie.game!!.players) {
-            p!!.waitForDieGiveCard(whoDie, 20)
+            p!!.waitForDieGiveCard(whoDie, Config.WaitSecond * 4 / 3)
         }
         return null
     }

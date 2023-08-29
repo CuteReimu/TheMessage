@@ -67,7 +67,7 @@ class SouJi : AbstractSkill(), ActiveSkill {
                     val builder = skill_sou_ji_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 20
+                    builder.waitingSecond = Config.WaitSecond * 4 / 3
                     if (p === r) {
                         for (card in target.cards) builder.addCards(card.toPbCard())
                         builder.messageCard = fsm.messageCard.toPbCard()

@@ -114,7 +114,7 @@ class DuJi : AbstractSkill(), ActiveSkill {
                         builder.addTargetPlayerIds(p.getAlternativeLocation(twoPlayersAndCard.waitingPlayer.location))
                         builder.addCardIds(twoPlayersAndCard.card.id)
                     }
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq2 = p.seq
                         builder.seq = seq2
@@ -202,7 +202,7 @@ class DuJi : AbstractSkill(), ActiveSkill {
                     builder.waitingPlayerId = p.getAlternativeLocation(selection.waitingPlayer.location)
                     builder.targetPlayerId = p.getAlternativeLocation(selection.fromPlayer.location)
                     builder.card = selection.card.toPbCard()
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === selection.waitingPlayer) {
                         val seq2: Int = p.seq
                         builder.seq = seq2

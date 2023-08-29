@@ -32,7 +32,7 @@ class JiangHuLing : TriggeredSkill {
                 if (player is HumanPlayer) {
                     val builder = skill_wait_for_jiang_hu_ling_a_toc.newBuilder()
                     builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq2 = player.seq
                         builder.seq = seq2
@@ -136,7 +136,7 @@ class JiangHuLing : TriggeredSkill {
                     val builder = skill_wait_for_jiang_hu_ling_b_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(fsm.sender.location)
                     builder.color = color
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === fsm.sender) {
                         val seq2 = p.seq
                         builder.seq = seq2

@@ -104,7 +104,7 @@ class ShiTan : Card {
                     val builder = show_shi_tan_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === target) {
                         val seq2 = p.seq
                         builder.setSeq(seq2).card = card.toPbCard()

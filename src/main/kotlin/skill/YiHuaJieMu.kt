@@ -53,7 +53,7 @@ class YiHuaJieMu : AbstractSkill(), ActiveSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_yi_hua_jie_mu_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 30
+                    builder.waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
                         val seq = p.seq
                         builder.seq = seq

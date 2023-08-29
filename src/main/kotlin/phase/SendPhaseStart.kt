@@ -1,5 +1,6 @@
 package com.fengsheng.phase
 
+import com.fengsheng.Config
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
@@ -29,7 +30,7 @@ data class SendPhaseStart(val player: Player) : Fsm {
             return ResolveResult(null, false)
         }
         for (p in game.players) {
-            p!!.notifySendPhaseStart(15)
+            p!!.notifySendPhaseStart(Config.WaitSecond)
         }
         return null
     }

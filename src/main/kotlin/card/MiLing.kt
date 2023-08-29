@@ -72,6 +72,7 @@ class MiLing : Card {
         r.deleteCard(id)
         val color = this.secret[secret]
         val hasColor = target.cards.any { color in it.colors }
+        val timeout = Config.WaitSecond
         val resolveFunc = { _: Boolean ->
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -81,7 +82,7 @@ class MiLing : Card {
                     builder.secret = secret
                     if (p === r || p === target) builder.card = toPbCard()
                     builder.hasColor = hasColor
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = timeout
                     if (!hasColor && p === r)
                         target.cards.forEach { builder.addHandCards(it.toPbCard()) }
                     if (hasColor && p === target || !hasColor && p === r) {
@@ -91,9 +92,9 @@ class MiLing : Card {
                 }
             }
             if (hasColor)
-                executeMiLing(this@MiLing, target, secret, null, fsm)
+                executeMiLing(this@MiLing, target, secret, null, fsm, timeout)
             else
-                miLingChooseCard(this@MiLing, r, target, secret, fsm)
+                miLingChooseCard(this@MiLing, r, target, secret, fsm, timeout)
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Mi_Ling, resolveFunc, fsm))
     }
@@ -103,7 +104,8 @@ class MiLing : Card {
         val player: Player,
         val target: Player,
         val secret: Int,
-        val sendPhase: SendPhaseStart
+        val sendPhase: SendPhaseStart,
+        val timeout: Int
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = player
@@ -116,7 +118,7 @@ class MiLing : Card {
                         builder.seq = seq2
                         r.game!!.tryContinueResolveProtocol(r, builder.build())
                     }
-                }, r.getWaitSeconds(15 + 2).toLong(), TimeUnit.SECONDS)
+                }, r.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = mi_ling_choose_card_tos.newBuilder()
@@ -145,12 +147,13 @@ class MiLing : Card {
                 return null
             }
             player.incrSeq()
+            val timeout = Config.WaitSecond
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = mi_ling_choose_card_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(player.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = timeout
                     if (p === player || p === target)
                         builder.card = card.toPbCard()
                     if (p === target)
@@ -158,7 +161,7 @@ class MiLing : Card {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(executeMiLing(this.card, target, secret, card, sendPhase), true)
+            return ResolveResult(executeMiLing(this.card, target, secret, card, sendPhase, timeout), true)
         }
     }
 
@@ -167,7 +170,8 @@ class MiLing : Card {
         val target: Player,
         val secret: Int,
         val messageCard: Card?,
-        val sendPhase: SendPhaseStart
+        val sendPhase: SendPhaseStart,
+        val timeout: Int
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val card = messageCard ?: target.cards.find { this.card.secret[secret] in it.colors }!!
@@ -187,7 +191,7 @@ class MiLing : Card {
                         builder.seq = seq2
                         target.game!!.tryContinueResolveProtocol(target, builder.build())
                     }
-                }, target.getWaitSeconds(15 + 2).toLong(), TimeUnit.SECONDS)
+                }, target.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(target.game!!, {
                     val skill = target.findSkill(SkillId.LENG_XUE_XUN_LIAN) as? LengXueXunLian

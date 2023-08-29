@@ -29,7 +29,7 @@ class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
     private data class executeChiZiZhiXinA(val fsm: ReceivePhaseSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in fsm.sender.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender, 15)
+                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender)
             return null
         }
 
@@ -76,7 +76,7 @@ class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
                     val builder = skill_chi_zi_zhi_xin_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.messageCard = fsm.messageCard.toPbCard()
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = r.seq
                         builder.seq = seq

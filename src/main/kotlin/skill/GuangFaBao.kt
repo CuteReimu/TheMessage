@@ -55,7 +55,7 @@ class GuangFaBao : AbstractSkill(), ActiveSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_wait_for_guang_fa_bao_b_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 20
+                    builder.waitingSecond = Config.WaitSecond * 4 / 3
                     if (p === r) {
                         val seq2: Int = p.seq
                         builder.seq = seq2

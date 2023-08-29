@@ -39,7 +39,7 @@ class ZhuanJiao : AbstractSkill(), TriggeredSkill {
                 if (player is HumanPlayer) {
                     val builder = skill_wait_for_zhuan_jiao_toc.newBuilder()
                     builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq2 = player.seq
                         builder.seq = seq2

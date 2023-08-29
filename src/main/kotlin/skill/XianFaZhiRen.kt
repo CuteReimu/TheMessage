@@ -38,7 +38,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                 if (p is HumanPlayer) {
                     if (p === r) {
                         val builder = wait_for_skill_xian_fa_zhi_ren_a_toc.newBuilder()
-                        builder.waitingSecond = 15
+                        builder.waitingSecond = Config.WaitSecond
                         val seq = p.seq
                         builder.seq = seq
                         p.timeout = GameExecutor.post(g, {
@@ -119,6 +119,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
             log.info("${player}发动了[先发制人]，弃掉了${target}面前的$card")
             player.game!!.deck.discard(card)
             (fsm.afterResolve as? HasReceiveOrder)?.receiveOrder?.removePlayerIfNotHaveThreeBlack(target)
+            val timeout = Config.WaitSecond
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_xian_fa_zhi_ren_a_toc.newBuilder()
@@ -126,12 +127,12 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                     builder.playerId = p.getAlternativeLocation(player.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.cardId = card.id
-                    builder.waitingSecond = SKILL_TIMEOUT
+                    builder.waitingSecond = timeout
                     if (p === player) builder.seq = p.seq
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(executeXianFaZhiRenB(fsm, player, target), true)
+            return ResolveResult(executeXianFaZhiRenB(fsm, player, target, timeout), true)
         }
 
         companion object {
@@ -183,6 +184,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
         r.game!!.playerSetRoleFaceUp(r, true)
         log.error("${r}发动了[先发制人]，弃掉了${target}面前的$card")
         r.game!!.deck.discard(card)
+        val timeout = Config.WaitSecond
         for (p in r.game!!.players) {
             if (p is HumanPlayer) {
                 val builder = skill_xian_fa_zhi_ren_a_toc.newBuilder()
@@ -190,15 +192,16 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                 builder.playerId = p.getAlternativeLocation(r.location)
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
                 builder.cardId = card.id
-                builder.waitingSecond = SKILL_TIMEOUT
+                builder.waitingSecond = timeout
                 if (p === r) builder.seq = p.seq
                 p.send(builder.build())
             }
         }
-        r.game!!.resolve(executeXianFaZhiRenB(fsm, r, target))
+        r.game!!.resolve(executeXianFaZhiRenB(fsm, r, target, timeout))
     }
 
-    private data class executeXianFaZhiRenB(val fsm: Fsm, val r: Player, val defaultTarget: Player) : WaitingFsm {
+    private data class executeXianFaZhiRenB(val fsm: Fsm, val r: Player, val defaultTarget: Player, val timeout: Int) :
+        WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (r is HumanPlayer) {
                 val seq = r.seq
@@ -210,7 +213,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                         builder.seq = seq
                         r.game!!.tryContinueResolveProtocol(r, builder.build())
                     }
-                }, r.getWaitSeconds(SKILL_TIMEOUT + 2).toLong(), TimeUnit.SECONDS)
+                }, r.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_xian_fa_zhi_ren_b_tos.newBuilder()
@@ -280,7 +283,6 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
 
     companion object {
         private val log = Logger.getLogger(XianFaZhiRen::class.java)
-        private const val SKILL_TIMEOUT = 15
 
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn

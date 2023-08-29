@@ -76,7 +76,7 @@ class MiaoBiQiaoBian : AbstractSkill(), ActiveSkill {
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target1.location)
                     builder.cardId = card1.id
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq2: Int = p.seq
                         builder.seq = seq2

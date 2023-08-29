@@ -1,5 +1,6 @@
 package com.fengsheng.phase
 
+import com.fengsheng.Config
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
@@ -35,7 +36,7 @@ data class WaitForChengQing(
     override fun resolve(): ResolveResult? {
         log.info("正在询问${askWhom}是否使用澄清")
         for (p in askWhom.game!!.players) {
-            p!!.notifyAskForChengQing(whoDie, askWhom, 15)
+            p!!.notifyAskForChengQing(whoDie, askWhom, Config.WaitSecond)
         }
         return null
     }

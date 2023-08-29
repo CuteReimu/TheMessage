@@ -28,7 +28,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                             player,
                             select_role_tos.newBuilder().setRole(autoSelect).build()
                         )
-                    }, player.getWaitSeconds(selectRoleTimeout + 2).toLong(), TimeUnit.SECONDS)
+                    }, player.getWaitSeconds(Config.WaitSecond * 2 + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 val prefer = if (player!!.identity == color.Black) blackPrefer else redBluePrefer
                 val disgust = if (player.identity == color.Black) blackDisgust else redBlueDisgust
@@ -78,7 +78,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         builder.identity = player.identity
         builder.secretTask = player.secretTask
         builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(role.unknown) })
-        builder.waitingSecond = selectRoleTimeout
+        builder.waitingSecond = Config.WaitSecond * 2
         player.send(builder.build())
     }
 
@@ -89,7 +89,5 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         private val redBluePrefer = blackPrefer + listOf(role.xiao_jiu, role.sp_gu_xiao_meng, role.bai_xiao_nian)
         private val redBlueDisgust = listOf(role.jin_sheng_huo, role.mao_bu_ba, role.wang_tian_xiang)
         private val blackDisgust = redBlueDisgust + listOf(role.xiao_jiu, role.sp_gu_xiao_meng, role.bai_xiao_nian)
-
-        private const val selectRoleTimeout = 30
     }
 }

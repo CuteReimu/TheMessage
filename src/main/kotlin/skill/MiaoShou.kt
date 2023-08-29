@@ -66,7 +66,7 @@ class MiaoShou : AbstractSkill(), ActiveSkill {
                     val builder = skill_miao_shou_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     builder.messageCard = fsm.messageCard.toPbCard()
                     if (p === r) {
                         target.cards.forEach { builder.addCards(it.toPbCard()) }

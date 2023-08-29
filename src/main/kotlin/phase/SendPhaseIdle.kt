@@ -1,5 +1,6 @@
 package com.fengsheng.phase
 
+import com.fengsheng.Config
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
@@ -36,7 +37,7 @@ data class SendPhaseIdle(
 ) : Fsm {
     override fun resolve(): ResolveResult? {
         for (p in whoseTurn.game!!.players) {
-            p!!.notifySendPhase(15)
+            p!!.notifySendPhase(Config.WaitSecond)
         }
         return null
     }

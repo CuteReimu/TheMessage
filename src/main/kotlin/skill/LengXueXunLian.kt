@@ -50,7 +50,7 @@ class LengXueXunLian : AbstractSkill(), ActiveSkill {
                     val builder = skill_leng_xue_xun_lian_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     cards.forEach { builder.addCards(it.toPbCard()) }
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
                         builder.seq = seq

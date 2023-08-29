@@ -38,7 +38,7 @@ class CongRongYingDui : AbstractSkill(), TriggeredSkill {
                     val builder = wait_for_skill_cong_rong_ying_dui_toc.newBuilder()
                     builder.playerId = player.getAlternativeLocation(r.location)
                     builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq = player.seq
                         builder.seq = seq

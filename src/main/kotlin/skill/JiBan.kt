@@ -44,7 +44,7 @@ class JiBan : AbstractSkill(), ActiveSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_ji_ban_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq2: Int = p.seq
                         builder.seq = seq2

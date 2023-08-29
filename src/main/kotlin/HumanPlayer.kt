@@ -2,8 +2,8 @@ package com.fengsheng
 
 import com.fengsheng.card.Card
 import com.fengsheng.phase.*
-import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.phase.*
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Errcode.error_message_toc
 import com.fengsheng.protos.Fengsheng.*
@@ -157,11 +157,10 @@ class HumanPlayer(
     }
 
     override fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card) {
-        val builder =
-            add_card_toc.newBuilder().setPlayerId(getAlternativeLocation(location)).setUnknownCardCount(unknownCount)
-        for (card in cards) {
-            builder.addCards(card.toPbCard())
-        }
+        val builder = add_card_toc.newBuilder()
+        builder.playerId = getAlternativeLocation(location)
+        builder.unknownCardCount = unknownCount
+        cards.forEach { builder.addCards(it.toPbCard()) }
         send(builder.build())
     }
 
@@ -169,7 +168,9 @@ class HumanPlayer(
         val player = (game!!.fsm as DrawPhase).player
         val playerId = getAlternativeLocation(player.location)
         val builder = notify_phase_toc.newBuilder()
-        builder.setCurrentPlayerId(playerId).setCurrentPhase(Common.phase.Draw_Phase).waitingPlayerId = playerId
+        builder.currentPlayerId = playerId
+        builder.currentPhase = Draw_Phase
+        builder.waitingPlayerId = playerId
         send(builder.build())
     }
 
@@ -177,7 +178,9 @@ class HumanPlayer(
         val player = (game!!.fsm as MainPhaseIdle).player
         val playerId = getAlternativeLocation(player.location)
         val builder = notify_phase_toc.newBuilder()
-        builder.setCurrentPlayerId(playerId).setCurrentPhase(Common.phase.Main_Phase).waitingPlayerId = playerId
+        builder.currentPlayerId = playerId
+        builder.currentPhase = Main_Phase
+        builder.waitingPlayerId = playerId
         builder.waitingSecond = waitSecond
         if (this === player) {
             builder.seq = seq
@@ -198,7 +201,7 @@ class HumanPlayer(
         val playerId = getAlternativeLocation(player.location)
         val builder = notify_phase_toc.newBuilder()
         builder.currentPlayerId = playerId
-        builder.currentPhase = Common.phase.Send_Start_Phase
+        builder.currentPhase = Send_Start_Phase
         builder.waitingPlayerId = playerId
         if (player.cards.isNotEmpty()) {
             builder.waitingSecond = waitSecond
@@ -244,7 +247,7 @@ class HumanPlayer(
         val fsm = game!!.fsm as SendPhaseIdle
         val builder = notify_phase_toc.newBuilder()
         builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
-        builder.currentPhase = Common.phase.Send_Phase
+        builder.currentPhase = Send_Phase
         builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
         builder.waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
         builder.messageCardDir = fsm.dir
@@ -289,7 +292,8 @@ class HumanPlayer(
         builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
         builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
         builder.waitingPlayerId = getAlternativeLocation(fsm.whoseFightTurn.location)
-        builder.setCurrentPhase(Common.phase.Fight_Phase).waitingSecond = waitSecond
+        builder.currentPhase = Fight_Phase
+        builder.waitingSecond = waitSecond
         if (fsm.isMessageCardFaceUp) builder.messageCard = fsm.messageCard.toPbCard()
         if (this === fsm.whoseFightTurn) {
             builder.seq = seq
@@ -310,7 +314,7 @@ class HumanPlayer(
         builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
         builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
         builder.waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
-        builder.setCurrentPhase(Common.phase.Receive_Phase).messageCard = fsm.messageCard.toPbCard()
+        builder.setCurrentPhase(Receive_Phase).messageCard = fsm.messageCard.toPbCard()
         send(builder.build())
     }
 
@@ -325,8 +329,9 @@ class HumanPlayer(
         builder.currentPlayerId = getAlternativeLocation(whoseTurn.location)
         builder.messagePlayerId = getAlternativeLocation(inFrontOfWhom.location)
         builder.waitingPlayerId = getAlternativeLocation(waitingPlayer.location)
-        builder.setCurrentPhase(Common.phase.Receive_Phase).setMessageCard(messageCard.toPbCard()).waitingSecond =
-            waitSecond
+        builder.currentPhase = Receive_Phase
+        builder.messageCard = messageCard.toPbCard()
+        builder.waitingSecond = waitSecond
         if (this === waitingPlayer) {
             builder.seq = seq
             val seq2 = seq

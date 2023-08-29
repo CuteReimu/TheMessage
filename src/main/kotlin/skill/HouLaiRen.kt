@@ -70,7 +70,7 @@ class HouLaiRen : AbstractSkill(), ActiveSkill {
                     val builder = skill_hou_lai_ren_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.remainCardId = remainCardId
-                    builder.waitingSecond = 30
+                    builder.waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
                         roles.forEach { builder.addRoles(it.role) }
                         val seq2 = p.seq

@@ -94,7 +94,7 @@ class FengYunBianHuan : Card {
                 if (player is HumanPlayer) {
                     val builder = wait_for_feng_yun_bian_huan_choose_card_toc.newBuilder()
                     builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq2: Int = player.seq
                         builder.seq = seq2

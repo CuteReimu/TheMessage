@@ -26,7 +26,7 @@ class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
         r.addSkillUseCount(skillId)
         val target = fsm.inFrontOfWhom
         val isHiddenRole = !target.isPublicRole
-        val timeoutSecond = 15
+        val timeoutSecond = Config.WaitSecond
         for (player in g.players) {
             if (player is HumanPlayer) {
                 val builder = skill_cang_shen_jiao_tang_a_toc.newBuilder()

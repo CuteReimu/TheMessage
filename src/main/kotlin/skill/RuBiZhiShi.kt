@@ -65,7 +65,7 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     val builder = skill_ru_bi_zhi_shi_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 30
+                    builder.waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
                         target.cards.forEach { builder.addCards(it.toPbCard()) }
                         val seq = p.seq

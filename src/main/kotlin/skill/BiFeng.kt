@@ -37,7 +37,7 @@ class BiFeng : AbstractSkill(), TriggeredSkill {
                 if (p is HumanPlayer) {
                     val builder = wait_for_skill_bi_feng_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(fsm.askWhom.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
                         builder.seq = seq

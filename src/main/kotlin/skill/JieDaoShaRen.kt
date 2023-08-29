@@ -77,7 +77,7 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.card = card.toPbCard()
                     if (card.colors.contains(color.Black)) {
-                        builder.waitingSecond = 15
+                        builder.waitingSecond = Config.WaitSecond
                         if (p === r) {
                             val seq2 = p.seq
                             builder.seq = seq2

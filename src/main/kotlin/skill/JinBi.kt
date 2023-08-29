@@ -63,7 +63,7 @@ class JinBi : AbstractSkill(), ActiveSkill {
                     val builder = skill_jin_bi_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === target) {
                         val seq2: Int = p.seq
                         builder.seq = seq2

@@ -1,5 +1,6 @@
 package com.fengsheng.phase
 
+import com.fengsheng.Config
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
@@ -13,7 +14,7 @@ data class MainPhaseIdle(val player: Player) : Fsm {
             return ResolveResult(NextTurn(player), true)
         }
         for (p in player.game!!.players) {
-            p!!.notifyMainPhase(20)
+            p!!.notifyMainPhase(Config.WaitSecond * 4 / 3)
         }
         return null
     }

@@ -58,7 +58,7 @@ class WeiBi : Card {
                     val builder = wei_bi_wait_for_give_card_toc.newBuilder()
                     if (card != null) builder.card = card.toPbCard()
                     builder.wantType = wantType
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     if (p === target) {

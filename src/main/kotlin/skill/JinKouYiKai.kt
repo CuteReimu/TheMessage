@@ -55,7 +55,7 @@ class JinKouYiKai : AbstractSkill(), ActiveSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_jin_kou_yi_kai_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         builder.card = cards.first().toPbCard()
                         val seq2: Int = p.seq

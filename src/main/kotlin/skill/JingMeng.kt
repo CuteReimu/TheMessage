@@ -27,7 +27,7 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
     private data class executeJingMengA(val fsm: ReceivePhaseSkill) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom, 15)
+                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
             return null
         }
 
@@ -98,7 +98,7 @@ class JingMeng : AbstractSkill(), TriggeredSkill {
                     val builder = skill_jing_meng_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = 15
+                    builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         for (card in target.cards) builder.addCards(card.toPbCard())
                         val seq2: Int = p.seq

@@ -64,7 +64,7 @@ class TanQiuZhenLi : AbstractSkill(), ActiveSkill {
         log.info("${r}发动了[探求真理]，将${target}面前的${card}移到自己面前")
         target.deleteMessageCard(card.id)
         r.messageCards.add(card)
-        val waitingSecond = 15
+        val waitingSecond = Config.WaitSecond
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_tan_qiu_zhen_li_a_toc.newBuilder()
