@@ -74,7 +74,7 @@ class PingHeng : Card {
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(3)
             target.draw(3)
-            OnFinishResolveCard(r, r, target, this, card_type.Ping_Heng, r, MainPhaseIdle(r))
+            OnFinishResolveCard(r, target, this, card_type.Ping_Heng, MainPhaseIdle(r))
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Ping_Heng, r, resolveFunc, g.fsm!!))
     }

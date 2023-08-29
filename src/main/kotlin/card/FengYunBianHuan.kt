@@ -88,7 +88,7 @@ class FengYunBianHuan : Card {
             if (r == null) {
                 mainPhaseIdle.player.game!!.deck.discard(*drawCards.toTypedArray())
                 val newFsm = if (asMessageCard) OnAddMessageCard(p, mainPhaseIdle, false) else mainPhaseIdle
-                return ResolveResult(OnFinishResolveCard(p, p, null, card, Feng_Yun_Bian_Huan, p, newFsm), true)
+                return ResolveResult(OnFinishResolveCard(p, null, card, Feng_Yun_Bian_Huan, newFsm), true)
             }
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {

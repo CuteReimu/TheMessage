@@ -66,7 +66,7 @@ class DiaoBao : Card {
                 isMessageCardFaceUp = false,
                 whoseFightTurn = fsm.inFrontOfWhom
             )
-            OnFinishResolveCard(fsm.whoseTurn, r, null, this, card_type.Diao_Bao, r, newFsm) {}
+            OnFinishResolveCard(r, null, this, card_type.Diao_Bao, newFsm) {}
         }
         g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Diao_Bao, r, resolveFunc, fsm))
     }

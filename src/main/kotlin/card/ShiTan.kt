@@ -75,7 +75,7 @@ class ShiTan : Card {
                 }
                 executeShiTan(r, target, this@ShiTan)
             } else {
-                OnFinishResolveCard(r, r, target, this, card_type.Shi_Tan, r, MainPhaseIdle(r)) {}
+                OnFinishResolveCard(r, target, this, card_type.Shi_Tan, MainPhaseIdle(r)) {}
             }
         }
         g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, r, resolveFunc, g.fsm!!))
@@ -170,7 +170,7 @@ class ShiTan : Card {
                     target.game!!.playerDiscardCard(target, discardCard)
             }
             return ResolveResult(
-                OnFinishResolveCard(r, r, target, card, card_type.Shi_Tan, r, MainPhaseIdle(r)) {},
+                OnFinishResolveCard(r, target, card, card_type.Shi_Tan, MainPhaseIdle(r)) {},
                 true
             )
         }

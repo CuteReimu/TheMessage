@@ -9,32 +9,30 @@ import com.fengsheng.protos.Common.card_type
 /**
  * 卡牌结算后
  *
- * @param whoseTurn 谁的回合
  * @param player 出牌的
  * @param targetPlayer 目标角色
  * @param card 出的牌，有可能没出牌
  * @param cardType 出的牌的类型
- * @param askWhom 遍历到了谁的技能
  * @param nextFsm 接下来是什么阶段
+ * @param askWhom 遍历到了谁的技能
  * @param whereToGoFunc 卡牌移到哪
  */
 data class OnFinishResolveCard(
-    val whoseTurn: Player,
     val player: Player,
     val targetPlayer: Player?,
     val card: Card?,
     val cardType: card_type,
-    val askWhom: Player,
     val nextFsm: Fsm,
+    val askWhom: Player = player,
     val whereToGoFunc: () -> Unit = { card?.let { player.game!!.deck.discard(it.getOriginCard()) } },
 ) : Fsm {
     override fun resolve(): ResolveResult {
-        val result = whoseTurn.game!!.dealListeningSkill()
+        val result = player.game!!.dealListeningSkill()
         return result ?: ResolveResult(OnFinishResolveCardNext(this), true)
     }
 
     override fun toString(): String {
-        return "${player}使用${card}时"
+        return "${player}使用${card}结算后"
     }
 
     private data class OnFinishResolveCardNext(val onUseCard: OnFinishResolveCard) : Fsm {

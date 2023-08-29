@@ -307,9 +307,8 @@ class MiLing : Card {
                 sendPhase.player, target, messageCard, pb.cardDir, target.game!!.players[targetLocation]!!,
                 lockPlayers.toTypedArray()
             )
-            val whoPlayCard = sendPhase.player
             return ResolveResult(
-                OnFinishResolveCard(whoPlayCard, whoPlayCard, target, card, card_type.Mi_Ling, whoPlayCard, newFsm) {},
+                OnFinishResolveCard(sendPhase.player, target, card, card_type.Mi_Ling, newFsm) {},
                 true
             )
         }

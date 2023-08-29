@@ -86,10 +86,10 @@ class JieHuo : Card {
                         }
                     }
                     val newFsm = fsm.copy(inFrontOfWhom = r, whoseFightTurn = r)
-                    OnFinishResolveCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, newFsm)
+                    OnFinishResolveCard(r, null, card, card_type.Jie_Huo, newFsm)
                 } else {
                     val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-                    OnFinishResolveCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, newFsm)
+                    OnFinishResolveCard(r, null, card, card_type.Jie_Huo, newFsm)
                 }
             }
             if (card != null)

@@ -100,10 +100,10 @@ class ChengQing : Card {
                 }
             }
             if (fsm is MainPhaseIdle) {
-                OnFinishResolveCard(fsm.player, r, target, this, card_type.Cheng_Qing, r, fsm)
+                OnFinishResolveCard(r, target, this, card_type.Cheng_Qing, fsm)
             } else {
                 val newFsm = UseChengQingOnDying(fsm as WaitForChengQing)
-                OnFinishResolveCard(fsm.whoseTurn, r, target, this, card_type.Cheng_Qing, r, newFsm)
+                OnFinishResolveCard(r, target, this, card_type.Cheng_Qing, newFsm)
             }
         }
         if (fsm is MainPhaseIdle) g.resolve(
