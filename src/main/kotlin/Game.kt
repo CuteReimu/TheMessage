@@ -193,7 +193,7 @@ class Game private constructor(totalPlayerCount: Int) {
         }))
     }
 
-    fun end(declaredWinners: List<Player>?, winners: List<Player>?) {
+    fun end(declaredWinners: List<Player>?, winners: List<Player>?, forceEnd: Boolean = false) {
         isEnd = true
         GameCache.remove(id)
         val humanPlayers = players.filterIsInstance<HumanPlayer>()
@@ -244,6 +244,7 @@ class Game private constructor(totalPlayerCount: Int) {
             playerNameCache.remove(it.playerName)
             it.reset()
         }
+        if (forceEnd) humanPlayers.forEach { it.send(notify_kicked_toc.getDefaultInstance()) }
         queue.close()
     }
 
