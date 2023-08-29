@@ -19,10 +19,10 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
-        fsm.askWhom.findSkill(skillId) != null || return null
+        fsm.askWhom === fsm.targetPlayer || return null
         fsm.askWhom.alive || return null
+        fsm.askWhom.findSkill(skillId) != null || return null
         fsm.cardType in cardTypes || return null
-        fsm.targetPlayer === fsm.askWhom || return null
         !fsm.askWhom.roleFaceUp || return null
         fsm.askWhom.addSkillUseCount(skillId)
         log.info("${fsm.askWhom}发动了[就计]")

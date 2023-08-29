@@ -17,11 +17,12 @@ class ZhuanJiao : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.ZHUAN_JIAO
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard
-        if (fsm == null || fsm.askWhom !== fsm.player || fsm.askWhom.findSkill(skillId) == null)
-            return null
-        if (fsm.askWhom.messageCards.all { it.colors.contains(color.Black) }) return null
-        if (fsm.askWhom.getSkillUseCount(skillId) > 0) return null
+        val fsm = g.fsm as? OnUseCard ?: return null
+        fsm.askWhom === fsm.player || return null
+        fsm.askWhom.alive || return null
+        fsm.askWhom.findSkill(skillId) != null || return null
+        fsm.askWhom.messageCards.any { !it.isBlack() } || return null
+        fsm.askWhom.getSkillUseCount(skillId) == 0 || return null
         fsm.askWhom.addSkillUseCount(skillId)
         val r = fsm.askWhom
         val oldResolveFunc = fsm.resolveFunc

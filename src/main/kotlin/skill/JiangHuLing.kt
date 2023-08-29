@@ -119,7 +119,7 @@ class JiangHuLing : TriggeredSkill {
 
         override fun execute(g: Game): ResolveResult? {
             val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-            fsm.askWhom == fsm.sender || return null
+            fsm.askWhom === fsm.sender || return null
             val r = fsm.sender
             r.findSkill(skillId) != null || return null
             r.getSkillUseCount(skillId) == 0 || return null

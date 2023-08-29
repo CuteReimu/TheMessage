@@ -15,11 +15,12 @@ class ShenCang : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.SHEN_CANG
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard
-        if (fsm == null || fsm.askWhom.findSkill(skillId) == null || !fsm.askWhom.alive) return null
-        if (fsm.player !== fsm.askWhom) return null
-        if (fsm.cardType != Wei_Bi && fsm.cardType != Feng_Yun_Bian_Huan && fsm.cardType != Jie_Huo) return null
-        if (!fsm.player.roleFaceUp) return null
+        val fsm = g.fsm as? OnUseCard ?: return null
+        fsm.askWhom === fsm.player || return null
+        fsm.askWhom.alive || return null
+        fsm.askWhom.findSkill(skillId) != null || return null
+        fsm.cardType == Wei_Bi || fsm.cardType == Feng_Yun_Bian_Huan || fsm.cardType == Jie_Huo || return null
+        fsm.player.roleFaceUp || return null
         fsm.askWhom.addSkillUseCount(skillId)
         log.info("${fsm.askWhom}发动了[深藏]")
         for (p in g.players) {

@@ -17,7 +17,7 @@ class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        fsm.askWhom == fsm.sender || return null
+        fsm.askWhom === fsm.sender || return null
         fsm.sender.findSkill(skillId) != null || return null
         !fsm.messageCard.isBlack() || return null
         fsm.inFrontOfWhom != fsm.sender || return null

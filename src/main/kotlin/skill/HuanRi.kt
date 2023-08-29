@@ -4,7 +4,8 @@ import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.OnUseCard
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.Diao_Bao
+import com.fengsheng.protos.Common.card_type.Po_Yi
 import com.fengsheng.protos.Role.skill_huan_ri_toc
 import org.apache.log4j.Logger
 
@@ -15,11 +16,12 @@ class HuanRi : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.HUAN_RI
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard
-        if (fsm == null || fsm.askWhom.findSkill(skillId) == null || !fsm.askWhom.alive) return null
-        if (fsm.player !== fsm.askWhom) return null
-        if (fsm.cardType != card_type.Diao_Bao && fsm.cardType != card_type.Po_Yi) return null
-        if (!fsm.player.roleFaceUp) return null
+        val fsm = g.fsm as? OnUseCard ?: return null
+        fsm.askWhom === fsm.player || return null
+        fsm.askWhom.alive || return null
+        fsm.askWhom.findSkill(skillId) != null || return null
+        fsm.cardType == Diao_Bao || fsm.cardType == Po_Yi || return null
+        fsm.player.roleFaceUp || return null
         fsm.askWhom.addSkillUseCount(skillId)
         log.info("${fsm.askWhom}发动了[换日]")
         for (p in g.players) {

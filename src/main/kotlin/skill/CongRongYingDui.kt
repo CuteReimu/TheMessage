@@ -18,7 +18,7 @@ class CongRongYingDui : AbstractSkill(), TriggeredSkill {
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? OnFinishResolveCard ?: return null
         fsm.cardType == card_type.Shi_Tan || return null
-        fsm.askWhom == fsm.player || fsm.askWhom == fsm.targetPlayer || return null
+        fsm.askWhom === fsm.player || fsm.askWhom === fsm.targetPlayer || return null
         val r = fsm.askWhom
         r.findSkill(skillId) != null || return null
         r.getSkillUseCount(skillId) == 0 || return null

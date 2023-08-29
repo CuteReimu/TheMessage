@@ -17,7 +17,7 @@ class ZhiYin : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        fsm.askWhom == fsm.inFrontOfWhom || return null
+        fsm.askWhom === fsm.inFrontOfWhom || return null
         fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         val colors = fsm.messageCard.colors
