@@ -117,12 +117,12 @@ class Game private constructor(totalPlayerCount: Int) {
         return true
     }
 
-    fun start() {
+    private fun start() {
         if (players.any { it == null }) return
         isStarted = true
         newInstance()
         MiraiPusher.notifyStart()
-        var identities = ArrayList<color>()
+        val identities = ArrayList<color>()
         when (players.size) {
             2 -> Random.nextInt(4).let {
                 identities.add(color.forNumber(it and 1)!!)
