@@ -40,7 +40,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
             skill.init(g)
             fsm.askWhom.skills = arrayOf(*fsm.askWhom.skills, skill)
         }
-        return null
+        return ResolveResult(fsm, true)
     }
 
     private class JiuJi2(val card: Card) : TriggeredSkill {
@@ -49,6 +49,8 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
         override fun execute(g: Game): ResolveResult? {
             val fsm = g.fsm as? OnFinishResolveCard ?: return null
             fsm.askWhom === fsm.targetPlayer || return null
+            fsm.askWhom.alive || return null
+            fsm.askWhom.findSkill(skillId) != null || return null
             fsm.askWhom.cards.add(card.getOriginCard())
             log.info("${fsm.askWhom}将使用的${card.getOriginCard()}加入了手牌")
             fsm.askWhom.skills = fsm.askWhom.skills.filterNot { it.skillId == skillId }.toTypedArray()
