@@ -78,7 +78,7 @@ class ShiTan : Card {
                 OnFinishResolveCard(r, target, this, card_type.Shi_Tan, MainPhaseIdle(r)) {}
             }
         }
-        g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, r, resolveFunc, g.fsm!!))
+        g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, resolveFunc, g.fsm!!))
     }
 
     private fun checkDrawCard(target: Player): Boolean {

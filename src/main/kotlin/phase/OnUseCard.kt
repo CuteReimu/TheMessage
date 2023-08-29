@@ -24,13 +24,13 @@ data class OnUseCard(
     val targetPlayer: Player?,
     val card: Card?,
     val cardType: card_type,
-    val askWhom: Player,
     val resolveFunc: (Boolean) -> Fsm,
     val currentFsm: Fsm,
+    val askWhom: Player = player,
     val valid: Boolean = true,
 ) : Fsm {
     override fun resolve(): ResolveResult {
-        val result = whoseTurn.game!!.dealListeningSkill()
+        val result = player.game!!.dealListeningSkill()
         return result ?: ResolveResult(OnUseCardNext(this), true)
     }
 

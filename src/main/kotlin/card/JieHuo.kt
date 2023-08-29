@@ -93,7 +93,7 @@ class JieHuo : Card {
                 }
             }
             if (card != null)
-                g.resolve(OnUseCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, r, resolveFunc, fsm))
+                g.resolve(OnUseCard(fsm.whoseTurn, r, null, card, card_type.Jie_Huo, resolveFunc, fsm))
             else
                 g.resolve(resolveFunc(true))
         }

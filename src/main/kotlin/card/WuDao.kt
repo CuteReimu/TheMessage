@@ -78,7 +78,7 @@ class WuDao : Card {
                 OnFinishResolveCard(r, target, this, card_type.Wu_Dao, newFsm)
             }
         }
-        g.resolve(OnUseCard(fsm.whoseTurn, r, target, this, card_type.Wu_Dao, r, resolveFunc, fsm))
+        g.resolve(OnUseCard(fsm.whoseTurn, r, target, this, card_type.Wu_Dao, resolveFunc, fsm))
     }
 
     override fun toString(): String {

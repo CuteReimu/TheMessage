@@ -53,7 +53,7 @@ class PoYi : Card {
         val resolveFunc = { _: Boolean ->
             executePoYi(this@PoYi, fsm)
         }
-        g.resolve(OnUseCard(r, r, null, this, card_type.Po_Yi, r, resolveFunc, fsm))
+        g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Po_Yi, resolveFunc, fsm))
     }
 
     private data class executePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {

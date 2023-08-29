@@ -104,7 +104,7 @@ class LiYou : Card {
                 else newFsm
             }
             if (card != null)
-                g.resolve(OnUseCard(r, r, target, card, card_type.Li_You, r, resolveFunc, g.fsm!!))
+                g.resolve(OnUseCard(r, r, target, card, card_type.Li_You, resolveFunc, g.fsm!!))
             else
                 g.resolve(resolveFunc(true))
         }

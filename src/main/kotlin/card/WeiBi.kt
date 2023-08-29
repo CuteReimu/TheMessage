@@ -188,7 +188,7 @@ class WeiBi : Card {
                     OnFinishResolveCard(r, target, card, card_type.Wei_Bi, MainPhaseIdle(r))
                 }
             }
-            g.resolve(OnUseCard(r, r, target, card, card_type.Wei_Bi, r, resolveFunc, g.fsm!!))
+            g.resolve(OnUseCard(r, r, target, card, card_type.Wei_Bi, resolveFunc, g.fsm!!))
         }
 
         private fun hasCard(player: Player, cardType: card_type): Boolean {

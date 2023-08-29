@@ -107,9 +107,9 @@ class ChengQing : Card {
             }
         }
         if (fsm is MainPhaseIdle) g.resolve(
-            OnUseCard(fsm.player, r, target, this, card_type.Cheng_Qing, r, resolveFunc, fsm)
+            OnUseCard(fsm.player, r, target, this, card_type.Cheng_Qing, resolveFunc, fsm)
         ) else if (fsm is WaitForChengQing) g.resolve(
-            OnUseCard(fsm.whoseTurn, r, target, this, card_type.Cheng_Qing, r, resolveFunc, fsm)
+            OnUseCard(fsm.whoseTurn, r, target, this, card_type.Cheng_Qing, resolveFunc, fsm)
         )
     }
 

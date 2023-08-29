@@ -72,7 +72,7 @@ class FengYunBianHuan : Card {
         val resolveFunc = { _: Boolean ->
             executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
-        g.resolve(OnUseCard(r, r, null, this, Feng_Yun_Bian_Huan, r, resolveFunc, fsm))
+        g.resolve(OnUseCard(r, r, null, this, Feng_Yun_Bian_Huan, resolveFunc, fsm))
     }
 
     private data class executeFengYunBianHuan(
