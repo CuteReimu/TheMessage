@@ -116,7 +116,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
             }
             player.incrSeq()
             player.game!!.playerSetRoleFaceUp(player, true)
-            log.error("${player}发动了[先发制人]，弃掉了${target}面前的$card")
+            log.info("${player}发动了[先发制人]，弃掉了${target}面前的$card")
             player.game!!.deck.discard(card)
             (fsm.afterResolve as? HasReceiveOrder)?.receiveOrder?.removePlayerIfNotHaveThreeBlack(target)
             for (p in player.game!!.players) {
