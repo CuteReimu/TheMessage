@@ -124,11 +124,9 @@ class Game private constructor(totalPlayerCount: Int) {
         MiraiPusher.notifyStart()
         var identities = ArrayList<color>()
         when (players.size) {
-            2 -> identities = when (Random.nextInt(4)) {
-                0 -> arrayListOf(Red, Blue)
-                1 -> arrayListOf(Red, Black)
-                2 -> arrayListOf(Blue, Black)
-                else -> arrayListOf(Black, Black)
+            2 -> Random.nextInt(4).let {
+                identities.add(color.forNumber(it and 1)!!)
+                identities.add(color.forNumber(it and 2)!!)
             }
 
             3 -> {
