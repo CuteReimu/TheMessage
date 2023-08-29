@@ -37,7 +37,7 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
         }
         for (p in players)
             if (p == null) return
-        log.info("已满${players.size}个人，游戏开始。。。")
+        log.info("已满${players.size}个人，游戏将在5秒内开始。。。")
         r.game!!.setStartTimer()
     }
 
