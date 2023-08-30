@@ -118,7 +118,8 @@ class Game private constructor(totalPlayerCount: Int) {
     }
 
     private fun start() {
-        if (players.any { it == null }) return
+        players.all { it != null } || return
+        !isStarted || return
         isStarted = true
         newInstance()
         MiraiPusher.notifyStart()
