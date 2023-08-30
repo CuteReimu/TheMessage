@@ -156,7 +156,7 @@ object ScoreFactory {
         }
 
         (5..9).forEach { count ->
-            playerCountCount[count] = Array(9) {
+            playerCountCount[count] = Array(10) {
                 val winCount = playerCountWinCount[count]?.get(it) ?: 0
                 val gameCount = playerCountAppearCount[count]?.get(it) ?: 0
                 PlayerGameCount(winCount, gameCount).apply {
