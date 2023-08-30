@@ -388,7 +388,7 @@ object Statistics {
                 writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率,清道夫胜率")
                 writer.newLine()
                 writer.write("全部,${appearCount.sum(0)}")
-                for (i in 0 until 9) { // 不显示清道夫，所以这里只有9
+                for (i in 0 until 10) {
                     writer.write(",")
                     val winSum = winCount.sum(i)
                     val appearSum = appearCount.sum(i)
