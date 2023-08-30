@@ -237,10 +237,8 @@ class Game private constructor(totalPlayerCount: Int) {
             this.players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }
         }
         humanPlayers.forEach { it.saveRecord() }
-        humanPlayers.forEach {
-            playerNameCache.remove(it.playerName)
-            it.reset()
-        }
+        humanPlayers.forEach { playerNameCache.remove(it.playerName) }
+        players.forEach { it!!.reset() }
         if (forceEnd) humanPlayers.forEach { it.send(notify_kicked_toc.getDefaultInstance()) }
         queue.close()
     }

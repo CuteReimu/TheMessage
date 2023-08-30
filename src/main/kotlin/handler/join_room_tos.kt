@@ -74,16 +74,32 @@ class join_room_tos : ProtoHandler {
                 player.sendErrorMessage("登录异常，请稍后重试")
                 return@post
             }
-            player.device = pb.device
-            player.playerName = playerName
-            val oldPlayer2 = Game.playerNameCache.put(playerName, player)
-            if (oldPlayer2 != null) {
-                log.info("${oldPlayer2.playerName}离开了房间")
-                newGame.players[oldPlayer2.location] = null
+            var failed = false
+            var oldPlayer2: HumanPlayer? = null
+            Game.playerNameCache.compute(playerName) { _, v ->
+                if (v == null) return@compute player // 抢注成功
+                if (v.game !== newGame) { // 已经被其它房间注册了
+                    failed = true
+                    v
+                } else {
+                    oldPlayer2 = v // 被这个房间注册了，直接顶号
+                    player
+                }
+            }
+            if (failed) {
+                log.warn("${player}登录异常")
+                player.sendErrorMessage("登录异常，请稍后重试")
+                return@post
+            }
+            oldPlayer2?.apply {// 顶号
+                log.info("${playerName}离开了房间")
+                newGame.players[location] = null
                 newGame.cancelStartTimer()
-                oldPlayer2.game = null
-                oldPlayer2.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
-                val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(oldPlayer2.location).build()
+                this.game = null
+                send(Fengsheng.notify_kicked_toc.getDefaultInstance())
+                val builder = Fengsheng.leave_room_toc.newBuilder()
+                builder.position = location
+                val reply = builder.build()
                 newGame.players.forEach { (it as? HumanPlayer)?.send(reply) }
             }
             if (!Config.IsGmEnable) {
@@ -91,8 +107,11 @@ class join_room_tos : ProtoHandler {
                 if (humanCount >= 1) newGame.removeAllRobot()
                 if (humanCount >= 2) newGame.ensure5Position()
             }
+            player.device = pb.device
+            player.playerName = playerName
             val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
             if (!newGame.onPlayerJoinRoom(player, count)) {
+                Game.playerNameCache.remove(playerName) // 登录失败的话，要把注册清掉
                 player.sendErrorMessage("房间已满，请稍后再试")
                 return@post
             }
