@@ -5,8 +5,7 @@ import com.fengsheng.Statistics.Record
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.color.Has_No_Identity
 import com.fengsheng.protos.Common.secret_task
-import com.fengsheng.protos.Common.secret_task.Collector
-import com.fengsheng.protos.Common.secret_task.Mutator
+import com.fengsheng.protos.Common.secret_task.*
 import org.apache.log4j.Logger
 import java.io.BufferedReader
 import java.io.FileInputStream
@@ -68,6 +67,8 @@ object ScoreFactory {
                     val rate =
                         if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
                             array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
+                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate > array[Killer.number + 3].rate)
+                            array[Killer.number + 3].rate // 如果清道夫胜率高于镇压者，则取镇压者的胜率
                         else array[index].rate
                     if (array[index].gameCount > 0) score *= array[0].rate / rate.coerceAtLeast(8.0) // 低于8%的胜率视为8%
                     array
@@ -83,6 +84,8 @@ object ScoreFactory {
                     val rate =
                         if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
                             array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
+                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate > array[Killer.number + 3].rate)
+                            array[Killer.number + 3].rate // 如果清道夫胜率高于镇压者，则取镇压者的胜率
                         else array[index].rate
                     if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - rate.coerceAtLeast(8.0)) // 低于8%的胜率视为8%
                     array

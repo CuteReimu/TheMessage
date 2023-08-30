@@ -347,7 +347,7 @@ object Statistics {
             sb.append(",")
             sb.append(value[0])
             var winRate: Double? = null
-            for (i in 0 until 9) { // 不显示清道夫，所以这里只有9
+            for (i in 0 until 10) {
                 val v = value[i]
                 sb.append(",")
                 winCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
@@ -364,7 +364,7 @@ object Statistics {
             sb.append("${key}人局")
             sb.append(",")
             sb.append(value[0] / key)
-            for (i in 0 until 9) { // 不显示清道夫，所以这里只有9
+            for (i in 0 until 10) {
                 val v = value[i]
                 sb.append(",")
                 playerCountWinCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
@@ -379,13 +379,13 @@ object Statistics {
             sb.append("${key}人局")
             sb.append(",")
             sb.append(value[0] / key)
-            for (i in 0 until 9) // 不显示清道夫，所以这里只有9
+            for (i in 0 until 10)
                 sb.append(",${value[i]}")
             playerAppearCountLines.add(sb.toString())
         }
         FileOutputStream("stat0.csv").use { os ->
             BufferedWriter(OutputStreamWriter(os)).use { writer ->
-                writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率")
+                writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率,清道夫胜率")
                 writer.newLine()
                 writer.write("全部,${appearCount.sum(0)}")
                 for (i in 0 until 9) { // 不显示清道夫，所以这里只有9
@@ -400,14 +400,14 @@ object Statistics {
                     writer.newLine()
                 }
                 writer.newLine()
-                writer.write("人数,场次,人均胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率")
+                writer.write("人数,场次,人均胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率,清道夫胜率")
                 writer.newLine()
                 for (line in playerCountLines) {
                     writer.write(line)
                     writer.newLine()
                 }
                 writer.newLine()
-                writer.write("人数,场次,总出现次数,军潜出现次数,神秘人出现次数,镇压者出现次数,簒夺者出现次数,双重间谍出现次数,诱变者出现次数,先行者出现次数,搅局者出现次数")
+                writer.write("人数,场次,总出现次数,军潜出现次数,神秘人出现次数,镇压者出现次数,簒夺者出现次数,双重间谍出现次数,诱变者出现次数,先行者出现次数,搅局者出现次数,清道夫出现次数")
                 writer.newLine()
                 for (line in playerAppearCountLines) {
                     writer.write(line)
