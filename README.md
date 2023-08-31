@@ -86,6 +86,8 @@ graph TD;
 | /addnotify        | qq=12345678&when=0      | 开了喊我或者结束喊我的功能，qq是艾特的qq号，when为0是开了，1是结束（非必填，默认0）                     |
 | /updatewaitsecond | second=15               | 修改默认出牌时间，其中second字段就是出牌时间（单位：秒），必须大于0                               |
 | /forceend         | 无                       | 强制结束所有游戏，用于卡住了的情况                                                   |
+| /forbidplayer     | name=aaa&hour=72        | 封号，其中name是用户名，hour是小时                                               |
+| /releaseplayer    | name=aaa                | 解封，其中name是用户名                                                       |
 
 ## 开发相关
 

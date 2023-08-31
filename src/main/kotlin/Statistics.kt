@@ -16,6 +16,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.fixedRateTimer
+import kotlin.math.ceil
 import kotlin.random.Random
 
 object Statistics {
@@ -90,17 +91,17 @@ object Statistics {
     }
 
     fun register(name: String): Boolean {
-        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0)) == null
+        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0, 0)) == null
         if (result) pool.trySend(::savePlayerInfo)
         return result
     }
 
-    fun login(name: String, pwd: String?): PlayerInfo? {
+    fun login(name: String, pwd: String?): PlayerInfo {
         val password = try {
             if (pwd.isNullOrEmpty()) "" else md5(name + pwd)
         } catch (e: NoSuchAlgorithmException) {
             log.error("md5加密失败", e)
-            return null
+            throw Exception("内部错误，登录失败")
         }
         var changed = false
         val playerInfo = playerInfoMap.computeIfPresent(name) { _, v ->
@@ -108,10 +109,33 @@ object Statistics {
                 changed = true
                 v.copy(password = password)
             } else v
-        } ?: return null
+        } ?: throw Exception("用户名或密码错误，你可以在群里输入“注册”")
         if (changed) pool.trySend(::savePlayerInfo)
-        if (password != playerInfo.password) return null
+        if (password != playerInfo.password) throw Exception("用户名或密码错误，你可以在群里输入“注册”")
+        val forbidLeft = playerInfo.forbidUntil - System.currentTimeMillis()
+        if (forbidLeft > 0) throw Exception("你已被禁止登录，剩余${ceil(forbidLeft / 3600000.0)}小时")
         return playerInfo
+    }
+
+    fun forbidPlayer(name: String, hours: Int): Boolean {
+        val forbidUntil = System.currentTimeMillis() + hours * 3600000L
+        var changed = false
+        playerInfoMap.computeIfPresent(name) { _, v ->
+            changed = true
+            v.copy(forbidUntil = forbidUntil)
+        }
+        if (changed) pool.trySend(::savePlayerInfo)
+        return changed
+    }
+
+    fun releasePlayer(name: String): Boolean {
+        var changed = false
+        playerInfoMap.computeIfPresent(name) { _, v ->
+            changed = true
+            v.copy(forbidUntil = 0)
+        }
+        if (changed) pool.trySend(::savePlayerInfo)
+        return changed
     }
 
     fun getPlayerInfo(name: String) = playerInfoMap[name]
@@ -157,7 +181,8 @@ object Statistics {
             sb.append(info.gameCount).append(',')
             sb.append(info.name).append(',')
             sb.append(info.score).append(',')
-            sb.append(info.password).append('\n')
+            sb.append(info.password).append(',')
+            sb.append(info.forbidUntil).append('\n')
         }
         writeFile("playerInfo.csv", sb.toString().toByteArray())
     }
@@ -181,13 +206,14 @@ object Statistics {
                 while (true) {
                     line = reader.readLine()
                     if (line == null) break
-                    val a = line.split(",".toRegex(), limit = 5).toTypedArray()
+                    val a = line.split(",".toRegex(), limit = 6).toTypedArray()
                     val password = a[4]
                     val score = if (a[3].length < 6) a[3].toInt() else 0 // 以前这个位置是deviceId
                     val name = a[2]
                     val win = a[0].toInt()
                     val game = a[1].toInt()
-                    if (playerInfoMap.put(name, PlayerInfo(name, score, password, win, game)) != null)
+                    val forbidUntil = a.getOrNull(5)?.toLong() ?: 0
+                    if (playerInfoMap.put(name, PlayerInfo(name, score, password, win, game, forbidUntil)) != null)
                         throw RuntimeException("数据错误，有重复的玩家name")
                     winCount += win
                     gameCount += game
@@ -274,7 +300,8 @@ object Statistics {
         val score: Int,
         val password: String,
         val winCount: Int,
-        val gameCount: Int
+        val gameCount: Int,
+        val forbidUntil: Long,
     )
 
     init {
