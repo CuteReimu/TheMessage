@@ -52,7 +52,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
                         p.send(builder.build())
                     } else {
                         val builder = unknown_waiting_toc.newBuilder()
-                        builder.waitingSecond = 15
+                        builder.waitingSecond = Config.WaitSecond
                         p.send(builder.build())
                     }
                 }

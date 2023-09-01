@@ -244,7 +244,22 @@ message skill_cheng_zhi_toc {
   bool   enable = 3; // 是否发动
 }
 
-// 广播使用【就计】A：你被【试探】【威逼】或【利诱】指定为目标后，你可以翻开此角色牌，然后摸两张牌。
+// 广播询问使用【就计】，李宁玉会收到这条协议，其他人（包括使用者）走全场读条协议
+message skill_wait_for_jiu_ji_toc {
+  uint32 from_player_id = 1; // 谁对你使用了牌
+  card_type card_type = 2; // 什么牌（李宁玉被威逼的时候不知道威逼了什么）
+  card card = 3; // 那张牌（肥源龙川的技能使用的威逼，这个字段为null）
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// 李宁玉【就计】A：你被【试探】【威逼】或【利诱】指定为目标后，你可以翻开此角色牌，然后摸两张牌。
+message skill_jiu_ji_a_tos {
+  bool enable = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【就计】A
 message skill_jiu_ji_a_toc {
   uint32 player_id = 1;
 }
