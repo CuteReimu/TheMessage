@@ -8,9 +8,9 @@ class resetpwd : Function<Map<String, String>, String> {
         return try {
             val name = form["name"]!!
             if (Statistics.resetPassword(name))
-                "{\"msg\": \"重置成功\"}"
+                "{\"result\": \"重置成功\"}"
             else
-                "{\"msg\": \"玩家不存在\"}"
+                "{\"result\": \"玩家不存在\"}"
         } catch (e: NullPointerException) {
             "{\"error\": \"参数错误\"}"
         }
