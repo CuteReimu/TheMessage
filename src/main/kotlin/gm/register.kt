@@ -7,6 +7,7 @@ class register : Function<Map<String, String>, String> {
     override fun apply(form: Map<String, String>): String {
         return try {
             val name = form["name"]!!
+            if (name.contains(",")) return "{\"error\": \"名字中含有非法字符\"}"
             val result = Statistics.register(name)
             "{\"result\": $result}"
         } catch (e: NullPointerException) {
