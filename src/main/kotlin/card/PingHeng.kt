@@ -63,12 +63,13 @@ class PingHeng : Card {
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
             for (player in g.players) {
-                (player as? HumanPlayer)?.send(
-                    use_ping_heng_toc.newBuilder()
-                        .setPlayerId(player.getAlternativeLocation(r.location))
-                        .setTargetPlayerId(player.getAlternativeLocation(target.location))
-                        .setPingHengCard(toPbCard()).build()
-                )
+                if (player is HumanPlayer) {
+                    val builder = use_ping_heng_toc.newBuilder()
+                    builder.playerId = player.getAlternativeLocation(r.location)
+                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
+                    builder.pingHengCard = toPbCard()
+                    player.send(builder.build())
+                }
             }
             g.playerDiscardCard(r, *r.cards.toTypedArray())
             g.playerDiscardCard(target, *target.cards.toTypedArray())

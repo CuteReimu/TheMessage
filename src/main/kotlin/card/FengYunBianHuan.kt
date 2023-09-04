@@ -62,7 +62,8 @@ class FengYunBianHuan : Card {
         for (player in r.game!!.players) {
             if (player is HumanPlayer) {
                 val builder = use_feng_yun_bian_huan_toc.newBuilder()
-                builder.setCard(toPbCard()).playerId = player.getAlternativeLocation(r.location)
+                builder.card = toPbCard()
+                builder.playerId = player.getAlternativeLocation(r.location)
                 for (c in drawCards) {
                     builder.addShowCards(c.toPbCard())
                 }

@@ -71,6 +71,8 @@ enum card_type {
   Wu_Dao = 8; // 误导
   Feng_Yun_Bian_Huan = 9; // 风云变幻
   Mi_Ling = 10; // 密令
+  Diao_Hu_Li_Shan = 11; // 调虎离山
+  Yu_Qin_Gu_Zong = 12; // 欲擒故纵
 }
 
 enum color {
