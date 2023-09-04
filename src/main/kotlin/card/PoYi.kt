@@ -32,7 +32,12 @@ class PoYi : Card {
             (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
-        if (g.qiangLingTypes.contains(type)) {
+        if (r.location in g.diaoHuLiShanPlayers) {
+            log.error("你被调虎离山了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
+            return false
+        }
+        if (type in g.qiangLingTypes) {
             log.error("破译被禁止使用了")
             (r as? HumanPlayer)?.sendErrorMessage("破译被禁止使用了")
             return false
@@ -149,6 +154,7 @@ class PoYi : Card {
         fun ai(e: SendPhaseIdle, card: Card): Boolean {
             val player = e.inFrontOfWhom
             if (player.game!!.qiangLingTypes.contains(card_type.Po_Yi)) return false
+            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             if (e.isMessageCardFaceUp || !e.messageCard.colors.contains(color.Black)) return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true

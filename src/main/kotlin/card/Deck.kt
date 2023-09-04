@@ -221,6 +221,18 @@ class Deck(private val game: Game) {
             ),
             MiLing(107, listOf(color.Red), direction.Left, false, listOf(color.Blue, color.Red, color.Black)),
             MiLing(108, listOf(color.Red), direction.Right, false, listOf(color.Red, color.Blue, color.Black)),
+            DiaoHuLiShan(109, listOf(color.Black), direction.Up, false),
+            DiaoHuLiShan(110, listOf(color.Black), direction.Left, false),
+            DiaoHuLiShan(111, listOf(color.Black), direction.Right, false),
+            DiaoHuLiShan(112, listOf(color.Red, color.Blue), direction.Up, false),
+            DiaoHuLiShan(113, listOf(color.Red, color.Blue), direction.Left, false),
+            DiaoHuLiShan(114, listOf(color.Red, color.Blue), direction.Right, false),
+            YuQinGuZong(115, listOf(color.Red, color.Blue), direction.Up, false),
+            YuQinGuZong(116, listOf(color.Red, color.Blue), direction.Left, false),
+            YuQinGuZong(117, listOf(color.Red, color.Blue), direction.Right, false),
+            YuQinGuZong(118, listOf(color.Red, color.Blue), direction.Up, false),
+            YuQinGuZong(119, listOf(color.Red, color.Blue), direction.Left, false),
+            YuQinGuZong(120, listOf(color.Red, color.Blue), direction.Right, false),
         )
     }
 }

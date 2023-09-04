@@ -31,7 +31,7 @@ data class OnSendCard(
         var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
         if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.contentToString()}"
         log.info(s)
-        sender.cards.remove(messageCard)
+        sender.cards.remove(messageCard) // 欲擒故纵可能传出面前的情报，这一步什么都不会发生
         for (p in whoseTurn.game!!.players)
             p!!.notifySendMessageCard(whoseTurn, sender, targetPlayer, lockedPlayers, messageCard, dir)
         log.info("情报到达${targetPlayer}面前")

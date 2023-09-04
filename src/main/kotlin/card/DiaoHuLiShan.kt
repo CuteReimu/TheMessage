@@ -8,23 +8,25 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
-import com.fengsheng.protos.Fengsheng.use_ping_heng_toc
+import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
+import com.fengsheng.skill.InvalidSkill
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
-class PingHeng : Card {
+class DiaoHuLiShan : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
             super(id, colors, direction, lockable)
 
     constructor(id: Int, card: Card) : super(id, card)
 
     /**
-     * 仅用于“作为平衡使用”
+     * 仅用于“作为调虎离山使用”
      */
     internal constructor(originCard: Card) : super(originCard)
 
     override val type: card_type
-        get() = card_type.Ping_Heng
+        get() = card_type.Diao_Hu_Li_Shan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {
@@ -38,21 +40,16 @@ class PingHeng : Card {
             return false
         }
         if (type in g.qiangLingTypes) {
-            log.error("平衡被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("平衡被禁止使用了")
+            log.error("调虎离山被禁止使用了")
+            (r as? HumanPlayer)?.sendErrorMessage("调虎离山被禁止使用了")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
-            log.error("平衡的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("平衡的使用时机不对")
+            log.error("调虎离山的使用时机不对")
+            (r as? HumanPlayer)?.sendErrorMessage("调虎离山的使用时机不对")
             return false
         }
         val target = args[0] as Player
-        if (r === target) {
-            log.error("平衡不能对自己使用")
-            (r as? HumanPlayer)?.sendErrorMessage("平衡不能对自己使用")
-            return false
-        }
         if (!target.alive) {
             log.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
@@ -63,45 +60,47 @@ class PingHeng : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
-        log.info("${r}对${target}使用了$this")
+        val isSkill = args[1] as Boolean
+        log.info("${r}对${target}使用了$this，isSkill: $isSkill")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
             for (player in g.players) {
                 if (player is HumanPlayer) {
-                    val builder = use_ping_heng_toc.newBuilder()
+                    val builder = use_diao_hu_li_shan_toc.newBuilder()
                     builder.playerId = player.getAlternativeLocation(r.location)
                     builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    builder.pingHengCard = toPbCard()
+                    builder.card = toPbCard()
+                    builder.isSkill = isSkill
                     player.send(builder.build())
                 }
             }
-            g.playerDiscardCard(r, *r.cards.toTypedArray())
-            g.playerDiscardCard(target, *target.cards.toTypedArray())
-            r.draw(3)
-            target.draw(3)
-            OnFinishResolveCard(r, target, this, card_type.Ping_Heng, MainPhaseIdle(r))
+            if (isSkill) InvalidSkill.deal(target)
+            else g.diaoHuLiShanPlayers.add(target.location)
+            OnFinishResolveCard(r, target, this, card_type.Diao_Hu_Li_Shan, MainPhaseIdle(r))
         }
-        g.resolve(OnUseCard(r, r, target, this, card_type.Ping_Heng, resolveFunc, g.fsm!!))
+        g.resolve(OnUseCard(r, r, target, this, card_type.Diao_Hu_Li_Shan, resolveFunc, g.fsm!!))
     }
 
     override fun toString(): String {
-        return "${cardColorToString(colors)}平衡"
+        return "${cardColorToString(colors)}调虎离山"
     }
 
     companion object {
-        private val log = Logger.getLogger(PingHeng::class.java)
+        private val log = Logger.getLogger(DiaoHuLiShan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             if (player.cards.size > 3) return false
-            val identity = player.identity
             val p = player.game!!.players.filter {
-                if (it === player || !it!!.alive) false
-                else if (identity != color.Black && identity == it.identity) it.cards.size <= 3
-                else it.cards.size >= 3
+                it!!.alive && it.isEnemy(player)
             }.randomOrNull() ?: return false
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
+            val isSkill = p.cards.isEmpty() || Random.nextBoolean()
+            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p, isSkill) }, 2, TimeUnit.SECONDS)
             return true
+        }
+
+        fun resetDiaoHuLiShan(g: Game) {
+            g.diaoHuLiShanPlayers.clear()
         }
     }
 }
