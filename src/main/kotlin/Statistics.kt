@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.fixedRateTimer
 import kotlin.math.ceil
 import kotlin.random.Random
@@ -26,6 +27,7 @@ object Statistics {
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
     private val trialStartTime = ConcurrentHashMap<String, Long>()
+    val rankList = AtomicReference<String>()
 
     init {
         @OptIn(DelicateCoroutinesApi::class)
@@ -36,7 +38,9 @@ object Statistics {
             }
         }
 
-        fixedRateTimer(daemon = true, period = 24 * 3600 * 1000) {
+        calculateRankList()
+
+        fixedRateTimer(daemon = true, initialDelay = 12 * 3600 * 1000, period = 24 * 3600 * 1000) {
             val file = File("playerInfo.csv")
             if (file.exists()) file.copyTo(File("playerInfo.csv.bak"), true)
         }
@@ -156,7 +160,17 @@ object Statistics {
         return newScore to delta
     }
 
-    fun getAllPlayerInfo() = playerInfoMap.map { (_, v) -> v }
+    fun calculateRankList() {
+        val l1 = playerInfoMap.filter { (_, v) -> v.score > 0 }.map { (_, v) -> v }.sortedByDescending { it.score }
+        val l = if (l1.size > 10) l1.subList(0, 10) else l1
+        var i = 0
+        val s = l.joinToString(separator = "\n") {
+            val name = it.name.replace("\"", "\\\"")
+            val rank = ScoreFactory.getRankNameByScore(it.score)
+            "第${++i}名：${name}·${rank}·${it.score}"
+        }
+        rankList.set(s)
+    }
 
     fun resetPassword(name: String): Boolean {
         if (playerInfoMap.computeIfPresent(name) { _, v -> v.copy(password = "") } != null) {

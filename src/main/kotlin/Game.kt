@@ -214,6 +214,7 @@ class Game private constructor(totalPlayerCount: Int) {
                         addScoreMap[p.playerName] = deltaScore
                         newScoreMap[p.playerName] = newScore
                     }
+                    Statistics.calculateRankList()
                 }
                 val records = ArrayList<Statistics.Record>(players.size)
                 val playerGameResultList = ArrayList<PlayerGameResult>()
