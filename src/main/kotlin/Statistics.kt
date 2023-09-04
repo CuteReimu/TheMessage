@@ -115,7 +115,7 @@ object Statistics {
         if (changed) pool.trySend(::savePlayerInfo)
         if (password != playerInfo.password) throw Exception("用户名或密码错误，你可以在群里输入“注册”")
         val forbidLeft = playerInfo.forbidUntil - System.currentTimeMillis()
-        if (forbidLeft > 0) throw Exception("你已被禁止登录，剩余${ceil(forbidLeft / 3600000.0)}小时")
+        if (forbidLeft > 0) throw Exception("你已被禁止登录，剩余${ceil(forbidLeft / 3600000.0).toInt()}小时")
         return playerInfo
     }
 
