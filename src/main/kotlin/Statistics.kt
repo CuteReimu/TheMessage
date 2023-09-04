@@ -38,8 +38,6 @@ object Statistics {
             }
         }
 
-        calculateRankList()
-
         fixedRateTimer(daemon = true, initialDelay = 12 * 3600 * 1000, period = 24 * 3600 * 1000) {
             val file = File("playerInfo.csv")
             if (file.exists()) file.copyTo(File("playerInfo.csv.bak"), true)
@@ -249,6 +247,7 @@ object Statistics {
             }
         } catch (ignored: FileNotFoundException) {
         }
+        calculateRankList()
     }
 
     fun getTrialStartTime(deviceId: String): Long {
