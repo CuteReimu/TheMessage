@@ -74,7 +74,7 @@ object Statistics {
                 for (count in playerGameResultList) {
                     if (count.isWin) {
                         win++
-                        if (trialStartTime.remove(count.device) != null) updateTrial = true
+                        if (trialStartTime.remove(count.playerName) != null) updateTrial = true
                     }
                     game++
                     playerInfoMap.computeIfPresent(count.playerName) { _, v ->
@@ -250,14 +250,14 @@ object Statistics {
         calculateRankList()
     }
 
-    fun getTrialStartTime(deviceId: String): Long {
-        return trialStartTime.getOrDefault(deviceId, 0L)
+    fun getTrialStartTime(playerName: String): Long {
+        return trialStartTime.getOrDefault(playerName, 0L)
     }
 
-    fun setTrialStartTime(device: String, time: Long) {
+    fun setTrialStartTime(playerName: String, time: Long) {
         pool.trySend {
             try {
-                trialStartTime[device] = time
+                trialStartTime[playerName] = time
                 saveTrials()
             } catch (e: Exception) {
                 log.error("execute task failed", e)
@@ -295,7 +295,7 @@ object Statistics {
         val totalPlayerCount: Int
     )
 
-    class PlayerGameResult(val device: String, val playerName: String, val isWin: Boolean)
+    class PlayerGameResult(val playerName: String, val isWin: Boolean)
 
     data class PlayerGameCount(val winCount: Int, val gameCount: Int) {
         fun random(): PlayerGameCount {

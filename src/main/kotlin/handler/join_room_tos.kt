@@ -109,7 +109,6 @@ class join_room_tos : ProtoHandler {
                 if (humanCount >= 1) newGame.removeAllRobot()
                 if (humanCount >= 2) newGame.ensure5Position()
             }
-            player.device = pb.device
             player.playerName = playerName
             val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
             if (!newGame.onPlayerJoinRoom(player, count)) {

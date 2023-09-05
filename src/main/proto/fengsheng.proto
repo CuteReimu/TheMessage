@@ -67,7 +67,6 @@ message save_record_success_toc {
 message join_room_tos {
   uint32 version = 1; // 客户端版本号
   string name = 2; // 玩家的名字
-  string device = 3; // 设备号，用于断线重连
   string password = 4; // 密码，建议客户端先加密一下再发过来
 }
 

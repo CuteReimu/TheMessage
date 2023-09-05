@@ -229,7 +229,7 @@ class Game private constructor(totalPlayerCount: Int) {
                             players.size
                         )
                     )
-                    if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.device!!, p.playerName, win))
+                    if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.playerName, win))
                 }
                 Statistics.add(records)
                 Statistics.addPlayerGameCount(playerGameResultList)

@@ -33,7 +33,6 @@ class HumanPlayer(
     var timeout: Timeout? = null
     private var timeoutCount = 0
     private var recorder = Recorder()
-    var device: String? = null
     private var autoPlay = false
     val limiter = Limiter(10, 100, TimeUnit.MILLISECONDS)
 
@@ -50,7 +49,6 @@ class HumanPlayer(
         timeout = null
         timeoutCount = 0
         recorder = Recorder()
-        device = null
         autoPlay = false
     }
 

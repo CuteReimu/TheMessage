@@ -15,12 +15,13 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             val count = Statistics.getPlayerGameCount(r.playerName)
             if (count.winCount <= 0) {
                 val now = System.currentTimeMillis()
-                val startTrialTime = Statistics.getTrialStartTime(r.device!!)
-                if (startTrialTime != 0L && now - 5 * 24 * 3600 * 1000 >= startTrialTime) {
+                val startTrialTime = Statistics.getTrialStartTime(r.playerName)
+                if (startTrialTime == 0L) {
+                    Statistics.setTrialStartTime(r.playerName, now)
+                } else if (now - 3 * 24 * 3600 * 1000 >= startTrialTime) {
                     r.sendErrorMessage("您已被禁止添加机器人，多参与群内活动即可解锁")
                     return
                 }
-                Statistics.setTrialStartTime(r.device!!, now)
             }
             val humanCount = r.game!!.players.count { it is HumanPlayer }
             if (humanCount >= 2) {
