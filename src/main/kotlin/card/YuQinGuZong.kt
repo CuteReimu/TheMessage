@@ -87,7 +87,8 @@ class YuQinGuZong : Card {
                 }
             }
             r.messageCards.remove(messageCard) // 欲擒故纵可能传出面前的情报
-            OnFinishResolveCard( // TODO 这里先触发卡牌结算后，再触发情报传出时，似乎有些问题，但目前已有的技能没有影响
+            r.draw(1)
+            OnFinishResolveCard( // 这里先触发卡牌结算后，再触发情报传出时
                 r, target, this, type, OnSendCard(
                     fsm.player, fsm.player, messageCard, dir, target, lockPlayers.toTypedArray()
                 )
