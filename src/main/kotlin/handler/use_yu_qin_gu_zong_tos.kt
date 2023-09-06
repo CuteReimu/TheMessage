@@ -27,7 +27,7 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
             r.sendErrorMessage("这张牌不是欲擒故纵，而是$card")
             return
         }
-        val messageCard = r.findMessageCard(pb.cardId)
+        val messageCard = r.findMessageCard(pb.messageCardId)
         if (messageCard == null) {
             log.error("没有这张牌")
             r.sendErrorMessage("没有这张牌")
