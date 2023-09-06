@@ -46,22 +46,6 @@ class YuQinGuZong : Card {
             (r as? HumanPlayer)?.sendErrorMessage("欲擒故纵的使用时机不对")
             return false
         }
-        val target = args[0] as Player
-        if (r === target) {
-            log.error("欲擒故纵不能对自己使用")
-            (r as? HumanPlayer)?.sendErrorMessage("欲擒故纵不能对自己使用")
-            return false
-        }
-        if (!target.alive) {
-            log.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
-            return false
-        }
-        if (target.cards.isEmpty()) {
-            log.error("目标没有手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
-            return false
-        }
         return true
     }
 
