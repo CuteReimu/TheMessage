@@ -88,8 +88,11 @@ graph TD;
 | /forceend         | 无                       | 强制结束所有游戏，用于卡住了的情况                                                   |
 | /forbidplayer     | name=aaa&hour=72        | 封号，其中name是用户名，hour是小时                                               |
 | /releaseplayer    | name=aaa                | 解封，其中name是用户名                                                       |
+| /winrate          | 无                       | 返回一张胜率统计的png图片                                                      |
 
 ## 开发相关
+
+### IDEA问题
 
 如遇IDEA提示“代码洞察功能不可用”，是因为role.proto生成的协议文件太大导致的，在帮助菜单中编辑一下IDEA的自定义属性`idea.properties`
 即可：
@@ -109,3 +112,14 @@ idea.max.content.load.filesize=20000
 ```
 
 将`idea.max.intellisense.filesize`的值改大。若没有这个属性，自行添加即可。
+
+### 中文乱码问题
+
+如遇Linux下中文乱码，请将字体文件放入`/usr/share/fonts`中，然后执行以下shell
+
+```shell
+# 刷新字体缓存
+fc-cache
+# 查看是否有宋体
+fc-list :lang=zh | grep 宋体
+```

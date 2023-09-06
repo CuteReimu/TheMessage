@@ -7,8 +7,8 @@ import com.fengsheng.protos.Common.card_type
 import org.apache.log4j.Logger
 import java.util.function.Function
 
-class addcard : Function<Map<String, String>, String> {
-    override fun apply(form: Map<String, String>): String {
+class addcard : Function<Map<String, String>, Any> {
+    override fun apply(form: Map<String, String>): Any {
         return try {
             val playerId = form["player"]?.toInt() ?: 0
             val cardTypeNum = form["card"]!!.toInt()

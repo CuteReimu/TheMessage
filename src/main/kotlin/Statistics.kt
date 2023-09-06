@@ -3,7 +3,6 @@ package com.fengsheng
 import com.fengsheng.ScoreFactory.addScore
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.get_record_list_toc
-import com.fengsheng.skill.RoleCache
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.apache.log4j.Logger
@@ -22,7 +21,9 @@ import kotlin.random.Random
 
 object Statistics {
     private val pool = Channel<() -> Unit>(Channel.UNLIMITED)
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
+        timeZone = TimeZone.getTimeZone("GMT+8:00")
+    }
     private val playerInfoMap = ConcurrentHashMap<String, PlayerInfo>()
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
@@ -317,10 +318,6 @@ object Statistics {
         val forbidUntil: Long,
     )
 
-    init {
-        dateFormat.timeZone = TimeZone.getTimeZone("GMT+8:00")
-    }
-
     private val log = Logger.getLogger(Statistics::class.java)
 
     private fun writeFile(fileName: String, buf: ByteArray, append: Boolean = false) {
@@ -328,132 +325,6 @@ object Statistics {
             FileOutputStream(fileName, append).use { fileOutputStream -> fileOutputStream.write(buf) }
         } catch (e: IOException) {
             log.error("write file failed", e)
-        }
-    }
-
-    @Throws(IOException::class)
-    @JvmStatic
-    fun main(args: Array<String>) {
-        fun IntArray.inc(index: Int? = null) {
-            this[0]++
-            if (index != null) {
-                this[2]++
-                this[index]++
-            } else {
-                this[1]++
-            }
-        }
-
-        fun <K> HashMap<K, IntArray>.sum(index: Int): Int {
-            var sum = 0
-            this.forEach { sum += it.value[index] }
-            return sum
-        }
-
-        val playerCountAppearCount = TreeMap<Int, IntArray>()
-        val playerCountWinCount = TreeMap<Int, IntArray>()
-        val appearCount = HashMap<role, IntArray>()
-        val winCount = HashMap<role, IntArray>()
-        FileInputStream("stat.csv").use { `is` ->
-            BufferedReader(InputStreamReader(`is`)).use { reader ->
-                var line: String?
-                while (true) {
-                    line = reader.readLine()
-                    if (line == null) break
-                    val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
-                    val role = role.valueOf(a[0])
-                    val playerCount = a[4].toInt()
-                    val playerCountAppear = playerCountAppearCount.computeIfAbsent(playerCount) { IntArray(10) }
-                    val playerCountWin = playerCountWinCount.computeIfAbsent(playerCount) { IntArray(10) }
-                    val appear = appearCount.computeIfAbsent(role) { IntArray(10) }
-                    val win = winCount.computeIfAbsent(role) { IntArray(10) }
-                    val index =
-                        if ("Black" == a[2]) secret_task.valueOf(a[3]).number + 3
-                        else null
-                    appear.inc(index)
-                    playerCountAppear.inc(index)
-                    if (a[1].toBoolean()) {
-                        win.inc(index)
-                        playerCountWin.inc(index)
-                    }
-                }
-            }
-        }
-        val lines = ArrayList<Pair<Double, String>>()
-        for ((key, value) in appearCount) {
-            val sb = StringBuilder()
-            val roleName = RoleCache.getRoleName(key) ?: ""
-            sb.append(roleName)
-            sb.append(",")
-            sb.append(value[0])
-            var winRate: Double? = null
-            for (i in 0 until 10) {
-                val v = value[i]
-                sb.append(",")
-                winCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
-                    if (winRate == null) winRate = r
-                    sb.append("%.2f%%".format(r))
-                }
-            }
-            lines.add(winRate!! to sb.toString())
-        }
-        lines.sortByDescending { it.first }
-        val playerCountLines = ArrayList<String>()
-        for ((key, value) in playerCountAppearCount) {
-            val sb = StringBuilder()
-            sb.append("${key}人局")
-            sb.append(",")
-            sb.append(value[0] / key)
-            for (i in 0 until 10) {
-                val v = value[i]
-                sb.append(",")
-                playerCountWinCount[key]?.let { if (v == 0) null else it[i] * 100.0 / v }?.let { r ->
-                    sb.append("%.2f%%".format(r))
-                }
-            }
-            playerCountLines.add(sb.toString())
-        }
-        val playerAppearCountLines = ArrayList<String>()
-        for ((key, value) in playerCountAppearCount) {
-            val sb = StringBuilder()
-            sb.append("${key}人局")
-            sb.append(",")
-            sb.append(value[0] / key)
-            for (i in 0 until 10)
-                sb.append(",${value[i]}")
-            playerAppearCountLines.add(sb.toString())
-        }
-        FileOutputStream("stat0.csv").use { os ->
-            BufferedWriter(OutputStreamWriter(os)).use { writer ->
-                writer.write("角色,场次,胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率,清道夫胜率")
-                writer.newLine()
-                writer.write("全部,${appearCount.sum(0)}")
-                for (i in 0 until 10) {
-                    writer.write(",")
-                    val winSum = winCount.sum(i)
-                    val appearSum = appearCount.sum(i)
-                    if (appearSum != 0) writer.write("%.2f%%".format(winSum * 100.0 / appearSum))
-                }
-                writer.newLine()
-                for (line in lines) {
-                    writer.write(line.second)
-                    writer.newLine()
-                }
-                writer.newLine()
-                writer.write("人数,场次,人均胜率,军潜胜率,神秘人胜率,镇压者胜率,簒夺者胜率,双重间谍胜率,诱变者胜率,先行者胜率,搅局者胜率,清道夫胜率")
-                writer.newLine()
-                for (line in playerCountLines) {
-                    writer.write(line)
-                    writer.newLine()
-                }
-                writer.newLine()
-                writer.write("人数,场次,总出现次数,军潜出现次数,神秘人出现次数,镇压者出现次数,簒夺者出现次数,双重间谍出现次数,诱变者出现次数,先行者出现次数,搅局者出现次数,清道夫出现次数")
-                writer.newLine()
-                for (line in playerAppearCountLines) {
-                    writer.write(line)
-                    writer.newLine()
-                }
-            }
         }
     }
 

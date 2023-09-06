@@ -3,8 +3,8 @@ package com.fengsheng.gm
 import com.fengsheng.Statistics
 import java.util.function.Function
 
-class resetpwd : Function<Map<String, String>, String> {
-    override fun apply(form: Map<String, String>): String {
+class resetpwd : Function<Map<String, String>, Any> {
+    override fun apply(form: Map<String, String>): Any {
         return try {
             val name = form["name"]!!
             if (Statistics.resetPassword(name))

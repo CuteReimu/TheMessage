@@ -3,8 +3,8 @@ package com.fengsheng.gm
 import com.fengsheng.Statistics
 import java.util.function.Function
 
-class ranklist : Function<Map<String, String>, String> {
-    override fun apply(form: Map<String, String>): String {
+class ranklist : Function<Map<String, String>, Any> {
+    override fun apply(form: Map<String, String>): Any {
         return "{\"result\": \"${Statistics.rankList.get()}\"}"
     }
 }

@@ -3,8 +3,8 @@ package com.fengsheng.gm
 import com.fengsheng.Config
 import java.util.function.Function
 
-class setnotice : Function<Map<String, String>, String> {
-    override fun apply(form: Map<String, String>): String {
+class setnotice : Function<Map<String, String>, Any> {
+    override fun apply(form: Map<String, String>): Any {
         return try {
             val notice = form["notice"]!!
             Config.Notice.set(notice)

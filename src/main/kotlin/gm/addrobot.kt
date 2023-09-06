@@ -4,8 +4,8 @@ import com.fengsheng.*
 import java.util.function.Function
 import kotlin.math.min
 
-class addrobot : Function<Map<String, String>, String> {
-    override fun apply(form: Map<String, String>): String {
+class addrobot : Function<Map<String, String>, Any> {
+    override fun apply(form: Map<String, String>): Any {
         return try {
             var count = form["count"]?.toInt() ?: 0
             count = if (count > 0) count else 99

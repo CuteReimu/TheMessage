@@ -56,7 +56,3 @@ tasks.withType<Jar> {
         configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
     })
 }
-//
-//tasks.register("stat") {
-//    Class.forName("com.fengsheng.Statistics").getMethod("main", Array<String>::class.java).invoke(arrayOf<String>())
-//}
