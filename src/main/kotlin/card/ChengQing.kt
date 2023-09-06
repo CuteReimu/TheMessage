@@ -30,7 +30,12 @@ class ChengQing : Card {
             (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
-        if (g.qiangLingTypes.contains(type)) {
+        if (r.location in g.diaoHuLiShanPlayers) {
+            log.error("你被调虎离山了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
+            return false
+        }
+        if (type in g.qiangLingTypes) {
             log.error("澄清被禁止使用了")
             (r as? HumanPlayer)?.sendErrorMessage("澄清被禁止使用了")
             return false
@@ -122,6 +127,7 @@ class ChengQing : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
             if (player.game!!.qiangLingTypes.contains(card_type.Cheng_Qing)) return false
+            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             val p = player.game!!.players.filter { p -> p!!.alive && p.isPartnerOrSelf(player) }
                 .flatMap { p -> p!!.messageCards.filter(color.Black).map { c -> PlayerAndCard(p, c) } }
                 .randomOrNull() ?: return false

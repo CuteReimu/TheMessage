@@ -4,6 +4,7 @@ import com.fengsheng.Fsm
 import com.fengsheng.Game
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
+import com.fengsheng.card.DiaoHuLiShan
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.color.Has_No_Identity
@@ -37,6 +38,7 @@ data class NextTurn(val player: Player) : Fsm {
                 JinBi.resetJinBi(game)
                 QiangLing.resetQiangLing(game)
                 JiangHuLing.resetJiangHuLing(game)
+                DiaoHuLiShan.resetDiaoHuLiShan(game)
                 return ResolveResult(DrawPhase(player), true)
             }
         }

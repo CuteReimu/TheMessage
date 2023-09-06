@@ -33,7 +33,12 @@ class LiYou : Card {
             (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
             return false
         }
-        if (g.qiangLingTypes.contains(type)) {
+        if (r.location in g.diaoHuLiShanPlayers) {
+            log.error("你被调虎离山了，不能出牌")
+            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
+            return false
+        }
+        if (type in g.qiangLingTypes) {
             log.error("利诱被禁止使用了")
             (r as? HumanPlayer)?.sendErrorMessage("利诱被禁止使用了")
             return false
@@ -111,6 +116,7 @@ class LiYou : Card {
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
+            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()
             val players =

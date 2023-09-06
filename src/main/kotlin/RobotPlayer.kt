@@ -312,9 +312,11 @@ class RobotPlayer : Player() {
             card_type.Shi_Tan to BiPredicate { e, card -> ShiTan.ai(e, card) },
             card_type.Wei_Bi to BiPredicate { e, card -> WeiBi.ai(e, card) },
             card_type.Feng_Yun_Bian_Huan to BiPredicate { e, card -> FengYunBianHuan.ai(e, card) },
+            card_type.Diao_Hu_Li_Shan to BiPredicate { e, card -> DiaoHuLiShan.ai(e, card) },
         )
         private val aiSendPhaseStart = hashMapOf<card_type, BiPredicate<SendPhaseStart, Card>>(
-            card_type.Mi_Ling to BiPredicate { e, card -> MiLing.ai(e, card) }
+            card_type.Mi_Ling to BiPredicate { e, card -> MiLing.ai(e, card) },
+            card_type.Yu_Qin_Gu_Zong to BiPredicate { e, card -> YuQinGuZong.ai(e, card) },
         )
         private val aiSendPhase = hashMapOf<card_type, BiPredicate<SendPhaseIdle, Card>>(
             card_type.Po_Yi to BiPredicate { e, card -> PoYi.ai(e, card) },

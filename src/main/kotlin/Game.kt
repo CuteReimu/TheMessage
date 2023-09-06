@@ -55,6 +55,9 @@ class Game private constructor(totalPlayerCount: Int) {
      */
     val qiangLingTypes = HashSet<card_type>()
 
+    /** 用于调虎离山禁用出牌 */
+    val diaoHuLiShanPlayers = HashSet<Int>()
+
     init {
         // 调用构造函数时加锁了，所以increaseId无需加锁
         players = arrayOfNulls(totalPlayerCount)

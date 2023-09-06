@@ -36,6 +36,8 @@ class addcard : Function<Map<String, String>, Any> {
                                     card_type.Wu_Dao -> WuDao(g.deck.getNextId(), c)
                                     card_type.Feng_Yun_Bian_Huan -> FengYunBianHuan(g.deck.getNextId(), c)
                                     card_type.Mi_Ling -> MiLing(g.deck.getNextId(), c as MiLing)
+                                    card_type.Diao_Hu_Li_Shan -> DiaoHuLiShan(g.deck.getNextId(), c)
+                                    card_type.Yu_Qin_Gu_Zong -> YuQinGuZong(g.deck.getNextId(), c)
                                     else -> throw IllegalStateException("Unexpected value: $cardType")
                                 }
                             )
