@@ -12,8 +12,8 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             return
         }
         if (!Config.IsGmEnable) {
-            val count = Statistics.getPlayerGameCount(r.playerName)
-            if (count.winCount <= 0) {
+            val score = Statistics.getScore(r.playerName) ?: 0
+            if (score <= 0) {
                 val now = System.currentTimeMillis()
                 val startTrialTime = Statistics.getTrialStartTime(r.playerName)
                 if (startTrialTime == 0L) {
