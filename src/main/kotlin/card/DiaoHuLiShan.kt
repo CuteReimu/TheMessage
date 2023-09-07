@@ -89,6 +89,8 @@ class DiaoHuLiShan : Card {
         private val log = Logger.getLogger(DiaoHuLiShan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
+            if (player === player.game!!.jinBiPlayer) return false
+            if (player.game!!.qiangLingTypes.contains(card_type.Diao_Hu_Li_Shan)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             if (player.cards.size > 3) return false
             val p = player.game!!.players.filter {

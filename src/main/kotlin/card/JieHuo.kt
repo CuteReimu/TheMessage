@@ -105,6 +105,7 @@ class JieHuo : Card {
 
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
+            if (player === player.game!!.jinBiPlayer) return false
             if (player.game!!.qiangLingTypes.contains(card_type.Jie_Huo)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             if (e.inFrontOfWhom === player || e.messageCard.isPureBlack()) return false

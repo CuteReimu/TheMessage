@@ -116,6 +116,8 @@ class LiYou : Card {
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
+            if (player === player.game!!.jinBiPlayer) return false
+            if (player.game!!.qiangLingTypes.contains(card_type.Li_You)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()

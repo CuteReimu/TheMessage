@@ -206,6 +206,8 @@ class WeiBi : Card {
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
+            if (player === player.game!!.jinBiPlayer) return false
+            if (player.game!!.qiangLingTypes.contains(card_type.Wei_Bi)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             val identity = player.identity
             val players = player.game!!.players.filter {

@@ -94,6 +94,7 @@ class WuDao : Card {
         private val log = Logger.getLogger(WuDao::class.java)
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
+            if (player === player.game!!.jinBiPlayer) return false
             if (player.game!!.qiangLingTypes.contains(card_type.Wu_Dao)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             val left = e.inFrontOfWhom.getNextLeftAlivePlayer()

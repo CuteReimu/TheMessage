@@ -219,6 +219,8 @@ class ShiTan : Card {
         private val log = Logger.getLogger(ShiTan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
+            if (player === player.game!!.jinBiPlayer) return false
+            if (player.game!!.qiangLingTypes.contains(card_type.Shi_Tan)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             val players = player.game!!.players.filter {
                 it !== player && it!!.alive && (!it.roleFaceUp || it.findSkill(SkillId.CHENG_FU) == null)

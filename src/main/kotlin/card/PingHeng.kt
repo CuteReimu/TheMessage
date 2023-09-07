@@ -92,6 +92,8 @@ class PingHeng : Card {
         private val log = Logger.getLogger(PingHeng::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
+            if (player === player.game!!.jinBiPlayer) return false
+            if (player.game!!.qiangLingTypes.contains(card_type.Ping_Heng)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             if (player.cards.size > 3) return false
             val identity = player.identity

@@ -346,6 +346,7 @@ class MiLing : Card {
         private val log = Logger.getLogger(MiLing::class.java)
         fun ai(e: SendPhaseStart, card: Card): Boolean {
             val player = e.player
+            if (player === player.game!!.jinBiPlayer) return false
             if (player.game!!.qiangLingTypes.contains(card_type.Mi_Ling)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             val target = player.game!!.players.filter {

@@ -153,6 +153,7 @@ class PoYi : Card {
         private val log = Logger.getLogger(PoYi::class.java)
         fun ai(e: SendPhaseIdle, card: Card): Boolean {
             val player = e.inFrontOfWhom
+            if (player === player.game!!.jinBiPlayer) return false
             if (player.game!!.qiangLingTypes.contains(card_type.Po_Yi)) return false
             if (player.location in player.game!!.diaoHuLiShanPlayers) return false
             if (e.isMessageCardFaceUp || !e.messageCard.colors.contains(color.Black)) return false

@@ -108,6 +108,8 @@ class YuQinGuZong : Card {
             val player = e.player
             val game = player.game!!
             val players = game.players
+            if (player === player.game!!.jinBiPlayer) return false
+            if (player.game!!.qiangLingTypes.contains(card_type.Yu_Qin_Gu_Zong)) return false
             if (player.location in game.diaoHuLiShanPlayers) return false
             val messageCard = player.messageCards.filter {
                 Red in it.colors || Blue in it.colors
