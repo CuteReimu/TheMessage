@@ -208,6 +208,9 @@ abstract class Player protected constructor() {
         skillUseCount.remove(skillId)
     }
 
+    /**
+     * @return 自己左边最近的活着的玩家，如果全死了则会返回自己
+     */
     fun getNextLeftAlivePlayer(): Player {
         var left = location - 1
         if (left < 0) left += game!!.players.size
@@ -219,6 +222,9 @@ abstract class Player protected constructor() {
         return game!!.players[left]!!
     }
 
+    /**
+     * @return 自己右边最近的活着的玩家，如果全死了则会返回自己
+     */
     fun getNextRightAlivePlayer(): Player {
         var right = location + 1
         if (right >= game!!.players.size) right -= game!!.players.size
