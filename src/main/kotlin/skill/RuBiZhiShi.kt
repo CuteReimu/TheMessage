@@ -139,6 +139,11 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
                         return null
                     }
+                    if (target.location in r.game!!.diaoHuLiShanPlayers) {
+                        log.error("对方被调虎离山了，不能让他出牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被调虎离山了，不能出牌")
+                        return null
+                    }
                     if (Jie_Huo in r.game!!.qiangLingTypes) {
                         log.error("截获被禁止使用了")
                         (r as? HumanPlayer)?.sendErrorMessage("截获被禁止使用了")
@@ -177,6 +182,11 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     if (target === r.game!!.jinBiPlayer) {
                         log.error("对方被禁闭了，不能让他出牌")
                         (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
+                        return null
+                    }
+                    if (target.location in r.game!!.diaoHuLiShanPlayers) {
+                        log.error("对方被调虎离山了，不能让他出牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被调虎离山了，不能出牌")
                         return null
                     }
                     if (Wu_Dao in r.game!!.qiangLingTypes) {
@@ -232,6 +242,11 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
                         return null
                     }
+                    if (target.location in r.game!!.diaoHuLiShanPlayers) {
+                        log.error("对方被调虎离山了，不能让他出牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被调虎离山了，不能出牌")
+                        return null
+                    }
                     if (Diao_Bao in r.game!!.qiangLingTypes) {
                         log.error("调包被禁止使用了")
                         (r as? HumanPlayer)?.sendErrorMessage("调包被禁止使用了")
@@ -270,6 +285,11 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                     if (target === r.game!!.jinBiPlayer) {
                         log.error("对方被禁闭了，不能让他出牌")
                         (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
+                        return null
+                    }
+                    if (target.location in r.game!!.diaoHuLiShanPlayers) {
+                        log.error("对方被调虎离山了，不能让他出牌")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被调虎离山了，不能出牌")
                         return null
                     }
                     if (Cheng_Qing in r.game!!.qiangLingTypes) {
