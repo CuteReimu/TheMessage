@@ -1241,7 +1241,6 @@ message skill_du_ming_a_tos {
 // 广播使用【赌命】A，摸牌走摸牌协议
 message skill_du_ming_a_toc {
   uint32 player_id = 1;
-  bool enable = 2;
   color color = 3;
   card card = 4; // 那张情报牌，只有老千能看到
   uint32 waiting_second = 5; // 如果有后续，则这个值大于0
