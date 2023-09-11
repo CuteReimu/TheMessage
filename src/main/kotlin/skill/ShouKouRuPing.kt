@@ -136,13 +136,15 @@ class ShouKouRuPing : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
-            val card = r.findCard(message.cardId)
+            val card = r.deleteCard(message.cardId)
             if (card == null) {
                 log.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             r.incrSeq()
+            log.info("${r}给了${target}一张$card")
+            target.cards.add(card)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_shou_kou_ru_ping_toc.newBuilder()
