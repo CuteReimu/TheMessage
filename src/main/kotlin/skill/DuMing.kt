@@ -33,6 +33,7 @@ class DuMing : AbstractSkill(), TriggeredSkill {
             }
             return ResolveResult(waitForDuMing(fsm.copy(whereToGoFunc = f), r), true)
         } else if (fsm is SendPhaseIdle) {
+            !fsm.isMessageCardFaceUp || return null
             val r = fsm.inFrontOfWhom
             r.findSkill(skillId) != null || return null
             r.getSkillUseCount(skillId) == 0 || return null
