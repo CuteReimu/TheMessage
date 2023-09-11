@@ -58,7 +58,8 @@ class ShouKouRuPing : AbstractSkill(), TriggeredSkill {
                         builder.isUseCard = true
                         builder.fromPlayerId = player.getAlternativeLocation(fsm.player.location)
                         builder.cardType = fsm.cardType
-                        fsm.card?.let { builder.card = it.toPbCard() }
+                        val card = fsm.card
+                        if (card != null && card.type != Shi_Tan) builder.card = card.toPbCard()
                     } else {
                         builder.isUseCard = false
                     }
@@ -159,7 +160,8 @@ class ShouKouRuPing : AbstractSkill(), TriggeredSkill {
                     if (fsm is OnUseCard) {
                         builder.isUseCard = true
                         builder.fromPlayerId = p.getAlternativeLocation(fsm.player.location)
-                        fsm.card?.let { builder.card = it.toPbCard() }
+                        val card2 = fsm.card
+                        if (card2 != null && card2.type != Shi_Tan) builder.card = card2.toPbCard()
                     } else {
                         builder.isUseCard = false
                     }
