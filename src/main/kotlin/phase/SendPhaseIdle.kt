@@ -36,12 +36,10 @@ data class SendPhaseIdle(
     val sender: Player,
 ) : Fsm {
     override fun resolve(): ResolveResult? {
-        val result = whoseTurn.game!!.dealListeningSkill()
-        if (result != null) return result
         for (p in whoseTurn.game!!.players) {
             p!!.notifySendPhase(Config.WaitSecond)
         }
-        return null
+        return whoseTurn.game!!.dealListeningSkill()
     }
 
     override fun toString(): String {

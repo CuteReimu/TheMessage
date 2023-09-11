@@ -26,6 +26,7 @@ class DuMing : AbstractSkill(), TriggeredSkill {
             r.findSkill(skillId) != null || return null
             r.getSkillUseCount(skillId) < 2 || return null
             r.addSkillUseCount(skillId, 2) // 【调包】结算后+2，传递阶段使用+1
+            for (p in g.players) p!!.notifyFightPhase(0) // 解决客户端动画问题
             val oldWhereToGoFunc = fsm.whereToGoFunc
             val f = {
                 r.resetSkillUseCount(skillId)

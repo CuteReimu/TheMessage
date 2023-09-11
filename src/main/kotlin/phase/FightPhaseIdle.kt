@@ -36,11 +36,10 @@ data class FightPhaseIdle(
     val isMessageCardFaceUp: Boolean
 ) : Fsm {
     override fun resolve(): ResolveResult? {
-        if (!whoseFightTurn.alive || whoseFightTurn.game!!.jinBiPlayer === whoseFightTurn) return ResolveResult(
-            FightPhaseNext(this),
-            true
-        )
-        for (p in whoseTurn.game!!.players) p!!.notifyFightPhase(Config.WaitSecond)
+        if (!whoseFightTurn.alive || whoseFightTurn.game!!.jinBiPlayer === whoseFightTurn)
+            return ResolveResult(FightPhaseNext(this), true)
+        for (p in whoseTurn.game!!.players)
+            p!!.notifyFightPhase(Config.WaitSecond)
         return null
     }
 
