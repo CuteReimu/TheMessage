@@ -15,25 +15,34 @@ import java.util.concurrent.TimeUnit
 /**
  * 老千技能【赌命】：情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。若猜错且你有黑色手牌，则你必须将一张黑色手牌置入自己的情报区。
  */
-class DuMing : AbstractSkill(), ActiveSkill, TriggeredSkill {
+class DuMing : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.DU_MING
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? OnFinishResolveCard ?: return null
-        fsm.cardType == Diao_Bao || return null
-        val r = fsm.askWhom
-        r.findSkill(skillId) != null || return null
-        r.getSkillUseCount(skillId) < 2 || return null
-        r.addSkillUseCount(skillId, 2) // 【调包】结算后+2，传递阶段主动使用+1
-        val oldWhereToGoFunc = fsm.whereToGoFunc
-        val f = {
-            r.resetSkillUseCount(skillId)
-            oldWhereToGoFunc()
+        val fsm = g.fsm
+        if (fsm is OnFinishResolveCard) {
+            fsm.cardType == Diao_Bao || return null
+            val r = fsm.askWhom
+            r.findSkill(skillId) != null || return null
+            r.getSkillUseCount(skillId) < 2 || return null
+            r.addSkillUseCount(skillId, 2) // 【调包】结算后+2，传递阶段使用+1
+            val oldWhereToGoFunc = fsm.whereToGoFunc
+            val f = {
+                r.resetSkillUseCount(skillId)
+                oldWhereToGoFunc()
+            }
+            return ResolveResult(waitForDuMing(fsm.copy(whereToGoFunc = f), r), true)
+        } else if (fsm is SendPhaseIdle) {
+            val r = fsm.inFrontOfWhom
+            r.findSkill(skillId) != null || return null
+            r.getSkillUseCount(skillId) == 0 || return null
+            r.addSkillUseCount(skillId)
+            return ResolveResult(waitForDuMing(fsm, r), true)
         }
-        return ResolveResult(waitForDuMing(fsm.copy(whereToGoFunc = f), r), true)
+        return null
     }
 
-    private data class waitForDuMing(val fsm: OnFinishResolveCard, val r: Player) : WaitingFsm {
+    private data class waitForDuMing(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {
@@ -91,60 +100,33 @@ class DuMing : AbstractSkill(), ActiveSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("不存在的颜色")
                 return null
             }
-            val fightPhase = fsm.nextFsm as? FightPhaseIdle
-            if (fightPhase == null) {
-                log.error("状态错误：${fsm.nextFsm}")
-                (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
-                return null
+            if (fsm is OnFinishResolveCard) {
+                val fightPhase = fsm.nextFsm as? FightPhaseIdle
+                if (fightPhase == null) {
+                    log.error("状态错误：${fsm.nextFsm}")
+                    (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
+                    return null
+                }
+                r.incrSeq()
+                return ResolveResult(
+                    executeDuMing(fsm, fightPhase.whoseTurn, r, message.color, fightPhase.messageCard),
+                    true
+                )
+            } else if (fsm is SendPhaseIdle) {
+                r.incrSeq()
+                return ResolveResult(
+                    executeDuMing(fsm, fsm.whoseTurn, r, message.color, fsm.messageCard),
+                    true
+                )
             }
-            r.incrSeq()
-            return ResolveResult(
-                executeDuMing(fsm, fightPhase.whoseTurn, r, message.color, fightPhase.messageCard),
-                true
-            )
+            log.error("状态错误：$fsm")
+            (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
+            return null
         }
 
         companion object {
             private val log = Logger.getLogger(waitForDuMing::class.java)
         }
-    }
-
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        val fsm = g.fsm as? SendPhaseIdle
-        if (r !== fsm?.inFrontOfWhom) {
-            log.error("没有轮到你操作")
-            (r as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
-            return
-        }
-        if (r.findSkill(skillId) == null) {
-            log.error("你没有此技能")
-            (r as? HumanPlayer)?.sendErrorMessage("你没有此技能")
-            return
-        }
-        if (r.getSkillUseCount(skillId) > 0) {
-            log.error("你已经使用过此技能")
-            (r as? HumanPlayer)?.sendErrorMessage("你已经使用过此技能")
-            return
-        }
-        message as skill_du_ming_a_tos
-        if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
-            r.sendErrorMessage("操作太晚了")
-            return
-        }
-        if (!message.enable) {
-            log.error("错误的协议")
-            (r as? HumanPlayer)?.sendErrorMessage("错误的协议")
-            return
-        }
-        if (message.color !== Red && message.color !== Blue && message.color !== Black) {
-            log.error("不存在的颜色")
-            (r as? HumanPlayer)?.sendErrorMessage("不存在的颜色")
-            return
-        }
-        r.addSkillUseCount(skillId)
-        r.incrSeq()
-        g.resolve(executeDuMing(fsm, fsm.whoseTurn, r, message.color, fsm.messageCard))
     }
 
     private data class executeDuMing(val fsm: Fsm, val whoseTurn: Player, val r: Player, val c: color, val card: Card) :
@@ -236,24 +218,6 @@ class DuMing : AbstractSkill(), ActiveSkill, TriggeredSkill {
 
         companion object {
             private val log = Logger.getLogger(executeDuMing::class.java)
-        }
-    }
-
-
-    companion object {
-        private val log = Logger.getLogger(DuMing::class.java)
-
-        fun ai(e: SendPhaseIdle, skill: ActiveSkill): Boolean {
-            val player = e.inFrontOfWhom
-            player.findSkill(SkillId.DU_MING) != null || return false
-            player.getSkillUseCount(SkillId.DU_MING) == 0 || return false
-            GameExecutor.post(player.game!!, {
-                val builder = skill_du_ming_a_tos.newBuilder()
-                builder.enable = true
-                builder.color = arrayOf(Red, Blue, Black).random()
-                skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
-            return true
         }
     }
 }

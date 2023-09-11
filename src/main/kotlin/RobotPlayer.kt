@@ -68,10 +68,6 @@ class RobotPlayer : Player() {
         val fsm = game!!.fsm as SendPhaseIdle
         if (this !== fsm.inFrontOfWhom) return
         if (this !== game!!.jinBiPlayer) {
-            for (skill in skills) {
-                val ai = aiSkillSendPhase[skill.skillId]
-                if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
-            }
             for (card in cards) {
                 val ai = aiSendPhase[card.type]
                 if (ai != null && ai.test(fsm, card)) return
@@ -278,9 +274,6 @@ class RobotPlayer : Player() {
         )
         private val aiSkillSendPhaseStart = hashMapOf<SkillId, BiPredicate<SendPhaseStart, ActiveSkill>>(
             SkillId.LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) }
-        )
-        private val aiSkillSendPhase = hashMapOf<SkillId, BiPredicate<SendPhaseIdle, ActiveSkill>>(
-            SkillId.DU_MING to BiPredicate { e, skill -> DuMing.ai(e, skill) }
         )
         private val aiSkillFightPhase = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
             SkillId.TOU_TIAN to BiPredicate { e, skill -> TouTian.ai(e, skill) },
