@@ -1219,7 +1219,7 @@ message skill_shou_kou_ru_ping_toc {
   bool enable = 2; // 如果是false，下面的字段都不会发
   uint32 target_player_id = 3; // 哑炮把牌给谁
   card give_card = 4; // 给的那张牌，只有哑炮和被给牌的那个人能看到
-  bool isDead = 5; // 如果是true，表示死亡时发动的技能，下面两个字段可以忽略
+  bool is_use_card = 5; // 如果是false，表示死亡时发动的技能，下面两个字段可以忽略
   uint32 from_player_id = 6; // 使用那张牌的玩家
   card card = 7; // 使用的那张牌（肥源龙川的技能使用的威逼，这个字段为null）
 }
