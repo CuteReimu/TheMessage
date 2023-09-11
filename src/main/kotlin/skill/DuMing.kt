@@ -7,6 +7,8 @@ import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.phase.Fight_Phase
+import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -26,9 +28,18 @@ class DuMing : AbstractSkill(), TriggeredSkill {
             r.findSkill(skillId) != null || return null
             r.getSkillUseCount(skillId) < 2 || return null
             val fightPhase = fsm.nextFsm as? FightPhaseIdle ?: return null
-            g.fsm = fightPhase
-            for (p in g.players) p!!.notifyFightPhase(0) // 解决客户端动画问题
-            g.fsm = fsm
+            for (p in g.players) { // 解决客户端动画问题
+                if (p is HumanPlayer) {
+                    val builder = Fengsheng.notify_phase_toc.newBuilder()
+                    builder.currentPlayerId = p.getAlternativeLocation(fightPhase.whoseTurn.location)
+                    builder.messagePlayerId = p.getAlternativeLocation(fightPhase.inFrontOfWhom.location)
+                    builder.waitingPlayerId = p.getAlternativeLocation(fightPhase.whoseFightTurn.location)
+                    builder.currentPhase = Fight_Phase
+                    if (fightPhase.isMessageCardFaceUp)
+                        builder.messageCard = fightPhase.messageCard.toPbCard()
+                    p.send(builder.build())
+                }
+            }
             r.addSkillUseCount(skillId, 2) // 【调包】结算后+2，传递阶段使用+1
             val oldWhereToGoFunc = fsm.whereToGoFunc
             val f = {
