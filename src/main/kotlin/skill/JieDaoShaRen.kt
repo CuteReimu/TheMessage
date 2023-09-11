@@ -186,8 +186,8 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
         private val log = Logger.getLogger(JieDaoShaRen::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.roleFaceUp) return false
-            if (player.getSkillUseCount(SkillId.JIE_DAO_SHA_REN) >= 2) return false
+            !player.roleFaceUp || return false
+            player.getSkillUseCount(SkillId.JIE_DAO_SHA_REN) < 2 || return false
             val target = player.game!!.players.filter {
                 it !== player && it!!.alive && it.cards.isNotEmpty() &&
                         it.cards.all { card -> card.colors.contains(color.Black) }
