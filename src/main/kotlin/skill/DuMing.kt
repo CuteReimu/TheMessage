@@ -63,6 +63,7 @@ class DuMing : AbstractSkill(), TriggeredSkill {
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
+                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
