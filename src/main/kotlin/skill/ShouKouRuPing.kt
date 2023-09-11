@@ -63,14 +63,18 @@ class ShouKouRuPing : AbstractSkill(), TriggeredSkill {
                         builder.isUseCard = false
                     }
                     builder.waitingSecond = Config.WaitSecond
-                    val seq2 = player.seq
-                    builder.seq = seq2
-                    player.timeout = GameExecutor.post(r.game!!, {
-                        val builder2 = skill_shou_kou_ru_ping_tos.newBuilder()
-                        builder2.enable = false
-                        builder2.seq = seq2
-                        r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                    }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    if (player === r) {
+                        val seq2 = player.seq
+                        builder.seq = seq2
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            if (player.checkSeq(seq2)) {
+                                val builder2 = skill_shou_kou_ru_ping_tos.newBuilder()
+                                builder2.enable = false
+                                builder2.seq = seq2
+                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                            }
+                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                     player.send(builder.build())
                 }
             }
