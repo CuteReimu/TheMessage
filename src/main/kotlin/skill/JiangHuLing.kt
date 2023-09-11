@@ -122,8 +122,18 @@ class JiangHuLing : TriggeredSkill {
             val r = fsm.sender
             r.findSkill(skillId) != null || return null
             r.getSkillUseCount(skillId) == 0 || return null
-            fsm.inFrontOfWhom.messageCards.any { color in it.colors } || return null
             r.addSkillUseCount(skillId)
+            if (!fsm.inFrontOfWhom.messageCards.any { color in it.colors }) {
+                for (p in r.game!!.players) {
+                    if (p is HumanPlayer) {
+                        val builder = skill_wait_for_jiang_hu_ling_b_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.color = color
+                        p.send(builder.build())
+                    }
+                }
+                return null
+            }
             return ResolveResult(executeJiangHuLingB(fsm, color), true)
         }
     }
