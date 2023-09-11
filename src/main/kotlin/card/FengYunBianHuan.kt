@@ -5,8 +5,9 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
-import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -24,8 +25,7 @@ class FengYunBianHuan : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type: card_type
-        get() = Feng_Yun_Bian_Huan
+    override val type = Feng_Yun_Bian_Huan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {

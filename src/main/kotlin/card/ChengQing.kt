@@ -21,8 +21,7 @@ class ChengQing : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type: card_type
-        get() = card_type.Cheng_Qing
+    override val type = card_type.Cheng_Qing
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {

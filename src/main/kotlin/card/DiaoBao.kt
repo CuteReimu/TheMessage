@@ -23,8 +23,7 @@ class DiaoBao : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type: card_type
-        get() = card_type.Diao_Bao
+    override val type = card_type.Diao_Bao
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {

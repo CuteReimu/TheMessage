@@ -23,8 +23,7 @@ class PoYi : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type: card_type
-        get() = card_type.Po_Yi
+    override val type = card_type.Po_Yi
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {

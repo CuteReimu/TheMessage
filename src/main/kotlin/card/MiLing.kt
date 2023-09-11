@@ -26,8 +26,7 @@ class MiLing : Card {
         this.secret = card.secret
     }
 
-    override val type: card_type
-        get() = card_type.Mi_Ling
+    override val type = card_type.Mi_Ling
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {

@@ -23,8 +23,7 @@ class PingHeng : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type: card_type
-        get() = card_type.Ping_Heng
+    override val type = card_type.Ping_Heng
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {

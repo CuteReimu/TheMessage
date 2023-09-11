@@ -25,8 +25,7 @@ class ShiTan : Card {
         whoDrawCard = card.whoDrawCard
     }
 
-    override val type: card_type
-        get() = card_type.Shi_Tan
+    override val type = card_type.Shi_Tan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r === g.jinBiPlayer) {

@@ -149,6 +149,8 @@ abstract class Card {
                 Diao_Bao -> DiaoBao(originCard)
                 Wu_Dao -> WuDao(originCard)
                 Feng_Yun_Bian_Huan -> FengYunBianHuan(originCard)
+                Diao_Hu_Li_Shan -> DiaoHuLiShan(originCard)
+                Yu_Qin_Gu_Zong -> YuQinGuZong(originCard)
                 else -> throw IllegalStateException("Unexpected value: $falseType")
             }
         }
