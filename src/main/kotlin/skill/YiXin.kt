@@ -15,12 +15,12 @@ class YiXin : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.YI_XIN
 
     override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? DieSkill
-        if (fsm == null || fsm.askWhom != fsm.diedQueue[fsm.diedIndex] || fsm.askWhom.findSkill(skillId) == null)
-            return null
-        if (!fsm.askWhom.roleFaceUp) return null
-        if (fsm.askWhom.cards.isEmpty()) return null
-        if (fsm.askWhom.getSkillUseCount(skillId) > 0) return null
+        val fsm = g.fsm as? DieSkill ?: return null
+        fsm.askWhom == fsm.diedQueue[fsm.diedIndex] || return null
+        fsm.askWhom.findSkill(skillId) != null || return null
+        fsm.askWhom.roleFaceUp || return null
+        fsm.askWhom.cards.isNotEmpty() || return null
+        fsm.askWhom.getSkillUseCount(skillId) == 0 || return null
         fsm.askWhom.addSkillUseCount(skillId)
         return ResolveResult(executeYiXin(fsm), true)
     }
