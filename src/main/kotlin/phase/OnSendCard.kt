@@ -39,7 +39,7 @@ data class OnSendCard(
         }
         log.info("情报到达${targetPlayer}面前")
         return ResolveResult(
-            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, false, sender),
+            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, byYuQinGuZong, sender),
             true
         )
     }
