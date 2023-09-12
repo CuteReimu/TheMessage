@@ -151,6 +151,7 @@ object Statistics {
             succeed = true
             v.copy(title = title)
         }
+        if (succeed) pool.trySend(::savePlayerInfo)
         return succeed
     }
 
@@ -234,7 +235,7 @@ object Statistics {
                 while (true) {
                     line = reader.readLine()
                     if (line == null) break
-                    val a = line.split(",".toRegex(), limit = 6).toTypedArray()
+                    val a = line.split(",".toRegex(), limit = 7).toTypedArray()
                     val password = a[4]
                     val score = if (a[3].length < 6) a[3].toInt() else 0 // 以前这个位置是deviceId
                     val name = a[2]
