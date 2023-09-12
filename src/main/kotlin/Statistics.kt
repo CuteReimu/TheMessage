@@ -94,7 +94,7 @@ object Statistics {
     }
 
     fun register(name: String): Boolean {
-        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0, 0)) == null
+        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0, 0, "")) == null
         if (result) pool.trySend(::savePlayerInfo)
         return result
     }
@@ -143,6 +143,16 @@ object Statistics {
 
     fun getPlayerInfo(name: String) = playerInfoMap[name]
     fun getScore(name: String) = playerInfoMap[name]?.score
+
+    fun updateTitle(name: String, title: String): Boolean {
+        var succeed = false
+        playerInfoMap.computeIfPresent(name) { _, v ->
+            if (v.score < 360) return@computeIfPresent v
+            succeed = true
+            v.copy(title = title)
+        }
+        return succeed
+    }
 
     /**
      * @return Pair(score的新值, score的变化量)
@@ -199,7 +209,8 @@ object Statistics {
             sb.append(info.name).append(',')
             sb.append(info.score).append(',')
             sb.append(info.password).append(',')
-            sb.append(info.forbidUntil).append('\n')
+            sb.append(info.forbidUntil).append(',')
+            sb.append(info.title).append('\n')
         }
         writeFile("playerInfo.csv", sb.toString().toByteArray())
     }
@@ -229,8 +240,9 @@ object Statistics {
                     val name = a[2]
                     val win = a[0].toInt()
                     val game = a[1].toInt()
-                    val forbidUntil = a.getOrNull(5)?.toLong() ?: 0
-                    if (playerInfoMap.put(name, PlayerInfo(name, score, password, win, game, forbidUntil)) != null)
+                    val forbid = a.getOrNull(5)?.toLong() ?: 0
+                    val title = a.getOrNull(6) ?: ""
+                    if (playerInfoMap.put(name, PlayerInfo(name, score, password, win, game, forbid, title)) != null)
                         throw RuntimeException("数据错误，有重复的玩家name")
                     winCount += win
                     gameCount += game
@@ -320,6 +332,7 @@ object Statistics {
         val winCount: Int,
         val gameCount: Int,
         val forbidUntil: Long,
+        val title: String,
     )
 
     private val log = Logger.getLogger(Statistics::class.java)

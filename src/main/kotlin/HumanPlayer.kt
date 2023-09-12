@@ -147,8 +147,12 @@ class HumanPlayer(
         builder.secretTask = secretTask
         var l = location
         do {
-            builder.addRoles(if (game!!.players[l]!!.roleFaceUp || l == location) game!!.players[l]!!.role else unknown)
-            builder.addNames(game!!.players[l]!!.playerName)
+            val player = game!!.players[l]!!
+            builder.addRoles(if (player.roleFaceUp || l == location) player.role else unknown)
+            val name =
+                if (player.playerTitle.isEmpty()) player.playerName
+                else "${player.playerName}·${player.playerTitle}"
+            builder.addNames(name)
             l = (l + 1) % game!!.players.size
         } while (l != location)
         send(builder.build())

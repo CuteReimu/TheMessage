@@ -110,6 +110,7 @@ class join_room_tos : ProtoHandler {
                 if (humanCount >= 2) newGame.ensure5Position()
             }
             player.playerName = playerName
+            player.playerTitle = playerInfo.title
             val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
             if (!newGame.onPlayerJoinRoom(player, count)) {
                 Game.playerNameCache.remove(playerName) // 登录失败的话，要把注册清掉

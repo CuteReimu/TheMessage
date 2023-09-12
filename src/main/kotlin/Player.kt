@@ -15,6 +15,9 @@ abstract class Player protected constructor() {
     @Volatile
     var game: Game? = null
     var playerName = ""
+
+    @Volatile
+    var playerTitle = ""
     var location = 0
     val cards = ArrayList<Card>()
     val messageCards = ArrayList<Card>()

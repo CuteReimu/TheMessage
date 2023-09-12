@@ -89,6 +89,7 @@ graph TD;
 | /forbidplayer     | name=aaa&hour=72        | 封号，其中name是用户名，hour是小时                                               |
 | /releaseplayer    | name=aaa                | 解封，其中name是用户名                                                       |
 | /winrate          | 无                       | 返回一张胜率统计的png图片                                                      |
+| /updatetitle      | name=aaa&title=bbb      | 更新玩家的称号，其中name是用户名，title是称号，title为空就是删除称号                           |
 
 ## 开发相关
 
