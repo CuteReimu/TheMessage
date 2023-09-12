@@ -160,7 +160,11 @@ object Statistics {
     }
 
     fun calculateRankList() {
-        val l1 = playerInfoMap.filter { (_, v) -> v.score > 0 }.map { (_, v) -> v }.sortedByDescending { it.score }
+        val l1 = playerInfoMap.filter { (_, v) -> v.score > 0 }.map { (_, v) -> v }.sortedWith { a, b ->
+            if (a.score > b.score) -1
+            else if (a.score < b.score) 1
+            else a.name.compareTo(b.name)
+        }
         val l = if (l1.size > 10) l1.subList(0, 10) else l1
         var i = 0
         val s = l.joinToString(separator = "\n") {
