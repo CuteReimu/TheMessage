@@ -1259,33 +1259,6 @@ message skill_du_ming_b_toc {
   card card = 2; // 置入的牌
 }
 
-// 死士【鱼死网破】A：出牌阶段，你可以弃置任意张手牌（至少为1），让一名其他玩家弃置对应数量的手牌，然后你们各摸一张牌。
-message skill_yu_si_wang_po_a_tos {
-  repeated uint32 card_ids = 1;
-  uint32 target_player_id = 2;
-}
-
-// 广播使用【鱼死网破】A，弃牌走弃牌协议
-message skill_yu_si_wang_po_a_toc {
-  uint32 player_id = 1;
-  uint32 target_player_id = 2;
-  uint32 need_discard_count = 3; // 如果目标玩家需要弃光，这个字段为0
-  uint32 waiting_second = 4; // 如果目标玩家需要弃光，这个字段为0，不需要选择
-  uint32 seq = 5;
-}
-
-// 死士【鱼死网破】B：对方选择弃置的手牌
-message skill_yu_si_wang_po_b_tos {
-  repeated uint32 card_ids = 1;
-  uint32 seq = 2;
-}
-
-// 广播使用【鱼死网破】B，弃牌走弃牌协议，摸牌走摸牌协议
-message skill_yu_si_wang_po_b_toc {
-  uint32 player_id = 1; // 死士的ID
-  uint32 target_player_id = 2; // 目标玩家的ID
-}
-
 // 成年小九【联络】：接收单色情报后，可以将一张含不同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
 message skill_lian_luo_tos {
   uint32 card_id = 1;

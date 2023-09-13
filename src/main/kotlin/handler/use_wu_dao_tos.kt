@@ -2,6 +2,7 @@ package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
 import com.fengsheng.card.Card
+import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
@@ -25,15 +26,36 @@ class use_wu_dao_tos : AbstractProtoHandler<Fengsheng.use_wu_dao_tos>() {
             r.sendErrorMessage("没有这张牌")
             return
         }
-        if (card.type != card_type.Wu_Dao && (card.type != card_type.Jie_Huo || r.findSkill(SkillId.YING_BIAN) == null)) {
-            log.error("这张牌不是误导，而是$card")
-            r.sendErrorMessage("这张牌不是误导，而是$card")
-            return
-        }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= r.game!!.players.size) {
             log.error("目标错误")
             r.sendErrorMessage("目标错误")
             return
+        }
+        if (card.type != card_type.Wu_Dao) {
+            if (r.findSkill(SkillId.YING_BIAN) != null) {
+                if (card.type != card_type.Jie_Huo) {
+                    log.error("这张牌不是截获，而是$card")
+                    r.sendErrorMessage("这张牌不是截获，而是$card")
+                    return
+                }
+            } else if (r.findSkill(SkillId.ZHENG_DUO) != null) {
+                val fsm = r.game!!.fsm as? FightPhaseIdle
+                if (fsm == null || fsm.whoseTurn === r) {
+                    log.error("[争夺]只能在其他玩家的争夺阶段使用")
+                    r.sendErrorMessage("[争夺]只能在其他玩家的争夺阶段使用")
+                    return
+                } else if (r.getSkillUseCount(SkillId.ZHENG_DUO) > 0) {
+                    log.error("[争夺]一回合只能发动一次")
+                    r.sendErrorMessage("[争夺]一回合只能发动一次")
+                    return
+                } else {
+                    r.addSkillUseCount(SkillId.ZHENG_DUO)
+                }
+            } else {
+                log.error("这张牌不是误导，而是$card")
+                r.sendErrorMessage("这张牌不是误导，而是$card")
+                return
+            }
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (card.type != card_type.Wu_Dao) card = Card.falseCard(card_type.Wu_Dao, card)

@@ -44,7 +44,6 @@ enum role {
   su_ji_yuan = 39; // 速记员
   ya_pao = 40; // 哑炮
   lao_qian = 41; // 老千
-  si_shi = 42; // 死士
   sp_cheng_xiao_die = 1002; // SP程小蝶
   sp_lian_yuan = 1003; // SP连鸢
   sp_han_mei = 1014; // SP韩梅
