@@ -44,12 +44,8 @@ class use_wu_dao_tos : AbstractProtoHandler<Fengsheng.use_wu_dao_tos>() {
                     log.error("[争夺]只能在其他玩家的争夺阶段使用")
                     r.sendErrorMessage("[争夺]只能在其他玩家的争夺阶段使用")
                     return
-                } else if (r.getSkillUseCount(SkillId.ZHENG_DUO) > 0) {
-                    log.error("[争夺]一回合只能发动一次")
-                    r.sendErrorMessage("[争夺]一回合只能发动一次")
-                    return
                 } else {
-                    r.addSkillUseCount(SkillId.ZHENG_DUO)
+                    r.skills = r.skills.filterNot { it.skillId == SkillId.ZHENG_DUO }.toTypedArray()
                 }
             } else {
                 log.error("这张牌不是误导，而是$card")

@@ -33,12 +33,8 @@ class use_jie_huo_tos : AbstractProtoHandler<Fengsheng.use_jie_huo_tos>() {
                     log.error("[截取]只能在其他玩家的争夺阶段使用")
                     r.sendErrorMessage("[截取]只能在其他玩家的争夺阶段使用")
                     return
-                } else if (r.getSkillUseCount(SkillId.JIE_QU) > 0) {
-                    log.error("[截取]一回合只能发动一次")
-                    r.sendErrorMessage("[截取]一回合只能发动一次")
-                    return
                 } else {
-                    r.addSkillUseCount(SkillId.JIE_QU)
+                    r.skills = r.skills.filterNot { it.skillId == SkillId.JIE_QU }.toTypedArray()
                 }
             } else {
                 log.error("这张牌不是截获，而是$card")
