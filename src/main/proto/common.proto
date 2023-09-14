@@ -51,8 +51,8 @@ enum role {
   sp_duan_mu_jing = 1022; // SP端木静
   sp_xiao_jiu = 1027; // SP小九
   sp_li_ning_yu = 1028; // SP李宁玉
+  adult_han_mei = 2014; // 成年韩梅
   adult_xiao_jiu = 2027; // 成年小九
-  adult_han_mei = 2028; // 成年韩梅
 }
 
 enum phase {
