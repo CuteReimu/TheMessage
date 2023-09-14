@@ -1191,6 +1191,7 @@ message skill_zi_zheng_qing_bai_tos {
 // 广播使用【自证清白】，弃牌和摸牌走原本的协议
 message skill_zi_zheng_qing_bai_toc {
   uint32 player_id = 1;
+  repeated color colors = 2; // 弃的那张牌的颜色
 }
 
 // 哑炮【守口如瓶】：当你成为【试探】【威逼】的目标或死亡时，你自动翻开此角色。直接走翻面协议，没有额外协议。

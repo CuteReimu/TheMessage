@@ -53,6 +53,7 @@ class ZiZhengQingBai : AbstractSkill(), ActiveSkill {
             if (p is HumanPlayer) {
                 val builder = skill_zi_zheng_qing_bai_toc.newBuilder()
                 builder.playerId = p.getAlternativeLocation(r.location)
+                builder.addAllColors(card.colors)
                 p.send(builder.build())
             }
         }
