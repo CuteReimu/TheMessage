@@ -1227,7 +1227,8 @@ message skill_shou_kou_ru_ping_toc {
   card give_card = 4; // 给的那张牌，只有哑炮和被给牌的那个人能看到
   bool is_use_card = 5; // 如果是false，表示死亡时发动的技能，下面两个字段可以忽略
   uint32 from_player_id = 6; // 使用那张牌的玩家
-  card card = 7; // 使用的那张牌（肥源龙川的技能使用的威逼，这个字段为null）
+  card_type card_type = 7; // 被无效的是什么牌
+  card card = 8; // 使用的那张牌（肥源龙川的技能使用的威逼，这个字段为null）
 }
 
 // 当【调包】结算后，广播询问使用【赌命】

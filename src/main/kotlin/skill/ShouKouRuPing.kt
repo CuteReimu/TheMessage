@@ -160,6 +160,7 @@ class ShouKouRuPing : AbstractSkill(), TriggeredSkill {
                     if (fsm is OnUseCard) {
                         builder.isUseCard = true
                         builder.fromPlayerId = p.getAlternativeLocation(fsm.player.location)
+                        builder.cardType = fsm.cardType
                         val card2 = fsm.card
                         if (card2 != null && card2.type != Shi_Tan) builder.card = card2.toPbCard()
                     } else {
