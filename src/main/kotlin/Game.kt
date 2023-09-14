@@ -184,9 +184,9 @@ class Game private constructor(totalPlayerCount: Int) {
         val possibleSecretTaskCount = when {
             players.size <= 5 -> 3
             players.size <= 8 -> 4
-            else -> minOf(players.size - 4, tasks.size)
+            else -> players.size - 4
         }
-        possibleSecretTasks = tasks.subList(0, possibleSecretTaskCount).shuffled()
+        possibleSecretTasks = tasks.subList(0, possibleSecretTaskCount.coerceAtMost(tasks.size)).shuffled()
         val roleSkillsDataArray = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
             players.size * 3,
             Config.DebugRoles
