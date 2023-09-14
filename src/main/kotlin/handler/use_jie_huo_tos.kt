@@ -5,6 +5,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Role.skill_jie_qu_toc
 import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
 import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
@@ -33,8 +34,14 @@ class use_jie_huo_tos : AbstractProtoHandler<Fengsheng.use_jie_huo_tos>() {
                     log.error("[截取]只能在其他玩家的争夺阶段使用")
                     r.sendErrorMessage("[截取]只能在其他玩家的争夺阶段使用")
                     return
-                } else {
-                    r.skills = r.skills.filterNot { it.skillId == SkillId.JIE_QU }.toTypedArray()
+                }
+                r.skills = r.skills.filterNot { it.skillId == SkillId.JIE_QU }.toTypedArray()
+                for (p in r.game!!.players) {
+                    if (p is HumanPlayer) {
+                        val builder = skill_jie_qu_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        p.send(builder.build())
+                    }
                 }
             } else {
                 log.error("这张牌不是截获，而是$card")

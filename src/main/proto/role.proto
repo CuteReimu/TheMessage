@@ -582,6 +582,11 @@ message skill_ji_ban_b_toc {
   uint32        unknown_card_count = 4; // 其他人看不到给的牌，只有数量
 }
 
+// 广播使用【应变】：你可以将一张【截获】当做【误导】使用。
+message skill_ying_bian_toc {
+  uint32 player_id = 1;
+}
+
 // 广播使用【诱导】：你使用【误导】后，摸一张牌。
 message skill_you_dao_toc {
   uint32 player_id = 1;
@@ -1273,6 +1278,11 @@ message skill_lian_luo_toc {
   card card = 3;
 }
 
+// 广播使用【截取】：限一次，其他角色的争夺阶段，你可以将一张手牌当做【截获】使用。
+message skill_jie_qu_toc {
+  uint32 player_id = 1;
+}
+
 // 成年韩梅【密信】：接收双色情报后，可以将一张含相同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
 message skill_mi_xin_tos {
   uint32 card_id = 1;
@@ -1284,4 +1294,9 @@ message skill_mi_xin_toc {
   uint32 player_id = 1; // 成年韩梅的ID
   uint32 target_player_id = 2;
   card card = 3;
+}
+
+// 广播使用【争夺】：限一次，其他角色的争夺阶段，你可以将一张手牌当做【误导】使用。
+message skill_zheng_duo_toc {
+  uint32 player_id = 1;
 }

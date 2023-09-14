@@ -5,6 +5,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Role
 import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
 import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
@@ -38,14 +39,27 @@ class use_wu_dao_tos : AbstractProtoHandler<Fengsheng.use_wu_dao_tos>() {
                     r.sendErrorMessage("这张牌不是截获，而是$card")
                     return
                 }
+                for (p in r.game!!.players) {
+                    if (p is HumanPlayer) {
+                        val builder = Role.skill_ying_bian_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        p.send(builder.build())
+                    }
+                }
             } else if (r.findSkill(SkillId.ZHENG_DUO) != null) {
                 val fsm = r.game!!.fsm as? FightPhaseIdle
                 if (fsm == null || fsm.whoseTurn === r) {
                     log.error("[争夺]只能在其他玩家的争夺阶段使用")
                     r.sendErrorMessage("[争夺]只能在其他玩家的争夺阶段使用")
                     return
-                } else {
-                    r.skills = r.skills.filterNot { it.skillId == SkillId.ZHENG_DUO }.toTypedArray()
+                }
+                r.skills = r.skills.filterNot { it.skillId == SkillId.ZHENG_DUO }.toTypedArray()
+                for (p in r.game!!.players) {
+                    if (p is HumanPlayer) {
+                        val builder = Role.skill_zheng_duo_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        p.send(builder.build())
+                    }
                 }
             } else {
                 log.error("这张牌不是误导，而是$card")
