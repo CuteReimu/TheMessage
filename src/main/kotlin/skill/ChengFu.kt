@@ -30,7 +30,7 @@ class ChengFu : AbstractSkill(), TriggeredSkill {
                 builder.playerId = player.getAlternativeLocation(r.location)
                 builder.fromPlayerId = player.getAlternativeLocation(fsm.player.location)
                 fsm.card?.let { card ->
-                    if (fsm.cardType != Shi_Tan || player == fsm.player || player == r)
+                    if (fsm.cardType != Shi_Tan || player === fsm.player || player === r)
                         builder.card = card.toPbCard()
                     else
                         builder.unknownCardCount = 1
