@@ -160,7 +160,7 @@ object ScoreFactory {
                 val winCount = playerCountWinCount[count]?.get(it) ?: 0
                 val gameCount = playerCountAppearCount[count]?.get(it) ?: 0
                 PlayerGameCount(winCount, gameCount).apply {
-                    log.info("${count}人局${it.parseSecretTask()}胜率${"%.2f".format(rate)}%")
+                    log.info("${count}人局${it.parseSecretTask()}场次${gameCount}胜率${"%.2f".format(rate)}%")
                 }
             }
         }
