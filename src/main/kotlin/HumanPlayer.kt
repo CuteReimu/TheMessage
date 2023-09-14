@@ -155,6 +155,7 @@ class HumanPlayer(
             builder.addNames(name)
             l = (l + 1) % game!!.players.size
         } while (l != location)
+        builder.addAllPossibleSecretTask(game!!.possibleSecretTasks)
         send(builder.build())
     }
 

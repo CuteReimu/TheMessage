@@ -153,6 +153,7 @@ message init_toc {
   secret_task     secret_task = 3; // （你的身份是神秘人时）你的机密任务
   repeated role   roles = 4; // 从自己开始，依次每个人的角色
   repeated string names = 5; // 从自己开始，依次每个人的名字
+  repeated secret_task possible_secret_task = 6; // 可能的神秘人任务
 }
 
 // 通知客户端角色变化

@@ -44,6 +44,7 @@ class Game private constructor(totalPlayerCount: Int) {
     var players: Array<Player?>
     var deck = Deck(this)
     var fsm: Fsm? = null
+    var possibleSecretTasks: List<secret_task> = emptyList()
 
     /**
      * 用于王田香技能禁闭
@@ -180,6 +181,12 @@ class Game private constructor(totalPlayerCount: Int) {
             players[i]!!.originIdentity = identity
             players[i]!!.originSecretTask = task
         }
+        val possibleSecretTaskCount = when {
+            players.size <= 5 -> 3
+            players.size <= 8 -> 4
+            else -> minOf(players.size - 4, tasks.size)
+        }
+        possibleSecretTasks = tasks.subList(0, possibleSecretTaskCount).shuffled()
         val roleSkillsDataArray = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
             players.size * 3,
             Config.DebugRoles
