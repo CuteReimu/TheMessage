@@ -80,7 +80,7 @@ object RoleCache {
         }
         try {
             FileInputStream("forbiddenRoles.txt").use { `in` ->
-                String(`in`.readAllBytes()).split(",").forEach {
+                String(`in`.readAllBytes()).trim().split(",").forEach {
                     if (it.isNotEmpty()) {
                         val r = role.forNumber(it.toInt())!!
                         val index = cache.indexOfFirst { data -> data.role == r }
