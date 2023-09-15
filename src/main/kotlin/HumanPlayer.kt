@@ -317,7 +317,8 @@ class HumanPlayer(
         builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
         builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
         builder.waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
-        builder.setCurrentPhase(Receive_Phase).messageCard = fsm.messageCard.toPbCard()
+        builder.currentPhase = Receive_Phase
+        builder.messageCard = fsm.messageCard.toPbCard()
         send(builder.build())
     }
 

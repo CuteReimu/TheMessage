@@ -36,6 +36,12 @@ data class SendPhaseIdle(
     val sender: Player,
 ) : Fsm {
     override fun resolve(): ResolveResult? {
+        if (!inFrontOfWhom.alive) {
+            return if (inFrontOfWhom === sender)
+                ResolveResult(ReceivePhase(whoseTurn, sender, messageCard, inFrontOfWhom), true)
+            else // 死人的锁不会生效
+                ResolveResult(MessageMoveNext(this), true)
+        }
         for (p in whoseTurn.game!!.players) {
             p!!.notifySendPhase(Config.WaitSecond)
         }
