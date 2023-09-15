@@ -119,7 +119,10 @@ class WeiBi : Card {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnFinishResolveCard(r, target, card, card_type.Wei_Bi, MainPhaseIdle(r)), true)
+            val newFsm = MainPhaseIdle(r)
+            return ResolveResult(
+                OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wei_Bi, newFsm), true
+            )
         }
 
         private fun autoSelect() {
@@ -171,7 +174,7 @@ class WeiBi : Card {
         fun execute(card: WeiBi?, g: Game, r: Player, target: Player, wantType: card_type) {
             val resolveFunc = { valid: Boolean ->
                 if (!valid) {
-                    OnFinishResolveCard(r, target, card, card_type.Wei_Bi, MainPhaseIdle(r))
+                    OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
                 } else if (hasCard(target, wantType)) {
                     executeWeiBi(r, target, card, wantType)
                 } else {
@@ -189,10 +192,10 @@ class WeiBi : Card {
                             p.send(builder.build())
                         }
                     }
-                    OnFinishResolveCard(r, target, card, card_type.Wei_Bi, MainPhaseIdle(r))
+                    OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
                 }
             }
-            g.resolve(OnUseCard(r, r, target, card, card_type.Wei_Bi, resolveFunc, g.fsm!!))
+            g.resolve(OnUseCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, g.fsm!!))
         }
 
         private fun hasCard(player: Player, cardType: card_type): Boolean {

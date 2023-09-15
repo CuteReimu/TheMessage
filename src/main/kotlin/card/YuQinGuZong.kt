@@ -79,12 +79,12 @@ class YuQinGuZong : Card {
             r.messageCards.remove(messageCard) // 欲擒故纵可能传出面前的情报
             r.draw(1)
             OnFinishResolveCard( // 这里先触发卡牌结算后，再触发情报传出时
-                r, target, this, type, OnSendCard(
+                r, target, getOriginCard(), type, OnSendCard(
                     fsm.player, fsm.player, messageCard, dir, target, lockPlayers.toTypedArray(), true
                 )
             )
         }
-        g.resolve(OnUseCard(r, r, target, this, card_type.Yu_Qin_Gu_Zong, resolveFunc, fsm))
+        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Yu_Qin_Gu_Zong, resolveFunc, fsm))
     }
 
     override fun toPbCard(): card {

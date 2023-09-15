@@ -79,10 +79,10 @@ class ShiTan : Card {
                 }
                 executeShiTan(r, target, this@ShiTan)
             } else {
-                OnFinishResolveCard(r, target, this, card_type.Shi_Tan, MainPhaseIdle(r)) {}
+                OnFinishResolveCard(r, target, getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r)) {}
             }
         }
-        g.resolve(OnUseCard(r, r, target, this, card_type.Shi_Tan, resolveFunc, g.fsm!!))
+        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Shi_Tan, resolveFunc, g.fsm!!))
     }
 
     private fun checkDrawCard(target: Player): Boolean {
@@ -174,7 +174,7 @@ class ShiTan : Card {
                     target.game!!.playerDiscardCard(target, discardCard)
             }
             return ResolveResult(
-                OnFinishResolveCard(r, target, card, card_type.Shi_Tan, MainPhaseIdle(r)) {},
+                OnFinishResolveCard(r, target, card.getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r)) {},
                 true
             )
         }

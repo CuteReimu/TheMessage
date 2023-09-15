@@ -1,7 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.Card
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.*
@@ -105,7 +104,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
             g.playerSetRoleFaceUp(r, true)
             r.draw(2)
             fsm.card?.let {
-                val skill = JiuJi2(it)
+                val skill = JiuJi2()
                 r.skills = arrayOf(*r.skills, skill)
             }
             return ResolveResult(fsm, true)
@@ -116,7 +115,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
         }
     }
 
-    private class JiuJi2(val card: Card) : TriggeredSkill {
+    private class JiuJi2 : TriggeredSkill {
         override val skillId = SkillId.JIU_JI2
 
         override fun execute(g: Game): ResolveResult? {
@@ -124,8 +123,9 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
             fsm.askWhom === fsm.targetPlayer || return null
             fsm.askWhom.alive || return null
             fsm.askWhom.findSkill(skillId) != null || return null
-            fsm.askWhom.cards.add(card.getOriginCard())
-            log.info("${fsm.askWhom}将使用的${card.getOriginCard()}加入了手牌")
+            val card = fsm.card ?: return null
+            fsm.askWhom.cards.add(card)
+            log.info("${fsm.askWhom}将使用的${card}加入了手牌")
             fsm.askWhom.skills = fsm.askWhom.skills.filterNot { it.skillId == skillId }.toTypedArray()
             for (player in g.players) {
                 if (player is HumanPlayer) {
@@ -135,7 +135,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
                     player.send(builder.build())
                 }
             }
-            return ResolveResult(fsm.copy(whereToGoFunc = {}), true)
+            return ResolveResult(fsm.copy(discardAfterResolve = false), true)
         }
 
         companion object {

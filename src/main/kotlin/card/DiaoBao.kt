@@ -70,9 +70,9 @@ class DiaoBao : Card {
                 isMessageCardFaceUp = false,
                 whoseFightTurn = fsm.inFrontOfWhom
             )
-            OnFinishResolveCard(r, null, this, card_type.Diao_Bao, newFsm) {}
+            OnFinishResolveCard(r, null, getOriginCard(), card_type.Diao_Bao, newFsm) {}
         }
-        g.resolve(OnUseCard(fsm.whoseTurn, r, null, this, card_type.Diao_Bao, resolveFunc, fsm))
+        g.resolve(OnUseCard(fsm.whoseTurn, r, null, getOriginCard(), card_type.Diao_Bao, resolveFunc, fsm))
     }
 
     override fun toString(): String {

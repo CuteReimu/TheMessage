@@ -103,14 +103,11 @@ class LiYou : Card {
                         player.send(builder.build())
                     }
                 }
-                val newFsm = OnFinishResolveCard(r, target, card, card_type.Li_You, MainPhaseIdle(r))
+                val newFsm = OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Li_You, MainPhaseIdle(r))
                 if (!joinIntoHand) OnAddMessageCard(r, newFsm, false)
                 else newFsm
             }
-            if (card != null)
-                g.resolve(OnUseCard(r, r, target, card, card_type.Li_You, resolveFunc, g.fsm!!))
-            else
-                g.resolve(resolveFunc(true))
+            g.resolve(OnUseCard(r, r, target, card?.getOriginCard(), card_type.Li_You, resolveFunc, g.fsm!!))
         }
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {

@@ -41,12 +41,12 @@ class DuMing : AbstractSkill(), TriggeredSkill {
                 }
             }
             r.addSkillUseCount(skillId, 2) // 【调包】结算后+2，传递阶段使用+1
-            val oldWhereToGoFunc = fsm.whereToGoFunc
+            val oldAfterResolveFunc = fsm.afterResolveFunc
             val f = {
                 r.resetSkillUseCount(skillId)
-                oldWhereToGoFunc()
+                oldAfterResolveFunc()
             }
-            return ResolveResult(waitForDuMing(fsm.copy(whereToGoFunc = f), r), true)
+            return ResolveResult(waitForDuMing(fsm.copy(afterResolveFunc = f), r), true)
         } else if (fsm is SendPhaseIdle) {
             !fsm.isMessageCardFaceUp || return null
             val r = fsm.inFrontOfWhom

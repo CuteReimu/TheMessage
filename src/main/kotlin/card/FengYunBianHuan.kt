@@ -78,7 +78,7 @@ class FengYunBianHuan : Card {
         val resolveFunc = { _: Boolean ->
             executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
-        g.resolve(OnUseCard(r, r, null, this, Feng_Yun_Bian_Huan, resolveFunc, fsm))
+        g.resolve(OnUseCard(r, r, null, getOriginCard(), Feng_Yun_Bian_Huan, resolveFunc, fsm))
     }
 
     private data class executeFengYunBianHuan(
@@ -93,7 +93,7 @@ class FengYunBianHuan : Card {
             val r = players.firstOrNull()
             if (r == null) {
                 mainPhaseIdle.player.game!!.deck.discard(*drawCards.toTypedArray())
-                val newFsm = OnFinishResolveCard(p, null, card, Feng_Yun_Bian_Huan, mainPhaseIdle)
+                val newFsm = OnFinishResolveCard(p, null, card.getOriginCard(), Feng_Yun_Bian_Huan, mainPhaseIdle)
                 return ResolveResult(if (asMessageCard) OnAddMessageCard(p, newFsm, false) else newFsm, true)
             }
             for (player in r.game!!.players) {

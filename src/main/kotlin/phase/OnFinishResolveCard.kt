@@ -15,7 +15,8 @@ import com.fengsheng.protos.Common.card_type
  * @param cardType 出的牌的类型
  * @param nextFsm 接下来是什么阶段
  * @param askWhom 遍历到了谁的技能
- * @param whereToGoFunc 卡牌移到哪
+ * @param discardAfterResolve 结算后是否进入弃牌堆
+ * @param afterResolveFunc 结算后触发的一些效果，一般是用来清本回合使用次数
  */
 data class OnFinishResolveCard(
     val player: Player,
@@ -24,7 +25,8 @@ data class OnFinishResolveCard(
     val cardType: card_type,
     val nextFsm: Fsm,
     val askWhom: Player = player,
-    val whereToGoFunc: () -> Unit = { card?.let { player.game!!.deck.discard(it.getOriginCard()) } },
+    val discardAfterResolve: Boolean = true,
+    val afterResolveFunc: () -> Unit = { },
 ) : Fsm {
     override fun resolve(): ResolveResult {
         val result = player.game!!.dealListeningSkill()
@@ -42,7 +44,12 @@ data class OnFinishResolveCard(
             while (true) {
                 askWhom = (askWhom + 1) % players.size
                 if (askWhom == onUseCard.player.location) {
-                    onUseCard.whereToGoFunc()
+                    if (onUseCard.discardAfterResolve) {
+                        onUseCard.card?.let {
+                            onUseCard.player.game!!.deck.discard(it.getOriginCard())
+                        }
+                    }
+                    onUseCard.afterResolveFunc()
                     return ResolveResult(onUseCard.nextFsm, true)
                 }
                 if (players[askWhom]!!.alive) {

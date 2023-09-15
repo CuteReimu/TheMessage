@@ -100,7 +100,7 @@ class MiLing : Card {
             else
                 miLingChooseCard(this@MiLing, r, target, secret, fsm, timeout)
         }
-        g.resolve(OnUseCard(r, r, target, this, card_type.Mi_Ling, resolveFunc, fsm))
+        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Mi_Ling, resolveFunc, fsm))
     }
 
     private data class miLingChooseCard(
@@ -316,7 +316,7 @@ class MiLing : Card {
                 lockPlayers.toTypedArray()
             )
             return ResolveResult(
-                OnFinishResolveCard(sendPhase.player, target, card, card_type.Mi_Ling, newFsm) {},
+                OnFinishResolveCard(sendPhase.player, target, card.getOriginCard(), card_type.Mi_Ling, newFsm) {},
                 true
             )
         }

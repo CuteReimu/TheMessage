@@ -75,9 +75,9 @@ class DiaoHuLiShan : Card {
             }
             if (isSkill) InvalidSkill.deal(target)
             else g.diaoHuLiShanPlayers.add(target.location)
-            OnFinishResolveCard(r, target, this, card_type.Diao_Hu_Li_Shan, MainPhaseIdle(r))
+            OnFinishResolveCard(r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, MainPhaseIdle(r))
         }
-        g.resolve(OnUseCard(r, r, target, this, card_type.Diao_Hu_Li_Shan, resolveFunc, g.fsm!!))
+        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, resolveFunc, g.fsm!!))
     }
 
     override fun toString(): String {

@@ -24,12 +24,12 @@ class CongRongYingDui : AbstractSkill(), TriggeredSkill {
         r.getSkillUseCount(skillId) == 0 || return null
         r.addSkillUseCount(skillId)
         val target = if (r === fsm.player) fsm.targetPlayer!! else fsm.player
-        val oldWhereToGoFunc = fsm.whereToGoFunc
+        val oldAfterResolveFunc = fsm.afterResolveFunc
         val f = {
             r.resetSkillUseCount(skillId)
-            oldWhereToGoFunc()
+            oldAfterResolveFunc()
         }
-        return ResolveResult(executeCongRongYingDui(fsm.copy(whereToGoFunc = f), r, target), true)
+        return ResolveResult(executeCongRongYingDui(fsm.copy(afterResolveFunc = f), r, target), true)
     }
 
     private data class executeCongRongYingDui(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
