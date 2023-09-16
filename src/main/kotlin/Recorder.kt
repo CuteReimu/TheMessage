@@ -27,8 +27,8 @@ class Recorder {
 
     @Volatile
     private var pausing = false
-    fun add(protoName: String, messageBuf: ByteArray?) {
-        if (protoName in ignoredProtoNames) return
+    fun add(protoName: String, messageBuf: ByteArray?, force: Boolean = false) {
+        if (!force && protoName in ignoredProtoNames) return
         if (!loading && ("wait_for_select_role_toc" == protoName || "init_toc" == protoName || list.isNotEmpty())) {
             val builder = recorder_line.newBuilder()
             builder.nanoTime = System.nanoTime()
