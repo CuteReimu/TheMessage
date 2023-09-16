@@ -79,7 +79,10 @@ class ShiTan : Card {
                 }
                 executeShiTan(r, target, this@ShiTan)
             } else {
-                OnFinishResolveCard(r, target, getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r)) {}
+                OnFinishResolveCard(
+                    r, target, getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
+                    discardAfterResolve = false
+                )
             }
         }
         g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Shi_Tan, resolveFunc, g.fsm!!))
@@ -174,7 +177,10 @@ class ShiTan : Card {
                     target.game!!.playerDiscardCard(target, discardCard)
             }
             return ResolveResult(
-                OnFinishResolveCard(r, target, card.getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r)) {},
+                OnFinishResolveCard(
+                    r, target, card.getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
+                    discardAfterResolve = false
+                ),
                 true
             )
         }

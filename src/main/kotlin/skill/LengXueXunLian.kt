@@ -3,9 +3,11 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.MiLing.executeMiLing
+import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.card_type.Diao_Bao
+import com.fengsheng.protos.Common.card_type.Mi_Ling
 import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -29,7 +31,16 @@ class LengXueXunLian : AbstractSkill(), ActiveSkill {
         if (fsm is SendPhaseStart && r === fsm.player) {
             g.resolve(executeLengXueXunLian(fsm.player, fsm.player, g.deck.draw(2)))
         } else if (fsm is executeMiLing && r === fsm.target) {
-            g.resolve(executeLengXueXunLian(fsm.sendPhase.player, fsm.target, g.deck.draw(2)))
+            g.resolve(
+                OnFinishResolveCard(
+                    fsm.sendPhase.player,
+                    fsm.target,
+                    fsm.card,
+                    Mi_Ling,
+                    executeLengXueXunLian(fsm.sendPhase.player, fsm.target, g.deck.draw(2)),
+                    discardAfterResolve = false
+                )
+            )
         } else {
             log.error("现在不能发动[冷血训练]")
             (r as? HumanPlayer)?.sendErrorMessage("现在不能发动[冷血训练]")

@@ -316,7 +316,10 @@ class MiLing : Card {
                 lockPlayers.toTypedArray()
             )
             return ResolveResult(
-                OnFinishResolveCard(sendPhase.player, target, card.getOriginCard(), card_type.Mi_Ling, newFsm) {},
+                OnFinishResolveCard(
+                    sendPhase.player, target, card.getOriginCard(), card_type.Mi_Ling, newFsm,
+                    discardAfterResolve = false
+                ),
                 true
             )
         }
