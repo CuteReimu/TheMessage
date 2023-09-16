@@ -21,6 +21,7 @@ class MiXin : AbstractSkill(), TriggeredSkill {
         fsm.askWhom === fsm.inFrontOfWhom || return null
         fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
+        fsm.inFrontOfWhom.cards.isNotEmpty() || return null
         fsm.messageCard.colors.size == 2 || return null
         fsm.sender.alive || return null
         fsm.inFrontOfWhom.addSkillUseCount(skillId)
