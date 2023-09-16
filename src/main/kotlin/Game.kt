@@ -181,9 +181,11 @@ class Game private constructor(totalPlayerCount: Int) {
             players[i]!!.originIdentity = identity
             players[i]!!.originSecretTask = task
         }
-        val possibleSecretTaskCount = when {
-            players.size <= 5 -> 3
-            players.size <= 8 -> 4
+        val possibleSecretTaskCount = when (players.size) {
+            2, 3, 4, 5 -> 3
+            6 -> 4
+            7 -> tasks.size
+            8 -> 5
             else -> players.size - 4
         }
         possibleSecretTasks = tasks.subList(0, possibleSecretTaskCount.coerceAtMost(tasks.size)).shuffled()
