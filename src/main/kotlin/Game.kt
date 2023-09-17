@@ -225,6 +225,7 @@ class Game private constructor(totalPlayerCount: Int) {
                 }
             }
         }
+        possibleTasks.shuffle()
         possibleSecretTasks = possibleTasks
         val roleSkillsDataArray = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
             players.size * 3,
