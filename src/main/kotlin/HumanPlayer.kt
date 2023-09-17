@@ -2,7 +2,6 @@ package com.fengsheng
 
 import com.fengsheng.card.Card
 import com.fengsheng.phase.*
-import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.phase.*
 import com.fengsheng.protos.Common.role.unknown
@@ -56,17 +55,17 @@ class HumanPlayer(
     /**
      * 向玩家客户端发送[error_message_toc]
      */
-    fun sendErrorMessage(message: String, forceSave: Boolean = false) {
-        send(error_message_toc.newBuilder().setMsg(message).build(), forceSave)
+    fun sendErrorMessage(message: String) {
+        send(error_message_toc.newBuilder().setMsg(message).build())
     }
 
     /**
      * 向玩家客户端发送协议
      */
-    fun send(message: GeneratedMessageV3, forceSave: Boolean = false) {
+    fun send(message: GeneratedMessageV3) {
         val buf = message.toByteArray()
         val name = message.descriptorForType.name
-        recorder.add(name, buf, forceSave)
+        recorder.add(name, buf)
         if (isActive && !isReconnecting) send(name, buf, true)
         log.debug(
             "send@${channel.id().asShortText()} len: ${buf.size} $name | " +
@@ -130,8 +129,10 @@ class HumanPlayer(
         } else {
             if (timeout != null && timeout!!.cancel()) {
                 var delay = 16
-                if (game!!.fsm is MainPhaseIdle || game!!.fsm is WaitForDieGiveCard) delay =
-                    21 else if (game!!.fsm is WaitForSelectRole) delay = 31
+                if (game!!.fsm is MainPhaseIdle || game!!.fsm is WaitForDieGiveCard)
+                    delay = 21
+                else if (game!!.fsm is WaitForSelectRole)
+                    delay = 31
                 timeout =
                     GameExecutor.TimeWheel.newTimeout(timeout!!.task(), delay.toLong(), TimeUnit.SECONDS)
             }
@@ -158,16 +159,6 @@ class HumanPlayer(
         } while (l != location)
         builder.addAllPossibleSecretTask(game!!.possibleSecretTasks)
         send(builder.build())
-        GameExecutor.post(game!!, {
-            sendErrorMessage(
-                game!!.possibleSecretTasks.joinToString(
-                    separator = "",
-                    prefix = "本局游戏中的神秘人将从以下随机："
-                ) {
-                    identityColorToString(Black, it).replaceFirst("神秘人", "")
-                }, true
-            )
-        }, 1, TimeUnit.SECONDS)
     }
 
     override fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card) {

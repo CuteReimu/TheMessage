@@ -80,6 +80,19 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(role.unknown) })
         builder.waitingSecond = Config.WaitSecond * 2
         player.send(builder.build())
+        GameExecutor.post(game, {
+            player.sendErrorMessage(
+                game.possibleSecretTasks.joinToString(
+                    separator = "",
+                    prefix = "本局游戏中的神秘人将从以下随机："
+                ) {
+                    Player.identityColorToString(color.Black, it)
+                        .replaceFirst("神秘人", "")
+                        .replaceFirst("[", "【")
+                        .replaceFirst("]", "】")
+                }
+            )
+        }, 1, TimeUnit.SECONDS)
     }
 
     companion object {
