@@ -126,9 +126,9 @@ class JiangHuLing : TriggeredSkill {
             if (!fsm.inFrontOfWhom.messageCards.any { color in it.colors }) {
                 for (p in r.game!!.players) {
                     if (p is HumanPlayer) {
-                        val builder = skill_wait_for_jiang_hu_ling_b_toc.newBuilder()
+                        val builder = skill_jiang_hu_ling_b_toc.newBuilder()
                         builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.color = color
+                        builder.enable = false
                         p.send(builder.build())
                     }
                 }
@@ -205,6 +205,14 @@ class JiangHuLing : TriggeredSkill {
                     return null
                 }
                 player.incrSeq()
+                for (p in player.game!!.players) {
+                    if (p is HumanPlayer) {
+                        val builder = skill_jiang_hu_ling_b_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(player.location)
+                        builder.enable = false
+                        p.send(builder.build())
+                    }
+                }
                 return ResolveResult(fsm, true)
             }
             if (message !is skill_jiang_hu_ling_b_tos) {
@@ -244,6 +252,7 @@ class JiangHuLing : TriggeredSkill {
                     val builder = skill_jiang_hu_ling_b_toc.newBuilder()
                     builder.cardId = card.id
                     builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.enable = true
                     p.send(builder.build())
                 }
             }
