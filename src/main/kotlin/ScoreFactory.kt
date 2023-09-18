@@ -67,10 +67,10 @@ object ScoreFactory {
                     val rate =
                         if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
                             array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
-                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate > array[Killer.number + 3].rate)
-                            array[Killer.number + 3].rate // 如果清道夫胜率高于镇压者，则取镇压者的胜率
+                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate < array[Killer.number + 3].rate)
+                            array[Killer.number + 3].rate // 如果清道夫胜率低于镇压者，则取镇压者的胜率
                         else array[index].rate
-                    if (array[index].gameCount > 0) score *= array[0].rate / rate.coerceAtLeast(8.0) // 低于8%的胜率视为8%
+                    if (array[index].gameCount > 0) score *= array[0].rate / rate.coerceIn(8.0..50.0) // 胜率有效范围在8%至50%
                     array
                 }
             }
@@ -84,10 +84,10 @@ object ScoreFactory {
                     val rate =
                         if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
                             array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
-                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate > array[Killer.number + 3].rate)
-                            array[Killer.number + 3].rate // 如果清道夫胜率高于镇压者，则取镇压者的胜率
+                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate < array[Killer.number + 3].rate)
+                            array[Killer.number + 3].rate // 如果清道夫胜率低于镇压者，则取镇压者的胜率
                         else array[index].rate
-                    if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - rate.coerceAtLeast(8.0)) // 低于8%的胜率视为8%
+                    if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - rate.coerceIn(8.0..50.0)) // 胜率有效范围在8%至50%
                     array
                 }
             }

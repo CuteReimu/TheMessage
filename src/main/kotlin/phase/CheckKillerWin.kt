@@ -27,20 +27,17 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
         val killer = players.find { it.identity == Black && it.secretTask == Killer } // 镇压者
         val stealer = players.find { it.identity == Black && it.secretTask == Stealer } // 簒夺者
         val sweeper = players.find { it.identity == Black && it.secretTask == Sweeper } // 清道夫
+        val pioneer = diedQueue.find { it.identity == Black && it.secretTask == Pioneer } // 先行者
         var declaredWinner = ArrayList<Player>()
         var winner = ArrayList<Player>()
-        if (whoseTurn === killer) {
-            if (diedQueue.any { it.messageCards.countTrueCard() >= 2 }) {
-                declaredWinner.add(killer)
-                winner.add(killer)
-            }
-        } else if (whoseTurn === sweeper) {
-            if (diedQueue.any { it.messageCards.countTrueCard() <= 1 }) {
-                declaredWinner.add(sweeper)
-                winner.add(sweeper)
-            }
+        if (whoseTurn === killer && diedQueue.any { it.messageCards.countTrueCard() >= 2 }) {
+            declaredWinner.add(killer)
+            winner.add(killer)
         }
-        val pioneer = diedQueue.find { it.identity == Black && it.secretTask == Pioneer } // 先行者
+        if (sweeper != null && diedQueue.any { it.messageCards.countTrueCard() <= 1 }) {
+            declaredWinner.add(sweeper)
+            winner.add(sweeper)
+        }
         if (pioneer != null && pioneer.messageCards.countTrueCard() >= 1) {
             declaredWinner.add(pioneer)
             winner.add(pioneer)
