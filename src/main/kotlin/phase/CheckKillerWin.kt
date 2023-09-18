@@ -26,7 +26,8 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
         val players = whoseTurn.game!!.players.filterNotNull().filter { !it.lose }
         val killer = players.find { it.identity == Black && it.secretTask == Killer } // 镇压者
         val stealer = players.find { it.identity == Black && it.secretTask == Stealer } // 簒夺者
-        val sweeper = players.find { it.identity == Black && it.secretTask == Sweeper } // 清道夫
+        val sweeper = // 清道夫
+            players.find { (it.alive || it.dieJustNow) && it.identity == Black && it.secretTask == Sweeper }
         val pioneer = diedQueue.find { it.identity == Black && it.secretTask == Pioneer } // 先行者
         var declaredWinner = ArrayList<Player>()
         var winner = ArrayList<Player>()
