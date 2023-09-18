@@ -172,6 +172,14 @@ class Game private constructor(totalPlayerCount: Int) {
         val tasks = arrayListOf(Killer, Stealer, Collector, Mutator, Pioneer)
         if (players.size >= 5) tasks.addAll(listOf(Disturber, Sweeper))
         tasks.shuffle()
+        if (players.size <= 5) {
+            // 针对possibleSecretTasks，5人以下局镇压者、清道夫、先行者不会三个都出现，因此把第三个位置换走即可
+            if (tasks[2] in arrayOf(Killer, Pioneer, Sweeper)) {
+                val temp = tasks[3]
+                tasks[3] = tasks[2]
+                tasks[2] = temp
+            }
+        }
         var secretIndex = 0
         for (i in players.indices) {
             val identity = identities[i]
@@ -188,45 +196,7 @@ class Game private constructor(totalPlayerCount: Int) {
             8 -> 5
             else -> players.size - 4
         }
-        val possibleTasks = tasks.subList(0, possibleSecretTaskCount.coerceAtMost(tasks.size)).toMutableList()
-        when (players.size) {
-            5 -> { // 5人局，诱变者、双重间谍不会同时出现，镇压者、清道夫、先行者不会同时出现
-                val a1 = arrayOf(Collector, Mutator)
-                val a2 = arrayOf(Killer, Pioneer, Sweeper)
-                if (a1.count { it in possibleTasks } > 1) {
-                    val remain = if (tasks[0] in a1) tasks[0] else a1.random()
-                    a1.forEach { if (it != remain) possibleTasks.remove(it) }
-                }
-                if (a2.count { it in possibleTasks } > 1) {
-                    val remain = if (tasks[0] in a2) tasks[0] else a2.random()
-                    a2.forEach { if (it != remain) possibleTasks.remove(it) }
-                }
-                if (possibleTasks.size < 3) {
-                    val add = ArrayList<secret_task>()
-                    if (Stealer !in possibleTasks) add.add(Stealer)
-                    if (Disturber !in possibleTasks) add.add(Disturber)
-                    if (!a1.any { it in possibleTasks }) add.addAll(a1)
-                    if (!a2.any { it in possibleTasks }) add.addAll(a2)
-                    while (possibleTasks.size < 3) {
-                        val a = add.random()
-                        add.remove(a)
-                        possibleTasks.add(a)
-                    }
-                }
-            }
-
-            6, 8 -> { // 6、8人局，镇压者、清道夫、先行者不会三个都出现
-                val a1 = arrayOf(Killer, Pioneer, Sweeper)
-                if (a1.count { it in possibleTasks } == 3) {
-                    val remove = a1.filterNot { it == tasks[0] || it == tasks[1] }.random()
-                    possibleTasks.remove(remove)
-                    val add = arrayOf(Stealer, Collector, Mutator, Disturber).filterNot { it in possibleTasks }.random()
-                    possibleTasks.add(add)
-                }
-            }
-        }
-        possibleTasks.shuffle()
-        possibleSecretTasks = possibleTasks
+        possibleSecretTasks = tasks.subList(0, possibleSecretTaskCount.coerceAtMost(tasks.size)).shuffled()
         val roleSkillsDataArray = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
             players.size * 3,
             Config.DebugRoles
