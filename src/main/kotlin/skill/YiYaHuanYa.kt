@@ -91,7 +91,7 @@ class YiYaHuanYa : AbstractSkill(), TriggeredSkill {
                 return null
             }
             r.incrSeq()
-            log.info("${r}对${target}发动了[以牙还牙]")
+            log.info("${r}发动了[以牙还牙]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
             fsm.receiveOrder.addPlayerIfHasThreeBlack(target)

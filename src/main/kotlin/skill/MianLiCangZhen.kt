@@ -79,7 +79,7 @@ class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
                 return null
             }
             r.incrSeq()
-            log.info("${r}发动了[绵里藏针]")
+            log.info("${r}发动了[绵里藏针]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
             fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
