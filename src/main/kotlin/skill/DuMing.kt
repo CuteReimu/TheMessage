@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.card.filter
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.color
@@ -15,7 +14,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 老千技能【赌命】：情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。若猜错且你有黑色手牌，则你必须将一张黑色手牌置入自己的情报区。
+ * 老千技能【赌命】：一回合一次，情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。若猜错且你有纯黑色手牌，则你必须将一张纯黑色手牌置入自己的情报区。
  */
 class DuMing : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.DU_MING
@@ -26,7 +25,7 @@ class DuMing : AbstractSkill(), TriggeredSkill {
             fsm.cardType == Diao_Bao || return null
             val r = fsm.askWhom
             r.findSkill(skillId) != null || return null
-            r.getSkillUseCount(skillId) < 2 || return null
+            r.getSkillUseCount(skillId) < 1000 || return null
             val fightPhase = fsm.nextFsm as? FightPhaseIdle ?: return null
             for (p in g.players) { // 解决客户端动画问题
                 if (p is HumanPlayer) {
@@ -40,10 +39,10 @@ class DuMing : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            r.addSkillUseCount(skillId, 2) // 【调包】结算后+2，传递阶段使用+1
+            r.addSkillUseCount(skillId)
             val oldAfterResolveFunc = fsm.afterResolveFunc
             val f = {
-                r.resetSkillUseCount(skillId)
+                r.addSkillUseCount(skillId, -1)
                 oldAfterResolveFunc()
             }
             return ResolveResult(waitForDuMing(fsm.copy(afterResolveFunc = f), r), true)
@@ -150,9 +149,10 @@ class DuMing : AbstractSkill(), TriggeredSkill {
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
+            r.addSkillUseCount(SkillId.DU_MING, 99999)
             log.info("${r}发动了赌命，声明了$c")
             r.draw(1)
-            val needPutBlack = c !in card.colors && r.cards.any { it.isBlack() }
+            val needPutBlack = c !in card.colors && r.cards.any { it.isPureBlack() }
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_du_ming_a_toc.newBuilder()
@@ -167,7 +167,7 @@ class DuMing : AbstractSkill(), TriggeredSkill {
                             p.timeout = GameExecutor.post(g, {
                                 if (p.checkSeq(seq)) {
                                     val builder2 = skill_du_ming_b_tos.newBuilder()
-                                    builder2.cardId = p.cards.filter(Black).random().id
+                                    builder2.cardId = p.cards.filter { it.isPureBlack() }.random().id
                                     builder2.seq = seq
                                     g.tryContinueResolveProtocol(p, builder2.build())
                                 }
@@ -182,7 +182,7 @@ class DuMing : AbstractSkill(), TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder2 = skill_du_ming_b_tos.newBuilder()
-                    builder2.cardId = r.cards.filter(Black).random().id
+                    builder2.cardId = r.cards.filter { it.isPureBlack() }.random().id
                     g.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -211,8 +211,8 @@ class DuMing : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
-            if (!card.isBlack()) {
-                log.error("这张牌不是黑色")
+            if (!card.isPureBlack()) {
+                log.error("这张牌不是纯黑色")
                 (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色")
                 return null
             }
