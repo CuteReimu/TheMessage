@@ -65,6 +65,11 @@ class Deck(private val game: Game) {
     }
 
     /**
+     * 获取并移除弃牌堆最上面的一张牌，若弃牌堆为空则返回`null`
+     */
+    fun popDiscardPile() = discardPile.removeLastOrNull()
+
+    /**
      * 通知客户端牌堆剩余卡牌数量
      *
      * @param shuffled 是否洗牌

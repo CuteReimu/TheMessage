@@ -63,7 +63,7 @@ object RoleCache {
         RoleSkillsData("SP小九", role.sp_xiao_jiu, false, true, ChiZiZhiXin()),
         RoleSkillsData("老虎", role.lao_hu, false, false, YunChouWeiWo()),
         RoleSkillsData("SP端木静", role.sp_duan_mu_jing, true, false, HouLaiRen()),
-        RoleSkillsData("速记员", role.su_ji_yuan, true, true, ZiZhengQingBai()),
+        RoleSkillsData("速记员", role.su_ji_yuan, true, true, ZiZhengQingBai(), MiaoShouKuaiJi()),
         RoleSkillsData("哑巴", role.ya_ba, false, true, ShouKouRuPing(), HanHouLaoShi()),
         RoleSkillsData("老千", role.lao_qian, false, true, DuMing()),
         RoleSkillsData("中年小九", role.middle_age_xiao_jiu, false, false, LianLuo2(), ShunShiErWei()),

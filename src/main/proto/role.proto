@@ -1201,6 +1201,25 @@ message skill_zi_zheng_qing_bai_toc {
   repeated color colors = 2; // 弃的那张牌的颜色
 }
 
+// 广播使用【妙手快记】A：你相邻玩家的回合结束时，你可以选择获得弃牌堆顶的牌
+message skill_miao_shou_kuai_ji_a_toc {
+  uint32 player_id = 1;
+  card card = 2;
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// 速记员【妙手快记】B：然后弃一张牌（弃牌走弃牌协议）
+message skill_miao_shou_kuai_ji_b_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【妙手快记】B
+message skill_miao_shou_kuai_ji_b_toc {
+  uint32 player_id = 1;
+}
+
 // 广播使用【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，取消原效果，改为双方各摸一张牌。（摸牌走摸牌协议）
 message skill_shou_kou_ru_ping_toc {
   uint32 player_id = 1;
