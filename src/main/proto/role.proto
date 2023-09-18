@@ -268,8 +268,9 @@ message skill_jiu_ji_a_toc {
 message skill_cheng_fu_toc {
   uint32 player_id = 1;
   uint32 from_player_id = 2; // 使用那张牌的玩家
-  card   card = 3; // 使用的那张牌。因为肥原龙川可以视为使用了【威逼】，因此这个字段可能为空。
-  uint32 unknown_card_count = 4; // 如果是【试探】且结算后要被李宁玉拿走时，其他人将会看不到这张牌。
+  card   card = 3; // 使用的那张牌。因为肥原龙川可以视为使用了【威逼】，因此这个字段可能为null。被试探无效时，除使用者外其余人看不见那张试探牌，这个字段也为null。
+  uint32 unknown_card_count = 4; // 被试探无效时，除使用者外其余人看不见那张试探牌，这个字段为1。肥源龙川的技能使用的威逼，这个字段为0。
+  card_type card_type = 5;
 }
 
 // 广播使用【就计】B：并在触发此技能的卡牌结算后，将其加入你的手牌。
@@ -1228,7 +1229,8 @@ message skill_shou_kou_ru_ping_toc {
   bool is_use_card = 5; // 如果是false，表示死亡时发动的技能，下面两个字段可以忽略
   uint32 from_player_id = 6; // 使用那张牌的玩家
   card_type card_type = 7; // 被无效的是什么牌
-  card card = 8; // 使用的那张牌（肥源龙川的技能使用的威逼，这个字段为null）
+  card card = 8; // 使用的那张牌（肥源龙川的技能使用的威逼，这个字段为null。其他人看不见试探牌，这个字段也是null）
+  uint32 unknown_card_count = 9; // 被试探无效时，除使用者外其余人看不见那张试探牌，这个字段为1。肥源龙川的技能使用的威逼，这个字段为0。
 }
 
 // 当【调包】结算后，广播询问使用【赌命】
