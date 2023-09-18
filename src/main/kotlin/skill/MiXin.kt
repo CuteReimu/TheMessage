@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
+import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
 import com.fengsheng.protos.Role.skill_mi_xin_toc
 import com.fengsheng.protos.Role.skill_mi_xin_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -11,7 +12,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 成年韩梅技能【密信】：接收双色情报后，可以将一张含相同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
+ * 中年韩梅技能【密信】：接收双色情报后，可以翻开此角色，将一张含相同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
  */
 class MiXin : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.MI_XIN
@@ -22,7 +23,13 @@ class MiXin : AbstractSkill(), TriggeredSkill {
         fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         fsm.inFrontOfWhom.cards.isNotEmpty() || return null
+        !fsm.inFrontOfWhom.roleFaceUp || return null
         fsm.messageCard.colors.size == 2 || return null
+        if (!fsm.inFrontOfWhom.hasEverFaceUp) {
+            fsm.inFrontOfWhom.cards.any { card ->
+                card.colors.any { it in fsm.messageCard.colors }
+            } || return null
+        }
         fsm.sender.alive || return null
         fsm.inFrontOfWhom.addSkillUseCount(skillId)
         return ResolveResult(executeMiXin(fsm, fsm.messageCard.colors), true)
@@ -30,8 +37,15 @@ class MiXin : AbstractSkill(), TriggeredSkill {
 
     private data class executeMiXin(val fsm: ReceivePhaseSkill, val colors: List<color>) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
+            for (p in fsm.whoseTurn.game!!.players) {
+                if (p === fsm.inFrontOfWhom) {
+                    p.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
+                } else if (p is HumanPlayer) {
+                    val builder = unknown_waiting_toc.newBuilder()
+                    builder.waitingSecond = Config.WaitSecond
+                    p.send(builder.build())
+                }
+            }
             return null
         }
 
@@ -74,6 +88,7 @@ class MiXin : AbstractSkill(), TriggeredSkill {
                 return null
             }
             r.incrSeq()
+            g.playerSetRoleFaceUp(r, true)
             val target = fsm.sender
             log.info("${r}发动了[密信]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)

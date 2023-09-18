@@ -66,8 +66,8 @@ object RoleCache {
         RoleSkillsData("速记员", role.su_ji_yuan, true, true, ZiZhengQingBai()),
         RoleSkillsData("哑炮", role.ya_pao, false, false, ShouKouRuPing()),
         RoleSkillsData("老千", role.lao_qian, false, true, DuMing()),
-        RoleSkillsData("成年小九", role.adult_xiao_jiu, false, true, LianLuo2(), JieQu()),
-        RoleSkillsData("成年韩梅", role.adult_han_mei, true, true, MiXin(), ZhengDuo()),
+        RoleSkillsData("中年小九", role.middle_age_xiao_jiu, false, false, LianLuo2(), ShunShiErWei()),
+        RoleSkillsData("中年韩梅", role.middle_age_han_mei, true, false, MiXin(), JiangJiJiuJi()),
     )
     private val mapCache: Map<role, RoleSkillsData>
     private val pool = Channel<() -> Unit>(Channel.UNLIMITED)

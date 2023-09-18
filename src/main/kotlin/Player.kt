@@ -32,6 +32,9 @@ abstract class Player protected constructor() {
     /** 为true表示刚死，还没死透。为false表示死透了。与诱变者的胜利判定有关 */
     var dieJustNow = false
 
+    /** 隐藏角色是否曾经面朝上过 */
+    var hasEverFaceUp = false
+
     var roleSkillsData = RoleSkillsData()
         set(value) {
             field = value.copy()
@@ -45,6 +48,7 @@ abstract class Player protected constructor() {
         alive = true
         lose = false
         dieJustNow = false
+        hasEverFaceUp = false
         skillUseCount.clear()
     }
 

@@ -2,7 +2,6 @@ package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
 import com.fengsheng.card.Card
-import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role
@@ -32,7 +31,6 @@ class use_wu_dao_tos : AbstractProtoHandler<Fengsheng.use_wu_dao_tos>() {
             r.sendErrorMessage("目标错误")
             return
         }
-        var useZhengDuo = false
         if (card.type != card_type.Wu_Dao) {
             if (r.findSkill(SkillId.YING_BIAN) != null) {
                 if (card.type != card_type.Jie_Huo) {
@@ -47,14 +45,6 @@ class use_wu_dao_tos : AbstractProtoHandler<Fengsheng.use_wu_dao_tos>() {
                         p.send(builder.build())
                     }
                 }
-            } else if (r.findSkill(SkillId.ZHENG_DUO) != null) {
-                val fsm = r.game!!.fsm as? FightPhaseIdle
-                if (fsm == null || fsm.whoseTurn === r) {
-                    log.error("[争夺]只能在其他玩家的争夺阶段使用")
-                    r.sendErrorMessage("[争夺]只能在其他玩家的争夺阶段使用")
-                    return
-                }
-                useZhengDuo = true
             } else {
                 log.error("这张牌不是误导，而是$card")
                 r.sendErrorMessage("这张牌不是误导，而是$card")
@@ -65,16 +55,6 @@ class use_wu_dao_tos : AbstractProtoHandler<Fengsheng.use_wu_dao_tos>() {
         if (card.type != card_type.Wu_Dao) card = Card.falseCard(card_type.Wu_Dao, card)
         if (card.canUse(r.game!!, r, target)) {
             r.incrSeq()
-            if (useZhengDuo) {
-                r.skills = r.skills.filterNot { it.skillId == SkillId.ZHENG_DUO }.toTypedArray()
-                for (p in r.game!!.players) {
-                    if (p is HumanPlayer) {
-                        val builder = Role.skill_zheng_duo_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        p.send(builder.build())
-                    }
-                }
-            }
             card.execute(r.game!!, r, target)
         }
     }
