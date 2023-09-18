@@ -27,6 +27,13 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
             r.sendErrorMessage("没有这张牌")
             return
         }
+        if (r.findSkill(SkillId.HAN_HOU_LAO_SHI) != null) {
+            if (card.isPureBlack() && !r.cards.all { it.isPureBlack() }) {
+                log.error("你无法传出纯黑色情报：$card")
+                r.sendErrorMessage("你无法传出纯黑色情报")
+                return
+            }
+        }
         if (pb.targetPlayerId <= 0 || pb.targetPlayerId >= r.game!!.players.size) {
             log.error("目标错误: ${pb.targetPlayerId}")
             r.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")

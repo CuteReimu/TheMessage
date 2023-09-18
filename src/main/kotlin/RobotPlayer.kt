@@ -207,6 +207,7 @@ class RobotPlayer : Player() {
          * 随机选择一张牌作为情报传出
          */
         private fun autoSendMessageCard(r: Player) {
+            val canSendPureBlack = r.findSkill(SkillId.HAN_HOU_LAO_SHI) == null || r.cards.all { it.isPureBlack() }
             var card: Card? = null
             val lockedPlayers = ArrayList<Player>()
             val players = r.game!!.players.filterNotNull().filter { r !== it && it.alive }
@@ -219,31 +220,34 @@ class RobotPlayer : Player() {
                     val maxEnemyColorCount = players.filter { it.identity == enemyColor }
                         .maxOf { it.messageCards.count(enemyColor) }
                     card = r.cards.find {
-                        it.canLock() && if (maxEnemyColorCount == 2) it.isPureBlack() else it.isBlack()
+                        (canSendPureBlack || !it.isPureBlack()) &&
+                                it.canLock() && if (maxEnemyColorCount == 2) it.isPureBlack() else it.isBlack()
                     }
                     if (card != null) lockedPlayers.add(twoBlackEnemy)
                 }
-                if (card == null) card = r.cards.find { r.identity in it.colors }
+                if (card == null)
+                    card = r.cards.find { (canSendPureBlack || !it.isPureBlack()) && r.identity in it.colors }
             } else {
                 when (r.secretTask) {
-                    secret_task.Killer, secret_task.Pioneer -> card = r.cards.find { it.isBlack() }
+                    secret_task.Killer, secret_task.Pioneer ->
+                        card = r.cards.find { (canSendPureBlack || !it.isPureBlack()) && it.isBlack() }
 
                     secret_task.Stealer -> {
                         arrayOf(color.Red, color.Blue).any { color ->
                             val two = players.find { it.identity == color && it.messageCards.count(color) == 2 }
                                 ?: return@any false
-                            card =
-                                r.cards.filter { color in it.colors }.run { find { it.canLock() } ?: firstOrNull() }
-                                    ?: return@any false
+                            card = r.cards.filter {
+                                (canSendPureBlack || !it.isPureBlack()) && color in it.colors
+                            }.run { find { it.canLock() } ?: firstOrNull() } ?: return@any false
                             if (card!!.canLock()) lockedPlayers.add(two)
                             true
                         }
                     }
 
-                    else -> card = r.cards.find { !it.isPureBlack() }
+                    else -> card = r.cards.find { (canSendPureBlack || !it.isPureBlack()) && !it.isPureBlack() }
                 }
             }
-            val finalCard = card ?: r.cards.first()
+            val finalCard = card ?: if (canSendPureBlack) r.cards.first() else r.cards.first { !it.isPureBlack() }
             val dir =
                 if (r.findSkill(SkillId.LIAN_LUO) == null) finalCard.direction
                 else if (lockedPlayers.isNotEmpty()) direction.Up

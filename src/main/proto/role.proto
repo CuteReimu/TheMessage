@@ -1201,37 +1201,35 @@ message skill_zi_zheng_qing_bai_toc {
   repeated color colors = 2; // 弃的那张牌的颜色
 }
 
-// 哑炮【守口如瓶】：当你成为【试探】【威逼】的目标或死亡时，你自动翻开此角色。直接走翻面协议，没有额外协议。
-// 当你成为【试探】【威逼】的目标或死亡时，你摸一张牌（摸牌走摸牌协议）。并询问使用【守口如瓶】
-message skill_wait_for_shou_kou_ru_ping_toc {
+// 广播使用【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，取消原效果，改为双方各摸一张牌。（摸牌走摸牌协议）
+message skill_shou_kou_ru_ping_toc {
   uint32 player_id = 1;
-  bool is_use_card = 2; // true-被【试探】【威逼】时，false-死亡时
-  uint32 from_player_id = 3; // 谁对哑炮使用了牌
+  uint32 card_player_id = 2; // 使用牌的角色
+  uint32 card_target_player_id = 3; // 牌的目标
   card_type card_type = 4; // 什么牌
-  card card = 5; // 那张牌（肥源龙川的技能使用的威逼，这个字段为null）
-  uint32 waiting_second = 6;
-  uint32 seq = 7;
+  card card = 5; // 那张牌（肥源龙川的技能使用的威逼，这个字段为null。其他人看不见试探牌，这个字段也是null）
+  uint32 unknown_card_count = 6; // 被试探无效时，除使用者外其余人看不见那张试探牌，这个字段为1。肥源龙川的技能使用的威逼，这个字段为0。
 }
 
-// 哑炮【守口如瓶】：然后可以交给其他角色一张牌，【试探】【威逼】无效。
-message skill_shou_kou_ru_ping_tos {
-  bool enable = 1;
-  uint32 target_player_id = 2;
-  uint32 card_id = 3;
+// 广播询问使用【憨厚老实】
+message skill_wait_for_han_hou_lao_shi_toc {
+  uint32 player_id = 1; // 哑巴的id
+  uint32 message_player_id = 2; // 谁接收的情报
+  uint32 waiting_second = 3;
   uint32 seq = 4;
 }
 
-// 广播使用【守口如瓶】
-message skill_shou_kou_ru_ping_toc {
-  uint32 player_id = 1;
-  bool enable = 2; // 如果是false，下面的字段都不会发
-  uint32 target_player_id = 3; // 哑炮把牌给谁
-  card give_card = 4; // 给的那张牌，只有哑炮和被给牌的那个人能看到
-  bool is_use_card = 5; // 如果是false，表示死亡时发动的技能，下面两个字段可以忽略
-  uint32 from_player_id = 6; // 使用那张牌的玩家
-  card_type card_type = 7; // 被无效的是什么牌
-  card card = 8; // 使用的那张牌（肥源龙川的技能使用的威逼，这个字段为null。其他人看不见试探牌，这个字段也是null）
-  uint32 unknown_card_count = 9; // 被试探无效时，除使用者外其余人看不见那张试探牌，这个字段为1。肥源龙川的技能使用的威逼，这个字段为0。
+// 哑巴【憨厚老实】：你无法传出纯黑色情报（除非手牌仅有纯黑色），接收你情报的玩家需给你一张手牌。
+message skill_han_hou_lao_shi_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【憨厚老实】
+message skill_han_hou_lao_shi_toc {
+  uint32 player_id = 1; // 哑巴的id
+  uint32 message_player_id = 2; // 谁接收的情报
+  card card = 3; // 给的那张牌，只有给牌的人和哑巴可以看到
 }
 
 // 当【调包】结算后，广播询问使用【赌命】

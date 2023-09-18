@@ -42,7 +42,7 @@ enum role {
   jian_xian_sheng = 37; // 简先生
   lao_hu = 38; // 老虎
   su_ji_yuan = 39; // 速记员
-  ya_pao = 40; // 哑炮
+  ya_ba = 40; // 哑巴
   lao_qian = 41; // 老千
   sp_cheng_xiao_die = 1002; // SP程小蝶
   sp_lian_yuan = 1003; // SP连鸢

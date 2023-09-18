@@ -487,7 +487,9 @@ class HumanPlayer(
          * 随机选择一张牌作为情报传出
          */
         private fun autoSendMessageCard(r: Player) {
-            val card = r.cards.first()
+            val card =
+                if (r.findSkill(SkillId.HAN_HOU_LAO_SHI) == null) r.cards.first()
+                else r.cards.firstOrNull { !it.isPureBlack() } ?: r.cards.first()
             val dir =
                 if (r.findSkill(SkillId.LIAN_LUO) == null) card.direction
                 else arrayOf(direction.Up, direction.Left, direction.Right).random()
