@@ -19,11 +19,11 @@ class GuanHai : AbstractSkill(), TriggeredSkill {
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
         val fsm2 = fsm.currentFsm as? FightPhaseIdle ?: return null
-        if (fsm.player != fsm.askWhom) return null
+        fsm.player === fsm.askWhom || return null
         val r = fsm.askWhom
-        if (r.findSkill(skillId) == null) return null
-        if (fsm.cardType != Jie_Huo && fsm.cardType != Wu_Dao) return null
-        if (r.getSkillUseCount(skillId) > 0) return null
+        r.findSkill(skillId) != null || return null
+        fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
+        r.getSkillUseCount(skillId) == 0 || return null
         log.info("${r}发动了[观海]")
         r.addSkillUseCount(skillId)
         for (p in g.players) {

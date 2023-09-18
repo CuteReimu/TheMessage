@@ -2,7 +2,8 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.OnUseCard
-import com.fengsheng.protos.Common
+import com.fengsheng.protos.Common.card_type.Jie_Huo
+import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -16,11 +17,11 @@ class BiFeng : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
-        if (fsm.player != fsm.askWhom) return null
+        fsm.player === fsm.askWhom || return null
         val r = fsm.askWhom
-        if (r.findSkill(skillId) == null) return null
-        if (fsm.cardType != Common.card_type.Jie_Huo && fsm.cardType != Common.card_type.Wu_Dao) return null
-        if (r.getSkillUseCount(skillId) > 0) return null
+        r.findSkill(skillId) != null || return null
+        fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
+        r.getSkillUseCount(skillId) == 0 || return null
         r.addSkillUseCount(skillId)
         val oldResolveFunc = fsm.resolveFunc
         return ResolveResult(excuteBiFeng(fsm.copy(resolveFunc = { valid ->

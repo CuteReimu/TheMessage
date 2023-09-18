@@ -169,8 +169,9 @@ class GuangFaBao : AbstractSkill(), ActiveSkill {
             target.messageCards.addAll(cards)
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_guang_fa_bao_b_toc.newBuilder().setEnable(true)
-                    for (card in cards) builder.addCards(card.toPbCard())
+                    val builder = skill_guang_fa_bao_b_toc.newBuilder()
+                    builder.enable = true
+                    cards.forEach { builder.addCards(it.toPbCard()) }
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     p.send(builder.build())
