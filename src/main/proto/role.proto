@@ -1258,7 +1258,7 @@ message skill_wait_for_du_ming_toc {
   uint32 seq = 3;
 }
 
-// 老千【赌命】A：情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。
+// 老千【赌命】A：一回合一次，情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。
 message skill_du_ming_a_tos {
   bool enable = 1;
   color color = 2;
@@ -1274,7 +1274,7 @@ message skill_du_ming_a_toc {
   uint32 seq = 6; // 如果有后续且为自己，则这个值大于0
 }
 
-// 老千【赌命】B：若猜错且你有黑色手牌，则你必须将一张黑色手牌置入自己的情报区。
+// 老千【赌命】B：若猜错且你有纯黑色手牌，则你必须将一张纯黑色手牌置入自己的情报区。
 message skill_du_ming_b_tos {
   uint32 card_id = 1; // 置入的牌
   uint32 seq = 2;
