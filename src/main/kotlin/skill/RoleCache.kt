@@ -72,6 +72,13 @@ object RoleCache {
     private val mapCache: Map<role, RoleSkillsData>
     private val pool = Channel<() -> Unit>(Channel.UNLIMITED)
     private val forbiddenRoleCache = ArrayList<RoleSkillsData>()
+    private val doubleProbabilityRoles = listOf(
+        role.su_ji_yuan,
+        role.ya_ba,
+        role.lao_qian,
+        role.middle_age_xiao_jiu,
+        role.middle_age_han_mei,
+    )
 
     init {
         mapCache = EnumMap(role::class.java)
@@ -130,19 +137,31 @@ object RoleCache {
      */
     fun getRandomRoles(n: Int): Array<RoleSkillsData> = runBlocking {
         mu.withLock {
-            val indexArray = cache.indices.shuffled()
-            Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
+            val doubleProbabilityRolesIndex = doubleProbabilityRoles.mapNotNull { role ->
+                cache.indexOfLast { it.role == role }.let { if (it >= 0) it else null }
+            }
+            val indexList0 = (cache.indices + doubleProbabilityRolesIndex).shuffled()
+            val indexSet = BooleanArray(cache.size)
+            val indexList = ArrayList<Int>()
+            for (index in indexList0) {
+                if (!indexSet[index]) {
+                    indexSet[index] = true
+                    indexList.add(index)
+                }
+            }
+            Array(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
         }
     }
 
     /**
+     * @param except 排除的角色
      * @return 长度为 `n` 的数组
      */
     fun getRandomRoles(n: Int, except: Set<role>): Array<RoleSkillsData> = runBlocking {
         mu.withLock {
             val cache = this@RoleCache.cache.filterNot { it.role in except }
-            val indexArray = cache.indices.shuffled()
-            Array(n) { i -> if (i < indexArray.size) cache[indexArray[i]] else RoleSkillsData() }
+            val indexList = cache.indices.shuffled()
+            Array(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
         }
     }
 
