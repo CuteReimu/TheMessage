@@ -5,7 +5,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnUseCard
-import com.fengsheng.protos.Common
+import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.skill_jiang_ji_jiu_ji_toc
 import org.apache.log4j.Logger
 
@@ -19,9 +19,9 @@ class JiangJiJiuJi : AbstractSkill(), TriggeredSkill {
         val fsm = g.fsm as? OnUseCard ?: return null
         fsm.askWhom.alive || return null
         fsm.askWhom.findSkill(skillId) != null || return null
-        fsm.cardType == Common.card_type.Wu_Dao || return null
+        fsm.cardType == Wu_Dao || return null
         fsm.askWhom === fsm.player || fsm.askWhom === fsm.targetPlayer || fsm.askWhom === (fsm.currentFsm as? FightPhaseIdle)?.inFrontOfWhom || return null
-        fsm.player.roleFaceUp || return null
+        fsm.askWhom.roleFaceUp || return null
         fsm.askWhom.addSkillUseCount(skillId)
         log.info("${fsm.askWhom}发动了[将计就计]")
         for (p in g.players) {
