@@ -16,12 +16,10 @@ class MiaoShouKuaiJi : AbstractSkill(), TriggeredSkill {
 
     override fun execute(g: Game): ResolveResult? {
         val fsm = g.fsm as? NextTurn ?: return null
-        var r = fsm.player.getNextLeftAlivePlayer()
-        r !== fsm.player || return null // 只剩自己一个人存活了，不能发动技能
-        if (r.findSkill(skillId) == null) {
-            r = fsm.player.getNextRightAlivePlayer()
-            r.findSkill(skillId) != null || return null
-        }
+        val r = g.players.find { it!!.findSkill(skillId) != null } ?: return null
+        r.alive || return null
+        fsm.player == r.getNextLeftAlivePlayer() || fsm.player == r.getNextRightAlivePlayer() || return null
+        fsm.player !== r || return null // 只剩自己一个人存活了，不能发动技能
         r.getSkillUseCount(skillId) == 0 || return null
         r.cards.isNotEmpty() || return null
         r.addSkillUseCount(skillId)
