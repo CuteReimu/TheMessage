@@ -37,7 +37,11 @@ data class SendPhaseIdle(
         for (p in whoseTurn.game!!.players) {
             p!!.notifySendPhase(Config.WaitSecond)
         }
-        return whoseTurn.game!!.dealListeningSkill(inFrontOfWhom.location)
+        val result = whoseTurn.game!!.dealListeningSkill(inFrontOfWhom.location)
+        if (result == null) {
+            inFrontOfWhom.startSendPhaseTimer(Config.WaitSecond)
+        }
+        return result
     }
 
     override fun toString(): String {

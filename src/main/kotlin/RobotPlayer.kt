@@ -65,8 +65,11 @@ class RobotPlayer : Player() {
     }
 
     override fun notifySendPhase(waitSecond: Int) {
+        // Do nothing
+    }
+
+    override fun startSendPhaseTimer(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseIdle
-        if (this !== fsm.inFrontOfWhom) return
         if (this !== game!!.jinBiPlayer) {
             for (card in cards) {
                 val ai = aiSendPhase[card.type]

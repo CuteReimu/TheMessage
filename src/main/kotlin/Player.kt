@@ -83,6 +83,7 @@ abstract class Player protected constructor() {
     )
 
     abstract fun notifySendPhase(waitSecond: Int)
+    abstract fun startSendPhaseTimer(waitSecond: Int)
     abstract fun notifyChooseReceiveCard(player: Player)
     abstract fun notifyFightPhase(waitSecond: Int)
     abstract fun notifyReceivePhase()

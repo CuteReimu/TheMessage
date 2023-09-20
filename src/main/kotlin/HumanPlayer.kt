@@ -259,32 +259,34 @@ class HumanPlayer(
         builder.waitingSecond = waitSecond
         builder.senderId = getAlternativeLocation(fsm.sender.location)
         if (fsm.isMessageCardFaceUp) builder.messageCard = fsm.messageCard.toPbCard()
-        if (this === fsm.inFrontOfWhom) {
-            builder.seq = seq
-            val seq2 = seq
-            timeout = GameExecutor.post(game!!, {
-                if (checkSeq(seq2)) {
-                    incrSeq()
-                    var isLocked = false
-                    for (p in fsm.lockedPlayers) {
-                        if (p === this) {
-                            isLocked = true
-                            break
-                        }
-                    }
-                    if (isLocked || fsm.inFrontOfWhom === fsm.sender) game!!.resolve(
-                        OnChooseReceiveCard(
-                            fsm.whoseTurn,
-                            fsm.sender,
-                            fsm.messageCard,
-                            fsm.inFrontOfWhom,
-                            fsm.isMessageCardFaceUp
-                        )
-                    ) else game!!.resolve(MessageMoveNext(fsm))
-                }
-            }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
-        }
+        if (this === fsm.inFrontOfWhom) builder.seq = seq
         send(builder.build())
+    }
+
+    override fun startSendPhaseTimer(waitSecond: Int) {
+        val fsm = game!!.fsm as SendPhaseIdle
+        val seq = seq
+        timeout = GameExecutor.post(game!!, {
+            if (checkSeq(seq)) {
+                incrSeq()
+                var isLocked = false
+                for (p in fsm.lockedPlayers) {
+                    if (p === this) {
+                        isLocked = true
+                        break
+                    }
+                }
+                if (isLocked || fsm.inFrontOfWhom === fsm.sender) game!!.resolve(
+                    OnChooseReceiveCard(
+                        fsm.whoseTurn,
+                        fsm.sender,
+                        fsm.messageCard,
+                        fsm.inFrontOfWhom,
+                        fsm.isMessageCardFaceUp
+                    )
+                ) else game!!.resolve(MessageMoveNext(fsm))
+            }
+        }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
     }
 
     override fun notifyChooseReceiveCard(player: Player) {
