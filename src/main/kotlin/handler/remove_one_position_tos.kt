@@ -33,10 +33,9 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
         r.game!!.players = players
         players.forEachIndexed { i, p ->
             p?.location = i
-            if (p is HumanPlayer) p.send(Fengsheng.remove_one_position_toc.newBuilder().setPosition(index).build())
+            (p as? HumanPlayer)?.send(Fengsheng.remove_one_position_toc.newBuilder().setPosition(index).build())
         }
-        for (p in players)
-            if (p == null) return
+        if (players.any { it == null }) return
         log.info("已满${players.size}个人，游戏将在5秒内开始。。。")
         r.game!!.setStartTimer()
     }
