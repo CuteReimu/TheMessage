@@ -55,7 +55,7 @@ class FengYunBianHuan : Card {
         val fsm = g.fsm as MainPhaseIdle
         r.deleteCard(id)
         val players = LinkedList<Player>()
-        for (i in r.location until r.location + g.players.size) {
+        for (i in r.location..<r.location + g.players.size) {
             val player = g.players[i % g.players.size]!!
             if (player.alive) players.add(player)
         }

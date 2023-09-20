@@ -21,7 +21,7 @@ class addcard : Function<Map<String, String>, Any> {
                 GameExecutor.post(g) {
                     if (playerId < g.players.size && playerId >= 0 && g.players[playerId]!!.alive) {
                         val cardList: MutableList<Card> = ArrayList()
-                        for (i in 0 until finalCount) {
+                        for (i in 0..<finalCount) {
                             val c = availableCards.random()
                             cardList.add(
                                 when (cardType) {

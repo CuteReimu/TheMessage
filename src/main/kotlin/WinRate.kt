@@ -109,13 +109,13 @@ object WinRate {
         }
         g.drawString("全部", 3, CELL_H * 2 - 3)
         g.drawString(appearCount.sum(0).toString(), CELL_W + 3, CELL_H * 2 - 3)
-        val g1 = Gradient((1 until columns.size - 2).mapNotNull { i ->
+        val g1 = Gradient((1..<columns.size - 2).mapNotNull { i ->
             val winSum = winCount.sum(i)
             val appearSum = appearCount.sum(i)
             if (appearSum != 0) winSum * 100.0 / appearSum
             else null
         })
-        for (i in 0 until columns.size - 2) {
+        for (i in 0..<columns.size - 2) {
             val winSum = winCount.sum(i)
             val appearSum = appearCount.sum(i)
             if (appearSum != 0) {
