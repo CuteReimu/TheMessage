@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type
@@ -14,25 +15,24 @@ import org.apache.log4j.Logger
 class YouDao : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.YOU_DAO
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard
-        if (fsm == null || fsm.askWhom !== fsm.player || fsm.askWhom.findSkill(skillId) == null) return null
+        if (fsm == null || askWhom !== fsm.player || askWhom.findSkill(skillId) == null) return null
         if (fsm.cardType != card_type.Wu_Dao) return null
-        if (fsm.askWhom.getSkillUseCount(skillId) > 0) return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        val r = fsm.askWhom
-        log.info("${r}发动了[诱导]")
+        if (askWhom.getSkillUseCount(skillId) > 0) return null
+        askWhom.addSkillUseCount(skillId)
+        log.info("${askWhom}发动了[诱导]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_you_dao_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
+                builder.playerId = p.getAlternativeLocation(askWhom.location)
                 p.send(builder.build())
             }
         }
-        r.draw(1)
+        askWhom.draw(1)
         val oldResolveFunc = fsm.resolveFunc
         val newFsm = fsm.copy(resolveFunc = { valid ->
-            r.resetSkillUseCount(skillId)
+            askWhom.resetSkillUseCount(skillId)
             oldResolveFunc(valid)
         })
         return ResolveResult(newFsm, true)

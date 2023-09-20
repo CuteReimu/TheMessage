@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.*
@@ -14,21 +15,23 @@ import org.apache.log4j.Logger
 class ShenCang : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.SHEN_CANG
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
-        fsm.askWhom === fsm.player || return null
-        fsm.askWhom.alive || return null
-        fsm.askWhom.findSkill(skillId) != null || return null
+        askWhom === fsm.player || return null
+        askWhom.alive || return null
+        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Wei_Bi || fsm.cardType == Feng_Yun_Bian_Huan || fsm.cardType == Jie_Huo || return null
         fsm.player.roleFaceUp || return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        log.info("${fsm.askWhom}发动了[深藏]")
+        askWhom.addSkillUseCount(skillId)
+        log.info("${askWhom}发动了[深藏]")
         for (p in g.players) {
-            (p as? HumanPlayer)?.send(
-                skill_shen_cang_toc.newBuilder().setPlayerId(p.getAlternativeLocation(fsm.askWhom.location)).build()
-            )
+            if (p is HumanPlayer) {
+                val builder = skill_shen_cang_toc.newBuilder()
+                builder.playerId = p.getAlternativeLocation(askWhom.location)
+                p.send(builder.build())
+            }
         }
-        g.playerSetRoleFaceUp(fsm.askWhom, false)
+        g.playerSetRoleFaceUp(askWhom, false)
         return null
     }
 

@@ -14,20 +14,19 @@ import java.util.concurrent.TimeUnit
 class YiXin : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.YI_XIN
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? DieSkill ?: return null
-        fsm.askWhom == fsm.diedQueue[fsm.diedIndex] || return null
-        fsm.askWhom.findSkill(skillId) != null || return null
-        fsm.askWhom.roleFaceUp || return null
-        fsm.askWhom.cards.isNotEmpty() || return null
-        fsm.askWhom.getSkillUseCount(skillId) == 0 || return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeYiXin(fsm), true)
+        askWhom == fsm.diedQueue[fsm.diedIndex] || return null
+        askWhom.findSkill(skillId) != null || return null
+        askWhom.roleFaceUp || return null
+        askWhom.cards.isNotEmpty() || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
+        return ResolveResult(executeYiXin(fsm, askWhom), true)
     }
 
-    private data class executeYiXin(val fsm: DieSkill) : WaitingFsm {
+    private data class executeYiXin(val fsm: DieSkill, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.askWhom
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
                     val builder = skill_wait_for_yi_xin_toc.newBuilder()
@@ -81,7 +80,7 @@ class YiXin : AbstractSkill(), TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.askWhom) {
+            if (player !== r) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -91,7 +90,6 @@ class YiXin : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.askWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")

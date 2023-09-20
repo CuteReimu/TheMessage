@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnUseCard
@@ -16,27 +17,26 @@ import org.apache.log4j.Logger
 class GuanHai : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.GUAN_HAI
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
         val fsm2 = fsm.currentFsm as? FightPhaseIdle ?: return null
-        fsm.player === fsm.askWhom || return null
-        val r = fsm.askWhom
-        r.findSkill(skillId) != null || return null
+        fsm.player === askWhom || return null
+        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
-        r.getSkillUseCount(skillId) == 0 || return null
-        log.info("${r}发动了[观海]")
-        r.addSkillUseCount(skillId)
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        log.info("${askWhom}发动了[观海]")
+        askWhom.addSkillUseCount(skillId)
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_guan_hai_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
+                builder.playerId = p.getAlternativeLocation(askWhom.location)
                 builder.card = fsm2.messageCard.toPbCard()
                 p.send(builder.build())
             }
         }
         val oldResolveFunc = fsm.resolveFunc
         return ResolveResult(fsm.copy(resolveFunc = { valid ->
-            r.resetSkillUseCount(skillId)
+            askWhom.resetSkillUseCount(skillId)
             oldResolveFunc(valid)
         }), true)
     }

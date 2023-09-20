@@ -7,32 +7,24 @@ import com.fengsheng.ResolveResult
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.direction
 
+/**
+ * 传递阶段情报传到某人面前的空闲时点
+ *
+ * @param whoseTurn 谁的回合
+ * @param messageCard 传递的情报牌
+ * @param dir 传递方向
+ * @param inFrontOfWhom 情报在谁面前
+ * @param lockedPlayers 被锁定的玩家
+ * @param isMessageCardFaceUp 情报是否面朝上
+ * @param sender 情报传出者
+ */
 data class SendPhaseIdle(
-    /**
-     * 谁的回合
-     */
     val whoseTurn: Player,
-    /**
-     * 传递的情报牌
-     */
     val messageCard: Card,
-    /**
-     * 传递方向
-     */
     val dir: direction,
-    /**
-     * 情报在谁面前
-     */
     val inFrontOfWhom: Player,
-    /**
-     * 被锁定的玩家
-     */
     val lockedPlayers: Array<Player>,
-    /**
-     * 情报是否面朝上
-     */
     val isMessageCardFaceUp: Boolean,
-    /** 谁传出的情报 */
     val sender: Player,
 ) : Fsm {
     override fun resolve(): ResolveResult? {
@@ -45,7 +37,7 @@ data class SendPhaseIdle(
         for (p in whoseTurn.game!!.players) {
             p!!.notifySendPhase(Config.WaitSecond)
         }
-        return whoseTurn.game!!.dealListeningSkill()
+        return whoseTurn.game!!.dealListeningSkill(inFrontOfWhom.location)
     }
 
     override fun toString(): String {

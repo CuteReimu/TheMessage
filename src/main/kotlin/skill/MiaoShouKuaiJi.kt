@@ -14,17 +14,16 @@ import java.util.concurrent.TimeUnit
 class MiaoShouKuaiJi : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.MIAO_SHOU_KUAI_JI
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? NextTurn ?: return null
-        val r = g.players.find { it!!.findSkill(skillId) != null } ?: return null
-        r.alive || return null
-        fsm.player == r.getNextLeftAlivePlayer() || fsm.player == r.getNextRightAlivePlayer() || return null
-        fsm.player !== r || return null // 只剩自己一个人存活了，不能发动技能
-        r.getSkillUseCount(skillId) == 0 || return null
-        r.cards.isNotEmpty() || return null
-        r.addSkillUseCount(skillId)
+        askWhom.alive || return null
+        fsm.player == askWhom.getNextLeftAlivePlayer() || fsm.player == askWhom.getNextRightAlivePlayer() || return null
+        fsm.player !== askWhom || return null // 只剩自己一个人存活了，不能发动技能
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.cards.isNotEmpty() || return null
+        askWhom.addSkillUseCount(skillId)
         val card = g.deck.popDiscardPile() ?: return null
-        return ResolveResult(executeMiaoShouKuaiJi(fsm, r, card), true)
+        return ResolveResult(executeMiaoShouKuaiJi(fsm, askWhom, card), true)
     }
 
     private data class executeMiaoShouKuaiJi(val fsm: NextTurn, val r: Player, val card: Card) : WaitingFsm {

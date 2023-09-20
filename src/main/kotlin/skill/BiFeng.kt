@@ -15,29 +15,27 @@ import java.util.concurrent.TimeUnit
 class BiFeng : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.BI_FENG
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
-        fsm.player === fsm.askWhom || return null
-        val r = fsm.askWhom
-        r.findSkill(skillId) != null || return null
+        fsm.player === askWhom || return null
+        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
-        r.getSkillUseCount(skillId) == 0 || return null
-        r.addSkillUseCount(skillId)
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
         val oldResolveFunc = fsm.resolveFunc
         return ResolveResult(excuteBiFeng(fsm.copy(resolveFunc = { valid ->
-            if (r.getSkillUseCount(skillId) == 1) r.resetSkillUseCount(skillId)
+            if (askWhom.getSkillUseCount(skillId) == 1) askWhom.resetSkillUseCount(skillId)
             oldResolveFunc(valid)
-        })), true)
+        }), askWhom), true)
     }
 
-    private data class excuteBiFeng(val fsm: OnUseCard) : WaitingFsm {
+    private data class excuteBiFeng(val fsm: OnUseCard, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.askWhom
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = wait_for_skill_bi_feng_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(fsm.askWhom.location)
+                    builder.playerId = p.getAlternativeLocation(r.location)
                     builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
@@ -71,7 +69,7 @@ class BiFeng : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            if (player != fsm.askWhom) {
+            if (player != r) {
                 log.error("没有轮到你操作")
                 (player as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
                 return null
@@ -84,8 +82,8 @@ class BiFeng : AbstractSkill(), TriggeredSkill {
             player.incrSeq()
             if (!pb.enable)
                 return ResolveResult(fsm, true)
-            log.info("${fsm.askWhom}发动了[避风]")
-            fsm.askWhom.addSkillUseCount(SkillId.BI_FENG)
+            log.info("${r}发动了[避风]")
+            r.addSkillUseCount(SkillId.BI_FENG)
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_bi_feng_toc.newBuilder()
@@ -95,7 +93,7 @@ class BiFeng : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            fsm.askWhom.draw(2)
+            r.draw(2)
             return ResolveResult(fsm.copy(valid = false), true)
         }
 

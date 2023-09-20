@@ -16,6 +16,7 @@ import org.apache.log4j.Logger
  * @param dir           传递方向
  * @param targetPlayer  传递的目标角色
  * @param lockedPlayers 被锁定的玩家
+ * @param byYuQinGuZong 是否是因为欲擒故纵传递的
  */
 data class OnSendCard(
     val whoseTurn: Player,
@@ -27,7 +28,7 @@ data class OnSendCard(
     val byYuQinGuZong: Boolean = false
 ) : Fsm {
     override fun resolve(): ResolveResult {
-        val result = whoseTurn.game!!.dealListeningSkill()
+        val result = whoseTurn.game!!.dealListeningSkill(sender.location)
         if (result != null) return result
         var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
         if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.contentToString()}"

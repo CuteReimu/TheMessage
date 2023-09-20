@@ -357,12 +357,14 @@ class Game private constructor(totalPlayerCount: Int) {
     /**
      * 遍历监听列表，结算技能
      */
-    fun dealListeningSkill(beginLocation: Int = 0): ResolveResult? {
+    fun dealListeningSkill(beginLocation: Int, includingDead: Boolean = false): ResolveResult? {
         var i = beginLocation % players.size
         do {
-            val player = players[i]
-            player!!.skills.forEach { skill ->
-                (skill as? TriggeredSkill)?.execute(this)?.let { return it }
+            val player = players[i]!!
+            if (includingDead || player.alive) {
+                player.skills.forEach { skill ->
+                    (skill as? TriggeredSkill)?.execute(this, player)?.let { return it }
+                }
             }
             i = (i + 1) % players.size
         } while (i != beginLocation)

@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.Shi_Tan
@@ -15,19 +16,18 @@ import org.apache.log4j.Logger
 class ChengFu : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.CHENG_FU
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
-        val r = fsm.askWhom
         fsm.cardType == Shi_Tan || fsm.cardType == Wei_Bi || return null
-        fsm.targetPlayer === r && r.findSkill(skillId) != null || return null
-        r.roleFaceUp || return null
-        r.getSkillUseCount(skillId) == 0 || return null
-        r.addSkillUseCount(skillId)
-        log.info("${r}触发了[城府]，${fsm.cardType}无效")
+        fsm.targetPlayer === askWhom && askWhom.findSkill(skillId) != null || return null
+        askWhom.roleFaceUp || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
+        log.info("${askWhom}触发了[城府]，${fsm.cardType}无效")
         for (player in g.players) {
             if (player is HumanPlayer) {
                 val builder = skill_cheng_fu_toc.newBuilder()
-                builder.playerId = player.getAlternativeLocation(r.location)
+                builder.playerId = player.getAlternativeLocation(askWhom.location)
                 builder.fromPlayerId = player.getAlternativeLocation(fsm.player.location)
                 fsm.card?.let { card ->
                     if (fsm.cardType != Shi_Tan || player === fsm.player)
@@ -41,7 +41,7 @@ class ChengFu : AbstractSkill(), TriggeredSkill {
         }
         val oldResolveFunc = fsm.resolveFunc
         val newFsm = { valid: Boolean ->
-            r.resetSkillUseCount(skillId)
+            askWhom.resetSkillUseCount(skillId)
             oldResolveFunc(valid)
         }
         return ResolveResult(fsm.copy(resolveFunc = newFsm, valid = false), true)

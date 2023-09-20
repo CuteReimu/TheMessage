@@ -16,20 +16,18 @@ import kotlin.random.Random
 class QiangLing : TriggeredSkill {
     override val skillId = SkillId.QIANG_LING
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm
         if (fsm is OnSendCard) {
-            val r = fsm.sender
-            if (r.findSkill(skillId) == null) return null
-            if (r.getSkillUseCount(skillId) >= 1) return null
-            r.addSkillUseCount(skillId)
-            return ResolveResult(executeQiangLing(fsm, r), true)
+            askWhom === fsm.sender || return null
+            askWhom.getSkillUseCount(skillId) == 0 || return null
+            askWhom.addSkillUseCount(skillId)
+            return ResolveResult(executeQiangLing(fsm, askWhom), true)
         } else if (fsm is OnChooseReceiveCard) {
-            val r: Player = fsm.inFrontOfWhom
-            if (r.findSkill(skillId) == null) return null
-            if (r.getSkillUseCount(skillId) >= 2) return null
-            r.addSkillUseCount(skillId, 2)
-            return ResolveResult(executeQiangLing(fsm, r), true)
+            askWhom === fsm.inFrontOfWhom || return null
+            askWhom.getSkillUseCount(skillId) <= 1 || return null
+            askWhom.addSkillUseCount(skillId, 2)
+            return ResolveResult(executeQiangLing(fsm, askWhom), true)
         }
         return null
     }

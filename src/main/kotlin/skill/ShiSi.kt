@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Role.skill_shi_si_toc
@@ -13,9 +14,9 @@ import org.apache.log4j.Logger
 class ShiSi : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.SHI_SI
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        fsm.askWhom === fsm.inFrontOfWhom || return null
+        askWhom === fsm.inFrontOfWhom || return null
         fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         fsm.messageCard.isBlack() || return null

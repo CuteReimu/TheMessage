@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit
 class LianMin : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.LIAN_MIN
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        fsm.askWhom === fsm.sender || return null
+        askWhom === fsm.sender || return null
         fsm.sender.findSkill(skillId) != null || return null
         !fsm.messageCard.isBlack() || return null
         fsm.sender.getSkillUseCount(skillId) == 0 || return null

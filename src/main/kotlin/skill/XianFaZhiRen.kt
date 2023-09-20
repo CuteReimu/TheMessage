@@ -20,19 +20,18 @@ import java.util.concurrent.TimeUnit
 class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
     override val skillId = SkillId.XIAN_FA_ZHI_REN
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnAddMessageCard ?: return null
-        val r = fsm.resolvingWhom
-        if (r.findSkill(skillId) == null || !r.alive) return null
-        if (r.roleFaceUp) return null
-        if (!fsm.bySkill) return null
-        if (g.players.all { it!!.messageCards.isEmpty() }) return null
-        return ResolveResult(executeXianFaZhiRenA(fsm), true)
+        !askWhom.roleFaceUp || return null
+        fsm.bySkill || return null
+        g.players.any { it!!.messageCards.isNotEmpty() } || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
+        return ResolveResult(executeXianFaZhiRenA(fsm, askWhom), true)
     }
 
-    private data class executeXianFaZhiRenA(val fsm: OnAddMessageCard) : WaitingFsm {
+    private data class executeXianFaZhiRenA(val fsm: OnAddMessageCard, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.resolvingWhom
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -83,7 +82,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.resolvingWhom) {
+            if (player !== r) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -100,7 +99,7 @@ class XianFaZhiRen : AbstractSkill(), ActiveSkill, TriggeredSkill {
             }
             if (!message.enable) {
                 player.incrSeq()
-                return ResolveResult(fsm.resolveNext(), true)
+                return ResolveResult(fsm, true)
             }
             val target = player.game!!.players[player.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {

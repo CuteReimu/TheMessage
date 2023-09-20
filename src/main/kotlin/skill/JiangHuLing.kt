@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 class JiangHuLing : TriggeredSkill {
     override val skillId = SkillId.JIANG_HU_LING
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnSendCard ?: return null
         val r = fsm.sender
         r.findSkill(skillId) != null || return null
@@ -116,9 +116,9 @@ class JiangHuLing : TriggeredSkill {
     private class JiangHuLing2(val color: color) : TriggeredSkill {
         override val skillId = SkillId.JIANG_HU_LING2
 
-        override fun execute(g: Game): ResolveResult? {
+        override fun execute(g: Game, askWhom: Player): ResolveResult? {
             val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-            fsm.askWhom === fsm.sender || return null
+            askWhom === fsm.sender || return null
             val r = fsm.sender
             r.findSkill(skillId) != null || return null
             r.getSkillUseCount(skillId) == 0 || return null

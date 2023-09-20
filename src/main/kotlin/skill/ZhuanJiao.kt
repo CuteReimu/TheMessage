@@ -16,25 +16,23 @@ import kotlin.random.Random
 class ZhuanJiao : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.ZHUAN_JIAO
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
-        fsm.askWhom === fsm.player || return null
-        fsm.askWhom.alive || return null
-        fsm.askWhom.findSkill(skillId) != null || return null
-        fsm.askWhom.messageCards.any { !it.isBlack() } || return null
-        fsm.askWhom.getSkillUseCount(skillId) == 0 || return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        val r = fsm.askWhom
+        askWhom === fsm.player || return null
+        askWhom.alive || return null
+        askWhom.findSkill(skillId) != null || return null
+        askWhom.messageCards.any { !it.isBlack() } || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
         val oldResolveFunc = fsm.resolveFunc
         return ResolveResult(executeZhuanJiao(fsm.copy(resolveFunc = { valid ->
-            r.resetSkillUseCount(skillId)
+            askWhom.resetSkillUseCount(skillId)
             oldResolveFunc(valid)
-        })), true)
+        }), askWhom), true)
     }
 
-    private data class executeZhuanJiao(val fsm: OnUseCard) : WaitingFsm {
+    private data class executeZhuanJiao(val fsm: OnUseCard, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.askWhom
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
                     val builder = skill_wait_for_zhuan_jiao_toc.newBuilder()
@@ -100,7 +98,7 @@ class ZhuanJiao : AbstractSkill(), TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.askWhom) {
+            if (player !== r) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -110,7 +108,6 @@ class ZhuanJiao : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.askWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")

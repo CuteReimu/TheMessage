@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnUseCard
@@ -15,23 +16,23 @@ import org.apache.log4j.Logger
 class JiangJiJiuJi : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.JIANG_JI_JIU_JI
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
-        fsm.askWhom.alive || return null
-        fsm.askWhom.findSkill(skillId) != null || return null
+        askWhom.alive || return null
+        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Wu_Dao || return null
-        fsm.askWhom === fsm.player || fsm.askWhom === fsm.targetPlayer || fsm.askWhom === (fsm.currentFsm as? FightPhaseIdle)?.inFrontOfWhom || return null
-        fsm.askWhom.roleFaceUp || return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        log.info("${fsm.askWhom}发动了[将计就计]")
+        askWhom === fsm.player || askWhom === fsm.targetPlayer || askWhom === (fsm.currentFsm as? FightPhaseIdle)?.inFrontOfWhom || return null
+        askWhom.roleFaceUp || return null
+        askWhom.addSkillUseCount(skillId)
+        log.info("${askWhom}发动了[将计就计]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_jiang_ji_jiu_ji_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(fsm.askWhom.location)
+                builder.playerId = p.getAlternativeLocation(askWhom.location)
                 p.send(builder.build())
             }
         }
-        g.playerSetRoleFaceUp(fsm.askWhom, false)
+        g.playerSetRoleFaceUp(askWhom, false)
         return null
     }
 
