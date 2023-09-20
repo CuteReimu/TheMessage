@@ -15,9 +15,9 @@ import java.util.concurrent.TimeUnit
 class ChiZiZhiXin : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.CHI_ZI_ZHI_XIN
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        fsm.askWhom === fsm.sender || return null
+        askWhom === fsm.sender || return null
         fsm.sender.findSkill(skillId) != null || return null
         !fsm.messageCard.isBlack() || return null
         fsm.inFrontOfWhom != fsm.sender || return null

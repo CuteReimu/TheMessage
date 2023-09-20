@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit
 class JingMeng : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.JING_MENG
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        fsm.askWhom === fsm.inFrontOfWhom || return null
+        askWhom === fsm.inFrontOfWhom || return null
         fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         fsm.messageCard.isBlack() || return null

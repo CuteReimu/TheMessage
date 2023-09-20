@@ -24,7 +24,7 @@ import org.apache.log4j.Logger
 data class NextTurn(val player: Player) : Fsm {
     override fun resolve(): ResolveResult {
         val game = player.game!!
-        val result = game.dealListeningSkill()
+        val result = game.dealListeningSkill(player.location)
         if (result != null)
             return result
         if (checkDisturberWin(game))

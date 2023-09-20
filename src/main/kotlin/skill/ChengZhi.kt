@@ -14,20 +14,17 @@ import java.util.concurrent.TimeUnit
 class ChengZhi : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.CHENG_ZHI
 
-    override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm
-        if (fsm !is DieSkill) return null
-        if (fsm.askWhom === fsm.diedQueue[fsm.diedIndex] || fsm.askWhom.findSkill(skillId) == null) return null
-        if (!fsm.askWhom.alive) return null
-        if (!fsm.askWhom.roleFaceUp) return null
-        if (fsm.askWhom.getSkillUseCount(skillId) > 0) return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeChengZhi(fsm), true)
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
+        val fsm = g.fsm as? DieSkill ?: return null
+        askWhom.alive || return null
+        askWhom.roleFaceUp || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
+        return ResolveResult(executeChengZhi(fsm, askWhom), true)
     }
 
-    private data class executeChengZhi(val fsm: DieSkill) : WaitingFsm {
+    private data class executeChengZhi(val fsm: DieSkill, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.askWhom
             val whoDie = fsm.diedQueue[fsm.diedIndex]
             val cards = whoDie.cards.toTypedArray()
             whoDie.cards.clear()
@@ -72,7 +69,7 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.askWhom) {
+            if (player !== r) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -82,7 +79,6 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.askWhom
             val whoDie = fsm.diedQueue[fsm.diedIndex]
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {

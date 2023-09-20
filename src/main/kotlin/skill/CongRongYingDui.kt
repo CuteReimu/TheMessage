@@ -15,21 +15,20 @@ import java.util.concurrent.TimeUnit
 class CongRongYingDui : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.CONG_RONG_YING_DUI
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnFinishResolveCard ?: return null
         fsm.cardType == card_type.Shi_Tan || return null
-        fsm.askWhom === fsm.player || fsm.askWhom === fsm.targetPlayer || return null
-        val r = fsm.askWhom
-        r.findSkill(skillId) != null || return null
-        r.getSkillUseCount(skillId) == 0 || return null
-        r.addSkillUseCount(skillId)
-        val target = if (r === fsm.player) fsm.targetPlayer!! else fsm.player
+        askWhom === fsm.player || askWhom === fsm.targetPlayer || return null
+        askWhom.findSkill(skillId) != null || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
+        val target = if (askWhom === fsm.player) fsm.targetPlayer!! else fsm.player
         val oldAfterResolveFunc = fsm.afterResolveFunc
         val f = {
-            r.resetSkillUseCount(skillId)
+            askWhom.resetSkillUseCount(skillId)
             oldAfterResolveFunc()
         }
-        return ResolveResult(executeCongRongYingDui(fsm.copy(afterResolveFunc = f), r, target), true)
+        return ResolveResult(executeCongRongYingDui(fsm.copy(afterResolveFunc = f), askWhom, target), true)
     }
 
     private data class executeCongRongYingDui(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {

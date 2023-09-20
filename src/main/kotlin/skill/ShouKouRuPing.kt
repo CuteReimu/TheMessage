@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.Shi_Tan
@@ -15,22 +16,20 @@ import org.apache.log4j.Logger
 class ShouKouRuPing : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.SHOU_KOU_RU_PING
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm
         if (fsm is OnUseCard) {
-            fsm.askWhom.alive || return null
-            fsm.askWhom.findSkill(skillId) != null || return null
+            askWhom.alive || return null
             fsm.cardType == Shi_Tan || fsm.cardType == Wei_Bi || return null
             val targetPlayer = fsm.targetPlayer!!
-            fsm.askWhom === fsm.player || fsm.askWhom === targetPlayer || return null
-            fsm.askWhom.getSkillUseCount(skillId) == 0 || return null
-            fsm.askWhom.addSkillUseCount(skillId)
-            val r = fsm.askWhom
-            log.info("${r}发动了[守口如瓶]")
-            for (p in fsm.askWhom.game!!.players) {
+            askWhom === fsm.player || askWhom === targetPlayer || return null
+            askWhom.getSkillUseCount(skillId) == 0 || return null
+            askWhom.addSkillUseCount(skillId)
+            log.info("${askWhom}发动了[守口如瓶]")
+            for (p in askWhom.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_shou_kou_ru_ping_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(fsm.askWhom.location)
+                    builder.playerId = p.getAlternativeLocation(askWhom.location)
                     builder.cardPlayerId = p.getAlternativeLocation(fsm.player.location)
                     builder.cardTargetPlayerId = p.getAlternativeLocation(targetPlayer.location)
                     builder.cardType = fsm.cardType
@@ -47,7 +46,7 @@ class ShouKouRuPing : AbstractSkill(), TriggeredSkill {
             targetPlayer.draw(1)
             val oldResolveFunc = fsm.resolveFunc
             return ResolveResult(fsm.copy(resolveFunc = { valid: Boolean ->
-                r.resetSkillUseCount(skillId)
+                askWhom.resetSkillUseCount(skillId)
                 oldResolveFunc(valid)
             }, valid = false), true)
         }

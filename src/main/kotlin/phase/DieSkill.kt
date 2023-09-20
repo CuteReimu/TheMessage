@@ -7,36 +7,22 @@ import com.fengsheng.skill.SkillId
 
 /**
  * 死亡时的技能结算
+ *
+ * @param whoseTurn 谁的回合
+ * @param diedQueue 死亡的顺序
+ * @param afterDieResolve 死亡结算后的下一个动作
+ * @param diedIndex 结算到dieQueue的第几个人的死亡事件了
+ * @param receiveOrder 在结算死亡技能时，又有新的人获得三张黑色情报的顺序
  */
 data class DieSkill(
-    /**
-     * 谁的回合
-     */
     val whoseTurn: Player,
-    /**
-     * 死亡的顺序
-     */
     val diedQueue: List<Player>,
-    /**
-     * 正在询问谁
-     */
-    val askWhom: Player,
-    /**
-     * 死亡结算后的下一个动作
-     */
     val afterDieResolve: Fsm,
-    /**
-     * 结算到dieQueue的第几个人的死亡事件了
-     */
     val diedIndex: Int = 0,
-    /**
-     * 在结算死亡技能时，又有新的人获得三张黑色情报的顺序
-     */
     override val receiveOrder: ReceiveOrder = ReceiveOrder()
 ) : Fsm, HasReceiveOrder {
     override fun resolve(): ResolveResult {
-        if (askWhom !== diedQueue[diedIndex] && !askWhom.alive) return ResolveResult(DieSkillNext(this), true)
-        val result = askWhom.game!!.dealListeningSkill()
+        val result = whoseTurn.game!!.dealListeningSkill(whoseTurn.location, true)
         return result ?: ResolveResult(DieSkillNext(this), true)
     }
 
@@ -45,33 +31,19 @@ data class DieSkill(
      */
     private data class DieSkillNext(val dieSkill: DieSkill) : Fsm {
         override fun resolve(): ResolveResult {
-            dieSkill.askWhom.resetSkillUseCount(SkillId.CHENG_ZHI)
             val players = dieSkill.whoseTurn.game!!.players
-            var askWhom = dieSkill.askWhom.location
-            while (true) {
-                askWhom = (askWhom + 1) % players.size
-                if (askWhom == dieSkill.whoseTurn.location) {
-                    if (dieSkill.diedIndex + 1 < dieSkill.diedQueue.size) {
-                        return ResolveResult(
-                            dieSkill.copy(
-                                askWhom = dieSkill.whoseTurn,
-                                diedIndex = dieSkill.diedIndex + 1
-                            ), true
-                        )
-                    }
-                    return ResolveResult(
-                        WaitForDieGiveCard(
-                            dieSkill.whoseTurn,
-                            dieSkill.diedQueue,
-                            dieSkill.receiveOrder,
-                            dieSkill.afterDieResolve
-                        ), true
-                    )
-                }
-                if (players[askWhom] === dieSkill.diedQueue[dieSkill.diedIndex] || players[askWhom]!!.alive) {
-                    return ResolveResult(dieSkill.copy(askWhom = players[askWhom]!!), true)
-                }
-            }
+            players.forEach { it!!.resetSkillUseCount(SkillId.CHENG_ZHI) }
+            val index = dieSkill.diedIndex + 1
+            if (index < dieSkill.diedQueue.size)
+                return ResolveResult(dieSkill.copy(diedIndex = index), true)
+            return ResolveResult(
+                WaitForDieGiveCard(
+                    dieSkill.whoseTurn,
+                    dieSkill.diedQueue,
+                    dieSkill.receiveOrder,
+                    dieSkill.afterDieResolve
+                ), true
+            )
         }
     }
 }

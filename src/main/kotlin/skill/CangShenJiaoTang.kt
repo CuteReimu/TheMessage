@@ -17,32 +17,31 @@ import java.util.concurrent.TimeUnit
 class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.CANG_SHEN_JIAO_TANG
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        fsm.askWhom === fsm.sender || return null
-        val r = fsm.sender
-        r.findSkill(skillId) != null || return null
-        r.getSkillUseCount(skillId) == 0 || return null
-        r.addSkillUseCount(skillId)
+        askWhom === fsm.sender || return null
+        askWhom.findSkill(skillId) != null || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
         val target = fsm.inFrontOfWhom
         val isHiddenRole = !target.isPublicRole
         val timeoutSecond = Config.WaitSecond
         for (player in g.players) {
             if (player is HumanPlayer) {
                 val builder = skill_cang_shen_jiao_tang_a_toc.newBuilder()
-                builder.playerId = player.getAlternativeLocation(r.location)
+                builder.playerId = player.getAlternativeLocation(askWhom.location)
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
                 builder.isHiddenRole = isHiddenRole
                 if (isHiddenRole && target.roleFaceUp || !isHiddenRole && target.messageCards.count(Black) > 0) {
                     builder.waitingSecond = timeoutSecond
-                    if (player === r) builder.seq = player.seq
+                    if (player === askWhom) builder.seq = player.seq
                 }
                 player.send(builder.build())
             }
         }
         if (isHiddenRole) {
-            log.info("${r}发动了[藏身教堂]")
-            r.draw(1)
+            log.info("${askWhom}发动了[藏身教堂]")
+            askWhom.draw(1)
         }
         if (isHiddenRole && target.roleFaceUp)
             return ResolveResult(executeCangShenJiaoTangB(fsm, timeoutSecond), true)

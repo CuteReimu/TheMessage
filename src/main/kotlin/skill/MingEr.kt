@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Game
 import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color.Blue
@@ -15,9 +16,9 @@ import org.apache.log4j.Logger
 class MingEr : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.MING_ER
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        fsm.askWhom === fsm.sender || return null
+        askWhom === fsm.sender || return null
         fsm.sender.findSkill(skillId) != null || return null
         fsm.sender.getSkillUseCount(skillId) == 0 || return null
         val colors = fsm.messageCard.colors

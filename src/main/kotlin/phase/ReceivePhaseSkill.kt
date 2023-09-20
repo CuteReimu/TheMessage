@@ -19,31 +19,14 @@ data class ReceivePhaseSkill(
     val sender: Player,
     val messageCard: Card,
     val inFrontOfWhom: Player,
-    val askWhom: Player = sender,
     override val receiveOrder: ReceiveOrder = ReceiveOrder()
 ) : Fsm, HasReceiveOrder {
     override fun resolve(): ResolveResult {
-        val result = if (askWhom.alive) whoseTurn.game!!.dealListeningSkill() else null
-        return result ?: ResolveResult(ReceivePhaseSkillNext(this), true)
+        val result = whoseTurn.game!!.dealListeningSkill(sender.location)
+        return result ?: ResolveResult(CheckWin(whoseTurn, receiveOrder, NextTurn(whoseTurn)), true)
     }
 
     override fun toString(): String {
         return "${whoseTurn}的回合，${inFrontOfWhom}成功接收情报"
-    }
-
-    private data class ReceivePhaseSkillNext(val fsm: ReceivePhaseSkill) : Fsm {
-        override fun resolve(): ResolveResult {
-            var askWhom = fsm.askWhom.location
-            val players = fsm.askWhom.game!!.players
-            while (true) {
-                askWhom = (askWhom + 1) % players.size
-                if (askWhom == fsm.sender.location) {
-                    return ResolveResult(CheckWin(fsm.whoseTurn, fsm.receiveOrder, NextTurn(fsm.whoseTurn)), true)
-                }
-                if (players[askWhom]!!.alive) {
-                    return ResolveResult(fsm.copy(askWhom = players[askWhom]!!), true)
-                }
-            }
-        }
     }
 }

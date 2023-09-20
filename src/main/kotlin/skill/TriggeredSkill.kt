@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.Fsm
 import com.fengsheng.Game
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 
 /**
@@ -14,5 +15,5 @@ interface TriggeredSkill : Skill {
      *
      * @return 如果返回值不为 `null` ，说明满足技能触发的条件，将会进入返回的 [Fsm]
      */
-    fun execute(g: Game): ResolveResult?
+    fun execute(g: Game, askWhom: Player): ResolveResult?
 }

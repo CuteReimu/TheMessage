@@ -14,21 +14,19 @@ import java.util.concurrent.TimeUnit
 class RuGui : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.RU_GUI
 
-    override fun execute(g: Game): ResolveResult? {
-        val fsm = g.fsm as? DieSkill
-        if (fsm == null || fsm.askWhom !== fsm.diedQueue[fsm.diedIndex] || fsm.askWhom.findSkill(skillId) == null)
-            return null
-        if (fsm.askWhom === fsm.whoseTurn) return null
-        if (!fsm.whoseTurn.alive) return null
-        if (fsm.askWhom.messageCards.isEmpty()) return null
-        if (fsm.askWhom.getSkillUseCount(skillId) > 0) return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeRuGui(fsm), true)
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
+        val fsm = g.fsm as? DieSkill ?: return null
+        askWhom === fsm.diedQueue[fsm.diedIndex] || return null
+        askWhom !== fsm.whoseTurn || return null
+        fsm.whoseTurn.alive || return null
+        askWhom.messageCards.isNotEmpty() || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
+        return ResolveResult(executeRuGui(fsm, askWhom), true)
     }
 
-    private data class executeRuGui(val fsm: DieSkill) : WaitingFsm {
+    private data class executeRuGui(val fsm: DieSkill, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.askWhom
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
                     val builder = skill_wait_for_ru_gui_toc.newBuilder()
@@ -37,18 +35,17 @@ class RuGui : AbstractSkill(), TriggeredSkill {
                     if (player === r) {
                         val seq2 = player.seq
                         builder.seq = seq2
-                        player.timeout =
-                            GameExecutor.post(
-                                r.game!!,
-                                {
-                                    val builder2 = skill_ru_gui_tos.newBuilder()
-                                    builder2.enable = false
-                                    builder2.seq = seq2
-                                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                                },
-                                player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                                TimeUnit.SECONDS
-                            )
+                        player.timeout = GameExecutor.post(
+                            r.game!!,
+                            {
+                                val builder2 = skill_ru_gui_tos.newBuilder()
+                                builder2.enable = false
+                                builder2.seq = seq2
+                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                            },
+                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
+                            TimeUnit.SECONDS
+                        )
                     }
                     player.send(builder.build())
                 }
@@ -75,7 +72,7 @@ class RuGui : AbstractSkill(), TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.askWhom) {
+            if (player !== r) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -85,7 +82,6 @@ class RuGui : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.askWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")

@@ -23,7 +23,7 @@ data class OnChooseReceiveCard(
     val isMessageCardFaceUp: Boolean
 ) : Fsm {
     override fun resolve(): ResolveResult {
-        val result = inFrontOfWhom.game!!.dealListeningSkill()
+        val result = inFrontOfWhom.game!!.dealListeningSkill(inFrontOfWhom.location)
         if (result != null) return result
         log.info("${inFrontOfWhom}选择接收情报")
         for (p in whoseTurn.game!!.players) p!!.notifyChooseReceiveCard(inFrontOfWhom)

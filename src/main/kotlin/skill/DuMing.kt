@@ -19,13 +19,12 @@ import java.util.concurrent.TimeUnit
 class DuMing : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.DU_MING
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm
         if (fsm is OnFinishResolveCard) {
             fsm.cardType == Diao_Bao || return null
-            val r = fsm.askWhom
-            r.findSkill(skillId) != null || return null
-            r.getSkillUseCount(skillId) < 1000 || return null
+            askWhom.findSkill(skillId) != null || return null
+            askWhom.getSkillUseCount(skillId) < 1000 || return null
             val fightPhase = fsm.nextFsm as? FightPhaseIdle ?: return null
             for (p in g.players) { // 解决客户端动画问题
                 if (p is HumanPlayer) {
@@ -39,13 +38,13 @@ class DuMing : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            r.addSkillUseCount(skillId)
+            askWhom.addSkillUseCount(skillId)
             val oldAfterResolveFunc = fsm.afterResolveFunc
             val f = {
-                r.addSkillUseCount(skillId, -1)
+                askWhom.addSkillUseCount(skillId, -1)
                 oldAfterResolveFunc()
             }
-            return ResolveResult(waitForDuMing(fsm.copy(afterResolveFunc = f), r), true)
+            return ResolveResult(waitForDuMing(fsm.copy(afterResolveFunc = f), askWhom), true)
         } else if (fsm is SendPhaseIdle) {
             !fsm.isMessageCardFaceUp || return null
             val r = fsm.inFrontOfWhom

@@ -16,26 +16,24 @@ import java.util.concurrent.TimeUnit
 class JiuJi : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.JIU_JI
 
-    override fun execute(g: Game): ResolveResult? {
+    override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
-        fsm.askWhom === fsm.targetPlayer || return null
-        fsm.askWhom.alive || return null
-        fsm.askWhom.findSkill(skillId) != null || return null
+        askWhom === fsm.targetPlayer || return null
+        askWhom.alive || return null
+        askWhom.findSkill(skillId) != null || return null
         fsm.cardType in cardTypes || return null
-        !fsm.askWhom.roleFaceUp || return null
-        fsm.askWhom.getSkillUseCount(skillId) == 0 || return null
-        fsm.askWhom.addSkillUseCount(skillId)
-        val r = fsm.askWhom
+        !askWhom.roleFaceUp || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
         val oldResolveFunc = fsm.resolveFunc
         return ResolveResult(executeJiuJi(fsm.copy(resolveFunc = { valid: Boolean ->
-            r.resetSkillUseCount(skillId)
+            askWhom.resetSkillUseCount(skillId)
             oldResolveFunc(valid)
-        })), true)
+        }), askWhom), true)
     }
 
-    private data class executeJiuJi(val fsm: OnUseCard) : WaitingFsm {
+    private data class executeJiuJi(val fsm: OnUseCard, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.askWhom
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
                     if (player === r) {
@@ -71,7 +69,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.askWhom) {
+            if (player !== r) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -81,7 +79,6 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.askWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -97,7 +94,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jiu_ji_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(fsm.askWhom.location)
+                    builder.playerId = p.getAlternativeLocation(r.location)
                     p.send(builder.build())
                 }
             }
@@ -118,19 +115,19 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
     private class JiuJi2 : TriggeredSkill {
         override val skillId = SkillId.JIU_JI2
 
-        override fun execute(g: Game): ResolveResult? {
+        override fun execute(g: Game, askWhom: Player): ResolveResult? {
             val fsm = g.fsm as? OnFinishResolveCard ?: return null
-            fsm.askWhom === fsm.targetPlayer || return null
-            fsm.askWhom.alive || return null
-            fsm.askWhom.findSkill(skillId) != null || return null
+            askWhom === fsm.targetPlayer || return null
+            askWhom.alive || return null
+            askWhom.findSkill(skillId) != null || return null
             val card = fsm.card ?: return null
-            fsm.askWhom.cards.add(card)
-            log.info("${fsm.askWhom}将使用的${card}加入了手牌")
-            fsm.askWhom.skills = fsm.askWhom.skills.filterNot { it.skillId == skillId }.toTypedArray()
+            askWhom.cards.add(card)
+            log.info("${askWhom}将使用的${card}加入了手牌")
+            askWhom.skills = askWhom.skills.filterNot { it.skillId == skillId }.toTypedArray()
             for (player in g.players) {
                 if (player is HumanPlayer) {
                     val builder = skill_jiu_ji_b_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(fsm.askWhom.location)
+                    builder.playerId = player.getAlternativeLocation(askWhom.location)
                     builder.card = card.toPbCard()
                     player.send(builder.build())
                 }
