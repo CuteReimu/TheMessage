@@ -143,6 +143,7 @@ class YingBianZiRu : AbstractSkill(), ActiveSkill {
             r.incrSeq()
             log.info("${r}视为对${target}使用了误导")
             r.draw(2)
+            g.fsm = fsm
             return ResolveResult(WuDao.onUseCard(null, g, r, target), true)
         }
 
@@ -156,7 +157,7 @@ class YingBianZiRu : AbstractSkill(), ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false
-            val p = player.game!!.players.find {
+            player.game!!.players.find {
                 it!!.alive && player.isEnemy(it)
                         && it.identity != Black && it.messageCards.count(it.identity) >= 2
             } ?: return false
