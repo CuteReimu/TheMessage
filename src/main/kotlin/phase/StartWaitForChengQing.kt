@@ -37,8 +37,8 @@ data class StartWaitForChengQing(
         }
         val whoDie = dyingQueue.poll()
         log.info("${whoDie}濒死")
-        val next = WaitForChengQing(whoseTurn, whoDie, whoseTurn, dyingQueue, diedQueue, afterDieResolve)
-        val askWhomAlive = next.askWhom.let { it.alive && it !== it.game!!.jinBiPlayer }
+        val next = WaitForChengQing(whoseTurn, whoDie, whoDie, dyingQueue, diedQueue, afterDieResolve)
+        val askWhomAlive = next.askWhom !== next.askWhom.game!!.jinBiPlayer
         return ResolveResult(if (askWhomAlive) next else WaitNextForChengQing(next), true)
     }
 

@@ -14,7 +14,7 @@ data class WaitNextForChengQing(val waitForChengQing: WaitForChengQing) : Fsm {
         var askWhom = waitForChengQing.askWhom.location
         while (true) {
             askWhom = (askWhom + 1) % players.size
-            if (askWhom == waitForChengQing.whoseTurn.location) {
+            if (askWhom == waitForChengQing.whoDie.location) {
                 log.info("无人拯救，${waitForChengQing.whoDie}已死亡")
                 waitForChengQing.diedQueue.add(waitForChengQing.whoDie)
                 return ResolveResult(
