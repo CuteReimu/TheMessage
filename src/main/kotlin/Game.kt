@@ -169,8 +169,8 @@ class Game private constructor(totalPlayerCount: Int) {
             }
         }
         identities.shuffle()
-        val tasks = arrayListOf(Killer, Stealer, Collector, Mutator, Pioneer)
-        if (players.size >= 5) tasks.addAll(listOf(Disturber, Sweeper))
+        val tasks = arrayListOf(Killer, Stealer, Collector, Pioneer)
+        if (players.size >= 5) tasks.addAll(listOf(Mutator, Disturber, Sweeper))
         tasks.shuffle()
         if (players.size <= 5) {
             // 针对possibleSecretTasks，5人以下局镇压者、清道夫、先行者不会三个都出现，因此把第三个位置换走即可
