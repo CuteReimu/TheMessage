@@ -2,7 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.OnChooseReceiveCard
-import com.fengsheng.phase.OnSendCard
+import com.fengsheng.phase.OnSendCardSkill
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -18,7 +18,7 @@ class QiangLing : TriggeredSkill {
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm
-        if (fsm is OnSendCard) {
+        if (fsm is OnSendCardSkill) {
             askWhom === fsm.sender || return null
             askWhom.getSkillUseCount(skillId) == 0 || return null
             askWhom.addSkillUseCount(skillId)

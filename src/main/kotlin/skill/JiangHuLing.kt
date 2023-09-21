@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnSendCard
+import com.fengsheng.phase.OnSendCardSkill
 import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.color
@@ -18,7 +18,7 @@ class JiangHuLing : TriggeredSkill {
     override val skillId = SkillId.JIANG_HU_LING
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnSendCard ?: return null
+        val fsm = g.fsm as? OnSendCardSkill ?: return null
         val r = fsm.sender
         r.findSkill(skillId) != null || return null
         r.getSkillUseCount(skillId) == 0 || return null

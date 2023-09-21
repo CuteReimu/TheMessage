@@ -8,7 +8,7 @@ import com.fengsheng.protos.Common.direction
 import org.apache.log4j.Logger
 
 /**
- * 选择了要传递哪张情报时
+ * 选择了要传递哪张情报时的角色技能
  *
  * @param whoseTurn     谁的回合
  * @param sender        情报传出者
@@ -18,7 +18,7 @@ import org.apache.log4j.Logger
  * @param lockedPlayers 被锁定的玩家
  * @param byYuQinGuZong 是否是因为欲擒故纵传递的
  */
-data class OnSendCard(
+data class OnSendCardSkill(
     val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,
@@ -28,16 +28,12 @@ data class OnSendCard(
     val byYuQinGuZong: Boolean = false
 ) : Fsm {
     override fun resolve(): ResolveResult {
-        var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
-        if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.contentToString()}"
-        log.info(s)
-        if (!byYuQinGuZong) {
-            sender.cards.remove(messageCard)
-            for (p in whoseTurn.game!!.players)
-                p!!.notifySendMessageCard(whoseTurn, sender, targetPlayer, lockedPlayers, messageCard, dir)
-        }
+        val result = whoseTurn.game!!.dealListeningSkill(whoseTurn.location)
+        if (result != null) return result
+        log.info("情报到达${targetPlayer}面前")
         return ResolveResult(
-            OnSendCardSkill(whoseTurn, sender, messageCard, dir, targetPlayer, lockedPlayers, byYuQinGuZong), true
+            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, byYuQinGuZong, sender),
+            true
         )
     }
 
@@ -45,7 +41,7 @@ data class OnSendCard(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as OnSendCard
+        other as OnSendCardSkill
 
         if (whoseTurn != other.whoseTurn) return false
         if (messageCard != other.messageCard) return false
@@ -66,6 +62,6 @@ data class OnSendCard(
     }
 
     companion object {
-        private val log = Logger.getLogger(OnSendCard::class.java)
+        private val log = Logger.getLogger(OnSendCardSkill::class.java)
     }
 }
