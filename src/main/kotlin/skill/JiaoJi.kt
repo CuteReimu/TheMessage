@@ -80,15 +80,16 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
                 }
                 builder.waitingSecond = Config.WaitSecond
                 if (p === r) {
-                    val seq2: Int = p.seq
-                    builder.seq = seq2
+                    val seq = p.seq
+                    builder.seq = seq
                     p.timeout = GameExecutor.post(g, {
-                        if (p.checkSeq(seq2)) {
-                            val builder2 = skill_jiao_ji_b_tos.newBuilder().setSeq(seq2)
+                        if (p.checkSeq(seq)) {
+                            val builder2 = skill_jiao_ji_b_tos.newBuilder()
                             for (c in r.cards) {
                                 if (builder2.cardIdsCount >= needReturnCount.first) break
                                 builder2.addCardIds(c.id)
                             }
+                            builder2.seq = seq
                             g.tryContinueResolveProtocol(r, builder2.build())
                         }
                     }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
@@ -176,7 +177,7 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
         private val log = Logger.getLogger(JiaoJi::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.player
-            if (player.getSkillUseCount(SkillId.JIAO_JI) > 0) return false
+            player.getSkillUseCount(SkillId.JIAO_JI) == 0 || return false
             val players = player.game!!.players.filter { it !== player && it!!.alive && it.cards.isNotEmpty() }
             val target = players.filter { player.isEnemy(it!!) }.randomOrNull()
                 ?: players.randomOrNull() ?: return false
