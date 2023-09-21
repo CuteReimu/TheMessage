@@ -47,10 +47,11 @@ class TouTian : AbstractSkill(), ActiveSkill {
     companion object {
         private val log = Logger.getLogger(TouTian::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.whoseFightTurn.roleFaceUp) return false
+            !e.whoseFightTurn.roleFaceUp || return false
             val player = e.whoseFightTurn
-            if (e.inFrontOfWhom === player || e.messageCard.isPureBlack()) return false
-            if (Random.nextBoolean()) return false
+            e.inFrontOfWhom !== player || return false
+            !e.messageCard.isPureBlack() || return false
+            Random.nextBoolean() || return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
                 skill.executeProtocol(
                     e.whoseFightTurn.game!!, e.whoseFightTurn, skill_tou_tian_tos.getDefaultInstance()
