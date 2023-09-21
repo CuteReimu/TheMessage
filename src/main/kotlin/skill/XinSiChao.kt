@@ -58,8 +58,8 @@ class XinSiChao : AbstractSkill(), ActiveSkill {
     companion object {
         private val log = Logger.getLogger(XinSiChao::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.player.getSkillUseCount(SkillId.XIN_SI_CHAO) > 0) return false
-            val card = e.player.cards.firstOrNull() ?: return false
+            e.player.getSkillUseCount(SkillId.XIN_SI_CHAO) == 0 || return false
+            val card = e.player.cards.randomOrNull() ?: return false
             val cardId = card.id
             GameExecutor.post(e.player.game!!, {
                 val builder = skill_xin_si_chao_tos.newBuilder()
