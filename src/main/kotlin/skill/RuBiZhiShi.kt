@@ -149,11 +149,6 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("截获被禁止使用了")
                         return null
                     }
-                    if (fsm.inFrontOfWhom === target) {
-                        log.error("情报在目标角色面前，目标角色不能使用截获")
-                        (r as? HumanPlayer)?.sendErrorMessage("情报在目标角色面前，目标角色不能使用截获")
-                        return null
-                    }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
                         log.error("没有这张牌")
