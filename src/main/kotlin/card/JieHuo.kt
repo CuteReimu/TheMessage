@@ -64,11 +64,6 @@ class JieHuo : Card {
                 (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机不对")
                 return false
             }
-            if (r === fsm.inFrontOfWhom) {
-                log.error("情报在自己面前不能使用截获")
-                (r as? HumanPlayer)?.sendErrorMessage("情报在自己面前不能使用截获")
-                return false
-            }
             return true
         }
 
@@ -97,10 +92,7 @@ class JieHuo : Card {
                 }
             }
             g.resolve(
-                OnUseCard(
-                    fsm.whoseTurn, r, null, card?.getOriginCard(), card_type.Jie_Huo, resolveFunc, fsm,
-                    valid = r !== fsm.inFrontOfWhom
-                )
+                OnUseCard(fsm.whoseTurn, r, null, card?.getOriginCard(), card_type.Jie_Huo, resolveFunc, fsm)
             )
         }
 
