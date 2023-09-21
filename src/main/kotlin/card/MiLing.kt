@@ -112,13 +112,18 @@ class MiLing : Card {
         val timeout: Int
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
+            val canSendPureBlack =
+                target.findSkill(SkillId.HAN_HOU_LAO_SHI) == null || target.cards.all { it.isPureBlack() }
+            val canSendCards =
+                if (canSendPureBlack) target.cards
+                else target.cards.filter { !it.isPureBlack() }
             val r = player
             if (r is HumanPlayer) {
                 val seq2 = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq2)) {
                         val builder = mi_ling_choose_card_tos.newBuilder()
-                        builder.cardId = target.cards.first().id
+                        builder.cardId = canSendCards.first().id
                         builder.seq = seq2
                         r.game!!.tryContinueResolveProtocol(r, builder.build())
                     }
@@ -126,7 +131,7 @@ class MiLing : Card {
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = mi_ling_choose_card_tos.newBuilder()
-                    builder.cardId = target.cards.first().id
+                    builder.cardId = canSendCards.random().id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -148,6 +153,11 @@ class MiLing : Card {
             if (card == null) {
                 log.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                return null
+            }
+            if (card.isPureBlack() && target.findSkill(SkillId.HAN_HOU_LAO_SHI) != null && !target.cards.all { it.isPureBlack() }) {
+                log.error("哑巴不能传出纯黑色情报")
+                (player as? HumanPlayer)?.sendErrorMessage("哑巴不能传出纯黑色情报")
                 return null
             }
             player.incrSeq()
