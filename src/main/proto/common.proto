@@ -44,6 +44,8 @@ enum role {
   su_ji_yuan = 39; // 速记员
   ya_ba = 40; // 哑巴
   lao_qian = 41; // 老千
+  si_shi = 42; // 死士
+  jiao_shou = 43; // 教授
   sp_cheng_xiao_die = 1002; // SP程小蝶
   sp_lian_yuan = 1003; // SP连鸢
   sp_han_mei = 1014; // SP韩梅
@@ -53,6 +55,8 @@ enum role {
   sp_li_ning_yu = 1028; // SP李宁玉
   middle_age_han_mei = 2014; // 中年韩梅
   middle_age_xiao_jiu = 2027; // 中年小九
+  spy_a_fu_luo_la = 3013; // 间谍阿芙罗拉
+  spy_bai_fei_fei = 3021; // 间谍白菲菲
 }
 
 enum phase {

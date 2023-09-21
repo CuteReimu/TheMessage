@@ -1321,3 +1321,104 @@ message skill_mi_xin_toc {
 message skill_jiang_ji_jiu_ji_toc {
   uint32 player_id = 1;
 }
+
+// 死士【鱼死网破】A：出牌阶段限一次，你可以弃掉任意张数手牌（至少1），让一名其他玩家弃置对应数量的手牌（不足则全弃），然后你们各摸一张牌。
+message skill_yu_si_wang_po_a_tos {
+  uint32 target_player_id = 1;
+  repeated uint32 card_ids = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【鱼死网破】A
+message skill_yu_si_wang_po_a_toc {
+  uint32 player_id = 1; // 死士的ID
+  uint32 target_player_id = 2;
+  uint32 card_count = 3; // 死士弃牌的数量，弃牌走弃牌协议
+  uint32 waiting_second = 4; // 如果全弃，则这个字段为0
+  uint32 seq = 5;
+}
+
+// 死士【鱼死网破】B：对方弃牌（如果全弃，不用客户端请求）
+message skill_yu_si_wang_po_b_tos {
+  repeated uint32 card_ids = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【鱼死网破】B，如果全弃，则在a_toc后进接着发这条，弃牌走弃牌协议
+message skill_yu_si_wang_po_b_toc {
+  uint32 player_id = 1; // 死士的ID
+  uint32 target_player_id = 2;
+}
+
+// 教授【定论】：争夺阶段，若情报在你面前，可以翻开此角色，直接成功接收，但若因此达成同色三张，则改为入手。
+message skill_ding_lun_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【定论】
+message skill_ding_lun_toc {
+  uint32 player_id = 1;
+  card card = 2;
+  bool join_into_hand = 5; // 是否改为加入手牌
+}
+
+// 广播使用【真理】：每当你传出的真情报被其他玩家接收时，你可以摸一张牌，将此角色翻回背面。
+message skill_zhen_li_toc {
+  uint32 player_id = 1;
+}
+
+// 间谍阿芙罗拉【应变自如】A：争夺阶段，你可以翻开此角色，然后将待收情报翻开，根据颜其颜色执行操作：
+// 1. 红或蓝单色：视为对其使用了【截获】，摸一张牌。
+// 2. 黑单色：视为对其使用了【误导】，摸两张牌。
+// 3. 双色情报：弃置该情报，摸三张牌。
+message skill_ying_bian_zi_ru_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【应变自如】A，摸牌全走摸牌协议
+message skill_ying_bian_zi_ru_a_toc {
+  uint32 player_id = 1;
+  card card = 2;
+  uint32 waiting_second = 3; // 仅当是黑单色时，才有后续
+  uint32 seq = 4;
+}
+
+// 间谍阿芙罗拉【应变自如】B，选择【误导】的目标
+message skill_ying_bian_zi_ru_b_tos {
+  uint32 target_player_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【应变自如】B
+message skill_ying_bian_zi_ru_b_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+}
+
+// 间谍白菲菲【套取】A：出牌阶段限一次，你可以弃置两张含含相同颜色的牌
+message skill_tao_qu_a_tos {
+  repeated uint32 card_ids = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【套取】A，弃牌走弃牌协议
+message skill_tao_qu_a_toc {
+  uint32 player_id = 1;
+  repeated color colors = 2; // 可以选的颜色
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// 间谍白菲菲【套取】B：将一名其他角色情报区的一张同色情报加入手牌，该角色摸一张牌
+message skill_tao_qu_b_tos {
+  uint32 target_player_id = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【套取】B，摸牌走摸牌协议
+message skill_tao_qu_b_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  uint32 card_id = 3;
+}
