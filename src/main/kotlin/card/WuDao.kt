@@ -62,27 +62,7 @@ class WuDao : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
         log.info("${r}对${target}使用了$this")
-        val fsm = g.fsm as FightPhaseIdle
-        r.deleteCard(id)
-        val resolveFunc = { valid: Boolean ->
-            if (valid) {
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        val builder = use_wu_dao_toc.newBuilder()
-                        builder.card = toPbCard()
-                        builder.playerId = player.getAlternativeLocation(r.location)
-                        builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                        player.send(builder.build())
-                    }
-                }
-                val newFsm = fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
-                OnFinishResolveCard(r, target, getOriginCard(), card_type.Wu_Dao, newFsm)
-            } else {
-                val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-                OnFinishResolveCard(r, target, getOriginCard(), card_type.Wu_Dao, newFsm)
-            }
-        }
-        g.resolve(OnUseCard(fsm.whoseTurn, r, target, getOriginCard(), card_type.Wu_Dao, resolveFunc, fsm))
+        g.resolve(onUseCard(this, g, r, target))
     }
 
     override fun toString(): String {
@@ -91,6 +71,42 @@ class WuDao : Card {
 
     companion object {
         private val log = Logger.getLogger(WuDao::class.java)
+
+        /**
+         * 执行【误导】的效果。示例：
+         * ```
+         * g.resolve(WuDao.onUseCard(card, g, r, target))
+         * ```
+         * @param card 使用的那张【误导】卡牌。可以为 `null` ，因为间谍阿芙罗拉技能【应变自如】可以视为使用了【误导】。
+         * @return 返回[OnUseCard]，要自行调用[Game.resolve]
+         */
+        fun onUseCard(card: Card?, g: Game, r: Player, target: Player): OnUseCard {
+            val fsm = g.fsm as FightPhaseIdle
+            card?.apply { r.deleteCard(id) }
+            val resolveFunc = { valid: Boolean ->
+                if (valid) {
+                    for (player in g.players) {
+                        if (player is HumanPlayer) {
+                            val builder = use_wu_dao_toc.newBuilder()
+                            card?.apply { builder.card = toPbCard() }
+                            builder.playerId = player.getAlternativeLocation(r.location)
+                            builder.targetPlayerId = player.getAlternativeLocation(target.location)
+                            player.send(builder.build())
+                        }
+                    }
+                    val newFsm = fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
+                    OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
+                } else {
+                    val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+                    OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
+                }
+            }
+            return OnUseCard(
+                fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, resolveFunc, fsm,
+                valid = target !== fsm.inFrontOfWhom
+            )
+        }
+
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
             if (player === player.game!!.jinBiPlayer) return false

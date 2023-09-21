@@ -96,10 +96,12 @@ class JieHuo : Card {
                     OnFinishResolveCard(r, null, card?.getOriginCard(), card_type.Jie_Huo, newFsm)
                 }
             }
-            if (card != null)
-                g.resolve(OnUseCard(fsm.whoseTurn, r, null, card.getOriginCard(), card_type.Jie_Huo, resolveFunc, fsm))
-            else
-                g.resolve(resolveFunc(true))
+            g.resolve(
+                OnUseCard(
+                    fsm.whoseTurn, r, null, card?.getOriginCard(), card_type.Jie_Huo, resolveFunc, fsm,
+                    valid = r !== fsm.inFrontOfWhom
+                )
+            )
         }
 
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
