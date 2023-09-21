@@ -16,10 +16,11 @@ class HanHouLaoShi : AbstractSkill(), TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
         askWhom === fsm.sender || return null
-        fsm.sender.findSkill(skillId) != null || return null
+        fsm.sender !== fsm.inFrontOfWhom || return null
+        askWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.cards.isNotEmpty() || return null
-        fsm.sender.getSkillUseCount(skillId) == 0 || return null
-        fsm.sender.addSkillUseCount(skillId)
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
         return ResolveResult(executeHanHouLaoShi(fsm), true)
     }
 
