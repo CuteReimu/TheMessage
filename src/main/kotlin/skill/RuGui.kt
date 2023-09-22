@@ -33,14 +33,14 @@ class RuGui : AbstractSkill(), TriggeredSkill {
                     builder.playerId = player.getAlternativeLocation(r.location)
                     builder.waitingSecond = Config.WaitSecond
                     if (player === r) {
-                        val seq2 = player.seq
-                        builder.seq = seq2
+                        val seq = player.seq
+                        builder.seq = seq
                         player.timeout = GameExecutor.post(
                             r.game!!,
                             {
                                 val builder2 = skill_ru_gui_tos.newBuilder()
                                 builder2.enable = false
-                                builder2.seq = seq2
+                                builder2.seq = seq
                                 r.game!!.tryContinueResolveProtocol(r, builder2.build())
                             },
                             player.getWaitSeconds(builder.waitingSecond + 2).toLong(),

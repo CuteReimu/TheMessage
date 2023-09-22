@@ -11,16 +11,20 @@ import com.fengsheng.ResolveResult
  * @param fromPlayer 给牌的角色
  * @param toPlayer 被给牌的角色
  * @param nextFsm 接下来是什么阶段
+ * @param afterResolveFunc 结算后触发的一些效果，一般是用来清本回合使用次数
  */
 data class OnGiveCard(
     val whoseTurn: Player,
     val fromPlayer: Player,
     val toPlayer: Player,
     val nextFsm: Fsm,
+    val afterResolveFunc: () -> Unit = { },
 ) : Fsm {
     override fun resolve(): ResolveResult {
         val result = whoseTurn.game!!.dealListeningSkill(fromPlayer.location)
-        return result ?: ResolveResult(nextFsm, true)
+        if (result != null) return result
+        afterResolveFunc()
+        return ResolveResult(nextFsm, true)
     }
 
     override fun toString(): String {
