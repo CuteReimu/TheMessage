@@ -124,6 +124,7 @@ message wait_for_select_role_toc {
   secret_task   secret_task = 3; // （你的身份是神秘人时）你的机密任务
   repeated role roles = 4; // 发给你的角色
   uint32        waiting_second = 5; // 读多少秒
+  repeated secret_task possible_secret_task = 6; // 可能的神秘人任务
 }
 
 // 托管

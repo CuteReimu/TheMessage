@@ -80,6 +80,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         builder.secretTask = player.secretTask
         builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(role.unknown) })
         builder.waitingSecond = Config.WaitSecond * 2
+        builder.addAllPossibleSecretTask(game.possibleSecretTasks)
         player.send(builder.build())
         player.notifyPossibleSecretTasks()
     }
