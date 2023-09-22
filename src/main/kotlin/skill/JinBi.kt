@@ -66,20 +66,15 @@ class JinBi : AbstractSkill(), ActiveSkill {
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.waitingSecond = Config.WaitSecond
                     if (p === target) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
-                        GameExecutor.post(
-                            p.game!!,
-                            {
-                                if (p.checkSeq(seq2)) {
-                                    val builder2 = skill_jin_bi_b_tos.newBuilder()
-                                    builder2.seq = seq2
-                                    p.game!!.tryContinueResolveProtocol(p, builder2.build())
-                                }
-                            },
-                            p.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                        val seq = p.seq
+                        builder.seq = seq
+                        GameExecutor.post(p.game!!, {
+                            if (p.checkSeq(seq)) {
+                                val builder2 = skill_jin_bi_b_tos.newBuilder()
+                                builder2.seq = seq
+                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                            }
+                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
                     p.send(builder.build())
                 }
@@ -112,7 +107,7 @@ class JinBi : AbstractSkill(), ActiveSkill {
                 return null
             }
             if (message.cardIdsCount == 0) {
-                r.incrSeq()
+                target.incrSeq()
                 doExecuteJinBi()
                 return ResolveResult(MainPhaseIdle(r), true)
             } else if (message.cardIdsCount != 2) {
@@ -129,7 +124,7 @@ class JinBi : AbstractSkill(), ActiveSkill {
                 }
                 card
             }
-            r.incrSeq()
+            target.incrSeq()
             target.cards.removeAll(cards.toSet())
             r.cards.addAll(cards)
             log.info("${target}给了${r}${cards.contentToString()}")
