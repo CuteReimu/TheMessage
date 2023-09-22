@@ -188,7 +188,11 @@ class MiLing : Card {
         val timeout: Int
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val card = messageCard ?: target.cards.find { this.card.secret[secret] in it.colors }!!
+            val canSendPureBlack = target.findSkill(SkillId.HAN_HOU_LAO_SHI) == null ||
+                    target.cards.filter { this.card.secret[secret] in it.colors }.all { it.isPureBlack() }
+            val card = messageCard
+                ?: if (canSendPureBlack) target.cards.find { this.card.secret[secret] in it.colors }!!
+                else target.cards.find { this.card.secret[secret] in it.colors && !it.isPureBlack() }!!
             val messageTarget = when (card.direction) {
                 direction.Left -> target.getNextLeftAlivePlayer()
                 direction.Right -> target.getNextRightAlivePlayer()
@@ -258,6 +262,15 @@ class MiLing : Card {
                         log.error("不是指定颜色的情报")
                         (player as? HumanPlayer)?.sendErrorMessage("不是指定颜色的情报")
                         return null
+                    }
+                    if (c.isPureBlack()) {
+                        val canSendPureBlack = target.findSkill(SkillId.HAN_HOU_LAO_SHI) == null ||
+                                target.cards.filter { this.card.secret[secret] in it.colors }.all { it.isPureBlack() }
+                        if (!canSendPureBlack) {
+                            log.error("你不能传出纯黑色情报")
+                            (player as? HumanPlayer)?.sendErrorMessage("你不能传出纯黑色情报")
+                            return null
+                        }
                     }
                     c
                 }

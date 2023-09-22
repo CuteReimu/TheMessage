@@ -8,7 +8,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 哑巴技能【憨厚老实】：你无法传出纯黑色情报（除非手牌仅有纯黑色），接收你情报的玩家需给你一张手牌。
+ * 哑巴技能【憨厚老实】：你无法传出纯黑色情报（除非你只能传出纯黑色情报），接收你情报的玩家需给你一张手牌。
  */
 class HanHouLaoShi : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.HAN_HOU_LAO_SHI
