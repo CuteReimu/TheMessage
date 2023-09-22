@@ -16,7 +16,7 @@ enum class SkillId(private val cName: String) {
     HOU_LAI_REN("后来人"), ZI_ZHENG_QING_BAI("自证清白"), SHOU_KOU_RU_PING("守口如瓶"), DU_MING("赌命"), LIAN_LUO2("联络"),
     SHUN_SHI_ER_WEI("顺势而为"), MI_XIN("密信"), JIANG_JI_JIU_JI("将计就计"), HAN_HOU_LAO_SHI("憨厚老实"),
     MIAO_SHOU_KUAI_JI("妙手快记"), YU_SI_WANG_PO("鱼死网破"), DING_LUN("定论"), ZHEN_LI("真理"), YING_BIAN_ZI_RU("应变自如"),
-    TAO_QU("套取");
+    TAO_QU("套取"), TAN_XU_BIAN_SHI("探虚辨实"), CUN_BU_BU_RANG("寸步不让");
 
 
     override fun toString(): String {
