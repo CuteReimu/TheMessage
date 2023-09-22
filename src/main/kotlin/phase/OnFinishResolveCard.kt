@@ -9,6 +9,7 @@ import com.fengsheng.protos.Common.card_type
 /**
  * 卡牌结算后
  *
+ * @param whoseTurn 谁的回合
  * @param player 出牌的
  * @param targetPlayer 目标角色
  * @param card 出的牌，有可能没出牌
@@ -18,6 +19,7 @@ import com.fengsheng.protos.Common.card_type
  * @param afterResolveFunc 结算后触发的一些效果，一般是用来清本回合使用次数
  */
 data class OnFinishResolveCard(
+    val whoseTurn: Player,
     val player: Player,
     val targetPlayer: Player?,
     val card: Card?,

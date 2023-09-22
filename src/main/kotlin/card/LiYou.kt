@@ -103,7 +103,8 @@ class LiYou : Card {
                         player.send(builder.build())
                     }
                 }
-                val newFsm = OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Li_You, MainPhaseIdle(r))
+                val newFsm =
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Li_You, MainPhaseIdle(r))
                 if (!joinIntoHand) OnAddMessageCard(r, newFsm, false)
                 else newFsm
             }

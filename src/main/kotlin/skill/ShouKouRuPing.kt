@@ -42,8 +42,7 @@ class ShouKouRuPing : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            fsm.player.draw(1)
-            targetPlayer.draw(1)
+            g.sortedFrom(listOf(fsm.player, targetPlayer), fsm.whoseTurn.location).forEach { it.draw(1) }
             val oldResolveFunc = fsm.resolveFunc
             return ResolveResult(fsm.copy(resolveFunc = { valid: Boolean ->
                 askWhom.resetSkillUseCount(skillId)

@@ -117,7 +117,7 @@ class PoYi : Card {
             showAndDrawCard(message.show)
             val newFsm = sendPhase.copy(isMessageCardFaceUp = message.show)
             return ResolveResult(
-                OnFinishResolveCard(player, null, card.getOriginCard(), card_type.Po_Yi, newFsm),
+                OnFinishResolveCard(sendPhase.whoseTurn, player, null, card.getOriginCard(), card_type.Po_Yi, newFsm),
                 true
             )
         }

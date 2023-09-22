@@ -34,6 +34,7 @@ class LengXueXunLian : AbstractSkill(), ActiveSkill {
             g.resolve(
                 OnFinishResolveCard(
                     fsm.sendPhase.player,
+                    fsm.sendPhase.player,
                     fsm.target,
                     fsm.card,
                     Mi_Ling,

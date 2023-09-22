@@ -35,8 +35,7 @@ class MingEr : AbstractSkill(), TriggeredSkill {
         if (fsm.sender === fsm.inFrontOfWhom) {
             fsm.sender.draw(2)
         } else {
-            fsm.sender.draw(1)
-            fsm.inFrontOfWhom.draw(1)
+            g.sortedFrom(listOf(fsm.sender, fsm.inFrontOfWhom), fsm.whoseTurn.location).forEach { it.draw(1) }
         }
         return null
     }

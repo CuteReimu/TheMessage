@@ -80,7 +80,7 @@ class ShiTan : Card {
                 executeShiTan(r, target, this@ShiTan)
             } else {
                 OnFinishResolveCard(
-                    r, target, getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
+                    r, r, target, getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
                     discardAfterResolve = false
                 )
             }
@@ -178,7 +178,7 @@ class ShiTan : Card {
             }
             return ResolveResult(
                 OnFinishResolveCard(
-                    r, target, card.getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
+                    r, r, target, card.getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
                     discardAfterResolve = false
                 ),
                 true

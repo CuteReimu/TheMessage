@@ -311,6 +311,20 @@ class Game private constructor(totalPlayerCount: Int) {
     }
 
     /**
+     * 将players按照从fromIndex开始逆时针顺序排序，不是这个游戏中的玩家会被排除
+     */
+    fun sortedFrom(players: Iterable<Player>, fromIndex: Int): List<Player> {
+        var i = fromIndex % this.players.size
+        val newPlayers = ArrayList<Player>()
+        do {
+            val player = this.players[i]!!
+            if (player in players) newPlayers.add(player)
+            i = (i + 1) % this.players.size
+        } while (i != fromIndex % this.players.size)
+        return newPlayers
+    }
+
+    /**
      * 继续处理当前状态机
      */
     fun continueResolve() {
@@ -367,7 +381,7 @@ class Game private constructor(totalPlayerCount: Int) {
                 }
             }
             i = (i + 1) % players.size
-        } while (i != beginLocation)
+        } while (i != beginLocation % players.size)
         return null
     }
 

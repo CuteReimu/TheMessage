@@ -121,7 +121,7 @@ class WeiBi : Card {
             }
             val newFsm = MainPhaseIdle(r)
             return ResolveResult(
-                OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wei_Bi, newFsm), true
+                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, newFsm), true
             )
         }
 
@@ -174,7 +174,7 @@ class WeiBi : Card {
         fun execute(card: WeiBi?, g: Game, r: Player, target: Player, wantType: card_type) {
             val resolveFunc = { valid: Boolean ->
                 if (!valid) {
-                    OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
                 } else if (hasCard(target, wantType)) {
                     executeWeiBi(r, target, card, wantType)
                 } else {
@@ -192,7 +192,7 @@ class WeiBi : Card {
                             p.send(builder.build())
                         }
                     }
-                    OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
                 }
             }
             g.resolve(OnUseCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, g.fsm!!))

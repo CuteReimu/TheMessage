@@ -95,10 +95,10 @@ class WuDao : Card {
                         }
                     }
                     val newFsm = fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
-                    OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
+                    OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
                 } else {
                     val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-                    OnFinishResolveCard(r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
+                    OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
                 }
             }
             return OnUseCard(

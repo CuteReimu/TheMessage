@@ -340,7 +340,7 @@ class MiLing : Card {
             )
             return ResolveResult(
                 OnFinishResolveCard(
-                    sendPhase.player, target, card.getOriginCard(), card_type.Mi_Ling, newFsm,
+                    sendPhase.player, sendPhase.player, target, card.getOriginCard(), card_type.Mi_Ling, newFsm,
                     discardAfterResolve = false
                 ),
                 true

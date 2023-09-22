@@ -54,7 +54,7 @@ class ZuoYouFengYuan : AbstractSkill(), ActiveSkill {
                 return
             }
             target
-        }
+        }.let { g.sortedFrom(it, fsm.whoseTurn.location) }
         r.incrSeq()
         g.playerSetRoleFaceUp(r, true)
         log.info("${r}对${targets.toTypedArray().contentToString()}发动了[左右逢源]")

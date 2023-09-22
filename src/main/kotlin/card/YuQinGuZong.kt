@@ -79,7 +79,7 @@ class YuQinGuZong : Card {
             r.messageCards.remove(messageCard) // 欲擒故纵可能传出面前的情报
             r.draw(2)
             OnFinishResolveCard( // 这里先触发卡牌结算后，再触发情报传出时
-                r, target, getOriginCard(), type, OnSendCard(
+                r, r, target, getOriginCard(), type, OnSendCard(
                     fsm.player, fsm.player, messageCard, dir, target, lockPlayers.toTypedArray(), true
                 )
             )

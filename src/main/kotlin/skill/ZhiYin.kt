@@ -35,8 +35,9 @@ class ZhiYin : AbstractSkill(), TriggeredSkill {
         if (fsm.inFrontOfWhom === fsm.sender) {
             fsm.inFrontOfWhom.draw(2)
         } else {
-            fsm.inFrontOfWhom.draw(1)
-            if (fsm.sender.alive) fsm.sender.draw(1)
+            val players = arrayListOf(fsm.inFrontOfWhom)
+            if (fsm.sender.alive) players.add(fsm.sender)
+            g.sortedFrom(players, fsm.whoseTurn.location).forEach { it.draw(1) }
         }
         return null
     }

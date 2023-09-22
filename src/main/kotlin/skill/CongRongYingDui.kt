@@ -31,7 +31,8 @@ class CongRongYingDui : AbstractSkill(), TriggeredSkill {
         return ResolveResult(executeCongRongYingDui(fsm.copy(afterResolveFunc = f), askWhom, target), true)
     }
 
-    private data class executeCongRongYingDui(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
+    private data class executeCongRongYingDui(val fsm: OnFinishResolveCard, val r: Player, val target: Player) :
+        WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -107,10 +108,8 @@ class CongRongYingDui : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            if (message.drawCard) {
-                r.draw(1)
-                target.draw(1)
-            }
+            if (message.drawCard)
+                r.game!!.sortedFrom(listOf(r, target), fsm.whoseTurn.location).forEach { it.draw(1) }
             return ResolveResult(fsm, true)
         }
 
