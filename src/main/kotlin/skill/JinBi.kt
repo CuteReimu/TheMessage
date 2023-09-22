@@ -80,12 +80,9 @@ class JinBi : AbstractSkill(), ActiveSkill {
                 }
             }
             if (target is RobotPlayer)
-                GameExecutor.post(
-                    target.game!!,
-                    { target.game!!.tryContinueResolveProtocol(target, skill_jin_bi_b_tos.getDefaultInstance()) },
-                    2,
-                    TimeUnit.SECONDS
-                )
+                GameExecutor.post(target.game!!, {
+                    target.game!!.tryContinueResolveProtocol(target, skill_jin_bi_b_tos.getDefaultInstance())
+                }, 2, TimeUnit.SECONDS)
             return null
         }
 
