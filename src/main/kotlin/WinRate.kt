@@ -98,17 +98,21 @@ object WinRate {
         }
         lines.sortByDescending { it.winRates.firstOrNull() ?: 0.0 }
 
-        val img = BufferedImage(CELL_W * 12 + 1, CELL_H * (lines.size + 2) + 1, BufferedImage.TYPE_INT_RGB)
+        val img =
+            BufferedImage(CELL_W * 12 + 1 + font.size * 2, CELL_H * (lines.size + 2) + 1, BufferedImage.TYPE_INT_RGB)
         val g = img.createGraphics()
         g.color = Color.WHITE
         g.fillRect(img.minX, img.minY, img.width, img.height)
         g.color = Color.BLACK
         g.font = font
         columns.forEachIndexed { i, s ->
-            g.drawString(s, i * CELL_W + 3, CELL_H - 3)
+            if (i == 0)
+                g.drawString(s, 3, CELL_H - 3)
+            else
+                g.drawString(s, i * CELL_W + 3 + font.size * 2, CELL_H - 3)
         }
         g.drawString("全部", 3, CELL_H * 2 - 3)
-        g.drawString(appearCount.sum(0).toString(), CELL_W + 3, CELL_H * 2 - 3)
+        g.drawString(appearCount.sum(0).toString(), CELL_W + 3 + font.size * 2, CELL_H * 2 - 3)
         val g1 = Gradient((1..<columns.size - 2).mapNotNull { i ->
             val winSum = winCount.sum(i)
             val appearSum = appearCount.sum(i)
@@ -121,10 +125,14 @@ object WinRate {
             if (appearSum != 0) {
                 if (i > 0) {
                     g.color = g1.getColor(winSum * 100.0 / appearSum)
-                    g.fillRect(CELL_W * (i + 2), CELL_H, CELL_W, CELL_H)
+                    g.fillRect(CELL_W * (i + 2) + font.size * 2, CELL_H, CELL_W, CELL_H)
                     g.color = Color.BLACK
                 }
-                g.drawString("%.2f%%".format(winSum * 100.0 / appearSum), CELL_W * (i + 2) + 3, CELL_H * 2 - 3)
+                g.drawString(
+                    "%.2f%%".format(winSum * 100.0 / appearSum),
+                    CELL_W * (i + 2) + 3 + font.size * 2,
+                    CELL_H * 2 - 3
+                )
             }
         }
         val g2 = Gradient(lines.map { it.totalCount.toDouble() })
@@ -135,16 +143,16 @@ object WinRate {
             val row = index + 2
             g.drawString(line.roleName, 3, (row + 1) * CELL_H - 3)
             g.color = g2.getColor(line.totalCount.toDouble())
-            g.fillRect(CELL_W, row * CELL_H, CELL_W, CELL_H)
+            g.fillRect(CELL_W + font.size * 2, row * CELL_H, CELL_W, CELL_H)
             g.color = Color.BLACK
-            g.drawString(line.totalCount.toString(), CELL_W + 3, (row + 1) * CELL_H - 3)
+            g.drawString(line.totalCount.toString(), CELL_W + 3 + font.size * 2, (row + 1) * CELL_H - 3)
             line.winRates.forEachIndexed { i, v ->
                 if (!v.isNaN()) {
                     val col = i + 2
                     g.color = gn[i].getColor(v)
-                    g.fillRect(col * CELL_W, row * CELL_H, CELL_W, CELL_H)
+                    g.fillRect(col * CELL_W + font.size * 2, row * CELL_H, CELL_W, CELL_H)
                     g.color = Color.BLACK
-                    g.drawString("%.2f%%".format(v), col * CELL_W + 3, (row + 1) * CELL_H - 3)
+                    g.drawString("%.2f%%".format(v), col * CELL_W + 3 + font.size * 2, (row + 1) * CELL_H - 3)
                 }
             }
         }
@@ -153,7 +161,10 @@ object WinRate {
             g.drawLine(0, it * CELL_H, img.width, it * CELL_H)
         }
         repeat(columns.size + 1) { i ->
-            g.drawLine(i * CELL_W, 0, i * CELL_W, img.height)
+            if (i == 0)
+                g.drawLine(0, 0, 0, img.height)
+            else
+                g.drawLine(i * CELL_W + font.size * 2, 0, i * CELL_W + font.size * 2, img.height)
         }
         g.dispose()
         return img
