@@ -23,6 +23,7 @@ class JinShen : AbstractSkill(), TriggeredSkill {
         fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         fsm.messageCard.colors.size == 2 || return null
+        askWhom.findMessageCard(fsm.messageCard.id) != null || return null
         fsm.inFrontOfWhom.addSkillUseCount(skillId)
         return ResolveResult(executeJinShen(fsm), true)
     }
