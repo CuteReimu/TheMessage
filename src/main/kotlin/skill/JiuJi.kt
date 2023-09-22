@@ -40,7 +40,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
                         val builder = skill_wait_for_jiu_ji_toc.newBuilder()
                         builder.fromPlayerId = player.getAlternativeLocation(fsm.player.location)
                         builder.cardType = fsm.cardType
-                        fsm.card?.let { builder.card = it.toPbCard() }
+                        if (fsm.cardType != Shi_Tan) fsm.card?.let { builder.card = it.toPbCard() }
                         builder.waitingSecond = Config.WaitSecond
                         val seq2 = player.seq
                         builder.seq = seq2

@@ -248,7 +248,7 @@ message skill_cheng_zhi_toc {
 message skill_wait_for_jiu_ji_toc {
   uint32 from_player_id = 1; // 谁对你使用了牌
   card_type card_type = 2; // 什么牌（李宁玉被威逼的时候不知道威逼了什么）
-  card card = 3; // 那张牌（肥源龙川的技能使用的威逼，这个字段为null）
+  card card = 3; // 那张牌（肥源龙川的技能使用的威逼和利诱，这个字段为null，如果是试探，李宁玉看不到，这个字段也为null）
   uint32 waiting_second = 4;
   uint32 seq = 5;
 }
