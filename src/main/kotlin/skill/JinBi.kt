@@ -168,9 +168,10 @@ class JinBi : AbstractSkill(), ActiveSkill {
         }
 
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.player.getSkillUseCount(SkillId.JIN_BI) > 0) return false
-            val players = e.player.game!!.players.filter { p -> p!!.alive && p.isEnemy(e.player) }
-            val player = players.randomOrNull() ?: return false
+            e.player.getSkillUseCount(SkillId.JIN_BI) == 0 || return false
+            val player = e.player.game!!.players.filter { p ->
+                p!!.alive && p.isEnemy(e.player)
+            }.randomOrNull() ?: return false
             GameExecutor.post(e.player.game!!, {
                 val builder = skill_jin_bi_a_tos.newBuilder()
                 builder.targetPlayerId = e.player.getAlternativeLocation(player.location)
