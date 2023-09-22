@@ -1422,3 +1422,54 @@ message skill_tao_qu_b_toc {
   uint32 target_player_id = 2;
   uint32 card_id = 3;
 }
+
+// 棋手【探虚辨实】A：出牌阶段一次，你可以给一名角色一张手牌
+message skill_tan_xu_bian_shi_a_tos {
+  uint32 target_player_id = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【探虚辨实】A
+message skill_tan_xu_bian_shi_a_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  card card = 3; // 只有棋手和那名角色能看见
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// 棋手【探虚辨实】B：该角色还你一张手牌，且需优先选择含其身份颜色的牌（潜伏=红，军情=蓝，神秘人=任意颜色）
+message skill_tan_xu_bian_shi_b_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【探虚辨实】B
+message skill_tan_xu_bian_shi_b_toc {
+  uint32 player_id = 1; // 棋手的ID
+  uint32 target_player_id = 2;
+  card card = 3; // 只有棋手和那名角色能看见
+}
+
+// 广播询问使用【寸步不让】
+message skill_wait_for_cun_bu_bu_rang_toc {
+  uint32 player_id = 1; // 棋手的ID
+  uint32 target_player_id = 2;
+  uint32 waiting_second = 3;
+  uint32 seq = 4;
+}
+
+// 棋手【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。
+message skill_cun_bu_bu_rang_tos {
+  bool enable = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【寸步不让】
+message skill_cun_bu_bu_rang_toc {
+  uint32 player_id = 1; // 棋手的ID
+  bool enable = 2;
+  uint32 target_player_id = 3;
+  card card = 4; // 只有棋手和那名角色能看见
+}
