@@ -35,17 +35,14 @@ class RuGui : AbstractSkill(), TriggeredSkill {
                     if (player === r) {
                         val seq = player.seq
                         builder.seq = seq
-                        player.timeout = GameExecutor.post(
-                            r.game!!,
-                            {
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            if (r.checkSeq(seq)) {
                                 val builder2 = skill_ru_gui_tos.newBuilder()
                                 builder2.enable = false
                                 builder2.seq = seq
                                 r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            },
-                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                            }
+                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
                     player.send(builder.build())
                 }
