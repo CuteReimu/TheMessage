@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -95,7 +96,7 @@ class HanHouLaoShi : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnGiveCard(fsm.whoseTurn, r, target, fsm), true)
         }
 
         companion object {

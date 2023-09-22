@@ -5,6 +5,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnAddMessageCard
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -94,17 +95,27 @@ class DuJi : AbstractSkill(), ActiveSkill {
         if (card1.colors.contains(color.Black)) twoPlayersAndCards.add(TwoPlayersAndCard(target1, target2, card1))
         if (card2.colors.contains(color.Black)) twoPlayersAndCards.add(TwoPlayersAndCard(target2, target1, card2))
         g.resolve(
-            executeDuJiA(CheckWin(fsm.whoseTurn, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)), r, twoPlayersAndCards)
+            executeDuJiA(
+                CheckWin(fsm.whoseTurn, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)),
+                r, twoPlayersAndCards, arrayListOf(target2 to r, target1 to r, target1 to target2, target2 to target1)
+            )
         )
     }
 
     private data class executeDuJiA(
         val fsm: CheckWin,
         val r: Player,
-        val playerAndCards: ArrayList<TwoPlayersAndCard>
+        val playerAndCards: ArrayList<TwoPlayersAndCard>,
+        val whoGiveWhoCard: ArrayList<Pair<Player, Player>>,
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            if (playerAndCards.isEmpty()) return ResolveResult(fsm, true)
+            if (playerAndCards.isEmpty()) {
+                var nextFsm: Fsm = fsm
+                for ((fromPlayer, toPlayer) in whoGiveWhoCard) {
+                    nextFsm = OnGiveCard(fsm.whoseTurn, fromPlayer, toPlayer, nextFsm)
+                }
+                return ResolveResult(nextFsm, true)
+            }
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -172,7 +183,11 @@ class DuJi : AbstractSkill(), ActiveSkill {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(fsm, true)
+                var nextFsm: Fsm = fsm
+                for ((fromPlayer, toPlayer) in whoGiveWhoCard) {
+                    nextFsm = OnGiveCard(fsm.whoseTurn, fromPlayer, toPlayer, nextFsm)
+                }
+                return ResolveResult(nextFsm, true)
             }
             val index = playerAndCards.indexOfFirst { it.card.id == message.cardId }
             if (index < 0) {
@@ -182,6 +197,7 @@ class DuJi : AbstractSkill(), ActiveSkill {
             }
             val selection = playerAndCards.removeAt(index)
             r.incrSeq()
+            whoGiveWhoCard.removeIf { it.first === selection.waitingPlayer && it.second === r }
             return ResolveResult(executeDuJiB(this, selection), true)
         }
 

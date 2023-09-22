@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -145,7 +146,7 @@ class JinBi : AbstractSkill(), ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(MainPhaseIdle(r), true)
+            return ResolveResult(OnGiveCard(r, target, r, MainPhaseIdle(r)), true)
         }
 
         private fun doExecuteJinBi() {

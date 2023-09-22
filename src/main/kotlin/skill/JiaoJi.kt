@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -165,7 +166,10 @@ class JiaoJi : AbstractSkill(), ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(fsm, true)
+            val nextFsm = OnGiveCard(r, target, r, fsm)
+            if (cards.isEmpty())
+                return ResolveResult(nextFsm, true)
+            return ResolveResult(OnGiveCard(r, r, target, nextFsm), true)
         }
 
         companion object {

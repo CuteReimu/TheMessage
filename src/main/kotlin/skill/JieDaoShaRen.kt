@@ -5,6 +5,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnAddMessageCard
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -96,7 +97,8 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
             }
             if (!card.colors.contains(color.Black)) {
                 r.draw(1)
-                return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
+                val nextFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+                return ResolveResult(OnGiveCard(fsm.whoseTurn, target, r, nextFsm), true)
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
@@ -174,7 +176,10 @@ class JieDaoShaRen : AbstractSkill(), ActiveSkill {
                 }
             }
             g.playerSetRoleFaceUp(r, false)
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, newFsm), true)
+            return ResolveResult(
+                OnGiveCard(fsm.whoseTurn, this.target, r, OnAddMessageCard(fsm.whoseTurn, newFsm)),
+                true
+            )
         }
 
         companion object {

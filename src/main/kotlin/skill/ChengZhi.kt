@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.DieSkill
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -20,16 +21,18 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
         askWhom.roleFaceUp || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
         askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeChengZhi(fsm, askWhom), true)
+        val whoDie = fsm.diedQueue[fsm.diedIndex]
+        return ResolveResult(executeChengZhi(fsm, askWhom, whoDie.cards.isNotEmpty()), true)
     }
 
-    private data class executeChengZhi(val fsm: DieSkill, val r: Player) : WaitingFsm {
+    private data class executeChengZhi(val fsm: DieSkill, val r: Player, val hasCard: Boolean) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val whoDie = fsm.diedQueue[fsm.diedIndex]
             val cards = whoDie.cards.toTypedArray()
             whoDie.cards.clear()
             r.cards.addAll(cards)
-            log.info("${r}发动了[承志]，获得了${whoDie}的${cards.contentToString()}")
+            if (hasCard) log.info("${r}发动了[承志]，获得了${whoDie}的${cards.contentToString()}并查看身份牌")
+            else log.info("${r}发动了[承志]，查看了${whoDie}的身份牌")
             if (whoDie.identity == color.Has_No_Identity) return ResolveResult(fsm, true)
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -97,7 +100,7 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(fsm, true)
+                return ResolveResult(OnGiveCard(fsm.whoseTurn, whoDie, r, fsm), true)
             }
             r.incrSeq()
             r.identity = whoDie.identity
@@ -113,7 +116,7 @@ class ChengZhi : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnGiveCard(fsm.whoseTurn, whoDie, r, fsm), true)
         }
 
         companion object {

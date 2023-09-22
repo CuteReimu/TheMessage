@@ -3,6 +3,7 @@ package com.fengsheng.handler
 import com.fengsheng.HumanPlayer
 import com.fengsheng.card.Card
 import com.fengsheng.phase.AfterDieGiveCard
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.phase.WaitForDieGiveCard
 import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
@@ -73,7 +74,7 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
             }
         }
         r.incrSeq()
-        r.game!!.resolve(AfterDieGiveCard(fsm))
+        r.game!!.resolve(OnGiveCard(fsm.whoseTurn, r, target, AfterDieGiveCard(fsm)))
     }
 
     companion object {

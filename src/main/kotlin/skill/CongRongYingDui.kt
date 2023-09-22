@@ -3,6 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -108,9 +109,11 @@ class CongRongYingDui : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            if (message.drawCard)
+            if (message.drawCard) {
                 r.game!!.sortedFrom(listOf(r, target), fsm.whoseTurn.location).forEach { it.draw(1) }
-            return ResolveResult(fsm, true)
+                return ResolveResult(fsm, true)
+            }
+            return ResolveResult(OnGiveCard(fsm.whoseTurn, target, r, fsm), true)
         }
 
         companion object {

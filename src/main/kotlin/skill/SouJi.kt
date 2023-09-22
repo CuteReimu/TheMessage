@@ -5,6 +5,7 @@ import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -157,9 +158,15 @@ class SouJi : AbstractSkill(), ActiveSkill {
             if (message.messageCard) {
                 log.info("${r}将待收情报${fsm.messageCard}收归手牌，回合结束")
                 r.cards.add(fsm.messageCard)
-                return ResolveResult(NextTurn(fsm.whoseTurn), true)
+                val nextFsm = NextTurn(fsm.whoseTurn)
+                if (cards.isEmpty())
+                    return ResolveResult(nextFsm, true)
+                return ResolveResult(OnGiveCard(fsm.whoseTurn, target, r, nextFsm), true)
             }
-            return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
+            val nextFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
+            if (cards.isEmpty())
+                return ResolveResult(nextFsm, true)
+            return ResolveResult(OnGiveCard(fsm.whoseTurn, target, r, nextFsm), true)
         }
 
         companion object {
