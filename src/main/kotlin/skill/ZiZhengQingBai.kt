@@ -19,7 +19,9 @@ class ZiZhengQingBai : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.ZI_ZHENG_QING_BAI
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && (r.identity == Black || r.cards.any { r.identity !in it.colors })
+        super.mainPhaseNeedNotify(r) && (
+                r.identity == Black && r.cards.isNotEmpty() ||
+                        r.identity != Black && r.cards.any { r.identity !in it.colors })
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {

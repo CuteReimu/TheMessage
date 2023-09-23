@@ -5,8 +5,7 @@ import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Common.color.Blue
-import com.fengsheng.protos.Common.color.Red
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -19,8 +18,10 @@ class TaoQu : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.TAO_QU
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && r.game!!.players.any {
-            it !== r && it!!.alive && it.messageCards.isNotEmpty()
+        super.mainPhaseNeedNotify(r) && arrayOf(Black, Red, Blue).any {
+            r.cards.count(it) >= 2 && r.game!!.players.any { p ->
+                p !== r && p!!.alive && p.messageCards.any { c -> it in c.colors }
+            }
         }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

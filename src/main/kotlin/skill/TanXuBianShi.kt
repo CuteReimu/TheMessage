@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit
 class TanXuBianShi : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.TAN_XU_BIAN_SHI
 
+    override fun mainPhaseNeedNotify(r: Player): Boolean =
+        super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
             log.error("现在不是出牌阶段空闲时点")
