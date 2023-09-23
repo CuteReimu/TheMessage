@@ -81,7 +81,7 @@ class TanXuBianShi : MainPhaseSkill(), ActiveSkill {
                     if (p === target) {
                         val seq = p.seq
                         builder.seq = seq
-                        GameExecutor.post(p.game!!, {
+                        p.timeout = GameExecutor.post(p.game!!, {
                             if (p.checkSeq(seq)) {
                                 val builder2 = skill_tan_xu_bian_shi_b_tos.newBuilder()
                                 builder2.cardId =
