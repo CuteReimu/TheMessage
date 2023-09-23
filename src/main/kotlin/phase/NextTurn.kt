@@ -36,6 +36,7 @@ data class NextTurn(val player: Player) : Fsm {
             whoseTurn = (whoseTurn + 1) % game.players.size
             val player = game.players[whoseTurn]!!
             if (player.alive) {
+                game.mainPhaseAlreadyNotify = false
                 game.players.forEach { it!!.resetSkillUseCount() }
                 InvalidSkill.reset(game)
                 JinBi.resetJinBi(game)

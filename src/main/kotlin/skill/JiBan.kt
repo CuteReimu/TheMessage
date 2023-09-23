@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 /**
  * SP顾小梦技能【羁绊】：出牌阶段限一次，可以摸两张牌，然后将至少一张手牌交给另一名角色。
  */
-class JiBan : AbstractSkill(), ActiveSkill {
+class JiBan : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.JI_BAN
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

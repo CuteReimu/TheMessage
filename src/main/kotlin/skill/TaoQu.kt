@@ -15,8 +15,13 @@ import java.util.concurrent.TimeUnit
 /**
  * 间谍白菲菲技能【套取】：出牌阶段限一次，你可以弃置两张含含相同颜色的牌，将一名其他角色情报区的一张同色情报加入手牌，该角色摸一张牌。
  */
-class TaoQu : AbstractSkill(), ActiveSkill {
+class TaoQu : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.TAO_QU
+
+    override fun mainPhaseNeedNotify(r: Player): Boolean =
+        super.mainPhaseNeedNotify(r) && r.game!!.players.any {
+            it !== r && it!!.alive && it.messageCards.isNotEmpty()
+        }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? MainPhaseIdle

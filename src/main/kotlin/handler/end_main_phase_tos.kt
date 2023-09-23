@@ -4,7 +4,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Fengsheng
-
+import com.fengsheng.skill.MainPhaseSkill
 import org.apache.log4j.Logger
 
 class end_main_phase_tos : AbstractProtoHandler<Fengsheng.end_main_phase_tos>() {
@@ -18,6 +18,11 @@ class end_main_phase_tos : AbstractProtoHandler<Fengsheng.end_main_phase_tos>() 
         if (r !== fsm?.player) {
             log.error("不是你的回合的出牌阶段")
             r.sendErrorMessage("不是你的回合的出牌阶段")
+            return
+        }
+        if (!r.game!!.mainPhaseAlreadyNotify && r.skills.any { it is MainPhaseSkill && it.mainPhaseNeedNotify(r) }) {
+            r.game!!.mainPhaseAlreadyNotify = true
+            r.sendErrorMessage("还有未发动的技能，真的要结束出牌阶段吗？")
             return
         }
         r.incrSeq()

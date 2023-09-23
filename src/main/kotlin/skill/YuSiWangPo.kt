@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 死士技能【鱼死网破】：出牌阶段限一次，你可以弃掉任意张数手牌（至少1），让一名其他玩家弃置对应数量的手牌（不足则全弃），然后你们各摸一张牌。
  */
-class YuSiWangPo : AbstractSkill(), ActiveSkill {
+class YuSiWangPo : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.YU_SI_WANG_PO
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

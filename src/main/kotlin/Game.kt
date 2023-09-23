@@ -59,6 +59,11 @@ class Game private constructor(totalPlayerCount: Int) {
     /** 用于调虎离山禁用出牌 */
     val diaoHuLiShanPlayers = HashSet<Int>()
 
+    /**
+     * 用于出牌阶段结束时提醒还未发动的技能
+     */
+    var mainPhaseAlreadyNotify = false
+
     init {
         // 调用构造函数时加锁了，所以increaseId无需加锁
         players = arrayOfNulls(totalPlayerCount)

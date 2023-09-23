@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 王田香技能【禁闭】：出牌阶段限一次，你可以指定一名角色，除非其交给你两张手牌，否则其本回合不能使用手牌，且所有角色技能无效。
  */
-class JinBi : AbstractSkill(), ActiveSkill {
+class JinBi : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.JIN_BI
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

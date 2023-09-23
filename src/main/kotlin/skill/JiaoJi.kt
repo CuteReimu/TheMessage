@@ -14,8 +14,11 @@ import java.util.concurrent.TimeUnit
 /**
  * 裴玲技能【交际】：出牌阶段限一次，你可以抽取一名角色的最多两张手牌。然后将等量手牌交给该角色。你每收集一张黑色情报，便可以少交一张牌。
  */
-class JiaoJi : AbstractSkill(), ActiveSkill {
+class JiaoJi : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.JIAO_JI
+
+    override fun mainPhaseNeedNotify(r: Player): Boolean =
+        super.mainPhaseNeedNotify(r) && r.game!!.players.any { it !== r && it!!.alive && it.cards.isNotEmpty() }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? MainPhaseIdle

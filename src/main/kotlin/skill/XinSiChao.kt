@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 端木静技能【新思潮】：出牌阶段限一次，你可以弃置一张手牌，然后摸两张牌。
  */
-class XinSiChao : AbstractSkill(), ActiveSkill {
+class XinSiChao : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.XIN_SI_CHAO
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

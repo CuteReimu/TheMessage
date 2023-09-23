@@ -15,8 +15,11 @@ import java.util.concurrent.TimeUnit
 /**
  * 速记员技能【自证清白】：出牌阶段限一次，你可以弃置一张与自己身份颜色不同的手牌，然后摸两张牌。（潜伏=红色，特工=蓝色，神秘人随意弃牌）
  */
-class ZiZhengQingBai : AbstractSkill(), ActiveSkill {
+class ZiZhengQingBai : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.ZI_ZHENG_QING_BAI
+
+    override fun mainPhaseNeedNotify(r: Player): Boolean =
+        super.mainPhaseNeedNotify(r) && (r.identity == Black || r.cards.any { r.identity !in it.colors })
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {

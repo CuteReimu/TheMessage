@@ -11,8 +11,11 @@ import java.util.concurrent.TimeUnit
 /**
  * 高桥智子技能【惑心】：出牌阶段限一次，展示牌堆顶的一张牌，然后查看一名角色的手牌，从中选择一张弃置，若弃置了含有展示牌颜色的牌，则将该弃置牌加入你的手牌。
  */
-class HuoXin : AbstractSkill(), ActiveSkill {
+class HuoXin : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.HUO_XIN
+
+    override fun mainPhaseNeedNotify(r: Player): Boolean =
+        super.mainPhaseNeedNotify(r) && r.game!!.players.any { it !== r && it!!.alive && it.cards.isNotEmpty() }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
