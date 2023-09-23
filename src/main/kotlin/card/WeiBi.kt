@@ -3,6 +3,7 @@ package com.fengsheng.card
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
+import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
@@ -119,7 +120,7 @@ class WeiBi : Card {
                     p.send(builder.build())
                 }
             }
-            val newFsm = MainPhaseIdle(r)
+            val newFsm = OnGiveCard(r, target, r, MainPhaseIdle(r))
             return ResolveResult(
                 OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, newFsm), true
             )
