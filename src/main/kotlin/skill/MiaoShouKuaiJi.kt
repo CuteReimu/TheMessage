@@ -20,43 +20,49 @@ class MiaoShouKuaiJi : AbstractSkill(), TriggeredSkill {
         fsm.player == askWhom.getNextLeftAlivePlayer() || fsm.player == askWhom.getNextRightAlivePlayer() || return null
         fsm.player !== askWhom || return null // 只剩自己一个人存活了，不能发动技能
         askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.cards.isNotEmpty() || return null
-        askWhom.addSkillUseCount(skillId)
         val card = g.deck.popDiscardPile() ?: return null
+        askWhom.addSkillUseCount(skillId)
         return ResolveResult(executeMiaoShouKuaiJi(fsm, askWhom, card), true)
     }
 
     private data class executeMiaoShouKuaiJi(val fsm: NextTurn, val r: Player, val card: Card) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             log.info("${r}发动了[妙手快记]，将弃牌堆的${card}加入手牌")
+            val autoDiscard = r.cards.isEmpty()
             r.cards.add(card)
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_miao_shou_kuai_ji_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.card = card.toPbCard()
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq = p.seq
-                        builder.seq = seq
-                        p.timeout = GameExecutor.post(p.game!!, {
-                            if (p.checkSeq(seq)) {
-                                val builder2 = skill_miao_shou_kuai_ji_b_tos.newBuilder()
-                                builder2.cardId = card.id
-                                builder2.seq = seq
-                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    if (!autoDiscard) {
+                        builder.waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq = p.seq
+                            builder.seq = seq
+                            p.timeout = GameExecutor.post(p.game!!, {
+                                if (p.checkSeq(seq)) {
+                                    val builder2 = skill_miao_shou_kuai_ji_b_tos.newBuilder()
+                                    builder2.cardId = card.id
+                                    builder2.seq = seq
+                                    p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                }
+                            }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
                     }
                     p.send(builder.build())
                 }
             }
-            if (r is RobotPlayer) {
+            if (r is RobotPlayer && !autoDiscard) {
                 GameExecutor.post(r.game!!, {
                     val builder2 = skill_miao_shou_kuai_ji_b_tos.newBuilder()
                     builder2.cardId = card.id
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
+            }
+            if (autoDiscard) {
+                r.game!!.playerDiscardCard(r, card)
+                return ResolveResult(fsm, true)
             }
             return null
         }
