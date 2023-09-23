@@ -3,7 +3,6 @@ package com.fengsheng.card
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
@@ -193,10 +192,7 @@ class WeiBi : Card {
                             p.send(builder.build())
                         }
                     }
-                    OnFinishResolveCard(
-                        r, r, target, card?.getOriginCard(), card_type.Wei_Bi,
-                        OnGiveCard(r, target, r, MainPhaseIdle(r))
-                    )
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
                 }
             }
             g.resolve(OnUseCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, g.fsm!!))
