@@ -82,7 +82,6 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         builder.waitingSecond = Config.WaitSecond * 2
         builder.addAllPossibleSecretTask(game.possibleSecretTasks)
         player.send(builder.build())
-        player.notifyPossibleSecretTasks()
     }
 
     companion object {
@@ -92,36 +91,5 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         private val redBluePrefer = blackPrefer + listOf(role.xiao_jiu, role.sp_gu_xiao_meng, role.bai_xiao_nian)
         private val redBlueDisgust = listOf(role.jin_sheng_huo, role.mao_bu_ba, role.wang_tian_xiang)
         private val blackDisgust = redBlueDisgust + listOf(role.xiao_jiu, role.sp_gu_xiao_meng, role.bai_xiao_nian)
-        private val allTasks = listOf(Killer, Stealer, Collector, Mutator, Pioneer, Disturber, Sweeper)
-
-        private fun HumanPlayer.notifyPossibleSecretTasks() {
-            GameExecutor.post(game!!, {
-                sendErrorMessage(when {
-                    game!!.possibleSecretTasks.size <= 4 ->
-                        game!!.possibleSecretTasks.joinToString(
-                            separator = "",
-                            prefix = "本局游戏中的神秘人将从以下随机："
-                        ) {
-                            Player.identityColorToString(color.Black, it)
-                                .replaceFirst("神秘人", "")
-                                .replaceFirst("[", "【")
-                                .replaceFirst("]", "】")
-                        }
-
-                    game!!.possibleSecretTasks.size < allTasks.size ->
-                        (allTasks - game!!.possibleSecretTasks.toSet()).joinToString(
-                            separator = "",
-                            prefix = "本局游戏已排除以下神秘人："
-                        ) {
-                            Player.identityColorToString(color.Black, it)
-                                .replaceFirst("神秘人", "")
-                                .replaceFirst("[", "【")
-                                .replaceFirst("]", "】")
-                        }
-
-                    else -> "本局游戏的神秘人将会从${allTasks.size}种任务中随机"
-                })
-            }, 1, TimeUnit.SECONDS)
-        }
     }
 }
