@@ -21,6 +21,10 @@ class MiaoShouKuaiJi : AbstractSkill(), TriggeredSkill {
         fsm.player !== askWhom || return null // 只剩自己一个人存活了，不能发动技能
         askWhom.getSkillUseCount(skillId) == 0 || return null
         val card = g.deck.popDiscardPile() ?: return null
+        if (askWhom.cards.isEmpty()) {
+            (askWhom as? HumanPlayer)?.sendErrorMessage("没有手牌，默认不发动【妙手快记】")
+            return null
+        }
         askWhom.addSkillUseCount(skillId)
         return ResolveResult(executeMiaoShouKuaiJi(fsm, askWhom, card), true)
     }
