@@ -47,6 +47,10 @@ enum role {
   si_shi = 42; // 死士
   jiao_shou = 43; // 教授
   qi_shou = 44; // 棋手
+  za_shua_yi_ren = 45; // 杂耍艺人
+  bao_da_ting = 46; // 包打听
+  jun_ren = 47; // 军人
+  sun_shou_mo = 48; // 孙守謨
   sp_cheng_xiao_die = 1002; // SP程小蝶
   sp_lian_yuan = 1003; // SP连鸢
   sp_han_mei = 1014; // SP韩梅

@@ -1473,3 +1473,156 @@ message skill_cun_bu_bu_rang_toc {
   uint32 target_player_id = 3;
   card card = 4; // 只有棋手和那名角色能看见
 }
+
+// 广播询问使用【信鸽联络】
+message skill_wait_for_xin_ge_lian_luo_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 杂耍艺人【信鸽联络】：每当你传出非直达情报时，可以选择一名角色本轮的传递阶段中不能选择接收情报。
+message skill_xin_ge_lian_luo_tos {
+  bool enable = 1;
+  uint32 target_player_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【信鸽联络】
+message skill_xin_ge_lian_luo_toc {
+  uint32 player_id = 1; // 杂耍艺人的ID
+  bool enable = 2;
+  uint32 target_player_id = 3;
+}
+
+// 杂耍艺人【猴子窃信】A：出牌阶段限两次，你可以选择一名其他角色情报区的一张情报
+message skill_hou_zi_qie_xin_a_tos {
+  uint32 target_player_id = 1;
+  uint32 message_card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【猴子窃信】A
+message skill_hou_zi_qie_xin_a_toc {
+  uint32 player_id = 1; // 杂耍艺人的ID
+  uint32 target_player_id = 2;
+  uint32 message_card_id = 3;
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
+}
+
+// 杂耍艺人【猴子窃信】B：和自己的一张完全同色的手牌交换
+message skill_hou_zi_qie_xin_b_tos {
+  uint32 hand_card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【猴子窃信】B
+message skill_hou_zi_qie_xin_b_toc {
+  uint32 player_id = 1; // 杂耍艺人的ID
+  uint32 target_player_id = 2;
+  uint32 message_card_id = 3;
+  card hand_card = 4;
+}
+
+// 广播询问使用【变则通】
+message skill_wait_for_bian_ze_tong_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 包打听【变则通】：你的传递阶段开始时，摸一张牌，然后你可以宣言两种卡牌类型“A”和“B”，直到回合结束，所有玩家的A牌只能当B牌使用。
+// （AB可选【破译】【调包】【误导】【截获】）
+message skill_bian_ze_tong_tos {
+  bool enable = 1;
+  card_type card_type_a = 2;
+  card_type card_type_b = 3;
+  uint32 seq = 4;
+}
+
+// 广播使用【变则通】
+message skill_bian_ze_tong_toc {
+  uint32 player_id = 1;
+  bool enable = 2;
+  card_type card_type_a = 3;
+  card_type card_type_b = 4;
+}
+
+// 军人【诱敌深入】：整局限一次，传递阶段，你改为将一张手牌作为情报明面传出，身份与该情报颜色相同的玩家，在本阶段必须选则接收该情报，势力不同的玩家不能选择接收。
+// （潜伏=红色，特工=蓝色，神秘人不受限）
+message skill_you_di_shen_ru_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【诱敌深入】，这条协议发完后重新读条，再传出一张情报
+message skill_you_di_shen_ru_toc {
+  uint32 player_id = 1;
+}
+
+// 军人【歼敌风行】A：其他玩家收到你的情报后，你可以摸两张牌
+message skill_jian_di_feng_xing_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【歼敌风行】A
+message skill_jian_di_feng_xing_a_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2; // 如果没有纯黑色手牌，则这个字段为0
+  uint32 seq = 3;
+}
+
+// 军人【歼敌风行】B：将一张纯黑色手牌置入自己的情报区
+message skill_jian_di_feng_xing_b_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 广播使用【歼敌风行】B
+message skill_jian_di_feng_xing_b_toc {
+  uint32 player_id = 1;
+  card card = 2;
+  uint32 waiting_second = 3; // 如果原情报因为别人的技能消失了，则这个字段为0
+  uint32 seq = 4;
+}
+
+// 军人【歼敌风行】C：然后可以用一张黑色手牌替换其接收的情报
+message skill_jian_di_feng_xing_c_tos {
+  bool enable = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【歼敌风行】C
+message skill_jian_di_feng_xing_c_toc {
+  uint32 player_id = 1;
+  bool enable = 2;
+  card card = 3;
+  uint32 old_message_card_id = 4;
+}
+
+// 广播询问使用【详尽思索】
+message skill_wait_for_xiang_jin_si_suo_toc {
+  uint32 player_id = 1; // 孙守謨的ID
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 孙守謨【详尽思索】A：每当情报传出时，你可以指定一名角色
+message skill_xiang_jin_si_suo_a_tos {
+  bool enable = 1;
+  uint32 target_player_id = 2;
+  uint32 seq = 3;
+}
+
+// 广播使用【详尽思索】A
+message skill_xiang_jin_si_suo_a_toc {
+  uint32 player_id = 1; // 孙守謨的ID
+  bool enable = 2;
+  uint32 target_player_id = 3;
+}
+
+// 广播使用【详尽思索】B：若最后情报被该角色接收，你摸两张牌（摸牌走摸牌协议）
+message skill_xiang_jin_si_suo_b_toc {
+  uint32 player_id = 1; // 孙守謨的ID
+}
