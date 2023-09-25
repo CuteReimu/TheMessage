@@ -1587,7 +1587,7 @@ message skill_jian_di_feng_xing_b_toc {
   uint32 seq = 4;
 }
 
-// 军人【歼敌风行】C：然后可以用一张黑色手牌替换其接收的情报
+// 军人【歼敌风行】C：然后可以弃掉接收到的情报，用一张黑色手牌代替之
 message skill_jian_di_feng_xing_c_tos {
   bool enable = 1;
   uint32 card_id = 2;
