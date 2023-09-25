@@ -103,7 +103,6 @@ class DiaoBao : Card {
             return true
         }
 
-        private fun Card.getColorScore() =
-            if (colors.size == 2) 1 else if (colors.first() == color.Black) 0 else 2
+        private fun Card.getColorScore() = colors.sumOf { if (it == color.Black) -1 else 2 as Int }
     }
 }
