@@ -69,7 +69,7 @@ class JinShen : AbstractSkill(), TriggeredSkill {
                 return null
             }
             r.incrSeq()
-            log.info("${r}发动了[谨慎]")
+            log.info("${r}发动了[谨慎]，用${card}交换了原情报${fsm.messageCard}")
             val messageCard = fsm.messageCard
             r.deleteCard(card.id)
             r.deleteMessageCard(messageCard.id)
@@ -82,10 +82,11 @@ class JinShen : AbstractSkill(), TriggeredSkill {
                     val builder = skill_jin_shen_toc.newBuilder()
                     builder.card = card.toPbCard()
                     builder.playerId = p.getAlternativeLocation(r.location)
+                    builder.messageCardId = fsm.messageCard.id
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm.copy(messageCard = card)), true)
         }
 
         companion object {

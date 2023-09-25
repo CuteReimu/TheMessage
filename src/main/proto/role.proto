@@ -125,6 +125,7 @@ message skill_jin_shen_tos {
 message skill_jin_shen_toc {
   uint32 player_id = 1;
   card   card = 2;
+  uint32 message_card_id = 3;
 }
 
 // 白菲菲【怜悯】：你传出的非黑色情报被接收后，可以从你或接收者的情报区选择一张黑色情报加入你的手牌。
