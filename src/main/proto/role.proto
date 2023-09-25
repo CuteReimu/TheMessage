@@ -1495,7 +1495,7 @@ message skill_xin_ge_lian_luo_toc {
   uint32 target_player_id = 2;
 }
 
-// 杂耍艺人【猴子窃信】A：出牌阶段限两次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
+// 杂耍艺人【猴子窃信】：出牌阶段限两次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
 message skill_hou_zi_qie_xin_tos {
   uint32 hand_card_id = 1;
   uint32 target_player_id = 2;
@@ -1503,8 +1503,8 @@ message skill_hou_zi_qie_xin_tos {
   uint32 seq = 4;
 }
 
-// 广播使用【猴子窃信】A
-message skill_hou_zi_qie_xin_a_toc {
+// 广播使用【猴子窃信】
+message skill_hou_zi_qie_xin_toc {
   uint32 player_id = 1; // 杂耍艺人的ID
   card hand_card = 2;
   uint32 target_player_id = 3;
