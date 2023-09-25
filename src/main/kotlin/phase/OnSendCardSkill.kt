@@ -17,7 +17,6 @@ import org.apache.log4j.Logger
  * @param targetPlayer  传递的目标角色
  * @param lockedPlayers 被锁定的玩家
  * @param byYuQinGuZong 是否是因为欲擒故纵传递的
- * @param cannotReceivePlayers 本回合不能接收情报的玩家
  */
 data class OnSendCardSkill(
     val whoseTurn: Player,
@@ -27,17 +26,13 @@ data class OnSendCardSkill(
     val targetPlayer: Player,
     val lockedPlayers: Array<Player>,
     val byYuQinGuZong: Boolean = false,
-    val cannotReceivePlayers: List<Player> = emptyList(),
 ) : Fsm {
     override fun resolve(): ResolveResult {
         val result = whoseTurn.game!!.dealListeningSkill(whoseTurn.location)
         if (result != null) return result
         log.info("情报到达${targetPlayer}面前")
         return ResolveResult(
-            SendPhaseIdle(
-                whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, byYuQinGuZong, sender,
-                cannotReceivePlayers
-            ),
+            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, byYuQinGuZong, sender),
             true
         )
     }

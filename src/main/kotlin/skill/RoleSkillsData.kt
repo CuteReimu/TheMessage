@@ -24,16 +24,15 @@ class RoleSkillsData private constructor(
 
     constructor(name: String, role: role, female: Boolean, isPublicRole: Boolean, vararg skills: Skill) :
             this(name, role, female, isPublicRole) {
-        this.skills = arrayOf(*skills)
+        this.skills = skills.toList()
     }
 
     var isFaceUp = isPublicRole
 
-    var skills: Array<Skill> = arrayOf() // 角色技能
+    var skills: List<Skill> = emptyList() // 角色技能
 
     fun copy(): RoleSkillsData {
-        // TODO: 待确认这里是否需要 *skills.copyOf()
-        val roleSkillsData = RoleSkillsData(name, role, female, isPublicRole, *skills)
+        val roleSkillsData = RoleSkillsData(name, role, female, isPublicRole, *skills.toTypedArray())
         roleSkillsData.isFaceUp = isFaceUp
         return roleSkillsData
     }

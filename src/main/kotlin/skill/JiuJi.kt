@@ -100,10 +100,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
             }
             g.playerSetRoleFaceUp(r, true)
             r.draw(2)
-            fsm.card?.let {
-                val skill = JiuJi2()
-                r.skills = arrayOf(*r.skills, skill)
-            }
+            fsm.card?.let { r.skills += JiuJi2() }
             return ResolveResult(fsm, true)
         }
 
@@ -123,7 +120,7 @@ class JiuJi : AbstractSkill(), TriggeredSkill {
             val card = fsm.card ?: return null
             askWhom.cards.add(card)
             log.info("${askWhom}将使用的${card}加入了手牌")
-            askWhom.skills = askWhom.skills.filterNot { it.skillId == skillId }.toTypedArray()
+            askWhom.skills = askWhom.skills.filterNot { it.skillId == skillId }
             for (player in g.players) {
                 if (player is HumanPlayer) {
                     val builder = skill_jiu_ji_b_toc.newBuilder()

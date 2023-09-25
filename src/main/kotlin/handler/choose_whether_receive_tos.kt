@@ -5,6 +5,7 @@ import com.fengsheng.phase.MessageMoveNext
 import com.fengsheng.phase.OnChooseReceiveCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
 
 class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether_receive_tos>() {
@@ -22,7 +23,7 @@ class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether
         }
         val mustReceive = r === fsm.sender || fsm.lockedPlayers.any { r === it }
         if (pb.receive) {
-            if (!mustReceive && fsm.cannotReceivePlayers.any { r === it }) {
+            if (!mustReceive && r.findSkill(SkillId.XIN_GE_LIAN_LUO2) != null) {
                 log.error("不能选择接收情报")
                 r.sendErrorMessage("不能选择接收情报")
                 return

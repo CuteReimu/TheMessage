@@ -11,7 +11,7 @@ interface OneTurnSkill : Skill {
             for (p in game.players) {
                 val skills = p!!.skills
                 if (skills.any { it is OneTurnSkill })
-                    p.skills = skills.filterNot { it is OneTurnSkill }.toTypedArray()
+                    p.skills = skills.filterNot { it is OneTurnSkill }
             }
         }
     }

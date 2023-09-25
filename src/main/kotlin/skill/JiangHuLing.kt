@@ -93,8 +93,7 @@ class JiangHuLing : AbstractSkill(), TriggeredSkill {
                 return null
             }
             r.incrSeq()
-            val skill = JiangHuLing2(message.color)
-            r.skills = arrayOf(*r.skills, skill)
+            r.skills += JiangHuLing2(message.color)
             log.info("${r}发动了[江湖令]，宣言了${message.color}")
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {

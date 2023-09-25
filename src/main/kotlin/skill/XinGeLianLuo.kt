@@ -101,6 +101,7 @@ class XinGeLianLuo : AbstractSkill(), TriggeredSkill {
             }
             r.incrSeq()
             log.info("${r}发动了[信鸽联络]，令${target}本回合不能接收情报")
+            target.skills += XinGeLianLuo2()
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_xin_ge_lian_luo_toc.newBuilder()
@@ -109,11 +110,18 @@ class XinGeLianLuo : AbstractSkill(), TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(fsm.copy(cannotReceivePlayers = fsm.cannotReceivePlayers + target), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {
             private val log = Logger.getLogger(executeXinGeLianLuo::class.java)
         }
+    }
+
+    /**
+     * 有这个技能的角色本回合不能接收情报
+     */
+    private class XinGeLianLuo2 : OneTurnSkill {
+        override val skillId = SkillId.XIN_GE_LIAN_LUO2
     }
 }
