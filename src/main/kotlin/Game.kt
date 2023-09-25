@@ -11,6 +11,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.skill.AbstractSkill
 import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.SkillId.WEI_SHENG
 import com.fengsheng.skill.TriggeredSkill
@@ -380,10 +381,9 @@ class Game private constructor(totalPlayerCount: Int) {
         var i = beginLocation % players.size
         do {
             val player = players[i]!!
-            if (includingDead || player.alive) {
-                player.skills.forEach { skill ->
+            player.skills.forEach { skill ->
+                if (includingDead || player.alive || skill !is AbstractSkill)
                     (skill as? TriggeredSkill)?.execute(this, player)?.let { return it }
-                }
             }
             i = (i + 1) % players.size
         } while (i != beginLocation % players.size)

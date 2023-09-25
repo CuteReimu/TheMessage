@@ -112,21 +112,20 @@ class JiangHuLing : AbstractSkill(), TriggeredSkill {
         }
     }
 
-    private class JiangHuLing2(val color: color) : TriggeredSkill {
+    private class JiangHuLing2(val color: color) : TriggeredSkill, OneTurnSkill {
         override val skillId = SkillId.JIANG_HU_LING2
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
             val fsm = g.fsm as? ReceivePhaseSkill ?: return null
             askWhom === fsm.sender || return null
-            val r = fsm.sender
-            r.findSkill(skillId) != null || return null
-            r.getSkillUseCount(skillId) == 0 || return null
-            r.addSkillUseCount(skillId)
+            askWhom.alive || return null
+            askWhom.getSkillUseCount(skillId) == 0 || return null
+            askWhom.addSkillUseCount(skillId)
             if (!fsm.inFrontOfWhom.messageCards.any { color in it.colors }) {
-                for (p in r.game!!.players) {
+                for (p in askWhom.game!!.players) {
                     if (p is HumanPlayer) {
                         val builder = skill_jiang_hu_ling_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.playerId = p.getAlternativeLocation(askWhom.location)
                         builder.enable = false
                         p.send(builder.build())
                     }
@@ -261,16 +260,6 @@ class JiangHuLing : AbstractSkill(), TriggeredSkill {
 
         companion object {
             private val log = Logger.getLogger(executeJiangHuLingB::class.java)
-        }
-    }
-
-    companion object {
-        fun resetJiangHuLing(game: Game) {
-            for (p in game.players) {
-                val skills = p!!.skills
-                if (skills.any { it.skillId == SkillId.JIANG_HU_LING2 })
-                    p.skills = skills.filterNot { it.skillId == SkillId.JIANG_HU_LING2 }.toTypedArray()
-            }
         }
     }
 }
