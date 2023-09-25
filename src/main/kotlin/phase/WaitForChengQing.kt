@@ -7,30 +7,22 @@ import com.fengsheng.ResolveResult
 import org.apache.log4j.Logger
 import java.util.*
 
+/**
+ * 濒死求澄清
+ *
+ * @param whoseTurn 谁的回合
+ * @param whoDie 正在结算谁的濒死
+ * @param askWhom 正在询问谁是否使用澄清
+ * @param dyingQueue 结算濒死的顺序
+ * @param diedQueue 死亡的顺序
+ * @param afterDieResolve 濒死结算后的下一个动作
+ */
 data class WaitForChengQing(
-    /**
-     * 谁的回合
-     */
     val whoseTurn: Player,
-    /**
-     * 正在结算谁的濒死
-     */
     val whoDie: Player,
-    /**
-     * 正在结算谁是否使用澄清
-     */
     val askWhom: Player,
-    /**
-     * 结算濒死的顺序
-     */
     val dyingQueue: Queue<Player>,
-    /**
-     * 死亡的顺序
-     */
     val diedQueue: ArrayList<Player>,
-    /**
-     * 濒死结算后的下一个动作
-     */
     val afterDieResolve: Fsm
 ) : Fsm {
     override fun resolve(): ResolveResult? {

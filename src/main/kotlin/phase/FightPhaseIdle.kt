@@ -9,31 +9,20 @@ import com.fengsheng.skill.cannotPlayCardAndSkill
 
 /**
  * 争夺阶段空闲时点
+ *
+ * @param whoseTurn 谁的回合
+ * @param sender 情报传出者
+ * @param messageCard 情报牌
+ * @param inFrontOfWhom 情报在谁面前
+ * @param whoseFightTurn 正在询问谁
+ * @param isMessageCardFaceUp 情报是否面朝上
  */
 data class FightPhaseIdle(
-    /**
-     * 谁的回合
-     */
     val whoseTurn: Player,
-    /**
-     * 情报传出者
-     */
     val sender: Player,
-    /**
-     * 情报牌
-     */
     val messageCard: Card,
-    /**
-     * 情报在谁面前
-     */
     val inFrontOfWhom: Player,
-    /**
-     * 正在询问谁
-     */
     val whoseFightTurn: Player,
-    /**
-     * 情报是否面朝上
-     */
     val isMessageCardFaceUp: Boolean
 ) : Fsm {
     override fun resolve(): ResolveResult? {
