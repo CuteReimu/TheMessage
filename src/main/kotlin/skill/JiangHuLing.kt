@@ -19,11 +19,10 @@ class JiangHuLing : TriggeredSkill {
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnSendCardSkill ?: return null
-        val r = fsm.sender
-        r.findSkill(skillId) != null || return null
-        r.getSkillUseCount(skillId) == 0 || return null
-        r.addSkillUseCount(skillId)
-        return ResolveResult(executeJiangHuLingA(fsm, r), true)
+        askWhom === fsm.sender || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
+        askWhom.addSkillUseCount(skillId)
+        return ResolveResult(executeJiangHuLingA(fsm, askWhom), true)
     }
 
     private data class executeJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
@@ -34,15 +33,15 @@ class JiangHuLing : TriggeredSkill {
                     builder.playerId = player.getAlternativeLocation(r.location)
                     builder.waitingSecond = Config.WaitSecond
                     if (player === r) {
-                        val seq2 = player.seq
-                        builder.seq = seq2
+                        val seq = player.seq
+                        builder.seq = seq
                         GameExecutor.post(
                             player.game!!,
                             {
-                                if (player.checkSeq(seq2)) {
+                                if (player.checkSeq(seq)) {
                                     val builder2 = skill_jiang_hu_ling_a_tos.newBuilder()
                                     builder2.enable = false
-                                    builder2.seq = seq2
+                                    builder2.seq = seq
                                     player.game!!.tryContinueResolveProtocol(player, builder2.build())
                                 }
                             },
@@ -147,14 +146,14 @@ class JiangHuLing : TriggeredSkill {
                     builder.color = color
                     builder.waitingSecond = Config.WaitSecond
                     if (p === fsm.sender) {
-                        val seq2 = p.seq
-                        builder.seq = seq2
+                        val seq = p.seq
+                        builder.seq = seq
                         p.timeout = GameExecutor.post(
                             p.game!!,
                             {
-                                if (p.checkSeq(seq2)) {
+                                if (p.checkSeq(seq)) {
                                     val builder2 = end_receive_phase_tos.newBuilder()
-                                    builder2.seq = seq2
+                                    builder2.seq = seq
                                     p.game!!.tryContinueResolveProtocol(p, builder2.build())
                                 }
                             },

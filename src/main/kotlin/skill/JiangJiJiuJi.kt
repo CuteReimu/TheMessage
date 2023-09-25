@@ -19,7 +19,6 @@ class JiangJiJiuJi : AbstractSkill(), TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
         askWhom.alive || return null
-        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Wu_Dao || return null
         askWhom === fsm.player || askWhom === fsm.targetPlayer || askWhom === (fsm.currentFsm as? FightPhaseIdle)?.inFrontOfWhom || return null
         askWhom.roleFaceUp || return null
