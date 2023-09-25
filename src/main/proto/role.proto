@@ -1550,15 +1550,23 @@ message skill_bian_ze_tong_toc {
   card_type card_type_b = 4;
 }
 
-// 军人【诱敌深入】：整局限一次，传递阶段，你改为将一张手牌作为情报明面传出，身份与该情报颜色相同的玩家，在本阶段必须选则接收该情报，势力不同的玩家不能选择接收。
+// 军人【诱敌深入】：整局限一次，你的传递阶段，改为将一张手牌作为情报明面传出，身份与该情报颜色相同的玩家，在本阶段必须选则接收该情报，势力不同的玩家不能选择接收。
 // （潜伏=红色，特工=蓝色，神秘人不受限）
 message skill_you_di_shen_ru_tos {
-  uint32 seq = 1;
+  uint32          card_id = 1;
+  uint32          target_player_id = 2; // 目标
+  repeated uint32 lock_player_id = 3; // 被锁定的玩家ID
+  direction       card_dir = 4; // 传递的方向
+  uint32          seq = 5;
 }
 
-// 广播使用【诱敌深入】，这条协议发完后重新读条，再传出一张情报
+// 广播使用【诱敌深入】
 message skill_you_di_shen_ru_toc {
-  uint32 player_id = 1;
+  uint32          player_id = 1;
+  card            card = 2;
+  uint32          target_player_id = 3; // 目标
+  repeated uint32 lock_player_ids = 4; // 被锁定的玩家ID
+  direction       card_dir = 5; // 传递的方向
 }
 
 // 军人【歼敌风行】A：其他玩家收到你的情报后，你可以摸两张牌
