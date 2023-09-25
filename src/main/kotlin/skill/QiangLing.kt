@@ -8,7 +8,6 @@ import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 张一挺技能【强令】：你传出情报后，或你决定接收情报后，可以宣言至多两个卡牌名称。本回合中，所有角色均不能使用被宣言的卡牌。
@@ -61,17 +60,17 @@ class QiangLing : AbstractSkill(), TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val result =
-                        if (r.game!!.qiangLingTypes.isEmpty()) {
-                            val cardTypes = arrayOf(Jie_Huo, Diao_Bao, Wu_Dao)
-                            val index = Random.nextInt(cardTypes.size)
-                            cardTypes.filterIndexed { i, _ -> i != index }
-                        } else {
-                            val cardTypes = arrayOf(Jie_Huo, Diao_Bao, Wu_Dao, Po_Yi)
-                            cardTypes.filterNot { r.game!!.qiangLingTypes.contains(it) }
+                    val result = arrayOf(Jie_Huo, Diao_Bao, Wu_Dao)
+                        .filterNot { r.cannotPlayCard(it) }.run {
+                            when (size) {
+                                0 -> listOf(Po_Yi, Cheng_Qing).filterNot { r.cannotPlayCard(it) }
+                                1 -> plus(if (fsm is OnSendCardSkill && !r.cannotPlayCard(Po_Yi)) Po_Yi else Cheng_Qing)
+                                2 -> this
+                                else -> shuffled().subList(0, 2)
+                            }
                         }
                     val builder = skill_qiang_ling_tos.newBuilder()
-                    builder.enable = true
+                    builder.enable = result.isNotEmpty()
                     builder.addAllTypes(result)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
@@ -104,7 +103,8 @@ class QiangLing : AbstractSkill(), TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("[强令]的卡牌类型不能为空")
                 return null
             }
-            for (t in message.typesList) {
+            val typesList = message.typesList.toList()
+            for (t in typesList) {
                 if (t == UNRECOGNIZED || t == null) {
                     log.error("未知的卡牌类型$t")
                     (player as? HumanPlayer)?.sendErrorMessage("未知的卡牌类型$t")
@@ -112,13 +112,13 @@ class QiangLing : AbstractSkill(), TriggeredSkill {
                 }
             }
             r.incrSeq()
-            log.info("${r}发动了[强令]，禁止了${message.typesList.toTypedArray().contentToString()}")
-            r.game!!.qiangLingTypes.addAll(message.typesList)
+            log.info("${r}发动了[强令]，禁止了${typesList.toTypedArray().contentToString()}")
+            r.game!!.players.forEach { it!!.skills += CannotPlayCard(cardType = typesList) }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_qiang_ling_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.addAllTypes(message.typesList)
+                    builder.addAllTypes(typesList)
                     p.send(builder.build())
                 }
             }
@@ -127,12 +127,6 @@ class QiangLing : AbstractSkill(), TriggeredSkill {
 
         companion object {
             private val log = Logger.getLogger(executeQiangLing::class.java)
-        }
-    }
-
-    companion object {
-        fun resetQiangLing(game: Game) {
-            game.qiangLingTypes.clear()
         }
     }
 }

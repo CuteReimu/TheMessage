@@ -10,6 +10,7 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
+import com.fengsheng.skill.cannotPlayCard
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
@@ -27,19 +28,9 @@ class LiYou : Card {
     override val type = card_type.Li_You
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("利诱被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("利诱被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用利诱")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用利诱")
             return false
         }
         val target = args[0] as Player
@@ -113,9 +104,7 @@ class LiYou : Card {
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Li_You)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
+            !player.cannotPlayCard(card_type.Li_You) || return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()
             val players =

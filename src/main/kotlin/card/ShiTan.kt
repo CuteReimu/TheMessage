@@ -8,10 +8,10 @@ import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class ShiTan : Card {
     private val whoDrawCard: List<color>
@@ -28,19 +28,9 @@ class ShiTan : Card {
     override val type = card_type.Shi_Tan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("试探被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("试探被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用试探")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用试探")
             return false
         }
         val target = args[0] as Player
@@ -224,14 +214,10 @@ class ShiTan : Card {
         private val log = Logger.getLogger(ShiTan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Shi_Tan)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
-            val players = player.game!!.players.filter {
+            !player.cannotPlayCard(card_type.Shi_Tan) || return false
+            val p = player.game!!.players.filter {
                 it !== player && it!!.alive && (!it.roleFaceUp || it.findSkill(SkillId.CHENG_FU) == null)
-            }
-            if (players.isEmpty()) return false
-            val p = players[Random.nextInt(players.size)]!!
+            }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
             return true
         }

@@ -7,6 +7,7 @@ import com.fengsheng.Player
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
+import com.fengsheng.skill.cannotPlayCard
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
@@ -24,19 +25,9 @@ class ChengQing : Card {
     override val type = card_type.Cheng_Qing
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("澄清被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("澄清被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用澄清")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用澄清")
             return false
         }
         val target = args[0] as Player
@@ -125,9 +116,7 @@ class ChengQing : Card {
         private val log = Logger.getLogger(ChengQing::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Cheng_Qing)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
+            !player.cannotPlayCard(card_type.Cheng_Qing) || return false
             val p = player.game!!.players.filter { p -> p!!.alive && p.isPartnerOrSelf(player) }
                 .flatMap { p -> p!!.messageCards.filter(color.Black).map { c -> PlayerAndCard(p, c) } }
                 .randomOrNull() ?: return false

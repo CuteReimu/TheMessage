@@ -14,6 +14,7 @@ import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Fengsheng.use_yu_qin_gu_zong_toc
 import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.cannotPlayCard
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -32,19 +33,9 @@ class YuQinGuZong : Card {
     override val type = card_type.Yu_Qin_Gu_Zong
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("欲擒故纵被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("欲擒故纵被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用欲擒故纵")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用欲擒故纵")
             return false
         }
         if (r !== (g.fsm as? SendPhaseStart)?.player) {
@@ -107,9 +98,7 @@ class YuQinGuZong : Card {
             val player = e.player
             val game = player.game!!
             val players = game.players
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Yu_Qin_Gu_Zong)) return false
-            if (player.location in game.diaoHuLiShanPlayers) return false
+            !player.cannotPlayCard(card_type.Yu_Qin_Gu_Zong) || return false
             val messageCard = player.messageCards.filter {
                 Red in it.colors || Blue in it.colors
             }.randomOrNull() ?: return false

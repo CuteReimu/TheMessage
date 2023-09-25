@@ -3,6 +3,7 @@ package com.fengsheng.phase
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
+import com.fengsheng.skill.cannotPlayCardAndSkill
 import org.apache.log4j.Logger
 import java.util.*
 
@@ -38,7 +39,7 @@ data class StartWaitForChengQing(
         val whoDie = dyingQueue.poll()
         log.info("${whoDie}濒死")
         val next = WaitForChengQing(whoseTurn, whoDie, whoDie, dyingQueue, diedQueue, afterDieResolve)
-        val askWhomAlive = next.askWhom !== next.askWhom.game!!.jinBiPlayer
+        val askWhomAlive = next.askWhom.alive && !next.askWhom.cannotPlayCardAndSkill()
         return ResolveResult(if (askWhomAlive) next else WaitNextForChengQing(next), true)
     }
 

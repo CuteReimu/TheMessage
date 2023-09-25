@@ -32,12 +32,13 @@ abstract class Player protected constructor() {
     /** 为true表示刚死，还没死透。为false表示死透了。与诱变者的胜利判定有关 */
     var dieJustNow = false
 
-    /** 隐藏角色是否曾经面朝上过 */
+    /** 是否曾经面朝上过（公开角色直接为`true`） */
     var hasEverFaceUp = false
 
     var roleSkillsData = RoleSkillsData()
         set(value) {
             field = value.copy()
+            hasEverFaceUp = field.isFaceUp
         }
     private val skillUseCount = HashMap<SkillId, Int>()
 

@@ -4,15 +4,12 @@ import com.fengsheng.Fsm
 import com.fengsheng.Game
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
-import com.fengsheng.card.DiaoHuLiShan
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.color.Has_No_Identity
 import com.fengsheng.protos.Common.secret_task.Disturber
 import com.fengsheng.skill.InvalidSkill
-import com.fengsheng.skill.JinBi
 import com.fengsheng.skill.OneTurnSkill
-import com.fengsheng.skill.QiangLing
 import com.fengsheng.skill.SkillId.WEI_SHENG
 import org.apache.log4j.Logger
 
@@ -40,9 +37,6 @@ data class NextTurn(val player: Player) : Fsm {
                 game.players.forEach { it!!.resetSkillUseCount() }
                 InvalidSkill.reset(game)
                 OneTurnSkill.reset(game)
-                JinBi.resetJinBi(game)
-                QiangLing.resetQiangLing(game)
-                DiaoHuLiShan.resetDiaoHuLiShan(game)
                 return ResolveResult(DrawPhase(player), true)
             }
         }

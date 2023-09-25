@@ -209,7 +209,7 @@ class LengXueXunLian : AbstractSkill(), ActiveSkill {
             log.info("${player}传出了${card}，方向是${card.direction}，传给了${target}，并锁定了[${lockPlayer}]")
             log.info("[调包]的被禁止使用了")
             log.info("${player}将${anotherCard}加入了手牌")
-            player.game!!.qiangLingTypes.add(Diao_Bao)
+            player.game!!.players.forEach { it!!.skills += CannotPlayCard(cardType = listOf(Diao_Bao)) }
             player.cards.add(anotherCard)
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {

@@ -8,10 +8,10 @@ import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class WeiBi : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -27,19 +27,9 @@ class WeiBi : Card {
     override val type = card_type.Wei_Bi
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("威逼被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("威逼被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用威逼")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用威逼")
             return false
         }
         val target = args[0] as Player
@@ -209,20 +199,15 @@ class WeiBi : Card {
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Wei_Bi)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
+            !player.cannotPlayCard(card_type.Wei_Bi) || return false
             val identity = player.identity
-            val players = player.game!!.players.filter {
+            val p = player.game!!.players.filter {
                 it !== player && it!!.alive &&
                         (!it.roleFaceUp || it.findSkill(SkillId.CHENG_FU) == null) &&
                         (identity == color.Black || identity != it.identity) &&
                         it.cards.any { card -> availableCardType.contains(card.type) }
-            }
-            if (players.isEmpty()) return false
-            val p = players[Random.nextInt(players.size)]!!
-            val cardTypes = availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }
-            val cardType = cardTypes[Random.nextInt(cardTypes.size)]
+            }.randomOrNull() ?: return false
+            val cardType = availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.random()
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p, cardType) }, 2, TimeUnit.SECONDS)
             return true
         }

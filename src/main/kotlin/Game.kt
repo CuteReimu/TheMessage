@@ -48,19 +48,6 @@ class Game private constructor(totalPlayerCount: Int) {
     var possibleSecretTasks: List<secret_task> = emptyList()
 
     /**
-     * 用于王田香技能禁闭
-     */
-    var jinBiPlayer: Player? = null
-
-    /**
-     * 用于张一挺技能强令
-     */
-    val qiangLingTypes = HashSet<card_type>()
-
-    /** 用于调虎离山禁用出牌 */
-    val diaoHuLiShanPlayers = HashSet<Int>()
-
-    /**
      * 用于出牌阶段结束时提醒还未发动的技能
      */
     var mainPhaseAlreadyNotify = false

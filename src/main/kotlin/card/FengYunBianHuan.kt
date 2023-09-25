@@ -9,6 +9,7 @@ import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.*
@@ -28,19 +29,9 @@ class FengYunBianHuan : Card {
     override val type = Feng_Yun_Bian_Huan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("风云变幻被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("风云变幻被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用风云变幻")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用风云变幻")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
@@ -192,9 +183,7 @@ class FengYunBianHuan : Card {
         private val log = Logger.getLogger(FengYunBianHuan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(Feng_Yun_Bian_Huan)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
+            !player.cannotPlayCard(Feng_Yun_Bian_Huan) || return false
             GameExecutor.post(
                 player.game!!,
                 { card.execute(player.game!!, player) },

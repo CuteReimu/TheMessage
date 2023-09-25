@@ -9,6 +9,7 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
+import com.fengsheng.skill.cannotPlayCard
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -27,19 +28,9 @@ class WuDao : Card {
     override val type = card_type.Wu_Dao
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("误导被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("误导被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用误导")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用误导")
             return false
         }
         val target = args[0] as Player
@@ -109,9 +100,7 @@ class WuDao : Card {
 
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Wu_Dao)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
+            !player.cannotPlayCard(card_type.Wu_Dao) || return false
             val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
             val right = e.inFrontOfWhom.getNextRightAlivePlayer()
             var target: Player? = null

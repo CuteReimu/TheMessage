@@ -2,6 +2,7 @@ package com.fengsheng.phase
 
 import com.fengsheng.Fsm
 import com.fengsheng.ResolveResult
+import com.fengsheng.skill.cannotPlayCardAndSkill
 import org.apache.log4j.Logger
 
 /**
@@ -26,7 +27,7 @@ data class WaitNextForChengQing(val waitForChengQing: WaitForChengQing) : Fsm {
                     ), true
                 )
             }
-            if (players[askWhom]!!.alive && players[askWhom] !== game.jinBiPlayer) {
+            if (players[askWhom]!!.alive && !players[askWhom]!!.cannotPlayCardAndSkill()) {
                 return ResolveResult(waitForChengQing.copy(askWhom = players[askWhom]!!), true)
             }
         }

@@ -8,6 +8,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.po_yi_show_toc
 import com.fengsheng.protos.Fengsheng.use_po_yi_toc
+import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
@@ -26,19 +27,9 @@ class PoYi : Card {
     override val type = card_type.Po_Yi
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("破译被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("破译被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用破译")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用破译")
             return false
         }
         val fsm = g.fsm as? SendPhaseIdle
@@ -152,10 +143,8 @@ class PoYi : Card {
         private val log = Logger.getLogger(PoYi::class.java)
         fun ai(e: SendPhaseIdle, card: Card): Boolean {
             val player = e.inFrontOfWhom
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Po_Yi)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
-            if (e.isMessageCardFaceUp || !e.messageCard.colors.contains(color.Black)) return false
+            !player.cannotPlayCard(card_type.Po_Yi) || return false
+            !e.isMessageCardFaceUp && e.messageCard.isBlack() || return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true
         }

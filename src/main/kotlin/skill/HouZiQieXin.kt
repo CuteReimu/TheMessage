@@ -15,8 +15,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 杂耍艺人技能【猴子窃信】：出牌阶段限两次，出牌阶段限两次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
  */
-class HouZiQieXin : AbstractSkill(), ActiveSkill {
+class HouZiQieXin : MainPhaseSkill(), ActiveSkill {
     override val skillId = SkillId.HOU_ZI_QIE_XIN
+
+    override fun mainPhaseNeedNotify(r: Player) = false
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? MainPhaseIdle

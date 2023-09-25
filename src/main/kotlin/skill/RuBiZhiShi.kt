@@ -134,19 +134,9 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机错误")
                         return null
                     }
-                    if (target === r.game!!.jinBiPlayer) {
-                        log.error("对方被禁闭了，不能让他出牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
-                        return null
-                    }
-                    if (target.location in r.game!!.diaoHuLiShanPlayers) {
-                        log.error("对方被调虎离山了，不能让他出牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被调虎离山了，不能出牌")
-                        return null
-                    }
-                    if (Jie_Huo in r.game!!.qiangLingTypes) {
-                        log.error("截获被禁止使用了")
-                        (r as? HumanPlayer)?.sendErrorMessage("截获被禁止使用了")
+                    if (target.cannotPlayCard(Jie_Huo)) {
+                        log.error("对方被禁止使用截获")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用截获")
                         return null
                     }
                     val card = target.findCard(message.cardId)
@@ -174,19 +164,9 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机错误")
                         return null
                     }
-                    if (target === r.game!!.jinBiPlayer) {
-                        log.error("对方被禁闭了，不能让他出牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
-                        return null
-                    }
-                    if (target.location in r.game!!.diaoHuLiShanPlayers) {
-                        log.error("对方被调虎离山了，不能让他出牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被调虎离山了，不能出牌")
-                        return null
-                    }
-                    if (Wu_Dao in r.game!!.qiangLingTypes) {
-                        log.error("误导被禁止使用了")
-                        (r as? HumanPlayer)?.sendErrorMessage("误导被禁止使用了")
+                    if (target.cannotPlayCard(Wu_Dao)) {
+                        log.error("对方被禁止使用误导")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用误导")
                         return null
                     }
                     val card = target.findCard(message.cardId)
@@ -232,19 +212,9 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("调包的使用时机错误")
                         return null
                     }
-                    if (target === r.game!!.jinBiPlayer) {
-                        log.error("对方被禁闭了，不能让他出牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
-                        return null
-                    }
-                    if (target.location in r.game!!.diaoHuLiShanPlayers) {
-                        log.error("对方被调虎离山了，不能让他出牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被调虎离山了，不能出牌")
-                        return null
-                    }
-                    if (Diao_Bao in r.game!!.qiangLingTypes) {
-                        log.error("调包被禁止使用了")
-                        (r as? HumanPlayer)?.sendErrorMessage("调包被禁止使用了")
+                    if (target.cannotPlayCard(Diao_Bao)) {
+                        log.error("对方被禁止使用调包")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用调包")
                         return null
                     }
                     val card = target.findCard(message.cardId)
@@ -277,19 +247,9 @@ class RuBiZhiShi : AbstractSkill(), ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("参数错误")
                         return null
                     }
-                    if (target === r.game!!.jinBiPlayer) {
-                        log.error("对方被禁闭了，不能让他出牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁闭了，不能出牌")
-                        return null
-                    }
-                    if (target.location in r.game!!.diaoHuLiShanPlayers) {
-                        log.error("对方被调虎离山了，不能让他出牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被调虎离山了，不能出牌")
-                        return null
-                    }
-                    if (Cheng_Qing in r.game!!.qiangLingTypes) {
-                        log.error("澄清被禁止使用了")
-                        (r as? HumanPlayer)?.sendErrorMessage("澄清被禁止使用了")
+                    if (target.cannotPlayCard(Cheng_Qing)) {
+                        log.error("对方被禁止使用澄清")
+                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用澄清")
                         return null
                     }
                     val card = target.findCard(message.cardId)

@@ -10,6 +10,7 @@ import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role
 import com.fengsheng.skill.LengXueXunLian
 import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
@@ -29,19 +30,9 @@ class MiLing : Card {
     override val type = card_type.Mi_Ling
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("密令被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("密令被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用密令")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用密令")
             return false
         }
         if (r !== (g.fsm as? SendPhaseStart)?.player) {
@@ -371,9 +362,7 @@ class MiLing : Card {
         private val log = Logger.getLogger(MiLing::class.java)
         fun ai(e: SendPhaseStart, card: Card): Boolean {
             val player = e.player
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Mi_Ling)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
+            !player.cannotPlayCard(card_type.Mi_Ling) || return false
             val target = player.game!!.players.filter {
                 it !== player && it!!.alive && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false

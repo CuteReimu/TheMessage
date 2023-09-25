@@ -144,8 +144,8 @@ class JinBi : MainPhaseSkill(), ActiveSkill {
         private fun doExecuteJinBi() {
             log.info("${target}进入了[禁闭]状态")
             val g = r.game!!
-            g.jinBiPlayer = target
             InvalidSkill.deal(target)
+            target.skills += CannotPlayCard(forbidAllCard = true)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jin_bi_b_toc.newBuilder()
@@ -163,9 +163,6 @@ class JinBi : MainPhaseSkill(), ActiveSkill {
 
     companion object {
         private val log = Logger.getLogger(JinBi::class.java)
-        fun resetJinBi(game: Game) {
-            game.jinBiPlayer = null
-        }
 
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.player.getSkillUseCount(SkillId.JIN_BI) == 0 || return false

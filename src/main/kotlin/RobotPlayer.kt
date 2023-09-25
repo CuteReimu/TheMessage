@@ -70,11 +70,9 @@ class RobotPlayer : Player() {
 
     override fun startSendPhaseTimer(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseIdle
-        if (this !== game!!.jinBiPlayer) {
-            for (card in cards) {
-                val ai = aiSendPhase[card.type]
-                if (ai != null && ai.test(fsm, card)) return
-            }
+        for (card in cards) {
+            val ai = aiSendPhase[card.type]
+            if (ai != null && ai.test(fsm, card)) return
         }
         GameExecutor.post(game!!, {
             val colors = fsm.messageCard.colors

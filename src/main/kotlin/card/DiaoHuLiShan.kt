@@ -9,7 +9,9 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
+import com.fengsheng.skill.CannotPlayCard
 import com.fengsheng.skill.InvalidSkill
+import com.fengsheng.skill.cannotPlayCard
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -28,19 +30,9 @@ class DiaoHuLiShan : Card {
     override val type = card_type.Diao_Hu_Li_Shan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
-        if (r === g.jinBiPlayer) {
-            log.error("你被禁闭了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁闭了，不能出牌")
-            return false
-        }
-        if (r.location in g.diaoHuLiShanPlayers) {
-            log.error("你被调虎离山了，不能出牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你被调虎离山了，不能出牌")
-            return false
-        }
-        if (type in g.qiangLingTypes) {
-            log.error("调虎离山被禁止使用了")
-            (r as? HumanPlayer)?.sendErrorMessage("调虎离山被禁止使用了")
+        if (r.cannotPlayCard(type)) {
+            log.error("你被禁止使用调虎离山")
+            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用调虎离山")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.player) {
@@ -74,7 +66,7 @@ class DiaoHuLiShan : Card {
                 }
             }
             if (isSkill) InvalidSkill.deal(target)
-            else g.diaoHuLiShanPlayers.add(target.location)
+            else target.skills += CannotPlayCard(forbidAllCard = true)
             OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, MainPhaseIdle(r))
         }
         g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, resolveFunc, g.fsm!!))
@@ -88,9 +80,7 @@ class DiaoHuLiShan : Card {
         private val log = Logger.getLogger(DiaoHuLiShan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
-            if (player === player.game!!.jinBiPlayer) return false
-            if (player.game!!.qiangLingTypes.contains(card_type.Diao_Hu_Li_Shan)) return false
-            if (player.location in player.game!!.diaoHuLiShanPlayers) return false
+            !player.cannotPlayCard(card_type.Diao_Hu_Li_Shan) || return false
             if (player.cards.size > 3) return false
             val p = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player)
@@ -98,10 +88,6 @@ class DiaoHuLiShan : Card {
             val isSkill = p.cards.isEmpty() || Random.nextBoolean()
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p, isSkill) }, 2, TimeUnit.SECONDS)
             return true
-        }
-
-        fun resetDiaoHuLiShan(g: Game) {
-            g.diaoHuLiShanPlayers.clear()
         }
     }
 }
