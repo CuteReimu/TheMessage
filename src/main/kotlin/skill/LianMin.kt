@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 白菲菲技能【怜悯】：你传出的非黑色情报被接收后，可以从你或接收者的情报区选择一张黑色情报加入你的手牌。
  */
-class LianMin : AbstractSkill(), TriggeredSkill {
+class LianMin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.LIAN_MIN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 金生火技能【谨慎】：你接收双色情报后，可以用一张手牌与该情报面朝上互换。
  */
-class JinShen : AbstractSkill(), TriggeredSkill {
+class JinShen : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIN_SHEN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

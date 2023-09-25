@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 毛不拔技能【奇货可居】：你接收双色情报后，可以从你的情报区选择一张情报加入手牌。
  */
-class QiHuoKeJu : AbstractSkill(), TriggeredSkill {
+class QiHuoKeJu : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.QI_HUO_KE_JU
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

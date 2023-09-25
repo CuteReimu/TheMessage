@@ -18,7 +18,7 @@ import kotlin.random.Random
  *  * 将其置入自己的情报区
  *  * 将其置入对方的情报区
  */
-class DuJi : AbstractSkill(), ActiveSkill {
+class DuJi : InitialSkill, ActiveSkill {
     override val skillId = SkillId.DU_JI
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

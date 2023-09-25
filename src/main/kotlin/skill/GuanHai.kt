@@ -14,7 +14,7 @@ import org.apache.log4j.Logger
 /**
  * 池镜海技能【观海】：你使用【截获】或【误导】时，在结算前先查看待收情报。
  */
-class GuanHai : AbstractSkill(), TriggeredSkill {
+class GuanHai : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.GUAN_HAI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

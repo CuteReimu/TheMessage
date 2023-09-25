@@ -17,7 +17,7 @@ import kotlin.random.Random
 /**
  * 教授技能【定论】：争夺阶段，若情报在你面前，可以翻开此角色，直接成功接收，但若因此达成同色三张，则改为入手。
  */
-class DingLun : AbstractSkill(), ActiveSkill {
+class DingLun : InitialSkill, ActiveSkill {
     override val skillId = SkillId.DING_LUN
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

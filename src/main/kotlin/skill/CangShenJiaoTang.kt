@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 玛利亚技能【藏身教堂】：当你传出的情报被接受后，若接收者是隐藏角色，则你摸一张牌（摸牌走摸牌协议），并可以将该角色翻至面朝下；若是公开角色，则可以将其一张黑色情报加入你的手牌或置入你的情报区。
  */
-class CangShenJiaoTang : AbstractSkill(), TriggeredSkill {
+class CangShenJiaoTang : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CANG_SHEN_JIAO_TANG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

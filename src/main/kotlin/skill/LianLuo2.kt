@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 中年小九技能【联络】：接收单色情报后，可以翻开此角色，将一张含不同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
  */
-class LianLuo2 : AbstractSkill(), TriggeredSkill {
+class LianLuo2 : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.LIAN_LUO2
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

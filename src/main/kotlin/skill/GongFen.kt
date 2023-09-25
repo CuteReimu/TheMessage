@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 /**
  * SP程小蝶技能【共焚】：争夺阶段，你可以翻开此角色牌，然后从你开始，逆时针每名玩家翻开牌堆顶的一张牌并置入自己的情报区，若翻开的是红色或蓝色牌，则改为加入你的手牌。
  */
-class GongFen : AbstractSkill(), ActiveSkill {
+class GongFen : InitialSkill, ActiveSkill {
     override val skillId = SkillId.GONG_FEN
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

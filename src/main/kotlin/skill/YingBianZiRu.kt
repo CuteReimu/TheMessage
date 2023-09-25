@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
  * 2. 黑单色：视为对其使用了【误导】，摸两张牌。
  * 3. 双色情报：弃置该情报，摸三张牌。
  */
-class YingBianZiRu : AbstractSkill(), ActiveSkill {
+class YingBianZiRu : InitialSkill, ActiveSkill {
     override val skillId = SkillId.YING_BIAN_ZI_RU
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

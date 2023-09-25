@@ -14,7 +14,7 @@ import kotlin.random.Random
  *  * 你摸一张牌。
  *  * 将牌堆顶的一张牌和待接收情报面朝下互换
  */
-class JinKouYiKai : AbstractSkill(), ActiveSkill {
+class JinKouYiKai : InitialSkill, ActiveSkill {
     override val skillId = SkillId.JIN_KOU_YI_KAI
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

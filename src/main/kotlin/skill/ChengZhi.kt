@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 顾小梦技能【承志】：一名其他角色死亡前，若此角色牌已翻开，则你获得其所有手牌，并查看其身份牌，你可以获得该身份牌，并将你原本的身份牌面朝下移出游戏。
  */
-class ChengZhi : AbstractSkill(), TriggeredSkill {
+class ChengZhi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CHENG_ZHI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

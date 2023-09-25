@@ -15,7 +15,7 @@ import kotlin.random.Random
 /**
  * 连鸢技能【妙笔巧辩】：争夺阶段，你可以翻开此角色牌，然后从所有角色的情报区选择合计至多两张不含有相同颜色的情报，将其加入你的手牌。
  */
-class MiaoBiQiaoBian : AbstractSkill(), ActiveSkill {
+class MiaoBiQiaoBian : InitialSkill, ActiveSkill {
     override val skillId = SkillId.MIAO_BI_QIAO_BIAN
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

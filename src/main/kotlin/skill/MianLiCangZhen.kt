@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 邵秀技能【绵里藏针】：你传出的情报被接收后，可以将一张黑色手牌置入接收者的情报区，然后摸一张牌。
  */
-class MianLiCangZhen : AbstractSkill(), TriggeredSkill {
+class MianLiCangZhen : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.MIAN_LI_CANG_ZHEN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 池镜海技能【避风】：争夺阶段限一次，[“观海”][GuanHai]后你可以无效你使用的【截获】或【误导】，然后摸两张牌。
  */
-class BiFeng : AbstractSkill(), TriggeredSkill {
+class BiFeng : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.BI_FENG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

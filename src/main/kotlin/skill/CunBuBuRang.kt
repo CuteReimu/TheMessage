@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 棋手技能【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。
  */
-class CunBuBuRang : AbstractSkill(), TriggeredSkill {
+class CunBuBuRang : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CUN_BU_BU_RANG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

@@ -11,7 +11,7 @@ import org.apache.log4j.Logger
 /**
  * 白菲菲技能【腹黑】：你传出的黑色情报被接收后，你摸一张牌。
  */
-class FuHei : AbstractSkill(), TriggeredSkill {
+class FuHei : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.FU_HEI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

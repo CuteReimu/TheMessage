@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 /**
  * 教授技能【真理】：每当你传出的真情报被其他玩家接收时，你可以摸一张牌，将此角色翻回背面。
  */
-class ZhenLi : AbstractSkill(), TriggeredSkill {
+class ZhenLi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.ZHEN_LI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

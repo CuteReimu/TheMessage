@@ -13,6 +13,8 @@ import org.apache.log4j.Logger
 data class SendPhaseStart(val player: Player) : Fsm {
     override fun resolve(): ResolveResult? {
         val game = player.game!!
+        val result = game.dealListeningSkill(player.location)
+        if (result != null) return result
         if (player.alive && player.cards.isEmpty() && player.findSkill(LENG_XUE_XUN_LIAN) == null) {
             log.info("${player}没有情报可传，输掉了游戏")
             val messageCards = player.messageCards.toTypedArray()

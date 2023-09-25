@@ -1519,7 +1519,7 @@ message skill_wait_for_bian_ze_tong_toc {
 }
 
 // 包打听【变则通】：你的传递阶段开始时，摸一张牌，然后你可以宣言两种卡牌类型“A”和“B”，直到回合结束，所有玩家的A牌只能当B牌使用。
-// （AB可选【破译】【调包】【误导】【截获】）
+// （AB可选【破译】【调包】【误导】【截获】，且不能相同）
 message skill_bian_ze_tong_tos {
   bool enable = 1;
   card_type card_type_a = 2;

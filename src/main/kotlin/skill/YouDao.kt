@@ -12,7 +12,7 @@ import org.apache.log4j.Logger
 /**
  * SP李宁玉技能【诱导】：你使用【误导】后，摸一张牌。
  */
-class YouDao : AbstractSkill(), TriggeredSkill {
+class YouDao : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.YOU_DAO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

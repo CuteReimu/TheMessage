@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 /**
  * 中年小九技能【顺势而为】：你使用【截获】或者成为【截获】的目标时，可以翻回背面。
  */
-class ShunShiErWei : AbstractSkill(), TriggeredSkill {
+class ShunShiErWei : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.SHUN_SHI_ER_WEI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

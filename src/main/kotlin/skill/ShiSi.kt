@@ -11,7 +11,7 @@ import org.apache.log4j.Logger
 /**
  * 老汉技能【视死】：你接收黑色情报后，摸两张牌。
  */
-class ShiSi : AbstractSkill(), TriggeredSkill {
+class ShiSi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.SHI_SI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 /**
  * SP韩梅技能【冷血训练】：你需要传出情报时，可以改为展示牌堆顶的两张牌，从中选择一张（若有黑色牌则必须选择一张黑色牌）作为情报面朝上传出，并锁定一名角色，且令所有角色本回合中不能使用【调包】，之后将未选择的那张加入你的手牌。
  */
-class LengXueXunLian : AbstractSkill(), ActiveSkill {
+class LengXueXunLian : InitialSkill, ActiveSkill {
     override val skillId = SkillId.LENG_XUE_XUN_LIAN
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

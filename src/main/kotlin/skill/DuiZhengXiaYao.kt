@@ -14,7 +14,7 @@ import kotlin.random.Random
 /**
  * 黄济仁技能【对症下药】：争夺阶段，你可以翻开此角色牌，然后摸三张牌，并且你可以展示两张含有相同颜色的手牌，然后从一名角色的情报区，弃置一张对应颜色情报。
  */
-class DuiZhengXiaYao : AbstractSkill(), ActiveSkill {
+class DuiZhengXiaYao : InitialSkill, ActiveSkill {
     override val skillId = SkillId.DUI_ZHENG_XIA_YAO
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

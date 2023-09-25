@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 /**
  * 老鳖技能【明饵】：你传出的红色或蓝色情报被接收后，你和接收者各摸一张牌。
  */
-class MingEr : AbstractSkill(), TriggeredSkill {
+class MingEr : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.MING_ER
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

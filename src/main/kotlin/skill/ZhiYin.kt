@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 /**
  * 程小蝶技能【知音】：你接收红色或蓝色情报后，你和传出者各摸一张牌
  */
-class ZhiYin : AbstractSkill(), TriggeredSkill {
+class ZhiYin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.ZHI_YIN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

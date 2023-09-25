@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 阿芙罗拉技能【妙手】：争夺阶段，你可以翻开此角色牌，然后弃置待接收情报，并查看一名角色的手牌和情报区，从中选择一张牌作为待收情报，面朝上移至一名角色的面前。
  */
-class MiaoShou : AbstractSkill(), ActiveSkill {
+class MiaoShou : InitialSkill, ActiveSkill {
     override val skillId = SkillId.MIAO_SHOU
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {

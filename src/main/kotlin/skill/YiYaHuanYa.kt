@@ -15,7 +15,7 @@ import kotlin.random.Random
 /**
  * 王魁技能【以牙还牙】：你接收黑色情报后，可以将一张黑色手牌置入情报传出者或其相邻角色的情报区，然后摸一张牌。
  */
-class YiYaHuanYa : AbstractSkill(), TriggeredSkill {
+class YiYaHuanYa : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.YI_YA_HUAN_YA
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

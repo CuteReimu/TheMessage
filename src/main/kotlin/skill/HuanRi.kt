@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 /**
  * 鄭文先技能【换日】：你使用【调包】或【破译】后，可以将你的角色牌翻至面朝下。
  */
-class HuanRi : AbstractSkill(), TriggeredSkill {
+class HuanRi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.HUAN_RI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {

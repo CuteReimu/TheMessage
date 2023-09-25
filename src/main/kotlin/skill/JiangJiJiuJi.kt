@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 /**
  * 中年韩梅技能【将计就计】：你使用【误导】或者成为【误导】的目标之一时，可以翻回背面。
  */
-class JiangJiJiuJi : AbstractSkill(), TriggeredSkill {
+class JiangJiJiuJi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIANG_JI_JIU_JI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
