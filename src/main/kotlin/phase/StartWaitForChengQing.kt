@@ -27,7 +27,14 @@ data class StartWaitForChengQing(
     )
 
     override fun resolve(): ResolveResult {
-        if (dyingQueue.isEmpty()) return ResolveResult(CheckKillerWin(whoseTurn, diedQueue, afterDieResolve), true)
+        if (dyingQueue.isEmpty()) {
+            for (whoDie in diedQueue) {
+                whoDie.alive = false
+                whoDie.dieJustNow = true
+                for (p in whoseTurn.game!!.players) p!!.notifyDying(whoDie.location, false)
+            }
+            return ResolveResult(CheckKillerWin(whoseTurn, diedQueue, afterDieResolve), true)
+        }
         val whoDie = dyingQueue.poll()
         log.info("${whoDie}濒死")
         val next = WaitForChengQing(whoseTurn, whoDie, whoDie, dyingQueue, diedQueue, afterDieResolve)
