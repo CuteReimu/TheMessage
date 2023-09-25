@@ -92,7 +92,7 @@ class HanHouLaoShi : AbstractSkill(), TriggeredSkill {
                     val builder = skill_han_hou_lao_shi_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(target.location)
                     builder.messagePlayerId = p.getAlternativeLocation(r.location)
-                    builder.card = card.toPbCard()
+                    if (p === r || p === target) builder.card = card.toPbCard()
                     p.send(builder.build())
                 }
             }
