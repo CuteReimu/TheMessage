@@ -6,14 +6,14 @@ import com.fengsheng.Player
 /**
  * 直到回合结束无效的技能
  */
-class InvalidSkill private constructor(val originSkill: Skill) : AbstractSkill() {
+class InvalidSkill private constructor(val originSkill: Skill) : Skill {
     override val skillId = SkillId.INVALID
 
     companion object {
         fun deal(player: Player) {
             val skills = player.skills
             for ((i, skill) in skills.withIndex()) {
-                if (skill !is InvalidSkill) skills[i] = InvalidSkill(skill)
+                if (skill is AbstractSkill) skills[i] = InvalidSkill(skill)
             }
         }
 

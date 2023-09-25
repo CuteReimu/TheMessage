@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 杂耍艺人技能【信鸽联络】：每当你传出非直达情报时，可以选择一名角色本轮的传递阶段中不能选择接收情报。
  */
-class XinGeLianLuo : TriggeredSkill {
+class XinGeLianLuo : AbstractSkill(), TriggeredSkill {
     override val skillId = SkillId.XIN_GE_LIAN_LUO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
