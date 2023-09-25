@@ -12,7 +12,7 @@ class updatetitle : Function<Map<String, String>, Any> {
             if (title.length > 12) return "{\"error\": \"称号太长\"}"
             if (name.contains(",") || name.contains("·")) return "{\"error\": \"称号中含有非法字符\"}"
             val result = Statistics.updateTitle(name, title)
-            Game.playerNameCache[name]?.playerTitle = title
+            if (result) Game.playerNameCache[name]?.playerTitle = title
             "{\"result\": $result}"
         } catch (e: NullPointerException) {
             "{\"error\": \"参数错误\"}"
