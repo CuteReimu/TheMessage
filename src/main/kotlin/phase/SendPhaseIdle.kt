@@ -17,6 +17,7 @@ import com.fengsheng.protos.Common.direction
  * @param lockedPlayers 被锁定的玩家
  * @param isMessageCardFaceUp 情报是否面朝上
  * @param sender 情报传出者
+ * @param cannotReceivePlayers 本回合不能接收情报的玩家
  */
 data class SendPhaseIdle(
     val whoseTurn: Player,
@@ -26,6 +27,7 @@ data class SendPhaseIdle(
     val lockedPlayers: Array<Player>,
     val isMessageCardFaceUp: Boolean,
     val sender: Player,
+    val cannotReceivePlayers: List<Player> = emptyList(),
 ) : Fsm {
     override fun resolve(): ResolveResult? {
         if (!inFrontOfWhom.alive) {
@@ -38,9 +40,7 @@ data class SendPhaseIdle(
             p!!.notifySendPhase(Config.WaitSecond)
         }
         val result = whoseTurn.game!!.dealListeningSkill(inFrontOfWhom.location)
-        if (result == null) {
-            inFrontOfWhom.startSendPhaseTimer(Config.WaitSecond)
-        }
+        if (result == null) inFrontOfWhom.startSendPhaseTimer(Config.WaitSecond)
         return result
     }
 

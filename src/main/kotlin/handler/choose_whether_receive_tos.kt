@@ -20,7 +20,13 @@ class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether
             r.sendErrorMessage("不是选择是否接收情报的时机")
             return
         }
+        val mustReceive = r === fsm.sender || fsm.lockedPlayers.any { r === it }
         if (pb.receive) {
+            if (!mustReceive && fsm.cannotReceivePlayers.any { r === it }) {
+                log.error("不能选择接收情报")
+                r.sendErrorMessage("不能选择接收情报")
+                return
+            }
             r.incrSeq()
             r.game!!.resolve(
                 OnChooseReceiveCard(
@@ -32,21 +38,9 @@ class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether
                 )
             )
         } else {
-            if (r === fsm.sender) {
-                log.error("传出者必须接收")
-                r.sendErrorMessage("传出者必须接收")
-                return
-            }
-            var locked = false
-            for (a in fsm.lockedPlayers) {
-                if (r === a) {
-                    locked = true
-                    break
-                }
-            }
-            if (locked) {
-                log.error("被锁定，必须接收")
-                r.sendErrorMessage("被锁定，必须接收")
+            if (mustReceive) {
+                log.error("必须选择接收情报")
+                r.sendErrorMessage("必须选择接收情报")
                 return
             }
             r.incrSeq()

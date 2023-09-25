@@ -78,7 +78,8 @@ class RobotPlayer : Player() {
         }
         GameExecutor.post(game!!, {
             val colors = fsm.messageCard.colors
-            val receive = fsm.lockedPlayers.contains(this) || fsm.sender === this || // 如果被锁了，或者自己是传出者，则必须接收
+            val receive = fsm.lockedPlayers.any { it === this } || fsm.sender === this || // 如果被锁了，或者自己是传出者，则必须接收
+                    !fsm.cannotReceivePlayers.any { it === this } && // 如果被禁止接收了，则不能接收
                     if (colors.size == 1) { // 如果是单色，纯黑则不接，纯非黑则有一半几率接，已翻开的纯非黑则必接
                         colors.first() != color.Black && (fsm.isMessageCardFaceUp || Random.nextBoolean())
                     } else {
@@ -281,6 +282,7 @@ class RobotPlayer : Player() {
             SkillId.YU_SI_WANG_PO to BiPredicate { e, skill -> YuSiWangPo.ai(e, skill) },
             SkillId.TAO_QU to BiPredicate { e, skill -> TaoQu.ai(e, skill) },
             SkillId.TAN_XU_BIAN_SHI to BiPredicate { e, skill -> TanXuBianShi.ai(e, skill) },
+            SkillId.HOU_ZI_QIE_XIN to BiPredicate { e, skill -> HouZiQieXin.ai(e, skill) },
         )
         private val aiSkillSendPhaseStart = hashMapOf<SkillId, BiPredicate<SendPhaseStart, ActiveSkill>>(
             SkillId.LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) }
