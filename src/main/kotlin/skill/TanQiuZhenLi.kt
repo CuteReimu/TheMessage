@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 /**
  * SP连鸢技能【探求真理】：出牌阶段限一次，你可以从另一名角色的情报区中选择一张情报，将其置入你的情报区，但不能以此令你收集三张或更多同色情报。然后该角色可以将其手牌或情报区中的一张纯黑色牌置入你的情报区。
  */
-class TanQiuZhenLi : MainPhaseSkill(), ActiveSkill {
+class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.TAN_QIU_ZHEN_LI
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =

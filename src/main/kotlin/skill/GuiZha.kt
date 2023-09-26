@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 肥原龙川技能【诡诈】：出牌阶段限一次，你可以指定一名角色，然后视为你对其使用了一张【威逼】或【利诱】。
  */
-class GuiZha : MainPhaseSkill(), ActiveSkill {
+class GuiZha : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.GUI_ZHA
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
