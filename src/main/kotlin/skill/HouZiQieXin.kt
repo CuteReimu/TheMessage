@@ -87,6 +87,7 @@ class HouZiQieXin : MainPhaseSkill(), InitialSkill {
                 builder.handCard = handCard.toPbCard()
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
                 builder.messageCardId = message.messageCardId
+                p.send(builder.build())
             }
         }
         g.resolve(OnAddMessageCard(r, fsm))
