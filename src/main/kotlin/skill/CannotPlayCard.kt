@@ -8,10 +8,12 @@ import com.fengsheng.protos.Common.card_type
  *
  * @param cardType 被禁用的卡牌列表
  * @param forbidAllCard 是否禁用所有牌
+ * @param forbidAllSkill 是否禁用所有技能
  */
 class CannotPlayCard(
     private val cardType: List<card_type> = emptyList(),
-    val forbidAllCard: Boolean = false
+    val forbidAllCard: Boolean = false,
+    val forbidAllSkill: Boolean = false
 ) : OneTurnSkill {
     override val skillId = SkillId.UNKNOWN
 
@@ -23,4 +25,5 @@ fun Player.cannotPlayCard(cardType: card_type) =
 
 fun Player.cannotPlayCardAndSkill() =
     (skills.any { it is CannotPlayCard && it.forbidAllCard } || cards.isEmpty()) // 不能出牌或者没有手牌
-            && hasEverFaceUp && !skills.any { it is ActiveSkill && it !is MainPhaseSkill }  // 曾经面朝上过并且没有主动技能
+            && (!skills.any { it is InitialSkill || it is ActiveSkill } // 没有初始技能，说明被禁技能了（考虑到可能新获得主动技能，需要排除一下主动技能）
+            || hasEverFaceUp && !skills.any { it is ActiveSkill && it !is MainPhaseSkill })  // 曾经面朝上过并且没有主动技能
