@@ -25,7 +25,7 @@ class use_jie_huo_tos : AbstractProtoHandler<Fengsheng.use_jie_huo_tos>() {
             r.sendErrorMessage("没有这张牌")
             return
         }
-        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Jie_Huo, card.type)
+        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Jie_Huo, card)
         if (!ok) {
             log.error("这张${card}不能当作截获使用")
             r.sendErrorMessage("这张${card}不能当作截获使用")

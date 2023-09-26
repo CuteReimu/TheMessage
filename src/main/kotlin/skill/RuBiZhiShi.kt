@@ -145,15 +145,17 @@ class RuBiZhiShi : InitialSkill, ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
-                    if (card.type != Jie_Huo) {
-                        log.error("这张牌不是截获")
-                        (r as? HumanPlayer)?.sendErrorMessage("这张牌不是截获")
+                    val (ok, convertCardSkill) = target.canUseCardTypes(Jie_Huo, card, true)
+                    if (!ok) {
+                        log.error("这张${card}不能当作截获使用")
+                        (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作截获使用")
                         return null
                     }
                     r.incrSeq()
                     log.info("${r}让${target}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
+                    convertCardSkill?.onConvert(target)
                     card.execute(r.game!!, target)
                     return null
                 }
@@ -175,9 +177,10 @@ class RuBiZhiShi : InitialSkill, ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
-                    if (card.type != Wu_Dao) {
-                        log.error("这张牌不是误导")
-                        (r as? HumanPlayer)?.sendErrorMessage("这张牌不是误导")
+                    val (ok, convertCardSkill) = target.canUseCardTypes(Wu_Dao, card, true)
+                    if (!ok) {
+                        log.error("这张${card}不能当作误导使用")
+                        (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作误导使用")
                         return null
                     }
                     if (message.targetPlayerId < 0 || message.targetPlayerId >= r.game!!.players.size) {
@@ -202,6 +205,7 @@ class RuBiZhiShi : InitialSkill, ActiveSkill {
                     log.info("${r}让${target}对${target2}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
+                    convertCardSkill?.onConvert(target)
                     card.execute(r.game!!, target, target2)
                     return null
                 }
@@ -223,15 +227,17 @@ class RuBiZhiShi : InitialSkill, ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
-                    if (card.type != Diao_Bao) {
-                        log.error("这张牌不是调包")
-                        (r as? HumanPlayer)?.sendErrorMessage("这张牌不是调包")
+                    val (ok, convertCardSkill) = target.canUseCardTypes(Diao_Bao, card, true)
+                    if (!ok) {
+                        log.error("这张${card}不能当作调包使用")
+                        (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作调包使用")
                         return null
                     }
                     r.incrSeq()
                     log.info("${r}让${target}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
+                    convertCardSkill?.onConvert(target)
                     card.execute(r.game!!, target)
                     return null
                 }

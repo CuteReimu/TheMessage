@@ -20,7 +20,7 @@ class use_po_yi_tos : AbstractProtoHandler<Fengsheng.use_po_yi_tos>() {
             r.sendErrorMessage("没有这张牌")
             return
         }
-        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Po_Yi, card.type)
+        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Po_Yi, card)
         if (!ok) {
             log.error("这张${card}不能当作破译使用")
             r.sendErrorMessage("这张${card}不能当作破译使用")

@@ -25,7 +25,7 @@ class use_diao_bao_tos : AbstractProtoHandler<Fengsheng.use_diao_bao_tos>() {
             r.sendErrorMessage("没有这张牌")
             return
         }
-        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Diao_Bao, card.type)
+        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Diao_Bao, card)
         if (!ok) {
             log.error("这张${card}不能当作调包使用")
             r.sendErrorMessage("这张${card}不能当作调包使用")

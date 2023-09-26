@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.Player
+import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.card_type
 
 /**
@@ -11,13 +12,26 @@ abstract class ConvertCardSkill(val cardTypeA: card_type, val cardTypeB: card_ty
     open fun onConvert(r: Player) {}
 }
 
-fun Player.canUseCardTypes(needType: card_type, actualType: card_type): Pair<Boolean, ConvertCardSkill?> {
+/**
+ * 判断一个玩家是否能用某张卡牌
+ *
+ * @param needType 需要的卡牌类型
+ * @param actualCard 实际的卡牌
+ * @param onlyMust 是否只看“必须”的技能（盛老板发动技能使用别人的牌时，只看“必须”的技能）
+ * @see ConvertCardSkill
+ */
+fun Player.canUseCardTypes(
+    needType: card_type,
+    actualCard: Card,
+    onlyMust: Boolean = false
+): Pair<Boolean, ConvertCardSkill?> {
+    val actualType = actualCard.type
     var ok = needType == actualType
     var convertCardSkill: ConvertCardSkill? = null
     for (s in skills) {
         if (s is ConvertCardSkill && s.cardTypeA == actualType) {
             if (s.cardTypeB == needType) {
-                if (!ok) {
+                if (!ok && (!onlyMust || s.must)) {
                     ok = true
                     convertCardSkill = s
                 }
