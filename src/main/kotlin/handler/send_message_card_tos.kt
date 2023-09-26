@@ -59,7 +59,7 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
             r.sendErrorMessage("锁定目标重复")
             return
         }
-        if (card.canLock()) {
+        if (card.canLock() || r.findSkill(SkillId.QIANG_YING_XIA_LING) != null) {
             if (pb.lockPlayerIdCount > 1) {
                 log.error("最多锁定一个目标")
                 r.sendErrorMessage("最多锁定一个目标")

@@ -63,7 +63,7 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
             r.sendErrorMessage("锁定目标重复")
             return
         }
-        if (messageCard.canLock()) {
+        if (messageCard.canLock() || r.findSkill(SkillId.QIANG_YING_XIA_LING) != null) {
             if (pb.lockPlayerIdCount > 1) {
                 log.error("最多锁定一个目标")
                 r.sendErrorMessage("最多锁定一个目标")

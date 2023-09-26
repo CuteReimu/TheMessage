@@ -113,7 +113,7 @@ class YuQinGuZong : Card {
                 else -> null
             } ?: return false
             val lockPlayer =
-                if (!card.canLock() || Random.nextBoolean()) null
+                if (!(card.canLock() || player.findSkill(SkillId.QIANG_YING_XIA_LING) != null) || Random.nextBoolean()) null
                 else if (direction == Up) target
                 else players.filter { it!!.alive && it !== player }.randomOrNull()
             val lockPlayers = lockPlayer?.let { listOf(lockPlayer) } ?: emptyList()

@@ -223,7 +223,8 @@ class RobotPlayer : Player() {
                         .maxOf { it.messageCards.count(enemyColor) }
                     card = r.cards.find {
                         (canSendPureBlack || !it.isPureBlack()) &&
-                                it.canLock() && if (maxEnemyColorCount == 2) it.isPureBlack() else it.isBlack()
+                                (it.canLock() || r.findSkill(SkillId.QIANG_YING_XIA_LING) != null) &&
+                                if (maxEnemyColorCount == 2) it.isPureBlack() else it.isBlack()
                     }
                     if (card != null) lockedPlayers.add(twoBlackEnemy)
                 }
@@ -240,8 +241,12 @@ class RobotPlayer : Player() {
                                 ?: return@any false
                             card = r.cards.filter {
                                 (canSendPureBlack || !it.isPureBlack()) && color in it.colors
-                            }.run { find { it.canLock() } ?: firstOrNull() } ?: return@any false
-                            if (card!!.canLock()) lockedPlayers.add(two)
+                            }.run {
+                                find { it.canLock() || r.findSkill(SkillId.QIANG_YING_XIA_LING) != null }
+                                    ?: firstOrNull()
+                            } ?: return@any false
+                            if (card!!.canLock() || r.findSkill(SkillId.QIANG_YING_XIA_LING) != null)
+                                lockedPlayers.add(two)
                             true
                         }
                     }

@@ -290,7 +290,7 @@ class MiLing : Card {
                 (player as? HumanPlayer)?.sendErrorMessage("锁定目标重复")
                 return null
             }
-            if (messageCard.canLock()) {
+            if (messageCard.canLock() || player.findSkill(SkillId.QIANG_YING_XIA_LING) != null) {
                 if (pb.lockPlayerIdCount > 1) {
                     log.error("最多锁定一个目标")
                     (player as? HumanPlayer)?.sendErrorMessage("最多锁定一个目标")

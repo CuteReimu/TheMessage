@@ -71,7 +71,7 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
             (r as? HumanPlayer)?.sendErrorMessage("锁定目标重复")
             return
         }
-        if (card.canLock()) {
+        if (card.canLock() || r.findSkill(SkillId.QIANG_YING_XIA_LING) != null) {
             if (message.lockPlayerIdCount > 1) {
                 log.error("最多锁定一个目标")
                 (r as? HumanPlayer)?.sendErrorMessage("最多锁定一个目标")
