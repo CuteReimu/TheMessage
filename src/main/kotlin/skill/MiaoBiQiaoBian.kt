@@ -138,6 +138,14 @@ class MiaoBiQiaoBian : InitialSkill, ActiveSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
+                for (p in g.players) {
+                    if (p is HumanPlayer) {
+                        val builder = skill_miao_bi_qiao_bian_b_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.enable = false
+                        p.send(builder.build())
+                    }
+                }
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
@@ -172,6 +180,7 @@ class MiaoBiQiaoBian : InitialSkill, ActiveSkill {
                     builder.cardId = card2.id
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target2.location)
+                    builder.enable = true
                     p.send(builder.build())
                 }
             }
