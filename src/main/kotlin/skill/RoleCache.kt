@@ -90,6 +90,8 @@ object RoleCache {
         role.spy_a_fu_luo_la,
         role.spy_bai_fei_fei,
         role.qi_shou,
+        role.za_shua_yi_ren,
+        role.bao_da_ting,
     )
 
     init {

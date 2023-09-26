@@ -7,6 +7,7 @@ import com.fengsheng.Player
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -78,7 +79,7 @@ class HouZiQieXin : MainPhaseSkill(), InitialSkill {
         target.deleteMessageCard(messageCard.id)
         r.cards.add(messageCard)
         target.messageCards.add(handCard)
-        g.continueResolve()
+        g.resolve(OnAddMessageCard(r, fsm))
     }
 
     companion object {
