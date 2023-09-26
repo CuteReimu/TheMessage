@@ -45,8 +45,11 @@ class CunBuBuRang : InitialSkill, TriggeredSkill {
                             builder2.seq = seq
                             r.game!!.tryContinueResolveProtocol(r, builder2.build())
                         }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        // 晚一秒提示棋手，以防客户端动画bug
+                        GameExecutor.post(r.game!!, { player.send(builder.build()) }, 1, TimeUnit.SECONDS)
+                    } else {
+                        player.send(builder.build())
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
