@@ -112,7 +112,7 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
     }
 
     private class JiangHuLing2(val color: color) : TriggeredSkill, OneTurnSkill {
-        override val skillId = SkillId.JIANG_HU_LING2
+        override val skillId = SkillId.UNKNOWN
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
             val fsm = g.fsm as? ReceivePhaseSkill ?: return null

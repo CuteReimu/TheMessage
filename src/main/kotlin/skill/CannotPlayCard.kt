@@ -13,7 +13,7 @@ class CannotPlayCard(
     private val cardType: List<card_type> = emptyList(),
     val forbidAllCard: Boolean = false
 ) : OneTurnSkill {
-    override val skillId = SkillId.CANNOT_PLAY_CARD
+    override val skillId = SkillId.UNKNOWN
 
     fun cannotPlayCard(cardType: card_type) = forbidAllCard || cardType in this.cardType
 }

@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.OnSendCardSkill
+import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.direction.Up
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -121,7 +122,9 @@ class XinGeLianLuo : InitialSkill, TriggeredSkill {
     /**
      * 有这个技能的角色本回合不能接收情报
      */
-    private class XinGeLianLuo2 : OneTurnSkill {
-        override val skillId = SkillId.XIN_GE_LIAN_LUO2
+    private class XinGeLianLuo2 : MustReceiveMessage() {
+        override fun mustReceive(sendPhase: SendPhaseIdle) = false
+
+        override fun cannotReceive(sendPhase: SendPhaseIdle) = true
     }
 }

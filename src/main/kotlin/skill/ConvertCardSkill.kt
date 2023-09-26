@@ -9,6 +9,8 @@ import com.fengsheng.protos.Common.card_type
  * @param must `false`表示可以，`true`表示必须
  */
 abstract class ConvertCardSkill(val cardTypeA: card_type, val cardTypeB: card_type, val must: Boolean) : Skill {
+    override val skillId = SkillId.UNKNOWN
+
     open fun onConvert(r: Player) {}
 }
 

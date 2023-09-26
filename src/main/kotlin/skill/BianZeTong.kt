@@ -130,11 +130,9 @@ class BianZeTong : InitialSkill, TriggeredSkill {
     /**
      * 有这个技能的玩家，[cardTypeA]只能当作[cardTypeB]使用
      */
-    class BianZeTong2(cardTypeA: card_type, cardTypeB: card_type) :
-        ConvertCardSkill(cardTypeA, cardTypeB, true),
-        OneTurnSkill {
-        override val skillId = SkillId.BIAN_ZE_TONG2
-    }
+    private class BianZeTong2(cardTypeA: card_type, cardTypeB: card_type) : OneTurnSkill,
+        ConvertCardSkill(cardTypeA, cardTypeB, true)
+
 
     companion object {
         private val validCardTypes = listOf(Po_Yi, Diao_Bao, Wu_Dao, Jie_Huo)

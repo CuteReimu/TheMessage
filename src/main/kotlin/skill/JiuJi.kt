@@ -110,7 +110,7 @@ class JiuJi : InitialSkill, TriggeredSkill {
     }
 
     private class JiuJi2 : TriggeredSkill {
-        override val skillId = SkillId.JIU_JI2
+        override val skillId = SkillId.UNKNOWN
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
             val fsm = g.fsm as? OnFinishResolveCard ?: return null
@@ -120,7 +120,7 @@ class JiuJi : InitialSkill, TriggeredSkill {
             val card = fsm.card ?: return null
             askWhom.cards.add(card)
             log.info("${askWhom}将使用的${card}加入了手牌")
-            askWhom.skills = askWhom.skills.filterNot { it.skillId == skillId }
+            askWhom.skills = askWhom.skills.filterNot { it is JiuJi2 }
             for (player in g.players) {
                 if (player is HumanPlayer) {
                     val builder = skill_jiu_ji_b_toc.newBuilder()
