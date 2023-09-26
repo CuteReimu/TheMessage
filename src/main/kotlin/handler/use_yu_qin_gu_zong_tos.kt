@@ -58,6 +58,11 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
             r.sendErrorMessage("不能传给那个人: ${pb.targetPlayerId}")
             return
         }
+        if (pb.lockPlayerIdList.toSet().size != pb.lockPlayerIdCount) {
+            log.error("锁定目标重复")
+            r.sendErrorMessage("锁定目标重复")
+            return
+        }
         if (messageCard.canLock()) {
             if (pb.lockPlayerIdCount > 1) {
                 log.error("最多锁定一个目标")

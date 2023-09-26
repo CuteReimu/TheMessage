@@ -16,7 +16,7 @@ import org.apache.log4j.Logger
  * @param dir           传递方向
  * @param targetPlayer  传递的目标角色
  * @param lockedPlayers 被锁定的玩家
- * @param byYuQinGuZong 是否是因为欲擒故纵传递的
+ * @param isMessageCardFaceUp 情报是否面朝上
  */
 data class OnSendCardSkill(
     val whoseTurn: Player,
@@ -25,14 +25,14 @@ data class OnSendCardSkill(
     val dir: direction,
     val targetPlayer: Player,
     val lockedPlayers: Array<Player>,
-    val byYuQinGuZong: Boolean = false,
+    val isMessageCardFaceUp: Boolean = false,
 ) : Fsm {
     override fun resolve(): ResolveResult {
         val result = whoseTurn.game!!.dealListeningSkill(whoseTurn.location)
         if (result != null) return result
         log.info("情报到达${targetPlayer}面前")
         return ResolveResult(
-            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, byYuQinGuZong, sender),
+            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp, sender),
             true
         )
     }

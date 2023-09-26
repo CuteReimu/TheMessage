@@ -54,6 +54,11 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
             r.sendErrorMessage("不能传给那个人: ${pb.targetPlayerId}")
             return
         }
+        if (pb.lockPlayerIdList.toSet().size != pb.lockPlayerIdCount) {
+            log.error("锁定目标重复")
+            r.sendErrorMessage("锁定目标重复")
+            return
+        }
         if (card.canLock()) {
             if (pb.lockPlayerIdCount > 1) {
                 log.error("最多锁定一个目标")

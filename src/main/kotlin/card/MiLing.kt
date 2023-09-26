@@ -285,6 +285,11 @@ class MiLing : Card {
                 (player as? HumanPlayer)?.sendErrorMessage("不能传给那个人: ${pb.targetPlayerId}")
                 return null
             }
+            if (pb.lockPlayerIdList.toSet().size != pb.lockPlayerIdCount) {
+                log.error("锁定目标重复")
+                (player as? HumanPlayer)?.sendErrorMessage("锁定目标重复")
+                return null
+            }
             if (messageCard.canLock()) {
                 if (pb.lockPlayerIdCount > 1) {
                     log.error("最多锁定一个目标")

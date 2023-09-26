@@ -316,6 +316,7 @@ class RobotPlayer : Player() {
             SkillId.CHI_ZI_ZHI_XIN to Predicate { fsm -> ChiZiZhiXin.ai(fsm) },
             SkillId.LIAN_LUO2 to Predicate { fsm -> LianLuo2.ai(fsm) },
             SkillId.MI_XIN to Predicate { fsm -> MiXin.ai(fsm) },
+            SkillId.JIAN_DI_FENG_XING to Predicate { fsm -> JianDiFengXing.ai(fsm) },
         )
         private val aiSkillWaitForChengQing = hashMapOf<SkillId, BiPredicate<WaitForChengQing, ActiveSkill>>(
             SkillId.HOU_LAI_REN to BiPredicate { e, skill -> HouLaiRen.ai(e, skill) },

@@ -71,7 +71,8 @@ class YuQinGuZong : Card {
             r.draw(2)
             OnFinishResolveCard( // 这里先触发卡牌结算后，再触发情报传出时
                 r, r, target, getOriginCard(), type, OnSendCard(
-                    fsm.player, fsm.player, messageCard, dir, target, lockPlayers.toTypedArray(), true
+                    fsm.player, fsm.player, messageCard, dir, target, lockPlayers.toTypedArray(),
+                    isMessageCardFaceUp = true, needRemoveCardAndNotify = false
                 )
             )
         }
