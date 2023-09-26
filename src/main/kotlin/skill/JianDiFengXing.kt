@@ -239,7 +239,7 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(executeJianDiFengXingB(fsm.copy(messageCard = card)), true)
+            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm.copy(messageCard = card)), true)
         }
 
         companion object {
