@@ -156,7 +156,8 @@ class YingBianZiRu : InitialSkill, ActiveSkill {
         private val log = Logger.getLogger(YingBianZiRu::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.roleFaceUp) return false
+            !player.roleFaceUp || return false
+            !e.isMessageCardFaceUp || return false
             player.game!!.players.find {
                 it!!.alive && player.isEnemy(it)
                         && it.identity != Black && it.messageCards.count(it.identity) >= 2
