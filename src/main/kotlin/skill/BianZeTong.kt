@@ -94,7 +94,7 @@ class BianZeTong : InitialSkill, TriggeredSkill {
                         p.send(builder.build())
                     }
                 }
-                return null
+                return ResolveResult(fsm, true)
             }
             if (message.cardTypeA == message.cardTypeB) {
                 log.error("A和B不能相同")
