@@ -8,6 +8,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnAddMessageCard
+import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_toc
 import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -79,6 +80,15 @@ class HouZiQieXin : MainPhaseSkill(), InitialSkill {
         target.deleteMessageCard(messageCard.id)
         r.cards.add(messageCard)
         target.messageCards.add(handCard)
+        for (p in r.game!!.players) {
+            if (p is HumanPlayer) {
+                val builder = skill_hou_zi_qie_xin_toc.newBuilder()
+                builder.playerId = p.getAlternativeLocation(r.location)
+                builder.handCard = handCard.toPbCard()
+                builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                builder.messageCardId = message.messageCardId
+            }
+        }
         g.resolve(OnAddMessageCard(r, fsm))
     }
 
