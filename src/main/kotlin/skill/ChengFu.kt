@@ -19,7 +19,7 @@ class ChengFu : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
         fsm.cardType == Shi_Tan || fsm.cardType == Wei_Bi || return null
-        fsm.targetPlayer === askWhom && askWhom.findSkill(skillId) != null || return null
+        fsm.targetPlayer === askWhom || return null
         askWhom.roleFaceUp || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
         askWhom.addSkillUseCount(skillId)

@@ -21,7 +21,6 @@ class GuanHai : InitialSkill, TriggeredSkill {
         val fsm = g.fsm as? OnUseCard ?: return null
         val fsm2 = fsm.currentFsm as? FightPhaseIdle ?: return null
         fsm.player === askWhom || return null
-        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
         log.info("${askWhom}发动了[观海]")

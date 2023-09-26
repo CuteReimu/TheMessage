@@ -18,7 +18,6 @@ class BiFeng : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? OnUseCard ?: return null
         fsm.player === askWhom || return null
-        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
         askWhom.addSkillUseCount(skillId)

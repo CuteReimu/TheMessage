@@ -20,7 +20,6 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
         askWhom === fsm.sender || return null
-        askWhom.findSkill(skillId) != null || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
         askWhom.addSkillUseCount(skillId)
         val target = fsm.inFrontOfWhom

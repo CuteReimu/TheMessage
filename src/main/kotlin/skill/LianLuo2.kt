@@ -20,7 +20,6 @@ class LianLuo2 : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
         askWhom === fsm.inFrontOfWhom || return null
-        fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         fsm.inFrontOfWhom.cards.isNotEmpty() || return null
         !fsm.inFrontOfWhom.roleFaceUp || return null

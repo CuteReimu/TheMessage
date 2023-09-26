@@ -19,7 +19,6 @@ class LianMin : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
         askWhom === fsm.sender || return null
-        fsm.sender.findSkill(skillId) != null || return null
         !fsm.messageCard.isBlack() || return null
         fsm.sender.getSkillUseCount(skillId) == 0 || return null
         fsm.sender.addSkillUseCount(skillId)

@@ -19,7 +19,6 @@ class ZhiYin : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
         askWhom === fsm.inFrontOfWhom || return null
-        fsm.inFrontOfWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
         val colors = fsm.messageCard.colors
         Red in colors || Blue in colors || return null

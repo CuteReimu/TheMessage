@@ -17,7 +17,6 @@ class YiXin : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? DieSkill ?: return null
         askWhom == fsm.diedQueue[fsm.diedIndex] || return null
-        askWhom.findSkill(skillId) != null || return null
         askWhom.roleFaceUp || return null
         askWhom.cards.isNotEmpty() || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null

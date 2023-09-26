@@ -20,7 +20,6 @@ class JiuJi : InitialSkill, TriggeredSkill {
         val fsm = g.fsm as? OnUseCard ?: return null
         askWhom === fsm.targetPlayer || return null
         askWhom.alive || return null
-        askWhom.findSkill(skillId) != null || return null
         fsm.cardType in cardTypes || return null
         !askWhom.roleFaceUp || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
@@ -116,7 +115,6 @@ class JiuJi : InitialSkill, TriggeredSkill {
             val fsm = g.fsm as? OnFinishResolveCard ?: return null
             askWhom === fsm.targetPlayer || return null
             askWhom.alive || return null
-            askWhom.findSkill(skillId) != null || return null
             val card = fsm.card ?: return null
             askWhom.cards.add(card)
             log.info("${askWhom}将使用的${card}加入了手牌")

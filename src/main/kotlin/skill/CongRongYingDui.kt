@@ -20,7 +20,6 @@ class CongRongYingDui : InitialSkill, TriggeredSkill {
         val fsm = g.fsm as? OnFinishResolveCard ?: return null
         fsm.cardType == card_type.Shi_Tan || return null
         askWhom === fsm.player || askWhom === fsm.targetPlayer || return null
-        askWhom.findSkill(skillId) != null || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
         askWhom.addSkillUseCount(skillId)
         val target = if (askWhom === fsm.player) fsm.targetPlayer!! else fsm.player

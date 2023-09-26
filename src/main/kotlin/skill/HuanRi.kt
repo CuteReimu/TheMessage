@@ -20,7 +20,6 @@ class HuanRi : InitialSkill, TriggeredSkill {
         val fsm = g.fsm as? OnUseCard ?: return null
         askWhom === fsm.player || return null
         askWhom.alive || return null
-        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Diao_Bao || fsm.cardType == Po_Yi || return null
         fsm.player.roleFaceUp || return null
         askWhom.addSkillUseCount(skillId)

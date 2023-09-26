@@ -19,7 +19,6 @@ class ShenCang : InitialSkill, TriggeredSkill {
         val fsm = g.fsm as? OnUseCard ?: return null
         askWhom === fsm.player || return null
         askWhom.alive || return null
-        askWhom.findSkill(skillId) != null || return null
         fsm.cardType == Wei_Bi || fsm.cardType == Feng_Yun_Bian_Huan || fsm.cardType == Jie_Huo || return null
         fsm.player.roleFaceUp || return null
         askWhom.addSkillUseCount(skillId)

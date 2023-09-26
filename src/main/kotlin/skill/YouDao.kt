@@ -16,10 +16,10 @@ class YouDao : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.YOU_DAO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard
-        if (fsm == null || askWhom !== fsm.player || askWhom.findSkill(skillId) == null) return null
-        if (fsm.cardType != card_type.Wu_Dao) return null
-        if (askWhom.getSkillUseCount(skillId) > 0) return null
+        val fsm = g.fsm as? OnUseCard ?: return null
+        askWhom === fsm.player || return null
+        fsm.cardType == card_type.Wu_Dao || return null
+        askWhom.getSkillUseCount(skillId) == 0 || return null
         askWhom.addSkillUseCount(skillId)
         log.info("${askWhom}发动了[诱导]")
         for (p in g.players) {

@@ -18,7 +18,6 @@ class HanHouLaoShi : InitialSkill, TriggeredSkill {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
         askWhom === fsm.sender || return null
         fsm.sender !== fsm.inFrontOfWhom || return null
-        askWhom.findSkill(skillId) != null || return null
         fsm.inFrontOfWhom.cards.isNotEmpty() || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
         askWhom.addSkillUseCount(skillId)

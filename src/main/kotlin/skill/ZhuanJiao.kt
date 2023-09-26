@@ -20,7 +20,6 @@ class ZhuanJiao : InitialSkill, TriggeredSkill {
         val fsm = g.fsm as? OnUseCard ?: return null
         askWhom === fsm.player || return null
         askWhom.alive || return null
-        askWhom.findSkill(skillId) != null || return null
         askWhom.messageCards.any { !it.isBlack() } || return null
         askWhom.getSkillUseCount(skillId) == 0 || return null
         askWhom.addSkillUseCount(skillId)
