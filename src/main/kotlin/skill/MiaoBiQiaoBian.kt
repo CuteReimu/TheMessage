@@ -70,29 +70,34 @@ class MiaoBiQiaoBian : InitialSkill, ActiveSkill {
             target1.deleteMessageCard(card1.id)
             r.cards.add(card1)
             log.info("${r}发动了[妙笔巧辩]，拿走了${target1}面前的${card1}")
+            val canTakeAnother = g.players.any {
+                it!!.alive && it.messageCards.any { c -> !c.hasSameColor(card1) }
+            }
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_miao_bi_qiao_bian_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target1.location)
                     builder.cardId = card1.id
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_miao_bi_qiao_bian_b_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    if (canTakeAnother) {
+                        builder.waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq2: Int = p.seq
+                            builder.seq = seq2
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq2)) {
+                                    val builder2 = skill_miao_bi_qiao_bian_b_tos.newBuilder()
+                                    builder2.enable = false
+                                    builder2.seq = seq2
+                                    g.tryContinueResolveProtocol(r, builder2.build())
+                                }
+                            }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
                     }
                     p.send(builder.build())
                 }
             }
-            if (r is RobotPlayer) {
+            if (canTakeAnother && r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val playerAndCards = ArrayList<PlayerAndCard>()
                     for (p in g.players) {
@@ -115,6 +120,17 @@ class MiaoBiQiaoBian : InitialSkill, ActiveSkill {
                         g.tryContinueResolveProtocol(r, builder.build())
                     }
                 }, 2, TimeUnit.SECONDS)
+            }
+            if (!canTakeAnother) {
+                for (p in g.players) {
+                    if (p is HumanPlayer) {
+                        val builder = skill_miao_bi_qiao_bian_b_toc.newBuilder()
+                        builder.playerId = p.getAlternativeLocation(r.location)
+                        builder.enable = false
+                        p.send(builder.build())
+                    }
+                }
+                return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             return null
         }

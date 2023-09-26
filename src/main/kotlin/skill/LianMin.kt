@@ -20,6 +20,7 @@ class LianMin : InitialSkill, TriggeredSkill {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
         askWhom === fsm.sender || return null
         !fsm.messageCard.isBlack() || return null
+        askWhom.messageCards.any { it.isBlack() } || fsm.inFrontOfWhom.messageCards.any { it.isBlack() } || return null
         fsm.sender.getSkillUseCount(skillId) == 0 || return null
         fsm.sender.addSkillUseCount(skillId)
         return ResolveResult(executeLianMin(fsm), true)
