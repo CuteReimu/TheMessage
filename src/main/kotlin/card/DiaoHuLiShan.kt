@@ -9,12 +9,9 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
-import com.fengsheng.skill.CannotPlayCard
-import com.fengsheng.skill.InvalidSkill
-import com.fengsheng.skill.cannotPlayCard
+import com.fengsheng.skill.*
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class DiaoHuLiShan : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -81,11 +78,13 @@ class DiaoHuLiShan : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.player
             !player.cannotPlayCard(card_type.Diao_Hu_Li_Shan) || return false
-            if (player.cards.size > 3) return false
             val p = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player)
             }.randomOrNull() ?: return false
-            val isSkill = p.cards.isEmpty() || Random.nextBoolean()
+            val isSkills = ArrayList<Boolean>()
+            if (p.cards.isNotEmpty() && !p.skills.any { it is CannotPlayCard }) isSkills.add(false)
+            if (p.skills.any { it is ActiveSkill && it !is MainPhaseSkill }) isSkills.add(true)
+            val isSkill = isSkills.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p, isSkill) }, 2, TimeUnit.SECONDS)
             return true
         }
