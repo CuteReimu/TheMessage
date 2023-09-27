@@ -36,7 +36,8 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
                             {
                                 if (player.checkSeq(seq)) {
                                     val builder2 = skill_xiang_jin_si_suo_a_tos.newBuilder()
-                                    builder2.enable = false
+                                    builder2.enable = true
+                                    builder2.targetPlayerId = 0
                                     builder2.seq = seq
                                     player.game!!.tryContinueResolveProtocol(player, builder2.build())
                                 }
