@@ -46,3 +46,11 @@
 有一种特殊的技能叫`MustReceiveCardSkill`，本回合必须接收/必须不能接收情报，它继承于`OneTurnSkill`
 
 > 杂耍艺人和军人会让别人获得一个继承于`MustReceiveCardSkill`和的技能。
+
+## 传情报相关的技能
+
+- 有一种特殊的技能叫`SendMessageDirectionSkill`，它会影响可以传出情报的方向
+- 有一种特殊的技能叫`SendMessageCanLockSkill`，它会影响传出的情报是否能锁定
+- 有一种特殊的技能叫`SendMessageCardSkill`，它会影响能传出哪张情报
+
+相同类型的技能，后来的技能会使先来的技能失效

@@ -4,9 +4,8 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
-import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Fengsheng
-import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.canSendCard
 import org.apache.log4j.Logger
 
 class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong_tos>() {
@@ -43,64 +42,20 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
             r.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
             return
         }
-        if (r.findSkill(SkillId.LIAN_LUO) == null && pb.cardDir != messageCard.direction) {
-            log.error("方向错误: ${pb.cardDir}")
-            r.sendErrorMessage("方向错误: ${pb.cardDir}")
-            return
-        }
-        var targetLocation = when (pb.cardDir) {
-            Left -> r.getNextLeftAlivePlayer().location
-            Right -> r.getNextRightAlivePlayer().location
-            else -> 0
-        }
-        if (pb.cardDir != Up && pb.targetPlayerId != r.getAlternativeLocation(targetLocation)) {
-            log.error("不能传给那个人: ${pb.targetPlayerId}")
-            r.sendErrorMessage("不能传给那个人: ${pb.targetPlayerId}")
-            return
-        }
-        if (pb.lockPlayerIdList.toSet().size != pb.lockPlayerIdCount) {
-            log.error("锁定目标重复")
-            r.sendErrorMessage("锁定目标重复")
-            return
-        }
-        if (messageCard.canLock() || r.findSkill(SkillId.QIANG_YING_XIA_LING) != null) {
-            if (pb.lockPlayerIdCount > 1) {
-                log.error("最多锁定一个目标")
-                r.sendErrorMessage("最多锁定一个目标")
-                return
-            } else if (pb.lockPlayerIdCount == 1) {
-                if (pb.getLockPlayerId(0) < 0 || pb.getLockPlayerId(0) >= r.game!!.players.size) {
-                    log.error("锁定目标错误: ${pb.getLockPlayerId(0)}")
-                    r.sendErrorMessage("锁定目标错误: ${pb.getLockPlayerId(0)}")
-                    return
-                } else if (pb.getLockPlayerId(0) == 0) {
-                    log.error("不能锁定自己")
-                    r.sendErrorMessage("不能锁定自己")
-                    return
-                }
-            }
-        } else {
-            if (pb.lockPlayerIdCount > 0) {
-                log.error("这张情报没有锁定标记")
-                r.sendErrorMessage("这张情报没有锁定标记")
-                return
-            }
-        }
-        targetLocation = r.getAbstractLocation(pb.targetPlayerId)
-        val target = r.game!!.players[targetLocation]!!
-        if (!target.alive) {
-            log.error("目标已死亡")
-            r.sendErrorMessage("目标已死亡")
-            return
-        }
+        val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         val lockPlayers = pb.lockPlayerIdList.map {
-            val lockPlayer = r.game!!.players[r.getAbstractLocation(it)]!!
-            if (!lockPlayer.alive) {
-                log.error("锁定目标已死亡：$lockPlayer")
-                r.sendErrorMessage("锁定目标已死亡：$lockPlayer")
+            if (it <= 0 || it >= r.game!!.players.size) {
+                log.error("锁定目标错误: $it")
+                r.sendErrorMessage("锁定目标错误: $it")
                 return
             }
-            lockPlayer
+            r.game!!.players[r.getAbstractLocation(it)]!!
+        }
+        val sendCardError = r.canSendCard(card, null, pb.cardDir, target, lockPlayers)
+        if (sendCardError != null) {
+            log.error(sendCardError)
+            (r as? HumanPlayer)?.sendErrorMessage(sendCardError)
+            return
         }
         if (card.canUse(r.game!!, r, messageCard, pb.cardDir, target, lockPlayers)) {
             r.incrSeq()

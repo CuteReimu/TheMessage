@@ -57,6 +57,7 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
             val g = r.game!!
             r.incrSeq()
             log.info("${r}发动了[冷血训练]，展示了牌堆顶的${cards.contentToString()}")
+            r.skills += MustLockOne()
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_leng_xue_xun_lian_a_toc.newBuilder()
@@ -168,41 +169,17 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误: ${pb.targetPlayerId}")
                 return null
             }
-            if (pb.targetPlayerId == 0) {
-                log.error("不能传给自己")
-                (player as? HumanPlayer)?.sendErrorMessage("不能传给自己")
-                return null
-            }
-            val targetLocation = when (card.direction) {
-                Left -> player.getNextLeftAlivePlayer().location
-                Right -> player.getNextRightAlivePlayer().location
-                else -> 0
-            }
-            if (card.direction != Up && pb.targetPlayerId != player.getAlternativeLocation(targetLocation)) {
-                log.error("不能传给那个人: ${pb.targetPlayerId}")
-                (player as? HumanPlayer)?.sendErrorMessage("不能传给那个人: ${pb.targetPlayerId}")
-                return null
-            }
             val target = player.game!!.players[player.getAbstractLocation(pb.targetPlayerId)]!!
-            if (!target.alive) {
-                log.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
-                return null
-            }
             if (pb.lockPlayerId <= 0 || pb.lockPlayerId >= player.game!!.players.size) {
                 log.error("锁定目标错误: ${pb.lockPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("锁定目标错误: ${pb.lockPlayerId}")
                 return null
             }
-            if (pb.lockPlayerId == 0) {
-                log.error("不能锁定自己")
-                (player as? HumanPlayer)?.sendErrorMessage("不能锁定自己")
-                return null
-            }
             val lockPlayer = player.game!!.players[player.getAbstractLocation(pb.lockPlayerId)]!!
-            if (!lockPlayer.alive) {
-                log.error("锁定目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("锁定目标已死亡")
+            val sendCardError = player.canSendCard(card, null, card.direction, target, listOf(lockPlayer))
+            if (sendCardError != null) {
+                log.error(sendCardError)
+                (player as? HumanPlayer)?.sendErrorMessage(sendCardError)
                 return null
             }
             player.incrSeq()
@@ -250,6 +227,14 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
 
         companion object {
             private val log = Logger.getLogger(executeLengXueXunLian::class.java)
+        }
+    }
+
+    private class MustLockOne : SendMessageCanLockSkill, OneTurnSkill {
+        override val skillId = SkillId.UNKNOWN
+
+        override fun checkCanLock(card: Card, lockPlayers: List<Player>): Boolean {
+            return lockPlayers.size == 1
         }
     }
 

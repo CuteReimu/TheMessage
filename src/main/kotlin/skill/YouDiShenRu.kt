@@ -6,7 +6,6 @@ import com.fengsheng.Player
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
-import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_toc
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
@@ -39,76 +38,25 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
             (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
             return
         }
-        if (r.findSkill(SkillId.HAN_HOU_LAO_SHI) != null) {
-            if (card.isPureBlack() && !r.cards.all { it.isPureBlack() }) {
-                log.error("你无法传出纯黑色情报：$card")
-                (r as? HumanPlayer)?.sendErrorMessage("你无法传出纯黑色情报")
-                return
-            }
-        }
         if (message.targetPlayerId <= 0 || message.targetPlayerId >= r.game!!.players.size) {
             log.error("目标错误: ${message.targetPlayerId}")
             (r as? HumanPlayer)?.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
             return
         }
-        if (r.findSkill(SkillId.LIAN_LUO) == null && message.cardDir != card.direction) {
-            log.error("方向错误: ${message.cardDir}")
-            (r as? HumanPlayer)?.sendErrorMessage("方向错误: ${message.cardDir}")
-            return
-        }
-        var targetLocation = when (message.cardDir) {
-            Common.direction.Left -> r.getNextLeftAlivePlayer().location
-            Common.direction.Right -> r.getNextRightAlivePlayer().location
-            else -> 0
-        }
-        if (message.cardDir != Common.direction.Up && message.targetPlayerId != r.getAlternativeLocation(targetLocation)) {
-            log.error("不能传给那个人: ${message.targetPlayerId}")
-            (r as? HumanPlayer)?.sendErrorMessage("不能传给那个人: ${message.targetPlayerId}")
-            return
-        }
-        if (message.lockPlayerIdList.toSet().size != message.lockPlayerIdCount) {
-            log.error("锁定目标重复")
-            (r as? HumanPlayer)?.sendErrorMessage("锁定目标重复")
-            return
-        }
-        if (card.canLock() || r.findSkill(SkillId.QIANG_YING_XIA_LING) != null) {
-            if (message.lockPlayerIdCount > 1) {
-                log.error("最多锁定一个目标")
-                (r as? HumanPlayer)?.sendErrorMessage("最多锁定一个目标")
-                return
-            } else if (message.lockPlayerIdCount == 1) {
-                if (message.getLockPlayerId(0) < 0 || message.getLockPlayerId(0) >= r.game!!.players.size) {
-                    log.error("锁定目标错误: ${message.getLockPlayerId(0)}")
-                    (r as? HumanPlayer)?.sendErrorMessage("锁定目标错误: ${message.getLockPlayerId(0)}")
-                    return
-                } else if (message.getLockPlayerId(0) == 0) {
-                    log.error("不能锁定自己")
-                    (r as? HumanPlayer)?.sendErrorMessage("不能锁定自己")
-                    return
-                }
-            }
-        } else {
-            if (message.lockPlayerIdCount > 0) {
-                log.error("这张情报没有锁定标记")
-                (r as? HumanPlayer)?.sendErrorMessage("这张情报没有锁定标记")
+        val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
+        val lockPlayers = message.lockPlayerIdList.map {
+            if (it <= 0 || it >= g.players.size) {
+                log.error("锁定目标错误: $it")
+                (r as? HumanPlayer)?.sendErrorMessage("锁定目标错误: $it")
                 return
             }
+            g.players[r.getAbstractLocation(it)]!!
         }
-        targetLocation = r.getAbstractLocation(message.targetPlayerId)
-        if (!r.game!!.players[targetLocation]!!.alive) {
-            log.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+        val sendCardError = r.canSendCard(card, r.cards, message.cardDir, target, lockPlayers)
+        if (sendCardError != null) {
+            log.error(sendCardError)
+            (r as? HumanPlayer)?.sendErrorMessage(sendCardError)
             return
-        }
-        val lockPlayers = ArrayList<Player>()
-        for (lockPlayerId in message.lockPlayerIdList) {
-            val lockPlayer = r.game!!.players[r.getAbstractLocation(lockPlayerId)]!!
-            if (!lockPlayer.alive) {
-                log.error("锁定目标已死亡：$lockPlayer")
-                (r as? HumanPlayer)?.sendErrorMessage("锁定目标已死亡：$lockPlayer")
-                return
-            }
-            lockPlayers.add(lockPlayer)
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
@@ -121,7 +69,7 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
                 val builder = skill_you_di_shen_ru_toc.newBuilder()
                 builder.playerId = p.getAlternativeLocation(r.location)
                 builder.card = card.toPbCard()
-                builder.targetPlayerId = p.getAlternativeLocation(targetLocation)
+                builder.targetPlayerId = p.getAlternativeLocation(target.location)
                 lockPlayers.forEach { builder.addLockPlayerIds(p.getAlternativeLocation(it.location)) }
                 builder.cardDir = message.cardDir
                 p.send(builder.build())
@@ -129,7 +77,7 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
         }
         g.resolve(
             OnSendCard(
-                fsm.player, fsm.player, card, message.cardDir, g.players[targetLocation]!!,
+                fsm.player, fsm.player, card, message.cardDir, target,
                 lockPlayers.toTypedArray(), isMessageCardFaceUp = true, needRemoveCardAndNotify = false
             )
         )

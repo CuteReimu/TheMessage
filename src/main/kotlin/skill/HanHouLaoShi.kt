@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.Card
 import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Role.*
@@ -11,8 +12,11 @@ import java.util.concurrent.TimeUnit
 /**
  * 哑巴技能【憨厚老实】：你无法传出纯黑色情报（除非你只能传出纯黑色情报），接收你情报的玩家需给你一张手牌。
  */
-class HanHouLaoShi : InitialSkill, TriggeredSkill {
+class HanHouLaoShi : InitialSkill, TriggeredSkill, SendMessageCardSkill {
     override val skillId = SkillId.HAN_HOU_LAO_SHI
+
+    override fun checkSendCard(availableCards: List<Card>, card: Card) =
+        !card.isPureBlack() || availableCards.all { it.isPureBlack() }
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
