@@ -16,6 +16,7 @@ class BiYiShuangFei : InitialSkill, ChangeGameResultSkill {
         declaredWinners: List<Player>,
         winners: MutableList<Player>
     ) {
+        r.roleFaceUp || return
         r === whoseTurn || return // 自己的回合才能发动技能
         !winners.any { it === r } || return // 自己没赢才能发动技能
         val target = declaredWinners.filter { it.isMale }.randomOrNull() ?: return

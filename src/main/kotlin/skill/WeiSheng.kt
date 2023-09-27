@@ -15,6 +15,7 @@ class WeiSheng : InitialSkill, ChangeGameResultSkill {
         declaredWinners: List<Player>,
         winners: MutableList<Player>
     ) {
+        r.roleFaceUp || return
         winners.any { it === r } || return
         r.game!!.players.forEach { if (it!!.identity == Has_No_Identity) winners.add(it) }
     }
