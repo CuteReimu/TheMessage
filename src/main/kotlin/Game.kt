@@ -69,7 +69,8 @@ class Game private constructor(totalPlayerCount: Int) {
     }
 
     fun setStartTimer() {
-        gameStartTimeout = GameExecutor.post(this, { start() }, 5, TimeUnit.SECONDS)
+        val delay = if (players.count { it is HumanPlayer } <= 1) 0L else 5L
+        gameStartTimeout = GameExecutor.post(this, { start() }, delay, TimeUnit.SECONDS)
     }
 
     fun cancelStartTimer() {
