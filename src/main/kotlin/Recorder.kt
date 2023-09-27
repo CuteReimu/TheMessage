@@ -155,11 +155,14 @@ class Recorder {
 
     fun reconnect(player: HumanPlayer) {
         player.send(reconnect_toc.newBuilder().setIsEnd(false).build())
-        for (i in list.indices) {
+        for (i in 0..(list.size - 2)) {
             val line = list[i]
-            player.send(line.protoName, line.messageBuf.toByteArray(), i == list.size - 1)
+            player.send(line.protoName, line.messageBuf.toByteArray(), false)
         }
         player.send(reconnect_toc.newBuilder().setIsEnd(true).build())
+        list.lastOrNull()?.let { line ->
+            player.send(line.protoName, line.messageBuf.toByteArray(), false)
+        }
     }
 
     companion object {
