@@ -3,7 +3,6 @@ package com.fengsheng.phase
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.role
-import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessageV3
@@ -34,6 +33,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                 val prefer = if (player!!.identity == color.Black) blackPrefer else redBluePrefer
                 val disgust = if (player.identity == color.Black) blackDisgust else redBlueDisgust
                 selected[player.location] = options[player.location].run {
+                    if (Config.IsGmEnable) return@run firstOrNull() ?: RoleSkillsData()
                     prefer.forEach { role -> find { o -> o.role == role }?.let { o -> return@run o } }
                     filterNot { it.role in disgust }.ifEmpty { this }.firstOrNull() ?: RoleSkillsData()
                 }
