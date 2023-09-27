@@ -13,8 +13,8 @@ import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.InitialSkill
 import com.fengsheng.skill.RoleCache
-import com.fengsheng.skill.SkillId.WEI_SHENG
 import com.fengsheng.skill.TriggeredSkill
+import com.fengsheng.skill.changeGameResult
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
 import io.netty.util.Timeout
@@ -380,7 +380,7 @@ class Game private constructor(totalPlayerCount: Int) {
     /**
      * 判断是否仅剩的一个阵营存活
      */
-    fun checkOnlyOneAliveIdentityPlayers(): Boolean {
+    fun checkOnlyOneAliveIdentityPlayers(whoseTurn: Player): Boolean {
         var identity: color? = null
         val players = players.filterNotNull().filter { !it.lose }
         val alivePlayers = players.filter {
@@ -405,8 +405,7 @@ class Game private constructor(totalPlayerCount: Int) {
             } else {
                 alivePlayers.toMutableList()
             }
-        if (winner.any { it.findSkill(WEI_SHENG) != null && it.roleFaceUp })
-            winner.addAll(players.filter { it.identity == Has_No_Identity })
+        changeGameResult(whoseTurn, emptyList(), winner)
         val winners = winner.toTypedArray()
         log.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
         allPlayerSetRoleFaceUp()

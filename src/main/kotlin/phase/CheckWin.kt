@@ -6,8 +6,7 @@ import com.fengsheng.ResolveResult
 import com.fengsheng.card.count
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.skill.SkillId.BI_YI_SHUANG_FEI
-import com.fengsheng.skill.SkillId.WEI_SHENG
+import com.fengsheng.skill.changeGameResult
 import org.apache.log4j.Logger
 
 /**
@@ -42,7 +41,6 @@ data class CheckWin(
         fun HashMap<Int, Player>.addPlayer(player: Player) = put(player.location, player)
         fun HashMap<Int, Player>.addAllPlayers(players: Iterable<Player>) = players.forEach { addPlayer(it) }
         fun HashMap<Int, Player>.containsPlayer(player: Player) = containsKey(player.location)
-        fun HashMap<Int, Player>.removePlayer(player: Player) = remove(player.location)
         players.forEach { player ->
             val red = player.messageCards.count(Red)
             val blue = player.messageCards.count(Blue)
@@ -79,26 +77,16 @@ data class CheckWin(
             declareWinner = hashMapOf(stealer.location to stealer)
             winner = hashMapOf(stealer.location to stealer)
         }
+        val declareWinners = declareWinner.values.toList()
+        val winners = winner.values.toMutableList()
+        whoseTurn.game!!.changeGameResult(whoseTurn, declareWinners, winners)
         if (declareWinner.isNotEmpty()) {
-            if (winner.any { (_, v) -> v.findSkill(WEI_SHENG) != null && v.roleFaceUp })
-                winner.addAllPlayers(players.filter { it.identity == Has_No_Identity })
-            if (whoseTurn.findSkill(BI_YI_SHUANG_FEI) != null && whoseTurn.roleFaceUp && whoseTurn.alive
-                && !winner.containsPlayer(whoseTurn) // 自己本来就是赢家，则不发动
-            ) {
-                val target = declareWinner.values.filter { it.isMale }.randomOrNull()
-                if (target != null) {
-                    if (target.identity == Red || target.identity == Blue) {
-                        winner.values.filter { it !== target && it.identity == target.identity }
-                            .forEach { winner.removePlayer(it) }
-                    }
-                    winner.addPlayer(whoseTurn)
-                }
-            }
-            val declareWinners = declareWinner.values.toTypedArray()
-            val winners = winner.values.toTypedArray()
-            log.info("${declareWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
+            log.info(
+                "${declareWinners.toTypedArray().contentToString()}宣告胜利，" +
+                        "胜利者有${winners.toTypedArray().contentToString()}"
+            )
             game.allPlayerSetRoleFaceUp()
-            whoseTurn.game!!.end(declareWinner.values.toList(), winner.values.toList())
+            whoseTurn.game!!.end(declareWinners, winners)
             return ResolveResult(null, false)
         }
         return ResolveResult(StartWaitForChengQing(whoseTurn, receiveOrder, afterDieResolve), true)

@@ -28,7 +28,7 @@ data class SendPhaseStart(val player: Player) : Fsm {
         if (!player.alive) {
             return ResolveResult(NextTurn(player), true)
         }
-        if (game.checkOnlyOneAliveIdentityPlayers()) {
+        if (game.checkOnlyOneAliveIdentityPlayers(player)) {
             return ResolveResult(null, false)
         }
         for (p in game.players) {
