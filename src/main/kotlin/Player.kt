@@ -73,7 +73,7 @@ abstract class Player protected constructor() {
 
     abstract fun notifyDrawPhase()
     abstract fun notifyMainPhase(waitSecond: Int)
-    abstract fun notifySendPhaseStart(waitSecond: Int)
+    abstract fun notifySendPhaseStart(waitSecond: Int = 0)
     abstract fun notifySendMessageCard(
         whoseTurn: Player,
         sender: Player,

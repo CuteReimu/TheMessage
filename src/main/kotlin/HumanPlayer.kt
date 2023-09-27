@@ -211,7 +211,7 @@ class HumanPlayer(
         builder.waitingPlayerId = playerId
         if (player.cards.isNotEmpty()) {
             builder.waitingSecond = waitSecond
-            if (this === player) {
+            if (this === player && waitSecond > 0) {
                 builder.seq = seq
                 val seq2 = seq
                 timeout = GameExecutor.post(game!!, {
@@ -223,7 +223,7 @@ class HumanPlayer(
             }
         }
         send(builder.build())
-        if (player.cards.isEmpty()) {
+        if (player.cards.isEmpty() && waitSecond > 0) {
             val skill = player.findSkill(SkillId.LENG_XUE_XUN_LIAN) as ActiveSkill
             val builder2 = skill_leng_xue_xun_lian_a_tos.newBuilder()
             builder2.seq = seq

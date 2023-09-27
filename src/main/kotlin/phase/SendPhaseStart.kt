@@ -11,8 +11,17 @@ import org.apache.log4j.Logger
  * 情报传递阶段开始时，选择传递一张情报
  */
 data class SendPhaseStart(val player: Player) : Fsm {
+    /** 刚刚切到这个状态，需要先给客户端发一遍notify消息 */
+    private var justSwitch = true
+
     override fun resolve(): ResolveResult? {
         val game = player.game!!
+        if (justSwitch) {
+            justSwitch = false
+            for (p in game.players)
+                p!!.notifySendPhaseStart()
+            return ResolveResult(this, true)
+        }
         val result = game.dealListeningSkill(player.location)
         if (result != null) return result
         if (player.alive && player.cards.isEmpty() && player.findSkill(LENG_XUE_XUN_LIAN) == null) {
@@ -25,15 +34,12 @@ data class SendPhaseStart(val player: Player) : Fsm {
             for (p in game.players) p!!.notifyDying(player.location, true)
             for (p in game.players) p!!.notifyDie(player.location)
         }
-        if (!player.alive) {
+        if (!player.alive)
             return ResolveResult(NextTurn(player), true)
-        }
-        if (game.checkOnlyOneAliveIdentityPlayers(player)) {
+        if (game.checkOnlyOneAliveIdentityPlayers(player))
             return ResolveResult(null, false)
-        }
-        for (p in game.players) {
+        for (p in game.players)
             p!!.notifySendPhaseStart(Config.WaitSecond)
-        }
         return null
     }
 
