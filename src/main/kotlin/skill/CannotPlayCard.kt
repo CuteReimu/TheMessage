@@ -8,12 +8,10 @@ import com.fengsheng.protos.Common.card_type
  *
  * @param cardType 被禁用的卡牌列表
  * @param forbidAllCard 是否禁用所有牌
- * @param forbidAllSkill 是否禁用所有技能
  */
 class CannotPlayCard(
     private val cardType: List<card_type> = emptyList(),
-    val forbidAllCard: Boolean = false,
-    val forbidAllSkill: Boolean = false
+    val forbidAllCard: Boolean = false
 ) : OneTurnSkill {
     override val skillId = SkillId.UNKNOWN
 
