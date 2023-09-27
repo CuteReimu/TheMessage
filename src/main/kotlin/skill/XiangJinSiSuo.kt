@@ -137,7 +137,7 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            askWhom.draw(2)
+            askWhom.draw(1)
             return ResolveResult(fsm, true)
         }
 
