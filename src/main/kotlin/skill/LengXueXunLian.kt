@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.MiLing.executeMiLing
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.SendPhaseIdle
+import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.card_type.Mi_Ling
@@ -200,8 +200,10 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
                 }
             }
             return ResolveResult(
-                SendPhaseIdle(whoseTurn, card, card.direction, target, arrayOf(lockPlayer), true, r),
-                true
+                OnSendCard(
+                    whoseTurn, r, card, card.direction, target, arrayOf(lockPlayer),
+                    isMessageCardFaceUp = true, needRemoveCardAndNotify = false
+                ), true
             )
         }
 
