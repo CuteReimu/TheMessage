@@ -51,7 +51,7 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
             }
             r.game!!.players[r.getAbstractLocation(it)]!!
         }
-        val sendCardError = r.canSendCard(card, null, pb.cardDir, target, lockPlayers)
+        val sendCardError = r.canSendCard(messageCard, null, pb.cardDir, target, lockPlayers)
         if (sendCardError != null) {
             log.error(sendCardError)
             (r as? HumanPlayer)?.sendErrorMessage(sendCardError)
