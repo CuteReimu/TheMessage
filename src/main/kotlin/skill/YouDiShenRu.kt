@@ -1,16 +1,19 @@
 package com.fengsheng.skill
 
 import com.fengsheng.Game
+import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_toc
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
 
 /**
  * 军人技能【诱敌深入】：整局限一次，你的传递阶段，改为将一张手牌作为情报明面传出，该情报含有身份颜色的玩家，在本阶段必须选则接收该情报，不含身份颜色的玩家不能选择接收。
@@ -93,5 +96,25 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
 
     companion object {
         private val log = Logger.getLogger(YouDiShenRu::class.java)
+
+        fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
+            val player = e.player
+            val game = player.game!!
+            val messageCard = player.cards.filter { it.direction != Up }.randomOrNull() ?: return false
+            val direction = messageCard.direction
+            val target = when (direction) {
+                Left -> player.getNextLeftAlivePlayer().let { if (it !== player) it else null }
+                Right -> player.getNextRightAlivePlayer().let { if (it !== player) it else null }
+                else -> null
+            } ?: return false
+            GameExecutor.post(game, {
+                val builder = skill_you_di_shen_ru_tos.newBuilder()
+                builder.cardId = messageCard.id
+                builder.targetPlayerId = player.getAlternativeLocation(target.location)
+                builder.cardDir = direction
+                skill.executeProtocol(game, player, builder.build())
+            }, 2, TimeUnit.SECONDS)
+            return true
+        }
     }
 }

@@ -289,7 +289,8 @@ class RobotPlayer : Player() {
             SkillId.HOU_ZI_QIE_XIN to BiPredicate { e, skill -> HouZiQieXin.ai(e, skill) },
         )
         private val aiSkillSendPhaseStart = hashMapOf<SkillId, BiPredicate<SendPhaseStart, ActiveSkill>>(
-            SkillId.LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) }
+            SkillId.LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) },
+            SkillId.YOU_DI_SHEN_RU to BiPredicate { e, skill -> YouDiShenRu.ai(e, skill) },
         )
         private val aiSkillFightPhase = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
             SkillId.TOU_TIAN to BiPredicate { e, skill -> TouTian.ai(e, skill) },
