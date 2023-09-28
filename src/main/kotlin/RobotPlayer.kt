@@ -38,6 +38,7 @@ class RobotPlayer : Player() {
     }
 
     override fun notifySendPhaseStart(waitSecond: Int) {
+        if (waitSecond == 0) return
         val fsm = game!!.fsm as SendPhaseStart
         if (this !== fsm.player) return
         for (skill in skills) {
