@@ -200,7 +200,7 @@ object RoleCache {
         return roleSkillsDataArray
     }
 
-    fun getRoleName(role: role?): String? {
+    fun getRoleName(role: role): String? {
         val roleSkillsData = mapCache[role]
         return roleSkillsData?.name
     }

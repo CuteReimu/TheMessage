@@ -1,5 +1,6 @@
 package com.fengsheng
 
+import com.fengsheng.skill.RoleCache
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -62,8 +63,12 @@ object MiraiPusher {
         lines.add("对局结果")
         for (player in game.players.sortedBy { it!!.identity.number }) {
             val name = player!!.playerName
-            val roleName = player.roleName
-            val identity = Player.identityColorToString(player.identity, player.secretTask)
+            var roleName = player.roleName
+            if (player.role != player.originRole)
+                RoleCache.getRoleName(player.originRole)?.let { roleName += "(原$it)" }
+            var identity = Player.identityColorToString(player.identity, player.secretTask)
+            if (player.identity != player.originIdentity || player.secretTask != player.originSecretTask)
+                identity += "(原${Player.identityColorToString(player.originIdentity, player.originSecretTask)})"
             val result =
                 if (declareWinners.any { it === player }) "宣胜"
                 else if (winners.any { it === player }) "胜利"
