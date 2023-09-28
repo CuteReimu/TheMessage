@@ -21,7 +21,7 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
         return ResolveResult(executeXiangJinSiSuoA(fsm, askWhom), true)
     }
 
-    private data class executeXiangJinSiSuoA(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class executeXiangJinSiSuoA(val fsm: OnSendCardSkill, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -37,7 +37,7 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
                                 if (player.checkSeq(seq)) {
                                     val builder2 = skill_xiang_jin_si_suo_a_tos.newBuilder()
                                     builder2.enable = true
-                                    builder2.targetPlayerId = 0
+                                    builder2.targetPlayerId = r.getAlternativeLocation(fsm.targetPlayer.location)
                                     builder2.seq = seq
                                     player.game!!.tryContinueResolveProtocol(player, builder2.build())
                                 }
@@ -54,7 +54,7 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
                     val builder = skill_xiang_jin_si_suo_a_tos.newBuilder()
                     r.game!!.players.filter { it!!.alive }.randomOrNull()?.let {
                         builder.enable = true
-                        builder.targetPlayerId = r.getAlternativeLocation(it.location)
+                        builder.targetPlayerId = r.getAlternativeLocation(fsm.targetPlayer.location)
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
