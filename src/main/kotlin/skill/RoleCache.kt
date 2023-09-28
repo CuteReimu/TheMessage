@@ -82,11 +82,6 @@ object RoleCache {
     private val pool = Channel<() -> Unit>(Channel.UNLIMITED)
     private val forbiddenRoleCache = ArrayList<RoleSkillsData>()
     private val doubleProbabilityRoles = listOf(
-        role.su_ji_yuan,
-        role.ya_ba,
-        role.lao_qian,
-        role.middle_age_xiao_jiu,
-        role.middle_age_han_mei,
         role.si_shi,
         role.jiao_shou,
         role.spy_a_fu_luo_la,
