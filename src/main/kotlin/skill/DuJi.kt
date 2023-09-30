@@ -107,10 +107,11 @@ class DuJi : InitialSkill, ActiveSkill {
         val r: Player,
         val playerAndCards: ArrayList<TwoPlayersAndCard>,
         val whoGiveWhoCard: ArrayList<Pair<Player, Player>>,
+        val addMessageCard: Boolean = false
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (playerAndCards.isEmpty()) {
-                var nextFsm: Fsm = fsm
+                var nextFsm = if (addMessageCard) OnAddMessageCard(fsm.whoseTurn, fsm) else fsm
                 for ((fromPlayer, toPlayer) in whoGiveWhoCard) {
                     nextFsm = OnGiveCard(fsm.whoseTurn, fromPlayer, toPlayer, nextFsm)
                 }
@@ -280,7 +281,7 @@ class DuJi : InitialSkill, ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnAddMessageCard(fsm.fsm.whoseTurn, fsm), true)
+            return ResolveResult(fsm.copy(addMessageCard = true), true)
         }
 
         companion object {
