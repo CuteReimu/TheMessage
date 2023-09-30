@@ -16,12 +16,12 @@ interface ChangeGameResultSkill : Skill {
     fun changeGameResult(
         r: Player,
         whoseTurn: Player,
-        declaredWinners: List<Player>,
+        declaredWinners: MutableList<Player>,
         winners: MutableList<Player>
     )
 }
 
-fun Game.changeGameResult(whoseTurn: Player, declaredWinners: List<Player>, winners: MutableList<Player>) {
+fun Game.changeGameResult(whoseTurn: Player, declaredWinners: MutableList<Player>, winners: MutableList<Player>) {
     val beginLocation = whoseTurn.location
     var i = beginLocation
     do {

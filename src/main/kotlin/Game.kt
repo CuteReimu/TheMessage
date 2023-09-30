@@ -406,11 +406,12 @@ class Game private constructor(totalPlayerCount: Int) {
             } else {
                 alivePlayers.toMutableList()
             }
-        changeGameResult(whoseTurn, emptyList(), winner)
+        val declaredWinners = ArrayList<Player>()
+        changeGameResult(whoseTurn, declaredWinners, winner)
         val winners = winner.toTypedArray()
         log.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
         allPlayerSetRoleFaceUp()
-        end(emptyList(), winner)
+        end(declaredWinners, winner)
         return true
     }
 

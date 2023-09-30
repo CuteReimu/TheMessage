@@ -12,7 +12,7 @@ class WeiSheng : InitialSkill, ChangeGameResultSkill {
     override fun changeGameResult(
         r: Player,
         whoseTurn: Player,
-        declaredWinners: List<Player>,
+        declaredWinners: MutableList<Player>,
         winners: MutableList<Player>
     ) {
         r.roleFaceUp || return

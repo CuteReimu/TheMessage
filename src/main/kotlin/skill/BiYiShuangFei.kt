@@ -13,15 +13,17 @@ class BiYiShuangFei : InitialSkill, ChangeGameResultSkill {
     override fun changeGameResult(
         r: Player,
         whoseTurn: Player,
-        declaredWinners: List<Player>,
+        declaredWinners: MutableList<Player>,
         winners: MutableList<Player>
     ) {
         r.roleFaceUp || return
         r === whoseTurn || return // 自己的回合才能发动技能
         !winners.any { it === r } || return // 自己没赢才能发动技能
         val target = declaredWinners.filter { it.isMale }.randomOrNull() ?: return
-        if (target.identity == Red || target.identity == Blue)
+        if (target.identity == Red || target.identity == Blue) {
             winners.removeIf { it !== target && it.identity == target.identity }
+            declaredWinners.removeIf { it !== target && it.identity == target.identity }
+        }
         winners.add(whoseTurn)
     }
 }

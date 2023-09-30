@@ -45,7 +45,7 @@ data class NextTurn(val player: Player) : Fsm {
         val players = game.players.filterNotNull().filter { !it.lose }
         if (player.identity != Black || player.secretTask != Disturber) return false // 不是搅局者
         if (players.any { it !== player && it.alive && it.messageCards.countTrueCard() < 2 }) return false
-        val declaredWinner = listOf(player)
+        val declaredWinner = arrayListOf(player)
         val winner = arrayListOf(player)
         game.changeGameResult(player, declaredWinner, winner)
         val declaredWinners = declaredWinner.toTypedArray()

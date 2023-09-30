@@ -77,7 +77,7 @@ data class CheckWin(
             declareWinner = hashMapOf(stealer.location to stealer)
             winner = hashMapOf(stealer.location to stealer)
         }
-        val declareWinners = declareWinner.values.toList()
+        val declareWinners = declareWinner.values.toMutableList()
         val winners = winner.values.toMutableList()
         whoseTurn.game!!.changeGameResult(whoseTurn, declareWinners, winners)
         if (declareWinner.isNotEmpty()) {
