@@ -67,8 +67,8 @@ object ScoreFactory {
                     val rate =
                         if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
                             array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
-                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate < array[Killer.number + 3].rate)
-                            array[Killer.number + 3].rate // 如果清道夫胜率低于镇压者，则取镇压者的胜率
+                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate > array[Mutator.number + 3].rate)
+                            array[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
                         else array[index].rate
                     if (array[index].gameCount > 0) score *= array[0].rate / rate.coerceIn(8.0..50.0) // 胜率有效范围在8%至50%
                     array
@@ -84,8 +84,8 @@ object ScoreFactory {
                     val rate =
                         if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
                             array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
-                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate < array[Killer.number + 3].rate)
-                            array[Killer.number + 3].rate // 如果清道夫胜率低于镇压者，则取镇压者的胜率
+                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate > array[Mutator.number + 3].rate)
+                            array[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
                         else array[index].rate
                     if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - rate.coerceIn(8.0..50.0)) // 胜率有效范围在8%至50%
                     array
