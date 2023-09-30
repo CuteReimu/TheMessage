@@ -89,7 +89,7 @@ class Recorder {
                     val pb = record_file.parseFrom(`is`.readAllBytes())
                     val recordVersion = pb.clientVersion
                     if (version < recordVersion) {
-                        player.sendErrorMessage("客户端版本号过低，请更新客户端")
+                        player.sendErrorMessage("客户端版本号过低，请重新下载最新客户端")
                         loading = false
                         return@trySend
                     }

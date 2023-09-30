@@ -18,7 +18,7 @@ class join_room_tos : ProtoHandler {
         val pb = message as Fengsheng.join_room_tos
         // 客户端版本号不对，直接返回错误信息
         if (pb.version < Config.ClientVersion.get()) {
-            player.sendErrorMessage("客户端版本号过低，请更新客户端")
+            player.sendErrorMessage("客户端版本号过低，请重新下载最新客户端")
             return
         }
         val playerName = pb.name
