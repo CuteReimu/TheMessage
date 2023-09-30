@@ -89,7 +89,7 @@ class Deck(private val game: Game) {
         return ++nextId
     }
 
-    fun init(totalPlayerCount: Int) {
+    fun init(totalPlayerCount: Int, doNotRemoveShiTan: Boolean) {
         cards.clear()
         cards.addAll(DefaultDeck)
         if (totalPlayerCount < 4) {
@@ -99,12 +99,14 @@ class Deck(private val game: Game) {
         } else if (totalPlayerCount <= 8) {
             cards.removeAt(55)
             cards.removeAt(54)
-            cards.removeAt(16)
-            cards.removeAt(13)
-            cards.removeAt(11)
-            cards.removeAt(8)
-            cards.removeAt(3)
-            cards.removeAt(0)
+            if (!doNotRemoveShiTan) {
+                cards.removeAt(16)
+                cards.removeAt(13)
+                cards.removeAt(11)
+                cards.removeAt(8)
+                cards.removeAt(3)
+                cards.removeAt(0)
+            }
         }
         nextId = DefaultDeck.last().id
         cards.shuffle()
