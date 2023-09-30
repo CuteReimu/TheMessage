@@ -72,13 +72,14 @@ object MiraiPusher {
             val result =
                 if (declareWinners.any { it === player }) "宣胜"
                 else if (winners.any { it === player }) "胜利"
+                else if (player.lose) "输掉游戏"
                 else "失败"
             val addScore = addScoreMap[name] ?: 0
             val newScore = newScoreMap[name] ?: 0
             val addScoreStr =
                 if (addScore > 0) "+$addScore"
                 else if (addScore < 0) addScore.toString()
-                else if (result == "失败") "-0"
+                else if (result == "失败" || result == "输掉游戏") "-0"
                 else "+0"
             val rank = ScoreFactory.getRankNameByScore(newScore)
             lines.add("$name,$roleName,$identity,$result,$rank,$newScore($addScoreStr)")
