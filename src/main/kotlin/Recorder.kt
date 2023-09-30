@@ -143,9 +143,12 @@ class Recorder {
             }
             val diffNanoTime = list[currentIndex].nanoTime - line.nanoTime
             if (diffNanoTime > 100000000) {
+                var maxInterval = 2000000000L
+                if (list[currentIndex].protoName == "notify_phase_toc" && line.protoName == "notify_phase_toc")
+                    maxInterval /= 2
                 GameExecutor.TimeWheel.newTimeout(
                     { displayNext(player) },
-                    diffNanoTime.coerceAtMost(2000000000),
+                    diffNanoTime.coerceAtMost(maxInterval),
                     TimeUnit.NANOSECONDS
                 )
                 break
