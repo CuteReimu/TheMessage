@@ -382,11 +382,16 @@ class HumanPlayer(
             val player = game!!.players[getAbstractLocation(it)]!!
             builder.addIdentity(player.identity)
             builder.addSecretTasks(player.secretTask)
-            builder.addAddScore(addScoreMap[player.playerName] ?: 0)
-            val newScore = newScoreMap[player.playerName]
-                ?: (player as? HumanPlayer)?.run { Statistics.getScore(playerName) } ?: 0
-            builder.addNewScore(newScore)
-            if (player is HumanPlayer) builder.addNewRank(ScoreFactory.getRankNameByScore(newScore))
+            if (player is HumanPlayer) {
+                builder.addAddScore(addScoreMap[player.playerName] ?: 0)
+                val newScore = newScoreMap[player.playerName] ?: Statistics.getScore(playerName) ?: 0
+                builder.addNewScore(newScore)
+                builder.addNewRank(ScoreFactory.getRankNameByScore(newScore))
+            } else {
+                builder.addAddScore(0)
+                builder.addNewScore(0)
+                builder.addNewRank("")
+            }
         }
         send(builder.build())
     }
