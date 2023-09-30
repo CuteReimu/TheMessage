@@ -28,7 +28,8 @@ object Statistics {
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
     private val trialStartTime = ConcurrentHashMap<String, Long>()
-    val rankList = AtomicReference<String>()
+    val rankList10 = AtomicReference<String>()
+    val rankList25 = AtomicReference<String>()
 
     init {
         @OptIn(DelicateCoroutinesApi::class)
@@ -176,14 +177,19 @@ object Statistics {
             else if (a.score < b.score) 1
             else a.name.compareTo(b.name)
         }
-        val l = if (l1.size > 10) l1.subList(0, 10) else l1
-        var i = 0
-        val s = l.joinToString(separator = "\n") {
-            val name = it.name.replace("\"", "\\\"")
-            val rank = ScoreFactory.getRankNameByScore(it.score)
-            "第${++i}名：${name}·${rank}·${it.score}"
+
+        fun makeRankList(count: Int): String {
+            val l = if (l1.size > count) l1.subList(0, count) else l1
+            var i = 0
+            return l.joinToString(separator = "\n") {
+                val name = it.name.replace("\"", "\\\"")
+                val rank = ScoreFactory.getRankNameByScore(it.score)
+                "第${++i}名：${name}·${rank}·${it.score}"
+            }
         }
-        rankList.set(s)
+        
+        rankList10.set(makeRankList(10))
+        rankList25.set(makeRankList(25))
     }
 
     fun resetPassword(name: String): Boolean {

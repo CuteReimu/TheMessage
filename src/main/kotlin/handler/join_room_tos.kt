@@ -142,7 +142,7 @@ class join_room_tos : ProtoHandler {
                 builder.addRanks(rank)
                 builder.addScores(score)
             }
-            builder.notice = Config.Notice.get() + "\n\n" + Statistics.rankList.get()
+            builder.notice = Config.Notice.get() + "\n\n" + Statistics.rankList25.get()
             player.send(builder.build())
         }
     }
