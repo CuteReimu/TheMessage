@@ -3,8 +3,9 @@ package com.fengsheng.phase
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
+import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
-import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.changeGameResult
 import org.apache.log4j.Logger
@@ -34,7 +35,7 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             declaredWinner.add(killer)
             winner.add(killer)
         }
-        if (sweeper != null && diedQueue.any { it.messageCards.countTrueCard() <= 1 }) {
+        if (sweeper != null && diedQueue.any { it.messageCards.count(Red) <= 1 && it.messageCards.count(Blue) <= 1 }) {
             declaredWinner.add(sweeper)
             winner.add(sweeper)
         }
