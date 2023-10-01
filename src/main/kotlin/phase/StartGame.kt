@@ -13,7 +13,7 @@ data class StartGame(val game: Game) : Fsm {
         Game.GameCache[game.id] = game
         val players = game.players
         log.info("游戏开始了，场上的角色依次是：${players.contentToString()}")
-        game.deck.init(players.size, players.any { (Statistics.getScore(it!!.playerName) ?: 0) < 60 })
+        game.deck.init(players.size, players.any { (Statistics.getScore(it!!.playerName) ?: 0) < 40 })
         val whoseTurn = Random.nextInt(players.size)
         for (i in players.indices) players[(whoseTurn + i) % players.size]!!.init()
         for (i in players.indices) players[(whoseTurn + i) % players.size]!!.draw(Config.HandCardCountBegin)

@@ -30,11 +30,23 @@ object ScoreFactory {
         }
     }
 
-    infix fun Int.addScore(delta: Int) = when {
-        delta >= 0 -> this + delta
-        this < 180 -> this // 青铜输了不减分
-        this < 360 -> (this + delta).coerceAtLeast(this / 60 * 60) // 白银不会掉段
-        else -> (this + delta).coerceAtLeast(360) // 黄金以上不会掉到白银
+    private val protectScore = intArrayOf(
+        362, 361, 360, 359, 302, 301, 300, 299,
+        242, 241, 240, 239, 182, 181, 180, 179,
+        160, 140, 122, 121, 120, 119, 100, 80, 62,
+    )
+
+    infix fun Int.addScore(delta: Int): Int {
+        return when {
+            delta >= 0 -> this + delta
+            this <= 62 -> (this - 1).coerceAtLeast(0) // 青铜III输了只掉1分
+            else -> {
+                for (v in protectScore) {
+                    if (this > v) return (this + delta).coerceAtLeast(v)
+                }
+                (this - 1).coerceAtLeast(0)
+            }
+        }
     }
 
     fun Player.calScore(players: List<Player>, winners: List<Player>, delta: Int): Int {
