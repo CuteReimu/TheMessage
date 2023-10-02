@@ -166,14 +166,6 @@ class Game private constructor(totalPlayerCount: Int) {
         val tasks = arrayListOf(Killer, Stealer, Collector, Pioneer)
         if (players.size >= 5) tasks.addAll(listOf(Mutator, Disturber, Sweeper))
         tasks.shuffle()
-        if (players.size <= 5) {
-            // 针对possibleSecretTasks，5人以下局镇压者、清道夫、先行者不会三个都出现，因此把第三个位置换走即可
-            if (tasks[2] in arrayOf(Killer, Pioneer, Sweeper)) {
-                val temp = tasks[3]
-                tasks[3] = tasks[2]
-                tasks[2] = temp
-            }
-        }
         var secretIndex = 0
         for (i in players.indices) {
             val identity = identities[i]
@@ -184,10 +176,9 @@ class Game private constructor(totalPlayerCount: Int) {
             players[i]!!.originSecretTask = task
         }
         val possibleSecretTaskCount = when (players.size) {
-            2, 3, 4, 5 -> 3
+            2, 3, 4 -> 3
             6 -> 4
-            7 -> tasks.size
-            8 -> 5
+            5, 7, 8 -> tasks.size
             else -> players.size - 4
         }
         possibleSecretTasks = tasks.subList(0, possibleSecretTaskCount.coerceAtMost(tasks.size)).shuffled()
