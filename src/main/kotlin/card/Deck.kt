@@ -89,7 +89,24 @@ class Deck(private val game: Game) {
         return ++nextId
     }
 
-    fun init(totalPlayerCount: Int, doNotRemoveShiTan: Boolean) {
+    private val shiTanIndex = listOf(16, 13, 11, 8, 3, 0)
+
+    /**
+     * （针对新手）往牌堆顶放入试探
+     *
+     * @param count 放入试探的数量，不要超过6张
+     */
+    fun pushShiTan(count: Int) {
+        if (count == 0) return
+        if (count == 1)
+            addFirst(ShiTan(getNextId(), DefaultDeck[shiTanIndex.random()] as ShiTan))
+        else
+            addFirst(*shiTanIndex.shuffled().subList(0, count).map {
+                ShiTan(getNextId(), DefaultDeck[it] as ShiTan)
+            }.toTypedArray())
+    }
+
+    fun init(totalPlayerCount: Int) {
         cards.clear()
         cards.addAll(DefaultDeck)
         if (totalPlayerCount < 4) {
@@ -99,14 +116,7 @@ class Deck(private val game: Game) {
         } else if (totalPlayerCount <= 8) {
             cards.removeAt(55)
             cards.removeAt(54)
-            if (!doNotRemoveShiTan) {
-                cards.removeAt(16)
-                cards.removeAt(13)
-                cards.removeAt(11)
-                cards.removeAt(8)
-                cards.removeAt(3)
-                cards.removeAt(0)
-            }
+            shiTanIndex.forEach { cards.removeAt(it) }
         }
         nextId = DefaultDeck.last().id
         cards.shuffle()
