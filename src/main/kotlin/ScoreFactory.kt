@@ -30,22 +30,21 @@ object ScoreFactory {
         }
     }
 
-    private val protectScore = intArrayOf(
-        362, 361, 360, 359, 302, 301, 300, 299,
-        242, 241, 240, 239, 182, 181, 180, 179,
-        160, 140, 122, 121, 120, 119, 100, 80, 62,
-    )
+    private val protectScore = (362 downTo 0).filter {
+        when (it % 60) {
+            59, 0, 1, 2 -> true
+            else -> it <= 180 && it % 10 == 0
+        }
+    }
 
     infix fun Int.addScore(delta: Int): Int {
-        return when {
-            delta >= 0 -> this + delta
-            this <= 62 -> (this - 1).coerceAtLeast(0) // 青铜III输了只掉1分
-            else -> {
-                for (v in protectScore) {
-                    if (this > v) return (this + delta).coerceAtLeast(v)
-                }
-                (this - 1).coerceAtLeast(0)
+        return if (delta >= 0) this + delta
+        else {
+            val newScore = if (this >= 60) this + delta else (this + delta).coerceAtLeast(this - 2)
+            for (v in protectScore) {
+                if (this > v) return newScore.coerceAtLeast(v)
             }
+            newScore.coerceAtLeast(0)
         }
     }
 
