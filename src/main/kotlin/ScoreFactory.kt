@@ -20,10 +20,11 @@ object ScoreFactory {
 
     fun getRankNameByScore(score: Int): String {
         return when {
-            score < 180 -> "\uD83E\uDD49" + rankString[2 - score / 60]
-            score < 360 -> "\uD83E\uDD48" + rankString[2 - (score - 180) / 60]
-            score < 680 -> "\uD83E\uDD47" + rankString[3 - (score - 360) / 80]
-            score < 1000 -> "\uD83D\uDC8D" + rankString[3 - (score - 680) / 80]
+            score < 60 -> "\uD83E\uDD49" + rankString[2 - score / 20]
+            score < 240 -> "\uD83E\uDD48" + rankString[2 - (score - 60) / 60]
+            score < 360 -> "\uD83E\uDD47" + rankString[4 - (score - 240) / 60]
+            score < 600 -> "\uD83E\uDD47" + rankString[2 - (score - 360) / 80]
+            score < 1000 -> "\uD83D\uDC8D" + rankString[4 - (score - 600) / 80]
             score < 1500 -> "\uD83D\uDCA0" + rankString[4 - (score - 1000) / 100]
             score < 2000 -> "\uD83D\uDC51" + rankString[4 - (score - 1500) / 100]
             else -> "\uD83D\uDC51" + rankString[0]
