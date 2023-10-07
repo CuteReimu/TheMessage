@@ -21,6 +21,7 @@ class ShouKouRuPing : InitialSkill, TriggeredSkill {
         if (fsm is OnUseCard) {
             askWhom.alive || return null
             fsm.cardType == Shi_Tan || fsm.cardType == Wei_Bi || return null
+            fsm.valid || return null
             val targetPlayer = fsm.targetPlayer!!
             askWhom === fsm.player || askWhom === targetPlayer || return null
             askWhom.getSkillUseCount(skillId) == 0 || return null
