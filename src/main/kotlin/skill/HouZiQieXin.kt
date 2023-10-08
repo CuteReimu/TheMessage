@@ -15,7 +15,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 杂耍艺人技能【猴子窃信】：出牌阶段限两次，出牌阶段限两次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
+ * 杂耍艺人技能【猴子窃信】：出牌阶段限一次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
  */
 class HouZiQieXin : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.HOU_ZI_QIE_XIN
@@ -29,9 +29,9 @@ class HouZiQieXin : MainPhaseSkill(), InitialSkill {
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
-        if (r.getSkillUseCount(skillId) >= 2) {
-            log.error("[猴子窃信]一回合只能发动两次")
-            (r as? HumanPlayer)?.sendErrorMessage("[猴子窃信]一回合只能发动两次")
+        if (r.getSkillUseCount(skillId) > 0) {
+            log.error("[猴子窃信]一回合只能发动一次")
+            (r as? HumanPlayer)?.sendErrorMessage("[猴子窃信]一回合只能发动一次")
             return
         }
         val pb = message as skill_hou_zi_qie_xin_tos
@@ -106,7 +106,7 @@ class HouZiQieXin : MainPhaseSkill(), InitialSkill {
 
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.player
-            player.getSkillUseCount(SkillId.HOU_ZI_QIE_XIN) < 2 || return false
+            player.getSkillUseCount(SkillId.HOU_ZI_QIE_XIN) == 0 || return false
             val playerAndCard = player.game!!.players.flatMap {
                 if (it !== player && it!!.alive) {
                     it.messageCards.mapNotNull { card ->
