@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Role.*
@@ -187,7 +188,7 @@ class TaoQu : MainPhaseSkill(), InitialSkill {
                 }
             }
             target.draw(1)
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnDiscardCard(fsm.player, player, fsm), true)
         }
 
         companion object {

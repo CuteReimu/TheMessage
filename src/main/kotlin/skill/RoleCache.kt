@@ -85,6 +85,7 @@ object RoleCache {
         role.ya_ba,
         role.si_shi,
         role.jiao_shou,
+        role.qi_shou,
         role.za_shua_yi_ren,
         role.bao_da_ting,
         role.jun_ren,

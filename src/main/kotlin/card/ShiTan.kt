@@ -2,6 +2,7 @@ package com.fengsheng.card
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common
@@ -156,6 +157,7 @@ class ShiTan : Card {
                 }
             }
             player.incrSeq()
+            var newFsm: Fsm = MainPhaseIdle(r)
             if (card.checkDrawCard(target)) {
                 log.info("${target}选择了[摸一张牌]")
                 card.notifyResult(target, true)
@@ -163,12 +165,14 @@ class ShiTan : Card {
             } else {
                 log.info("${target}选择了[弃一张牌]")
                 card.notifyResult(target, false)
-                if (discardCard != null)
+                if (discardCard != null) {
                     target.game!!.playerDiscardCard(target, discardCard)
+                    newFsm = OnDiscardCard(r, target, newFsm)
+                }
             }
             return ResolveResult(
                 OnFinishResolveCard(
-                    r, r, target, card.getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
+                    r, r, target, card.getOriginCard(), card_type.Shi_Tan, newFsm,
                     discardAfterResolve = false
                 ),
                 true

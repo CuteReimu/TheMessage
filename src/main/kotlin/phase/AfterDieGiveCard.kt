@@ -18,6 +18,8 @@ data class AfterDieGiveCard(val dieGiveCard: WaitForDieGiveCard) : Fsm {
             p!!.notifyDie(player.location)
         }
         dieGiveCard.diedIndex++
-        return ResolveResult(dieGiveCard, true)
+        if (cards.isEmpty())
+            return ResolveResult(dieGiveCard, true)
+        return ResolveResult(OnDiscardCard(dieGiveCard.whoseTurn, player, dieGiveCard), true)
     }
 }

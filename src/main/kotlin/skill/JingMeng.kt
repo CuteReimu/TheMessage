@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
@@ -160,7 +161,7 @@ class JingMeng : InitialSkill, TriggeredSkill {
                 }
             }
             g.playerDiscardCard(target, card)
-            return ResolveResult(fsm, true)
+            return ResolveResult(OnDiscardCard(fsm.whoseTurn, target, fsm), true)
         }
 
         companion object {

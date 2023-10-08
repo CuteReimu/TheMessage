@@ -6,6 +6,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_ji_song_toc
 import com.fengsheng.protos.Role.skill_ji_song_tos
@@ -101,7 +102,10 @@ class JiSong : InitialSkill, ActiveSkill {
                 p.send(builder.build())
             }
         }
-        g.resolve(fsm.copy(inFrontOfWhom = target, whoseFightTurn = target))
+        if (messageCard == null)
+            g.resolve(fsm.copy(inFrontOfWhom = target, whoseFightTurn = target))
+        else
+            g.resolve(OnDiscardCard(fsm.whoseTurn, r, fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)))
     }
 
     companion object {

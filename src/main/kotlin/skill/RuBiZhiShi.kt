@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Fengsheng.*
@@ -123,9 +124,10 @@ class RuBiZhiShi : InitialSkill, ActiveSkill {
                 r.incrSeq()
                 notifyUseSkill(enable = true, useCard = false)
                 r.game!!.playerDiscardCard(target, card)
-                if (fsm is FightPhaseIdle)
-                    return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
-                return ResolveResult(fsm, true)
+                if (fsm is FightPhaseIdle) return ResolveResult(
+                    OnDiscardCard(fsm.whoseTurn, target, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)), true
+                )
+                return ResolveResult(OnDiscardCard((fsm as WaitForChengQing).whoseTurn, target, fsm), true)
             }
             when (message) {
                 is use_jie_huo_tos -> {

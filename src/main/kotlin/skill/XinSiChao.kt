@@ -5,6 +5,7 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Role.skill_xin_si_chao_toc
 import com.fengsheng.protos.Role.skill_xin_si_chao_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -55,7 +56,7 @@ class XinSiChao : MainPhaseSkill(), InitialSkill {
         }
         g.playerDiscardCard(r, card)
         r.draw(2)
-        g.continueResolve()
+        g.resolve(OnDiscardCard(r, r, g.fsm!!))
     }
 
     companion object {

@@ -160,12 +160,7 @@ abstract class Player protected constructor() {
     }
 
     open fun notifyDying(location: Int, loseGame: Boolean) {}
-    open fun notifyDie(location: Int) {
-        if (this.location == location) {
-            game!!.playerDiscardCard(this, *cards.toTypedArray())
-            game!!.deck.discard(*messageCards.toTypedArray())
-        }
-    }
+    open fun notifyDie(location: Int) {}
 
     abstract fun notifyWin(
         declareWinners: List<Player>,

@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -86,10 +87,13 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
+            var newFsm = g.fsm!!
+            if (target.cards.isNotEmpty()) newFsm = OnDiscardCard(r, target, newFsm)
+            newFsm = OnDiscardCard(r, r, newFsm)
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(1)
             target.draw(1)
-            g.continueResolve()
+            g.resolve(newFsm)
         } else {
             g.resolve(executeYuSiWangPo(r, target, cards.size + 1, timeout))
         }
@@ -165,7 +169,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             target.game!!.playerDiscardCard(target, *cards.toTypedArray())
             r.draw(1)
             target.draw(1)
-            return ResolveResult(MainPhaseIdle(r), true)
+            return ResolveResult(OnDiscardCard(r, r, OnDiscardCard(r, target, MainPhaseIdle(r))), true)
         }
 
         companion object {

@@ -1,10 +1,8 @@
 package com.fengsheng.card
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.*
@@ -65,11 +63,14 @@ class PingHeng : Card {
                     player.send(builder.build())
                 }
             }
+            var newFsm: Fsm = OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, MainPhaseIdle(r))
+            if (target.cards.isNotEmpty()) newFsm = OnDiscardCard(r, target, newFsm)
+            if (r.cards.isNotEmpty()) newFsm = OnDiscardCard(r, r, newFsm)
             g.playerDiscardCard(r, *r.cards.toTypedArray())
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(3)
             target.draw(3)
-            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, MainPhaseIdle(r))
+            newFsm
         }
         g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Ping_Heng, resolveFunc, g.fsm!!))
     }
