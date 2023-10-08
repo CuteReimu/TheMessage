@@ -8,7 +8,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 死士技能【鱼死网破】：出牌阶段限一次，你可以弃掉任意张数手牌（至少1），让一名其他玩家弃置对应数量的手牌（不足则全弃），然后你们各摸一张牌。
+ * 死士技能【鱼死网破】：出牌阶段限一次，你可以弃掉任意张数手牌（至少1），让一名其他玩家弃置对应数量+1的手牌（不足则全弃），然后你们各摸一张牌。
  */
 class YuSiWangPo : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.YU_SI_WANG_PO
@@ -58,7 +58,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             }
             card
         }
-        val discardAll = cards.size >= target.cards.size
+        val discardAll = cards.size + 1 >= target.cards.size
         r.incrSeq()
         r.addSkillUseCount(skillId)
         log.info("${r}对${target}发动了[鱼死网破]")
@@ -68,7 +68,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
                 val builder = skill_yu_si_wang_po_a_toc.newBuilder()
                 builder.playerId = p.getAlternativeLocation(r.location)
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.cardCount = cards.size
+                builder.cardCount = cards.size + 1
                 if (!discardAll) {
                     builder.waitingSecond = timeout
                     if (p === target) builder.seq = p.seq
@@ -91,7 +91,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             target.draw(1)
             g.continueResolve()
         } else {
-            g.resolve(executeYuSiWangPo(r, target, cards.size, timeout))
+            g.resolve(executeYuSiWangPo(r, target, cards.size + 1, timeout))
         }
     }
 
@@ -178,8 +178,9 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.player.getSkillUseCount(SkillId.YU_SI_WANG_PO) == 0 || return false
             e.player.cards.isNotEmpty() || return false
-            val target = e.player.game!!.players.filter { it !== e.player && it!!.alive }.randomOrNull() ?: return false
-            val count = if (target.isEnemy(e.player)) (1..minOf(e.player.cards.size, target.cards.size)).random() else 1
+            val target = e.player.game!!.players.filter { it!!.alive && it.isEnemy(e.player) && it.cards.size >= 2 }
+                .randomOrNull() ?: return false
+            val count = (1..minOf(e.player.cards.size, target.cards.size - 1)).random()
             val cardIds = e.player.cards.shuffled().subList(0, count).map { it.id }
             GameExecutor.post(e.player.game!!, {
                 val builder = skill_yu_si_wang_po_a_tos.newBuilder()
