@@ -39,7 +39,7 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
             }
             r.game!!.players[r.getAbstractLocation(it)]!!
         }
-        val sendCardError = r.canSendCard(card, r.cards, pb.cardDir, target, lockPlayers)
+        val sendCardError = r.canSendCard(fsm.player, card, r.cards, pb.cardDir, target, lockPlayers)
         if (sendCardError != null) {
             log.error(sendCardError)
             r.sendErrorMessage(sendCardError)

@@ -55,7 +55,7 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
             }
             g.players[r.getAbstractLocation(it)]!!
         }
-        val sendCardError = r.canSendCard(card, r.cards, message.cardDir, target, lockPlayers)
+        val sendCardError = r.canSendCard(r, card, r.cards, message.cardDir, target, lockPlayers)
         if (sendCardError != null) {
             log.error(sendCardError)
             (r as? HumanPlayer)?.sendErrorMessage(sendCardError)

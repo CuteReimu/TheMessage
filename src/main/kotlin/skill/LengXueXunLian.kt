@@ -176,7 +176,7 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
                 return null
             }
             val lockPlayer = player.game!!.players[player.getAbstractLocation(pb.lockPlayerId)]!!
-            val sendCardError = player.canSendCard(card, null, card.direction, target, listOf(lockPlayer))
+            val sendCardError = player.canSendCard(player, card, null, card.direction, target, listOf(lockPlayer))
             if (sendCardError != null) {
                 log.error(sendCardError)
                 (player as? HumanPlayer)?.sendErrorMessage(sendCardError)

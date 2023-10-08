@@ -248,7 +248,14 @@ class MiLing : Card {
                 }
                 target.game!!.players[target.getAbstractLocation(it)]!!
             }
-            val sendCardError = target.canSendCard(messageCard, availableCards, pb.cardDir, messageTarget, lockPlayers)
+            val sendCardError = target.canSendCard(
+                sendPhase.player,
+                messageCard,
+                availableCards,
+                pb.cardDir,
+                messageTarget,
+                lockPlayers
+            )
             if (sendCardError != null) {
                 log.error(sendCardError)
                 (player as? HumanPlayer)?.sendErrorMessage(sendCardError)

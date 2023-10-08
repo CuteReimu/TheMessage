@@ -24,7 +24,7 @@ interface SendMessageCanLockSkill : Skill {
  * 传递情报类技能，影响你能传哪张情报
  */
 interface SendMessageCardSkill : Skill {
-    fun checkSendCard(availableCards: List<Card>, card: Card): Boolean
+    fun checkSendCard(player: Player, whoseTurn: Player, availableCards: List<Card>, card: Card): Boolean
 }
 
 /**
@@ -39,6 +39,7 @@ interface SendMessageCardSkill : Skill {
  * @return 错误提示，如果是`null`表示可以传出
  */
 fun Player.canSendCard(
+    whoseTurn: Player,
     card: Card,
     availableCards: List<Card>?,
     dir: direction,
@@ -48,7 +49,7 @@ fun Player.canSendCard(
     if (availableCards != null) {
         if (!availableCards.any { it.id == card.id }) return "你不能传出这张情报"
         val checkSendCard = skills.lastOrNull { it is SendMessageCardSkill } as? SendMessageCardSkill
-        if (checkSendCard != null && !checkSendCard.checkSendCard(availableCards, card))
+        if (checkSendCard != null && !checkSendCard.checkSendCard(this, whoseTurn, availableCards, card))
             return "你不能传出这张情报"
     }
     val checkCanLock = skills.lastOrNull { it is SendMessageCanLockSkill } as? SendMessageCanLockSkill
