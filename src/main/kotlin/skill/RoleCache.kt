@@ -83,6 +83,7 @@ object RoleCache {
     private val forbiddenRoleCache = ArrayList<RoleSkillsData>()
     private val doubleProbabilityRoles = listOf(
         role.si_shi,
+        role.jiao_shou,
         role.za_shua_yi_ren,
         role.bao_da_ting,
         role.jun_ren,
