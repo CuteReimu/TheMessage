@@ -148,7 +148,7 @@ object Statistics {
     fun updateTitle(name: String, title: String): Boolean {
         var succeed = false
         playerInfoMap.computeIfPresent(name) { _, v ->
-            if (v.score < 360) return@computeIfPresent v
+            if (v.score < 240) return@computeIfPresent v
             succeed = true
             v.copy(title = title)
         }
@@ -187,7 +187,7 @@ object Statistics {
                 "第${++i}名：${name}·${rank}·${it.score}"
             }
         }
-        
+
         rankList10.set(makeRankList(10))
         rankList25.set(makeRankList(25))
     }
