@@ -57,13 +57,11 @@ class WeiBi : Card {
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     if (p === target) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
+                        val seq = p.seq
+                        builder.seq = seq
                         p.timeout = GameExecutor.post(r.game!!, {
-                            if (p.checkSeq(seq2)) {
-                                p.incrSeq()
+                            if (p.checkSeq(seq)) {
                                 autoSelect()
-                                r.game!!.resolve(MainPhaseIdle(r))
                             }
                         }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
@@ -73,7 +71,6 @@ class WeiBi : Card {
             if (target is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     autoSelect()
-                    r.game!!.resolve(MainPhaseIdle(r))
                 }, 2, TimeUnit.SECONDS)
             }
             return null
@@ -117,9 +114,11 @@ class WeiBi : Card {
         }
 
         private fun autoSelect() {
-            val availableCards = target.cards.filter { it.type == wantType }
-            val card = availableCards.random()
-            resolveProtocol(target, wei_bi_give_card_tos.newBuilder().setCardId(card.id).build())
+            val card = target.cards.filter { it.type == wantType }.random()
+            val builder = wei_bi_give_card_tos.newBuilder()
+            builder.cardId = card.id
+            if (target is HumanPlayer) builder.seq = target.seq
+            target.game!!.tryContinueResolveProtocol(target, builder.build())
         }
 
         companion object {
