@@ -1,8 +1,10 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
+import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.skill.canUseCardTypes
 import org.apache.log4j.Logger
 
 class use_diao_hu_li_shan_tos : AbstractProtoHandler<Fengsheng.use_diao_hu_li_shan_tos>() {
@@ -12,15 +14,16 @@ class use_diao_hu_li_shan_tos : AbstractProtoHandler<Fengsheng.use_diao_hu_li_sh
             r.sendErrorMessage("操作太晚了")
             return
         }
-        val card = r.findCard(pb.cardId)
+        var card = r.findCard(pb.cardId)
         if (card == null) {
             log.error("没有这张牌")
             r.sendErrorMessage("没有这张牌")
             return
         }
-        if (card.type != card_type.Diao_Hu_Li_Shan) {
-            log.error("这张牌不是调虎离山，而是$card")
-            r.sendErrorMessage("这张牌不是调虎离山，而是$card")
+        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Diao_Hu_Li_Shan, card)
+        if (!ok) {
+            log.error("这张${card}不能当作调虎离山使用")
+            r.sendErrorMessage("这张${card}不能当作调虎离山使用")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= r.game!!.players.size) {
@@ -29,8 +32,10 @@ class use_diao_hu_li_shan_tos : AbstractProtoHandler<Fengsheng.use_diao_hu_li_sh
             return
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
+        if (card.type != card_type.Diao_Hu_Li_Shan) card = Card.falseCard(card_type.Diao_Hu_Li_Shan, card)
         if (card.canUse(r.game!!, r, target, pb.isSkill)) {
             r.incrSeq()
+            convertCardSkill?.onConvert(r)
             card.execute(r.game!!, r, target, pb.isSkill)
         }
     }

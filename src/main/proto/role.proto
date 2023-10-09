@@ -1203,7 +1203,7 @@ message skill_zi_zheng_qing_bai_toc {
   repeated color colors = 2; // 弃的那张牌的颜色
 }
 
-// 广播使用【应变】：你可以将【破译】作为【调包】面朝下打出。
+// 广播使用【译文暗号】：你可以将【破译】作为【调包】面朝下打出。
 message skill_yi_wen_an_hao_toc {
   uint32 player_id = 1;
 }
@@ -1354,6 +1354,11 @@ message skill_ying_bian_zi_ru_a_toc {
 message skill_ying_bian_zi_ru_b_tos {
   uint32 target_player_id = 1;
   uint32 seq = 2;
+}
+
+// 广播使用【浑水摸鱼】：整局限一次，你可以将任意手牌作为【欲擒故纵】或者【调虎离山】打出。
+message skill_hun_shui_mo_yu_toc {
+  uint32 player_id = 1;
 }
 
 // 广播使用【应变自如】B

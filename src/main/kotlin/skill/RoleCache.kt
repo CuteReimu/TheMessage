@@ -70,7 +70,7 @@ object RoleCache {
         RoleSkillsData("成年韩梅", role.adult_han_mei, true, false, MiXin(), JiangJiJiuJi()),
         RoleSkillsData("秦无命", role.qin_wu_ming, false, true, YuSiWangPo()),
         RoleSkillsData("李书云", role.li_shu_yun, true, false, DingLun(), ZhenLi()),
-        RoleSkillsData("SP阿芙罗拉", role.sp_a_fu_luo_la, true, false, YingBianZiRu()),
+        RoleSkillsData("SP阿芙罗拉", role.sp_a_fu_luo_la, true, false, YingBianZiRu(), HunShuiMoYu()),
         RoleSkillsData("SP白菲菲", role.sp_bai_fei_fei, true, true, TaoQu()),
         RoleSkillsData("凌素秋", role.ling_su_qiu, true, true, TanXuBianShi(), CunBuBuRang()),
         RoleSkillsData("小铃铛", role.xiao_ling_dang, true, true, XinGeLianLuo(), HouZiQieXin()),
