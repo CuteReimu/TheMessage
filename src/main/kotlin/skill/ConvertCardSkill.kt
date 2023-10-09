@@ -30,17 +30,19 @@ fun Player.canUseCardTypes(
     val actualType = actualCard.type
     var ok = needType == actualType
     var convertCardSkill: ConvertCardSkill? = null
-    for (s in skills) {
-        if (s is ConvertCardSkill && (s.cardTypeA == actualType || s.cardTypeA == null)) { // 如果卡牌实际类型满足，或者技能允许任意卡牌
-            if (needType in s.cardTypeB) {
-                if (!onlyMust || s.must) {
-                    ok = true
-                    if (needType != actualType || s.must) { // 如果真的让卡牌变了，或者是必发技能
-                        if (convertCardSkill == null || !convertCardSkill.must || s.must) // 必发技能优先于选发技能
-                            convertCardSkill = s
+    if (roleFaceUp) {
+        for (s in skills) {
+            if (s is ConvertCardSkill && (s.cardTypeA == actualType || s.cardTypeA == null)) { // 如果卡牌实际类型满足，或者技能允许任意卡牌
+                if (needType in s.cardTypeB) {
+                    if (!onlyMust || s.must) {
+                        ok = true
+                        if (needType != actualType || s.must) { // 如果真的让卡牌变了，或者是必发技能
+                            if (convertCardSkill == null || !convertCardSkill.must || s.must) // 必发技能优先于选发技能
+                                convertCardSkill = s
+                        }
                     }
-                }
-            } else if (s.must) return false to null
+                } else if (s.must) return false to null
+            }
         }
     }
     return ok to convertCardSkill
