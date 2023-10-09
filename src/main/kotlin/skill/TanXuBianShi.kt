@@ -11,7 +11,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 棋手技能【探虚辨实】：出牌阶段一次，你可以给一名角色一张手牌，该角色还你一张手牌，且需优先选择含其身份颜色的牌。（潜伏=红，军情=蓝，神秘人=任意颜色）
+ * 凌素秋技能【探虚辨实】：出牌阶段一次，你可以给一名角色一张手牌，该角色还你一张手牌，且需优先选择含其身份颜色的牌。（潜伏=红，军情=蓝，神秘人=任意颜色）
  */
 class TanXuBianShi : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.TAN_XU_BIAN_SHI

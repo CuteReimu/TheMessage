@@ -4,7 +4,7 @@ import com.fengsheng.Player
 import com.fengsheng.card.Card
 
 /**
- * 哑巴技能【憨厚老实】：你的回合，你无法主动传出纯黑色情报（除非你只能传出纯黑色情报）。
+ * 哑炮技能【憨厚老实】：你的回合，你无法主动传出纯黑色情报（除非你只能传出纯黑色情报）。
  */
 class HanHouLaoShi : InitialSkill, SendMessageCardSkill {
     override val skillId = SkillId.HAN_HOU_LAO_SHI

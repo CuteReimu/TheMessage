@@ -41,27 +41,27 @@ enum role {
   gao_qiao_zhi_zi = 36; // 高桥智子
   jian_xian_sheng = 37; // 简先生
   lao_hu = 38; // 老虎
-  su_ji_yuan = 39; // 速记员
-  ya_ba = 40; // 哑巴
-  lao_qian = 41; // 老千
-  si_shi = 42; // 死士
-  jiao_shou = 43; // 教授
-  qi_shou = 44; // 棋手
-  za_shua_yi_ren = 45; // 杂耍艺人
-  bao_da_ting = 46; // 包打听
-  jun_ren = 47; // 军人
+  chen_an_na = 39; // 陈安娜
+  ya_pao = 40; // 哑炮
+  jin_zi_lai = 41; // 金自来
+  qin_wu_ming = 42; // 秦无命
+  li_shu_yun = 43; // 李书云
+  ling_su_qiu = 44; // 凌素秋
+  xiao_ling_dang = 45; // 小铃铛
+  chen_da_er = 46; // 陈大耳
+  bian_yun_jiang = 47; // 边云疆
   sun_shou_mo = 48; // 孙守謨
   sp_cheng_xiao_die = 1002; // SP程小蝶
   sp_lian_yuan = 1003; // SP连鸢
+  sp_a_fu_luo_la = 1013; // SP阿芙罗拉
   sp_han_mei = 1014; // SP韩梅
   sp_gu_xiao_meng = 1020; // SP顾小梦
+  sp_bai_fei_fei = 1021; // SP白菲菲
   sp_duan_mu_jing = 1022; // SP端木静
   sp_xiao_jiu = 1027; // SP小九
   sp_li_ning_yu = 1028; // SP李宁玉
-  middle_age_han_mei = 2014; // 中年韩梅
-  middle_age_xiao_jiu = 2027; // 中年小九
-  spy_a_fu_luo_la = 3013; // 间谍阿芙罗拉
-  spy_bai_fei_fei = 3021; // 间谍白菲菲
+  adult_han_mei = 2014; // 成年韩梅
+  adult_xiao_jiu = 2027; // 成年小九
 }
 
 enum phase {

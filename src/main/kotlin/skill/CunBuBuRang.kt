@@ -9,7 +9,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 棋手技能【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。你在回合外弃置手牌后，可以摸一张牌。
+ * 凌素秋技能【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。你在回合外弃置手牌后，可以摸一张牌。
  */
 class CunBuBuRang : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CUN_BU_BU_RANG
@@ -22,6 +22,15 @@ class CunBuBuRang : InitialSkill, TriggeredSkill {
             askWhom.getSkillUseCount(skillId) == 0 || return null
             askWhom.addSkillUseCount(skillId)
             log.info("${askWhom}发动了[寸步不让]")
+            for (p in g.players) {
+                if (p is HumanPlayer) {
+                    val builder = skill_cun_bu_bu_rang_toc.newBuilder()
+                    builder.playerId = p.getAlternativeLocation(askWhom.location)
+                    builder.enable = true
+                    builder.isDrawCard = true
+                    p.send(builder.build())
+                }
+            }
             askWhom.draw(1)
             val oldResolveFunc = fsm.afterResolveFunc
             return ResolveResult(fsm.copy(afterResolveFunc = {
@@ -61,7 +70,7 @@ class CunBuBuRang : InitialSkill, TriggeredSkill {
                             builder2.seq = seq
                             r.game!!.tryContinueResolveProtocol(r, builder2.build())
                         }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        // 晚一秒提示棋手，以防客户端动画bug
+                        // 晚一秒提示凌素秋，以防客户端动画bug
                         GameExecutor.post(r.game!!, { player.send(builder.build()) }, 1, TimeUnit.SECONDS)
                     } else {
                         player.send(builder.build())
@@ -112,6 +121,7 @@ class CunBuBuRang : InitialSkill, TriggeredSkill {
                     val builder = skill_cun_bu_bu_rang_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.enable = true
+                    builder.isDrawCard = false
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     if (p === r || p === target) builder.card = card.toPbCard()
                     p.send(builder.build())

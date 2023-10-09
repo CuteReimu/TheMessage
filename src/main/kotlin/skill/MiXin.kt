@@ -12,7 +12,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 中年韩梅技能【密信】：接收双色情报后，可以翻开此角色，将一张含相同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
+ * 成年韩梅技能【密信】：接收双色情报后，可以翻开此角色，将一张含相同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
  */
 class MiXin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.MI_XIN

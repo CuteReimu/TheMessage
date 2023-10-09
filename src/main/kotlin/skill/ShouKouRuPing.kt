@@ -11,7 +11,7 @@ import com.fengsheng.protos.Role.skill_shou_kou_ru_ping_toc
 import org.apache.log4j.Logger
 
 /**
- * 哑巴技能【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，取消原效果，改为双方各摸一张牌。
+ * 哑炮技能【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，取消原效果，改为双方各摸一张牌。
  */
 class ShouKouRuPing : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.SHOU_KOU_RU_PING

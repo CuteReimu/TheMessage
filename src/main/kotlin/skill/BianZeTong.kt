@@ -14,7 +14,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 包打听技能【变则通】：你的传递阶段开始时，摸一张牌，然后你可以宣言两种卡牌类型“A”和“B”，直到回合结束，所有玩家的A牌只能当B牌使用。
+ * 陈大耳技能【变则通】：你的传递阶段开始时，摸一张牌，然后你可以宣言两种卡牌类型“A”和“B”，直到回合结束，所有玩家的A牌只能当B牌使用。
  *
  * （AB可选 [【破译】][PoYi] [【调包】][DiaoBao] [【误导】][WuDao] [【截获】][JieHuo] ，且不能相同）
  */

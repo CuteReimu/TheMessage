@@ -1191,7 +1191,7 @@ message skill_hou_lai_ren_b_toc {
   role role = 2; // 选择的角色。如果是隐藏角色则其它人看到是枚举unknown，但是端木静自己可以看到
 }
 
-// 速记员【自证清白】：出牌阶段限一次，你可以弃置一张与自己身份颜色不同的手牌，然后摸两张牌。（潜伏=红色，特工=蓝色，神秘人随意弃牌）
+// 陈安娜【自证清白】：出牌阶段限一次，你可以弃置一张与自己身份颜色不同的手牌，然后摸两张牌。（潜伏=红色，特工=蓝色，神秘人随意弃牌）
 message skill_zi_zheng_qing_bai_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
@@ -1211,7 +1211,7 @@ message skill_miao_shou_kuai_ji_a_toc {
   uint32 seq = 4;
 }
 
-// 速记员【妙手快记】B：然后弃一张牌（弃牌走弃牌协议）
+// 陈安娜【妙手快记】B：然后弃一张牌（弃牌走弃牌协议）
 message skill_miao_shou_kuai_ji_b_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
@@ -1232,27 +1232,6 @@ message skill_shou_kou_ru_ping_toc {
   uint32 unknown_card_count = 6; // 被试探无效时，除使用者外其余人看不见那张试探牌，这个字段为1。肥源龙川的技能使用的威逼，这个字段为0。
 }
 
-// 广播询问使用【憨厚老实】
-message skill_wait_for_han_hou_lao_shi_toc {
-  uint32 player_id = 1; // 哑巴的id
-  uint32 message_player_id = 2; // 谁接收的情报
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
-}
-
-// 哑巴【憨厚老实】：你无法传出纯黑色情报（除非手牌仅有纯黑色），接收你情报的玩家需给你一张手牌。
-message skill_han_hou_lao_shi_tos {
-  uint32 card_id = 1;
-  uint32 seq = 2;
-}
-
-// 广播使用【憨厚老实】
-message skill_han_hou_lao_shi_toc {
-  uint32 player_id = 1; // 哑巴的id
-  uint32 message_player_id = 2; // 谁接收的情报
-  card card = 3; // 给的那张牌，只有给牌的人和哑巴可以看到
-}
-
 // 当【调包】结算后，广播询问使用【赌命】
 message skill_wait_for_du_ming_toc {
   uint32 player_id = 1;
@@ -1260,7 +1239,7 @@ message skill_wait_for_du_ming_toc {
   uint32 seq = 3;
 }
 
-// 老千【赌命】A：一回合一次，情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。
+// 金自来【赌命】A：一回合一次，情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。
 message skill_du_ming_a_tos {
   bool enable = 1;
   color color = 2;
@@ -1271,12 +1250,12 @@ message skill_du_ming_a_tos {
 message skill_du_ming_a_toc {
   uint32 player_id = 1;
   color color = 3;
-  card card = 4; // 那张情报牌，只有老千能看到
+  card card = 4; // 那张情报牌，只有金自来能看到
   uint32 waiting_second = 5; // 如果有后续，则这个值大于0
   uint32 seq = 6; // 如果有后续且为自己，则这个值大于0
 }
 
-// 老千【赌命】B：若猜错且你有纯黑色手牌，则你必须将一张纯黑色手牌置入自己的情报区。
+// 金自来【赌命】B：若猜错且你有纯黑色手牌，则你必须将一张纯黑色手牌置入自己的情报区。
 message skill_du_ming_b_tos {
   uint32 card_id = 1; // 置入的牌
   uint32 seq = 2;
@@ -1288,14 +1267,14 @@ message skill_du_ming_b_toc {
   card card = 2; // 置入的牌
 }
 
-// 中年小九【联络】：接收单色情报后，可以翻开此角色，将一张含不同颜色的情报从手牌置入传出者的情报区，然后抽两张牌。
-message skill_lian_luo_tos {
+// 成年小九【联信】：接收单色情报后，可以翻开此角色，将一张含不同颜色的情报从手牌置入传出者的情报区，然后抽两张牌。
+message skill_lian_xin_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
 }
 
-// 广播使用【联络】，摸牌走摸牌协议
-message skill_lian_luo_toc {
+// 广播使用【联信】，摸牌走摸牌协议
+message skill_lian_xin_toc {
   uint32 player_id = 1; // 成年小九的ID
   uint32 target_player_id = 2;
   card card = 3;
@@ -1306,7 +1285,7 @@ message skill_shun_shi_er_wei_toc {
   uint32 player_id = 1;
 }
 
-// 中年韩梅【密信】：接收双色情报后，可以翻开此角色，将一张含相同颜色的情报从手牌置入传出者的情报区，然后抽两张牌。
+// 成年韩梅【密信】：接收双色情报后，可以翻开此角色，将一张含相同颜色的情报从手牌置入传出者的情报区，然后抽两张牌。
 message skill_mi_xin_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
@@ -1324,7 +1303,7 @@ message skill_jiang_ji_jiu_ji_toc {
   uint32 player_id = 1;
 }
 
-// 死士【鱼死网破】A：出牌阶段限一次，你可以弃掉任意张数手牌（至少1），让一名其他玩家弃置对应数量的手牌（不足则全弃），然后你们各摸一张牌。
+// 秦无命【鱼死网破】A：出牌阶段限一次，你可以弃掉任意张数手牌（至少1），让一名其他玩家弃置（对应数量+1）的手牌（不足则全弃），然后你们各摸一张牌。
 message skill_yu_si_wang_po_a_tos {
   uint32 target_player_id = 1;
   repeated uint32 card_ids = 2;
@@ -1333,14 +1312,14 @@ message skill_yu_si_wang_po_a_tos {
 
 // 广播使用【鱼死网破】A
 message skill_yu_si_wang_po_a_toc {
-  uint32 player_id = 1; // 死士的ID
+  uint32 player_id = 1; // 秦无命的ID
   uint32 target_player_id = 2;
-  uint32 card_count = 3; // 死士弃牌的数量，弃牌走弃牌协议
+  uint32 card_count = 3; // 秦无命弃牌的数量，弃牌走弃牌协议
   uint32 waiting_second = 4; // 如果全弃，则这个字段为0
   uint32 seq = 5;
 }
 
-// 死士【鱼死网破】B：对方弃牌（如果全弃，不用客户端请求）
+// 秦无命【鱼死网破】B：对方弃牌（如果全弃，不用客户端请求）
 message skill_yu_si_wang_po_b_tos {
   repeated uint32 card_ids = 1;
   uint32 seq = 2;
@@ -1348,11 +1327,11 @@ message skill_yu_si_wang_po_b_tos {
 
 // 广播使用【鱼死网破】B，如果全弃，则在a_toc后进接着发这条，弃牌走弃牌协议
 message skill_yu_si_wang_po_b_toc {
-  uint32 player_id = 1; // 死士的ID
+  uint32 player_id = 1; // 秦无命的ID
   uint32 target_player_id = 2;
 }
 
-// 教授【定论】：争夺阶段，若情报在你面前，可以翻开此角色，直接成功接收，但若因此达成同色三张，则改为入手。
+// 李书云【定论】：争夺阶段，若情报在你面前，可以翻开此角色，直接成功接收，但若因此达成同色三张，则改为入手。
 message skill_ding_lun_tos {
   uint32 seq = 1;
 }
@@ -1364,12 +1343,12 @@ message skill_ding_lun_toc {
   bool join_into_hand = 5; // 是否改为加入手牌
 }
 
-// 广播使用【真理】：每当你传出的真情报被其他玩家接收时，你可以摸一张牌，将此角色翻回背面。
+// 广播使用【真理】：每当你传出的真情报被其他玩家接收时，你可以摸两张牌，将此角色翻回背面。
 message skill_zhen_li_toc {
   uint32 player_id = 1;
 }
 
-// 间谍阿芙罗拉【应变自如】A：争夺阶段，你可以翻开此角色，然后将待收情报翻开，根据颜其颜色执行操作：
+// SP阿芙罗拉【应变自如】A：争夺阶段，你可以翻开此角色，然后将待收情报翻开，根据颜其颜色执行操作：
 // 1. 红或蓝单色：视为对其使用了【截获】，摸一张牌。
 // 2. 黑单色：视为对其使用了【误导】，摸两张牌。
 // 3. 双色情报：弃置该情报，摸三张牌。
@@ -1385,7 +1364,7 @@ message skill_ying_bian_zi_ru_a_toc {
   uint32 seq = 4;
 }
 
-// 间谍阿芙罗拉【应变自如】B，选择【误导】的目标
+// SP阿芙罗拉【应变自如】B，选择【误导】的目标
 message skill_ying_bian_zi_ru_b_tos {
   uint32 target_player_id = 1;
   uint32 seq = 2;
@@ -1397,7 +1376,7 @@ message skill_ying_bian_zi_ru_b_toc {
   uint32 target_player_id = 2;
 }
 
-// 间谍白菲菲【套取】A：出牌阶段限一次，你可以弃置两张含含相同颜色的牌
+// SP白菲菲【套取】A：出牌阶段限一次，你可以弃置两张含含相同颜色的牌
 message skill_tao_qu_a_tos {
   repeated uint32 card_ids = 1;
   uint32 seq = 2;
@@ -1411,7 +1390,7 @@ message skill_tao_qu_a_toc {
   uint32 seq = 4;
 }
 
-// 间谍白菲菲【套取】B：将一名其他角色情报区的一张同色情报加入手牌，该角色摸一张牌
+// SP白菲菲【套取】B：将一名其他角色情报区的一张同色情报加入手牌，该角色摸一张牌
 message skill_tao_qu_b_tos {
   uint32 target_player_id = 1;
   uint32 card_id = 2;
@@ -1425,7 +1404,7 @@ message skill_tao_qu_b_toc {
   uint32 card_id = 3;
 }
 
-// 棋手【探虚辨实】A：出牌阶段一次，你可以给一名角色一张手牌
+// 凌素秋【探虚辨实】A：出牌阶段一次，你可以给一名角色一张手牌
 message skill_tan_xu_bian_shi_a_tos {
   uint32 target_player_id = 1;
   uint32 card_id = 2;
@@ -1436,12 +1415,12 @@ message skill_tan_xu_bian_shi_a_tos {
 message skill_tan_xu_bian_shi_a_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
-  card card = 3; // 只有棋手和那名角色能看见
+  card card = 3; // 只有凌素秋和那名角色能看见
   uint32 waiting_second = 4;
   uint32 seq = 5;
 }
 
-// 棋手【探虚辨实】B：该角色还你一张手牌，且需优先选择含其身份颜色的牌（潜伏=红，军情=蓝，神秘人=任意颜色）
+// 凌素秋【探虚辨实】B：该角色还你一张手牌，且需优先选择含其身份颜色的牌（潜伏=红，军情=蓝，神秘人=任意颜色）
 message skill_tan_xu_bian_shi_b_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
@@ -1449,20 +1428,20 @@ message skill_tan_xu_bian_shi_b_tos {
 
 // 广播使用【探虚辨实】B
 message skill_tan_xu_bian_shi_b_toc {
-  uint32 player_id = 1; // 棋手的ID
+  uint32 player_id = 1; // 凌素秋的ID
   uint32 target_player_id = 2;
-  card card = 3; // 只有棋手和那名角色能看见
+  card card = 3; // 只有凌素秋和那名角色能看见
 }
 
-// 广播询问使用【寸步不让】
+// 广播询问使用【寸步不让】（摸牌不询问，直接发下面的toc）
 message skill_wait_for_cun_bu_bu_rang_toc {
-  uint32 player_id = 1; // 棋手的ID
+  uint32 player_id = 1; // 凌素秋的ID
   uint32 target_player_id = 2;
   uint32 waiting_second = 3;
   uint32 seq = 4;
 }
 
-// 棋手【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。
+// 凌素秋【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。你在回合外弃置手牌后，可以摸一张牌。
 message skill_cun_bu_bu_rang_tos {
   bool enable = 1;
   uint32 seq = 2;
@@ -1470,10 +1449,11 @@ message skill_cun_bu_bu_rang_tos {
 
 // 广播使用【寸步不让】
 message skill_cun_bu_bu_rang_toc {
-  uint32 player_id = 1; // 棋手的ID
+  uint32 player_id = 1; // 凌素秋的ID
   bool enable = 2;
-  uint32 target_player_id = 3;
-  card card = 4; // 只有棋手和那名角色能看见
+  bool is_draw_card = 3; // false-抽牌，true-摸牌。如果是摸牌，则下面两个字段无意义
+  uint32 target_player_id = 4;
+  card card = 5; // 只有凌素秋和那名角色能看见
 }
 
 // 广播询问使用【信鸽联络】
@@ -1483,7 +1463,7 @@ message skill_wait_for_xin_ge_lian_luo_toc {
   uint32 seq = 3;
 }
 
-// 杂耍艺人【信鸽联络】：每当你传出非直达情报时，可以选择一名角色本轮的传递阶段中不能选择接收情报。
+// 小铃铛【信鸽联络】：每当你传出非直达情报时，可以选择一名角色本轮的传递阶段中不能选择接收情报。
 message skill_xin_ge_lian_luo_tos {
   bool enable = 1;
   uint32 target_player_id = 2;
@@ -1492,11 +1472,11 @@ message skill_xin_ge_lian_luo_tos {
 
 // 广播使用【信鸽联络】
 message skill_xin_ge_lian_luo_toc {
-  uint32 player_id = 1; // 杂耍艺人的ID
+  uint32 player_id = 1; // 小铃铛的ID
   uint32 target_player_id = 2;
 }
 
-// 杂耍艺人【猴子窃信】：出牌阶段限两次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
+// 小铃铛【猴子窃信】：出牌阶段限一次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
 message skill_hou_zi_qie_xin_tos {
   uint32 hand_card_id = 1;
   uint32 target_player_id = 2;
@@ -1506,7 +1486,7 @@ message skill_hou_zi_qie_xin_tos {
 
 // 广播使用【猴子窃信】
 message skill_hou_zi_qie_xin_toc {
-  uint32 player_id = 1; // 杂耍艺人的ID
+  uint32 player_id = 1; // 小铃铛的ID
   card hand_card = 2;
   uint32 target_player_id = 3;
   uint32 message_card_id = 4;
@@ -1519,7 +1499,7 @@ message skill_wait_for_bian_ze_tong_toc {
   uint32 seq = 3;
 }
 
-// 包打听【变则通】：你的传递阶段开始时，摸一张牌，然后你可以宣言两种卡牌类型“A”和“B”，直到回合结束，所有玩家的A牌只能当B牌使用。
+// 陈大耳【变则通】：你的传递阶段开始时，摸一张牌，然后你可以宣言两种卡牌类型“A”和“B”，直到回合结束，所有玩家的A牌只能当B牌使用。
 // （AB可选【破译】【调包】【误导】【截获】，且不能相同）
 message skill_bian_ze_tong_tos {
   bool enable = 1;
@@ -1536,7 +1516,7 @@ message skill_bian_ze_tong_toc {
   card_type card_type_b = 4;
 }
 
-// 军人【诱敌深入】：整局限一次，你的传递阶段，改为将一张手牌作为情报明面传出，该情报含有身份颜色的玩家，在本阶段必须选则接收该情报，不含身份颜色的玩家不能选择接收。
+// 边云疆【诱敌深入】：整局限一次，你的传递阶段，改为将一张手牌作为情报明面传出，该情报含有身份颜色的玩家，在本阶段必须选则接收该情报，不含身份颜色的玩家不能选择接收。
 // （潜伏=红色，特工=蓝色，神秘人不受限）
 message skill_you_di_shen_ru_tos {
   uint32          card_id = 1;
@@ -1555,7 +1535,7 @@ message skill_you_di_shen_ru_toc {
   direction       card_dir = 5; // 传递的方向
 }
 
-// 军人【歼敌风行】A：其他玩家收到你的情报后，你可以摸两张牌
+// 边云疆【歼敌风行】A：其他玩家收到你的情报后，你可以摸两张牌
 message skill_jian_di_feng_xing_a_tos {
   uint32 seq = 1;
 }
@@ -1567,7 +1547,7 @@ message skill_jian_di_feng_xing_a_toc {
   uint32 seq = 3;
 }
 
-// 军人【歼敌风行】B：将一张纯黑色手牌置入自己的情报区
+// 边云疆【歼敌风行】B：将一张纯黑色手牌置入自己的情报区
 message skill_jian_di_feng_xing_b_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
@@ -1581,7 +1561,7 @@ message skill_jian_di_feng_xing_b_toc {
   uint32 seq = 4;
 }
 
-// 军人【歼敌风行】C：然后可以弃掉接收到的情报，用一张黑色手牌代替之
+// 边云疆【歼敌风行】C：然后可以弃掉接收到的情报，用一张黑色手牌代替之
 message skill_jian_di_feng_xing_c_tos {
   bool enable = 1;
   uint32 card_id = 2;

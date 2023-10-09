@@ -11,7 +11,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 军人技能【歼敌风行】：其他玩家收到你的情报后，你可以摸两张牌，将一张纯黑色手牌置入自己的情报区，然后可以弃掉接收到的情报，用一张黑色手牌代替之。
+ * 边云疆技能【歼敌风行】：其他玩家收到你的情报后，你可以摸两张牌，将一张纯黑色手牌置入自己的情报区，然后可以弃掉接收到的情报，用一张黑色手牌代替之。
  */
 class JianDiFengXing : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIAN_DI_FENG_XING

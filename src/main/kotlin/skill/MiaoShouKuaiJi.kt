@@ -10,7 +10,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 速记员技能【妙手快记】：你相邻玩家的回合结束时，你可以选择获得弃牌堆顶的牌，然后弃一张牌。
+ * 陈安娜技能【妙手快记】：你相邻玩家的回合结束时，你可以选择获得弃牌堆顶的牌，然后弃一张牌。
  */
 class MiaoShouKuaiJi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.MIAO_SHOU_KUAI_JI

@@ -68,7 +68,7 @@ class WuDao : Card {
          * ```
          * g.resolve(WuDao.onUseCard(card, g, r, target))
          * ```
-         * @param card 使用的那张【误导】卡牌。可以为 `null` ，因为间谍阿芙罗拉技能【应变自如】可以视为使用了【误导】。
+         * @param card 使用的那张【误导】卡牌。可以为 `null` ，因为SP阿芙罗拉技能【应变自如】可以视为使用了【误导】。
          * @return 返回[OnUseCard]，要自行调用[Game.resolve]
          */
         fun onUseCard(card: Card?, g: Game, r: Player, target: Player): OnUseCard {

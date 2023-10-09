@@ -5,17 +5,17 @@ import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
-import com.fengsheng.protos.Role.skill_lian_luo_toc
-import com.fengsheng.protos.Role.skill_lian_luo_tos
+import com.fengsheng.protos.Role.skill_lian_xin_toc
+import com.fengsheng.protos.Role.skill_lian_xin_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 中年小九技能【联络】：接收单色情报后，可以翻开此角色，将一张含不同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
+ * 成年小九技能【联信】：接收单色情报后，可以翻开此角色，将一张含不同颜色的情报从手牌置入传出者的情报区，然后摸两张牌。
  */
-class LianLuo2 : InitialSkill, TriggeredSkill {
-    override val skillId = SkillId.LIAN_LUO2
+class LianXin : InitialSkill, TriggeredSkill {
+    override val skillId = SkillId.LIAN_XIN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val fsm = g.fsm as? ReceivePhaseSkill ?: return null
@@ -63,7 +63,7 @@ class LianLuo2 : InitialSkill, TriggeredSkill {
                 player.incrSeq()
                 return ResolveResult(fsm, true)
             }
-            if (message !is skill_lian_luo_tos) {
+            if (message !is skill_lian_xin_tos) {
                 log.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
@@ -95,7 +95,7 @@ class LianLuo2 : InitialSkill, TriggeredSkill {
             fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_lian_luo_toc.newBuilder()
+                    val builder = skill_lian_xin_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.card = card.toPbCard()
@@ -119,7 +119,7 @@ class LianLuo2 : InitialSkill, TriggeredSkill {
                 !it.isPureBlack() && it.colors.any { c -> c != fsm0.color }
             }.randomOrNull() ?: return false
             GameExecutor.post(p.game!!, {
-                val builder = skill_lian_luo_tos.newBuilder()
+                val builder = skill_lian_xin_tos.newBuilder()
                 builder.cardId = card.id
                 p.game!!.tryContinueResolveProtocol(p, builder.build())
             }, 2, TimeUnit.SECONDS)

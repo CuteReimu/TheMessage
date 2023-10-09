@@ -45,7 +45,7 @@
 
 有一种特殊的技能叫`MustReceiveCardSkill`，本回合必须接收/必须不能接收情报，它继承于`OneTurnSkill`
 
-> 杂耍艺人和军人会让别人获得一个继承于`MustReceiveCardSkill`和的技能。
+> 小铃铛和边云疆会让别人获得一个继承于`MustReceiveCardSkill`和的技能。
 
 ## 传情报相关的技能
 

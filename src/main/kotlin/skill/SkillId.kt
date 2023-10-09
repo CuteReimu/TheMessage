@@ -14,7 +14,7 @@ enum class SkillId(private val cName: String) {
     LENG_XUE_XUN_LIAN("冷血训练"), GUAN_HAI("观海"), BI_FENG("避风"), ZUO_YOU_FENG_YUAN("左右逢源"), BI_YI_SHUANG_FEI("比翼双飞"),
     TAN_QIU_ZHEN_LI("探求真理"), RU_BI_ZHI_SHI("如臂指使"), SHEN_CANG("深藏"), GONG_FEN("共焚"), HUO_XIN("惑心"),
     CONG_RONG_YING_DUI("从容应对"), CHI_ZI_ZHI_XIN("赤子之心"), YUN_CHOU_WEI_WO("运筹帷幄"), HOU_LAI_REN("后来人"),
-    ZI_ZHENG_QING_BAI("自证清白"), SHOU_KOU_RU_PING("守口如瓶"), DU_MING("赌命"), LIAN_LUO2("联络"), SHUN_SHI_ER_WEI("顺势而为"),
+    ZI_ZHENG_QING_BAI("自证清白"), SHOU_KOU_RU_PING("守口如瓶"), DU_MING("赌命"), LIAN_XIN("联络"), SHUN_SHI_ER_WEI("顺势而为"),
     MI_XIN("密信"), JIANG_JI_JIU_JI("将计就计"), HAN_HOU_LAO_SHI("憨厚老实"), MIAO_SHOU_KUAI_JI("妙手快记"),
     YU_SI_WANG_PO("鱼死网破"), DING_LUN("定论"), ZHEN_LI("真理"), YING_BIAN_ZI_RU("应变自如"), TAO_QU("套取"),
     TAN_XU_BIAN_SHI("探虚辨实"), CUN_BU_BU_RANG("寸步不让"), XIN_GE_LIAN_LUO("信鸽联络"), HOU_ZI_QIE_XIN("猴子窃信"),

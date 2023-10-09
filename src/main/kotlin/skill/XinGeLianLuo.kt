@@ -10,7 +10,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 杂耍艺人技能【信鸽联络】：每当你传出非直达情报时，可以选择一名角色本轮的传递阶段中不能选择接收情报。
+ * 小铃铛技能【信鸽联络】：每当你传出非直达情报时，可以选择一名角色本轮的传递阶段中不能选择接收情报。
  */
 class XinGeLianLuo : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.XIN_GE_LIAN_LUO
