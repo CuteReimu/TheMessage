@@ -1203,22 +1203,8 @@ message skill_zi_zheng_qing_bai_toc {
   repeated color colors = 2; // 弃的那张牌的颜色
 }
 
-// 广播使用【妙手快记】A：你相邻玩家的回合结束时，你可以选择获得弃牌堆顶的牌
-message skill_miao_shou_kuai_ji_a_toc {
-  uint32 player_id = 1;
-  card card = 2;
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
-}
-
-// 陈安娜【妙手快记】B：然后弃一张牌（弃牌走弃牌协议）
-message skill_miao_shou_kuai_ji_b_tos {
-  uint32 card_id = 1;
-  uint32 seq = 2;
-}
-
-// 广播使用【妙手快记】B
-message skill_miao_shou_kuai_ji_b_toc {
+// 广播使用【应变】：你可以将【破译】作为【调包】面朝下打出。
+message skill_yi_wen_an_hao_toc {
   uint32 player_id = 1;
 }
 

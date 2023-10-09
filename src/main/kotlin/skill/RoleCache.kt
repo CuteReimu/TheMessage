@@ -63,7 +63,7 @@ object RoleCache {
         RoleSkillsData("SP小九", role.sp_xiao_jiu, false, true, ChiZiZhiXin()),
         RoleSkillsData("老虎", role.lao_hu, false, false, YunChouWeiWo()),
         RoleSkillsData("SP端木静", role.sp_duan_mu_jing, true, false, HouLaiRen()),
-        RoleSkillsData("陈安娜", role.chen_an_na, true, true, ZiZhengQingBai(), MiaoShouKuaiJi()),
+        RoleSkillsData("陈安娜", role.chen_an_na, true, true, ZiZhengQingBai(), YiWenAnHao()),
         RoleSkillsData("哑炮", role.ya_pao, false, true, ShouKouRuPing(), HanHouLaoShi()),
         RoleSkillsData("金自来", role.jin_zi_lai, false, true, DuMing()),
         RoleSkillsData("成年小九", role.adult_xiao_jiu, false, false, LianXin(), ShunShiErWei()),
@@ -82,6 +82,7 @@ object RoleCache {
     private val pool = Channel<() -> Unit>(Channel.UNLIMITED)
     private val forbiddenRoleCache = ArrayList<RoleSkillsData>()
     private val doubleProbabilityRoles = listOf(
+        role.chen_an_na,
         role.ya_pao,
         role.qin_wu_ming,
         role.li_shu_yun,

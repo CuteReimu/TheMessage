@@ -33,9 +33,10 @@ fun Player.canUseCardTypes(
     for (s in skills) {
         if (s is ConvertCardSkill && s.cardTypeA == actualType) {
             if (s.cardTypeB == needType) {
-                if (!ok && (!onlyMust || s.must)) {
+                if (!onlyMust || s.must) {
                     ok = true
-                    convertCardSkill = s
+                    if ((needType != actualType || s.must) && (convertCardSkill == null || !convertCardSkill.must && s.must))
+                        convertCardSkill = s
                 }
             } else if (s.must) return false to null
         }
