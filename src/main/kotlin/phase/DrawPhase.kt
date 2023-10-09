@@ -1,9 +1,9 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Config
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
+import com.fengsheng.skill.getDrawCardCountEachTurn
 import org.apache.log4j.Logger
 
 /**
@@ -18,7 +18,7 @@ data class DrawPhase(val player: Player) : Fsm {
         for (p in player.game!!.players) {
             p!!.notifyDrawPhase()
         }
-        player.draw(Config.HandCardCountEachTurn)
+        player.draw(player.getDrawCardCountEachTurn())
         return ResolveResult(MainPhaseIdle(player), true)
     }
 

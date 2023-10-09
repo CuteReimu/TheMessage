@@ -51,6 +51,7 @@ enum role {
   chen_da_er = 46; // 陈大耳
   bian_yun_jiang = 47; // 边云疆
   sun_shou_mo = 48; // 孙守謨
+  huo_che_si_ji = 49; // 火车司机
   sp_cheng_xiao_die = 1002; // SP程小蝶
   sp_lian_yuan = 1003; // SP连鸢
   sp_a_fu_luo_la = 1013; // SP阿芙罗拉
