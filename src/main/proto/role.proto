@@ -1253,38 +1253,66 @@ message skill_du_ming_b_toc {
   card card = 2; // 置入的牌
 }
 
-// 成年小九【联信】：接收单色情报后，可以翻开此角色，将一张含不同颜色的情报从手牌置入传出者的情报区，然后抽两张牌。
-message skill_lian_xin_tos {
+// 成年小九【联信】A：接收其他角色情报后，可以翻开此角色，摸两张牌
+message skill_lian_xin_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【联信】A，摸牌走摸牌协议
+message skill_lian_xin_a_toc {
+  uint32 player_id = 1; // 成年小九的ID
+  uint32 target_player_id = 2;
+  card message_card = 3;
+  uint32 waiting_second = 4; // 如果没有满足条件的手牌，则这个字段为0
+  uint32 seq = 5;
+}
+
+// 成年小九【联信】B：然后将一张含该情报不同颜色的手牌置入传出者的情报区
+message skill_lian_xin_b_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
 }
 
-// 广播使用【联信】，摸牌走摸牌协议
-message skill_lian_xin_toc {
+// 广播使用【联信】B
+message skill_lian_xin_b_toc {
   uint32 player_id = 1; // 成年小九的ID
   uint32 target_player_id = 2;
   card card = 3;
 }
 
-// 广播使用【顺势而为】：你使用【截获】或者成为【截获】的目标时，可以翻回背面。
+// 广播使用【顺势而为】：你使用【截获】或者成为【截获】的目标时，可以将此角色牌翻回背面，摸一张牌。
 message skill_shun_shi_er_wei_toc {
   uint32 player_id = 1;
 }
 
-// 成年韩梅【密信】：接收双色情报后，可以翻开此角色，将一张含相同颜色的情报从手牌置入传出者的情报区，然后抽两张牌。
-message skill_mi_xin_tos {
+// 成年韩梅【密信】A：接收其他角色情报后，可以翻开此角色，摸两张牌
+message skill_mi_xin_a_tos {
+  uint32 seq = 1;
+}
+
+// 广播使用【密信】A，摸牌走摸牌协议
+message skill_mi_xin_a_toc {
+  uint32 player_id = 1; // 成年韩梅的ID
+  uint32 target_player_id = 2;
+  card message_card = 3;
+  uint32 waiting_second = 4; // 如果没有满足条件的手牌，则这个字段为0
+  uint32 seq = 5;
+}
+
+// 成年韩梅【密信】B：然后将一张含该情报相同颜色的手牌置入传出者的情报区
+message skill_mi_xin_b_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
 }
 
-// 广播使用【密信】，摸牌走摸牌协议
-message skill_mi_xin_toc {
+// 广播使用【密信】B
+message skill_mi_xin_b_toc {
   uint32 player_id = 1; // 成年韩梅的ID
   uint32 target_player_id = 2;
   card card = 3;
 }
 
-// 广播使用【将计就计】：你使用【误导】或者成为【误导】的目标之一时，可以翻回背面。
+// 广播使用【将计就计】：你使用【误导】或者成为【误导】的目标之一时，可以将此角色牌翻回背面，摸一张牌。
 message skill_jiang_ji_jiu_ji_toc {
   uint32 player_id = 1;
 }
@@ -1300,7 +1328,7 @@ message skill_yu_si_wang_po_a_tos {
 message skill_yu_si_wang_po_a_toc {
   uint32 player_id = 1; // 秦无命的ID
   uint32 target_player_id = 2;
-  uint32 card_count = 3; // 秦无命弃牌的数量，弃牌走弃牌协议
+  uint32 card_count = 3; // 秦无命弃牌的数量+1，弃牌走弃牌协议
   uint32 waiting_second = 4; // 如果全弃，则这个字段为0
   uint32 seq = 5;
 }

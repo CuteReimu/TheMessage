@@ -11,7 +11,7 @@ import com.fengsheng.protos.Role.skill_shun_shi_er_wei_toc
 import org.apache.log4j.Logger
 
 /**
- * 成年小九技能【顺势而为】：你使用【截获】或者成为【截获】的目标时，可以翻回背面。
+ * 成年小九技能【顺势而为】：你使用【截获】或者成为【截获】的目标时，可以将此角色牌翻回背面，摸一张牌。
  */
 class ShunShiErWei : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.SHUN_SHI_ER_WEI
@@ -31,6 +31,7 @@ class ShunShiErWei : InitialSkill, TriggeredSkill {
                 p.send(builder.build())
             }
         }
+        askWhom.draw(1)
         g.playerSetRoleFaceUp(askWhom, false)
         return null
     }
