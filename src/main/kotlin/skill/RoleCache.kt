@@ -92,8 +92,6 @@ object RoleCache {
         role.sp_a_fu_luo_la,
         role.ling_su_qiu,
         role.xiao_ling_dang,
-        role.chen_da_er,
-        role.bian_yun_jiang,
         role.huo_che_si_ji,
     )
 
