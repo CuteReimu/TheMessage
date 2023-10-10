@@ -1621,11 +1621,6 @@ message skill_xiang_jin_si_suo_b_toc {
   uint32 player_id = 1; // 孙守謨的ID
 }
 
-// 广播使用【借车运货】：你传出的情报不能被误导。
-message skill_jie_che_yun_huo_toc {
-  uint32 player_id = 1; // 火车司机的ID
-}
-
 // 广播询问使用【咱们工人有知识】
 message skill_wait_for_workers_are_knowledgable_toc {
   uint32 player_id = 1;
