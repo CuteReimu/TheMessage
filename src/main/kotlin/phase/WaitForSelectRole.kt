@@ -3,7 +3,6 @@ package com.fengsheng.phase
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.role
-import com.fengsheng.protos.Common.secret_task.Sweeper
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessageV3
@@ -83,7 +82,6 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         builder.waitingSecond = Config.WaitSecond * 2
         builder.addAllPossibleSecretTask(game.possibleSecretTasks)
         player.send(builder.build())
-        player.notifySweeperSecretTasks()
     }
 
     companion object {
@@ -93,12 +91,5 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         private val redBluePrefer = blackPrefer + listOf(role.xiao_jiu, role.sp_gu_xiao_meng, role.bai_xiao_nian)
         private val redBlueDisgust = listOf(role.jin_sheng_huo, role.mao_bu_ba, role.wang_tian_xiang)
         private val blackDisgust = redBlueDisgust + listOf(role.xiao_jiu, role.sp_gu_xiao_meng, role.bai_xiao_nian)
-
-        private fun HumanPlayer.notifySweeperSecretTasks() {
-            if (Sweeper in game!!.possibleSecretTasks)
-                GameExecutor.post(game!!, {
-                    sendErrorMessage("请注意，清道夫的胜利条件已改为：一名红色和蓝色情报均小于等于1张的人死亡")
-                }, 1, TimeUnit.SECONDS)
-        }
     }
 }
