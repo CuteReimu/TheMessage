@@ -71,6 +71,7 @@ object Statistics {
     fun addPlayerGameCount(playerGameResultList: List<PlayerGameResult>) {
         pool.trySend {
             try {
+                val now = System.currentTimeMillis()
                 var win = 0
                 var game = 0
                 var updateTrial = false
@@ -82,7 +83,7 @@ object Statistics {
                     game++
                     playerInfoMap.computeIfPresent(count.playerName) { _, v ->
                         val addWin = if (count.isWin) 1 else 0
-                        v.copy(winCount = v.winCount + addWin, gameCount = v.gameCount + 1)
+                        v.copy(winCount = v.winCount + addWin, gameCount = v.gameCount + 1, lastTime = now)
                     }
                 }
                 totalWinCount.addAndGet(win)
@@ -96,7 +97,7 @@ object Statistics {
     }
 
     fun register(name: String): Boolean {
-        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0, 0, "")) == null
+        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0, 0, "", 0)) == null
         if (result) pool.trySend(::savePlayerInfo)
         return result
     }
@@ -220,7 +221,8 @@ object Statistics {
             sb.append(info.score).append(',')
             sb.append(info.password).append(',')
             sb.append(info.forbidUntil).append(',')
-            sb.append(info.title).append('\n')
+            sb.append(info.title).append(',')
+            sb.append(info.lastTime).append('\n')
         }
         writeFile("playerInfo.csv", sb.toString().toByteArray())
     }
@@ -244,15 +246,16 @@ object Statistics {
                 while (true) {
                     line = reader.readLine()
                     if (line == null) break
-                    val a = line.split(",".toRegex(), limit = 7).toTypedArray()
-                    val password = a[4]
+                    val a = line.split(",".toRegex(), limit = 8).toTypedArray()
+                    val pwd = a[4]
                     val score = if (a[3].length < 6) a[3].toInt() else 0 // 以前这个位置是deviceId
                     val name = a[2]
                     val win = a[0].toInt()
                     val game = a[1].toInt()
                     val forbid = a.getOrNull(5)?.toLong() ?: 0
                     val title = a.getOrNull(6) ?: ""
-                    if (playerInfoMap.put(name, PlayerInfo(name, score, password, win, game, forbid, title)) != null)
+                    val lt = a.getOrNull(7)?.toLong() ?: 0
+                    if (playerInfoMap.put(name, PlayerInfo(name, score, pwd, win, game, forbid, title, lt)) != null)
                         throw RuntimeException("数据错误，有重复的玩家name")
                     winCount += win
                     gameCount += game
@@ -343,6 +346,7 @@ object Statistics {
         val gameCount: Int,
         val forbidUntil: Long,
         val title: String,
+        val lastTime: Long,
     )
 
     private val log = Logger.getLogger(Statistics::class.java)

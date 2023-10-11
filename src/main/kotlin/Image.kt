@@ -10,33 +10,42 @@ import java.awt.image.BufferedImage
 import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.InputStreamReader
+import java.text.SimpleDateFormat
+import java.util.*
 
 object Image {
+    private val dateFormat = SimpleDateFormat("MM-dd HH:mm").apply {
+        timeZone = TimeZone.getTimeZone("GMT+8:00")
+    }
+
     private class Line(val roleName: String, val totalCount: Int, val winRates: DoubleArray)
 
-    private class Gradient(values: Iterable<Double>) {
+    private class Gradient(
+        values: Collection<Double>,
+        val minColor: Color = Color(99, 190, 123),
+        val aveColor: Color = Color.WHITE,
+        val maxColor: Color = Color(245, 105, 104)
+    ) {
         val average = values.average()
         val min = values.minOrNull() ?: Double.NaN
         val max = values.maxOrNull() ?: Double.NaN
         fun getColor(value: Double): Color {
             if (average.isNaN()) return Color.WHITE
-            val minColor = Color(99, 190, 123)
-            val maxColor = Color(245, 105, 104)
             return when {
                 value <= min -> minColor
                 value >= max -> maxColor
-                value == average -> Color.WHITE
+                value == average -> aveColor
                 value < average -> {
-                    val red = 256 - (256 - minColor.red) * (average - value) / (average - min)
-                    val green = 256 - (256 - minColor.green) * (average - value) / (average - min)
-                    val blue = 256 - (256 - minColor.blue) * (average - value) / (average - min)
+                    val red = aveColor.red - (aveColor.red - minColor.red) * (average - value) / (average - min)
+                    val green = aveColor.green - (aveColor.green - minColor.green) * (average - value) / (average - min)
+                    val blue = aveColor.blue - (aveColor.blue - minColor.blue) * (average - value) / (average - min)
                     Color(red.toInt(), green.toInt(), blue.toInt())
                 }
 
                 else -> {
-                    val red = 256 - (256 - maxColor.red) * (value - average) / (max - average)
-                    val green = 256 - (256 - maxColor.green) * (value - average) / (max - average)
-                    val blue = 256 - (256 - maxColor.blue) * (value - average) / (max - average)
+                    val red = aveColor.red - (aveColor.red - maxColor.red) * (value - average) / (max - average)
+                    val green = aveColor.green - (aveColor.green - maxColor.green) * (value - average) / (max - average)
+                    val blue = aveColor.blue - (aveColor.blue - maxColor.blue) * (value - average) / (max - average)
                     Color(red.toInt(), green.toInt(), blue.toInt())
                 }
             }
@@ -174,13 +183,14 @@ object Image {
 
     fun genRankListImage(lines: List<PlayerInfo>): BufferedImage {
         val img =
-            BufferedImage(CELL_W * 6 + 1 + font.size * 2, CELL_H * (lines.size + 1) + 1, BufferedImage.TYPE_INT_RGB)
+            BufferedImage(CELL_W * 7 + 1 + font.size * 4, CELL_H * (lines.size + 1) + 1, BufferedImage.TYPE_INT_RGB)
         val g = img.createGraphics()
         g.color = Color.WHITE
         g.fillRect(img.minX, img.minY, img.width, img.height)
         g.color = Color.BLACK
         g.font = font
-        val g0 = Gradient(lines.indices.map { 50.0 - it })
+        val aveColor = Color(250, 180, 180)
+        val g0 = Gradient(lines.indices.map { 50.0 - it }, minColor = Color.WHITE, aveColor = aveColor)
         lines.forEachIndexed { index, line ->
             g.color = g0.getColor(50.0 - index)
             g.fillRect(0, (index + 1) * CELL_H, CELL_W * 2 + font.size * 2, CELL_H)
@@ -195,9 +205,13 @@ object Image {
         g.drawString("分数", CELL_W * 3 + font.size * 2 + 3, CELL_H - 3)
         g.drawString("总场次", CELL_W * 4 + font.size * 2 + 3, CELL_H - 3)
         g.drawString("胜率", CELL_W * 5 + font.size * 2 + 3, CELL_H - 3)
-        val g1 = Gradient(lines.map { it.score.toDouble() })
-        val g2 = Gradient(lines.map { it.gameCount.toDouble() })
+        g.drawString("最近一局", CELL_W * 6 + font.size * 2 + 3, CELL_H - 3)
+        val g1 = Gradient(lines.map { it.score.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
+        val g2 = Gradient(lines.map { it.gameCount.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
         val g3 = Gradient(lines.map { PlayerGameCount(it.winCount, it.gameCount).rate })
+        val g4 = Gradient(lines.mapNotNull {
+            if (it.lastTime == 0L) null else it.lastTime.toDouble()
+        }, minColor = Color.WHITE, aveColor = aveColor)
         lines.forEachIndexed { index, line ->
             val rank = ScoreFactory.getRankStringNameByScore(line.score)
             g.color = g1.getColor(line.score.toDouble())
@@ -214,6 +228,13 @@ object Image {
             g.fillRect(CELL_W * 5 + font.size * 2, (index + 1) * CELL_H, CELL_W, CELL_H)
             g.color = Color.BLACK
             g.drawString("%.2f%%".format(count.rate), CELL_W * 5 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
+            if (line.lastTime > 0) {
+                g.color = g4.getColor(line.lastTime.toDouble())
+                g.fillRect(CELL_W * 6 + font.size * 2, (index + 1) * CELL_H, CELL_W + font.size * 2, CELL_H)
+                g.color = Color.BLACK
+                val dateString = dateFormat.format(Date(line.lastTime))
+                g.drawString(dateString, CELL_W * 6 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
+            }
         }
         g.color = Color(205, 204, 200)
         repeat(lines.size + 2) {
@@ -222,8 +243,10 @@ object Image {
         repeat(8) { i ->
             if (i < 2)
                 g.drawLine(i * CELL_W, 0, i * CELL_W, img.height)
-            else
+            else if (i < 7)
                 g.drawLine(i * CELL_W + font.size * 2, 0, i * CELL_W + font.size * 2, img.height)
+            else
+                g.drawLine(i * CELL_W + font.size * 4, 0, i * CELL_W + font.size * 4, img.height)
         }
         g.dispose()
         return img
