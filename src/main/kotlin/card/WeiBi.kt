@@ -138,11 +138,6 @@ class WeiBi : Card {
                 (r as? HumanPlayer)?.sendErrorMessage("威逼的使用时机不对")
                 return false
             }
-            if (r === target) {
-                log.error("威逼不能对自己使用")
-                (r as? HumanPlayer)?.sendErrorMessage("威逼不能对自己使用")
-                return false
-            }
             if (!target.alive) {
                 log.error("目标已死亡")
                 (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")

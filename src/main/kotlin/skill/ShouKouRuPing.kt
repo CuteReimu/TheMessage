@@ -23,7 +23,7 @@ class ShouKouRuPing : InitialSkill, TriggeredSkill {
             fsm.cardType == Shi_Tan || fsm.cardType == Wei_Bi || return null
             fsm.valid || return null
             val targetPlayer = fsm.targetPlayer!!
-            askWhom === fsm.player || askWhom === targetPlayer || return null
+            (askWhom === fsm.player || askWhom === targetPlayer) && fsm.player !== targetPlayer || return null
             askWhom.getSkillUseCount(skillId) == 0 || return null
             askWhom.addSkillUseCount(skillId)
             log.info("${askWhom}发动了[守口如瓶]")

@@ -109,11 +109,6 @@ class WorkersAreKnowledgable : InitialSkill, ChangeDrawCardCountSkill, Triggered
                     (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                     return null
                 }
-                if (it == 0) {
-                    log.error("不能以自己为目标")
-                    (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
-                    return null
-                }
                 val target = r.game!!.players[r.getAbstractLocation(it)]!!
                 if (!target.alive) {
                     log.error("目标已死亡")
