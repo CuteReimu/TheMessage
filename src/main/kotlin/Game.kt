@@ -219,7 +219,6 @@ class Game private constructor(totalPlayerCount: Int) {
                         addScoreMap[p.playerName] = deltaScore
                         newScoreMap[p.playerName] = newScore
                     }
-                    Statistics.calculateRankList()
                 }
                 val records = ArrayList<Statistics.Record>(players.size)
                 val playerGameResultList = ArrayList<PlayerGameResult>()
@@ -238,6 +237,7 @@ class Game private constructor(totalPlayerCount: Int) {
                 }
                 Statistics.add(records)
                 Statistics.addPlayerGameCount(playerGameResultList)
+                Statistics.calculateRankList()
                 MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
             }
             this.players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }
