@@ -31,6 +31,19 @@ object ScoreFactory {
         }
     }
 
+    fun getRankStringNameByScore(score: Int): String {
+        return when {
+            score < 60 -> "青铜" + rankString[2 - score / 20]
+            score < 240 -> "白银" + rankString[2 - (score - 60) / 60]
+            score < 360 -> "黄金" + rankString[4 - (score - 240) / 60]
+            score < 600 -> "黄金" + rankString[2 - (score - 360) / 80]
+            score < 1000 -> "铂金" + rankString[4 - (score - 600) / 80]
+            score < 1500 -> "钻石" + rankString[4 - (score - 1000) / 100]
+            score < 2000 -> "大师" + rankString[4 - (score - 1500) / 100]
+            else -> "大师" + rankString[0]
+        }
+    }
+
     private val protectScore = (362 downTo 0).filter {
         when (it % 60) {
             59, 0, 1, 2 -> true

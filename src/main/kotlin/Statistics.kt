@@ -6,6 +6,7 @@ import com.fengsheng.protos.Fengsheng.get_record_list_toc
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.apache.log4j.Logger
+import java.awt.image.BufferedImage
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -28,8 +29,8 @@ object Statistics {
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
     private val trialStartTime = ConcurrentHashMap<String, Long>()
-    val rankList10 = AtomicReference<String>()
     val rankList25 = AtomicReference<String>()
+    val rankListImage = AtomicReference<BufferedImage>()
 
     init {
         @OptIn(DelicateCoroutinesApi::class)
@@ -175,7 +176,9 @@ object Statistics {
         val l1 = playerInfoMap.filter { (_, v) -> v.score > 0 }.map { (_, v) -> v }.sortedWith { a, b ->
             if (a.score > b.score) -1
             else if (a.score < b.score) 1
-            else a.name.compareTo(b.name)
+            else if (a.gameCount > b.gameCount) -1
+            else if (a.gameCount < b.gameCount) 1
+            else b.winCount.compareTo(a.winCount)
         }
 
         fun makeRankList(count: Int): String {
@@ -188,7 +191,7 @@ object Statistics {
             }
         }
 
-        rankList10.set(makeRankList(10))
+        rankListImage.set(Image.genRankListImage(if (l1.size > 50) l1.subList(0, 50) else l1))
         rankList25.set(makeRankList(25))
     }
 

@@ -1,5 +1,7 @@
 package com.fengsheng
 
+import com.fengsheng.Statistics.PlayerGameCount
+import com.fengsheng.Statistics.PlayerInfo
 import com.fengsheng.protos.Common
 import com.fengsheng.skill.RoleCache
 import java.awt.Color
@@ -9,23 +11,7 @@ import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.InputStreamReader
 
-object WinRate {
-    private fun IntArray.inc(index: Int? = null) {
-        this[0]++
-        if (index != null) {
-            this[2]++
-            this[index]++
-        } else {
-            this[1]++
-        }
-    }
-
-    private fun <K> HashMap<K, IntArray>.sum(index: Int): Int {
-        var sum = 0
-        this.forEach { sum += it.value[index] }
-        return sum
-    }
-
+object Image {
     private class Line(val roleName: String, val totalCount: Int, val winRates: DoubleArray)
 
     private class Gradient(values: Iterable<Double>) {
@@ -60,12 +46,28 @@ object WinRate {
     private const val CELL_W = 66
     private const val CELL_H = 18
     private val font = Font("宋体", 0, CELL_H - 3)
-    private val columns = listOf(
-        "角色", "场次", "总胜率", "军潜", "神秘人",
-        "镇压者", "簒夺者", "双重间谍", "诱变者", "先行者", "搅局者", "清道夫",
-    )
 
     fun getWinRateImage(): BufferedImage {
+        fun IntArray.inc(index: Int? = null) {
+            this[0]++
+            if (index != null) {
+                this[2]++
+                this[index]++
+            } else {
+                this[1]++
+            }
+        }
+
+        fun <K> HashMap<K, IntArray>.sum(index: Int): Int {
+            var sum = 0
+            this.forEach { sum += it.value[index] }
+            return sum
+        }
+
+        val columns = listOf(
+            "角色", "场次", "总胜率", "军潜", "神秘人",
+            "镇压者", "簒夺者", "双重间谍", "诱变者", "先行者", "搅局者", "清道夫",
+        )
         val appearCount = HashMap<Common.role, IntArray>()
         val winCount = HashMap<Common.role, IntArray>()
         FileInputStream("stat.csv").use { `is` ->
@@ -99,7 +101,7 @@ object WinRate {
         lines.sortByDescending { it.winRates.firstOrNull() ?: 0.0 }
 
         val img =
-            BufferedImage(CELL_W * 12 + 1 + font.size * 2, CELL_H * (lines.size + 2) + 1, BufferedImage.TYPE_INT_RGB)
+            BufferedImage(CELL_W * 12 + 1 + font.size, CELL_H * (lines.size + 2) + 1, BufferedImage.TYPE_INT_RGB)
         val g = img.createGraphics()
         g.color = Color.WHITE
         g.fillRect(img.minX, img.minY, img.width, img.height)
@@ -109,10 +111,10 @@ object WinRate {
             if (i == 0)
                 g.drawString(s, 3, CELL_H - 3)
             else
-                g.drawString(s, i * CELL_W + 3 + font.size * 2, CELL_H - 3)
+                g.drawString(s, i * CELL_W + 3 + font.size, CELL_H - 3)
         }
         g.drawString("全部", 3, CELL_H * 2 - 3)
-        g.drawString(appearCount.sum(0).toString(), CELL_W + 3 + font.size * 2, CELL_H * 2 - 3)
+        g.drawString(appearCount.sum(0).toString(), CELL_W + 3 + font.size, CELL_H * 2 - 3)
         val g1 = Gradient((1..<columns.size - 2).mapNotNull { i ->
             val winSum = winCount.sum(i)
             val appearSum = appearCount.sum(i)
@@ -125,12 +127,12 @@ object WinRate {
             if (appearSum != 0) {
                 if (i > 0) {
                     g.color = g1.getColor(winSum * 100.0 / appearSum)
-                    g.fillRect(CELL_W * (i + 2) + font.size * 2, CELL_H, CELL_W, CELL_H)
+                    g.fillRect(CELL_W * (i + 2) + font.size, CELL_H, CELL_W, CELL_H)
                     g.color = Color.BLACK
                 }
                 g.drawString(
                     "%.2f%%".format(winSum * 100.0 / appearSum),
-                    CELL_W * (i + 2) + 3 + font.size * 2,
+                    CELL_W * (i + 2) + 3 + font.size,
                     CELL_H * 2 - 3
                 )
             }
@@ -143,16 +145,16 @@ object WinRate {
             val row = index + 2
             g.drawString(line.roleName, 3, (row + 1) * CELL_H - 3)
             g.color = g2.getColor(line.totalCount.toDouble())
-            g.fillRect(CELL_W + font.size * 2, row * CELL_H, CELL_W, CELL_H)
+            g.fillRect(CELL_W + font.size, row * CELL_H, CELL_W, CELL_H)
             g.color = Color.BLACK
-            g.drawString(line.totalCount.toString(), CELL_W + 3 + font.size * 2, (row + 1) * CELL_H - 3)
+            g.drawString(line.totalCount.toString(), CELL_W + 3 + font.size, (row + 1) * CELL_H - 3)
             line.winRates.forEachIndexed { i, v ->
                 if (!v.isNaN()) {
                     val col = i + 2
                     g.color = gn[i].getColor(v)
-                    g.fillRect(col * CELL_W + font.size * 2, row * CELL_H, CELL_W, CELL_H)
+                    g.fillRect(col * CELL_W + font.size, row * CELL_H, CELL_W, CELL_H)
                     g.color = Color.BLACK
-                    g.drawString("%.2f%%".format(v), col * CELL_W + 3 + font.size * 2, (row + 1) * CELL_H - 3)
+                    g.drawString("%.2f%%".format(v), col * CELL_W + 3 + font.size, (row + 1) * CELL_H - 3)
                 }
             }
         }
@@ -163,6 +165,63 @@ object WinRate {
         repeat(columns.size + 1) { i ->
             if (i == 0)
                 g.drawLine(0, 0, 0, img.height)
+            else
+                g.drawLine(i * CELL_W + font.size, 0, i * CELL_W + font.size, img.height)
+        }
+        g.dispose()
+        return img
+    }
+
+    fun genRankListImage(lines: List<PlayerInfo>): BufferedImage {
+        val img =
+            BufferedImage(CELL_W * 6 + 1 + font.size * 2, CELL_H * (lines.size + 1) + 1, BufferedImage.TYPE_INT_RGB)
+        val g = img.createGraphics()
+        g.color = Color.WHITE
+        g.fillRect(img.minX, img.minY, img.width, img.height)
+        g.color = Color.BLACK
+        g.font = font
+        val g0 = Gradient(lines.indices.map { 50.0 - it })
+        lines.forEachIndexed { index, line ->
+            g.color = g0.getColor(50.0 - index)
+            g.fillRect(0, (index + 1) * CELL_H, CELL_W * 2 + font.size * 2, CELL_H)
+            g.color = Color.BLACK
+            g.drawString("第${index + 1}名", 3, (index + 2) * CELL_H - 3)
+            g.drawString(line.name, CELL_W + 3, (index + 2) * CELL_H - 3)
+        }
+        g.color = Color.WHITE
+        g.fillRect(CELL_W * 2 + font.size * 2, 0, img.width - (CELL_W * 2 + font.size * 2), img.height)
+        g.color = Color.BLACK
+        g.drawString("段位", CELL_W * 2 + font.size * 2 + 3, CELL_H - 3)
+        g.drawString("分数", CELL_W * 3 + font.size * 2 + 3, CELL_H - 3)
+        g.drawString("总场次", CELL_W * 4 + font.size * 2 + 3, CELL_H - 3)
+        g.drawString("胜率", CELL_W * 5 + font.size * 2 + 3, CELL_H - 3)
+        val g1 = Gradient(lines.map { it.score.toDouble() })
+        val g2 = Gradient(lines.map { it.gameCount.toDouble() })
+        val g3 = Gradient(lines.map { PlayerGameCount(it.winCount, it.gameCount).rate })
+        lines.forEachIndexed { index, line ->
+            val rank = ScoreFactory.getRankStringNameByScore(line.score)
+            g.color = g1.getColor(line.score.toDouble())
+            g.fillRect(CELL_W * 2 + font.size * 2, (index + 1) * CELL_H, CELL_W * 2, CELL_H)
+            g.color = Color.BLACK
+            g.drawString(rank, CELL_W * 2 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
+            g.drawString(line.score.toString(), CELL_W * 3 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
+            val count = PlayerGameCount(line.winCount, line.gameCount)
+            g.color = g2.getColor(count.gameCount.toDouble())
+            g.fillRect(CELL_W * 4 + font.size * 2, (index + 1) * CELL_H, CELL_W, CELL_H)
+            g.color = Color.BLACK
+            g.drawString(count.gameCount.toString(), CELL_W * 4 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
+            g.color = g3.getColor(count.rate)
+            g.fillRect(CELL_W * 5 + font.size * 2, (index + 1) * CELL_H, CELL_W, CELL_H)
+            g.color = Color.BLACK
+            g.drawString("%.2f%%".format(count.rate), CELL_W * 5 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
+        }
+        g.color = Color(205, 204, 200)
+        repeat(lines.size + 2) {
+            g.drawLine(0, it * CELL_H, img.width, it * CELL_H)
+        }
+        repeat(8) { i ->
+            if (i < 2)
+                g.drawLine(i * CELL_W, 0, i * CELL_W, img.height)
             else
                 g.drawLine(i * CELL_W + font.size * 2, 0, i * CELL_W + font.size * 2, img.height)
         }
