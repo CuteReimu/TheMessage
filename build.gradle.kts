@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.netty:netty-all:4.1.99.Final")
+    implementation("io.netty:netty-all:4.1.100.Final")
     implementation("com.google.protobuf:protobuf-java:3.24.4")
     implementation("log4j:log4j:1.2.17")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
