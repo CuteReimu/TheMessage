@@ -15,7 +15,7 @@ class end_main_phase_tos : AbstractProtoHandler<Fengsheng.end_main_phase_tos>() 
             return
         }
         val fsm = r.game!!.fsm as? MainPhaseIdle
-        if (r !== fsm?.player) {
+        if (r !== fsm?.whoseTurn) {
             log.error("不是你的回合的出牌阶段")
             r.sendErrorMessage("不是你的回合的出牌阶段")
             return
@@ -26,7 +26,7 @@ class end_main_phase_tos : AbstractProtoHandler<Fengsheng.end_main_phase_tos>() 
             return
         }
         r.incrSeq()
-        r.game!!.resolve(SendPhaseStart(fsm.player))
+        r.game!!.resolve(SendPhaseStart(fsm.whoseTurn))
     }
 
     companion object {

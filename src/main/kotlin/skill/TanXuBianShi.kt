@@ -20,7 +20,7 @@ class TanXuBianShi : MainPhaseSkill(), InitialSkill {
         super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -162,16 +162,16 @@ class TanXuBianShi : MainPhaseSkill(), InitialSkill {
         private val log = Logger.getLogger(TanXuBianShi::class.java)
 
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            e.player.getSkillUseCount(SkillId.TAN_XU_BIAN_SHI) == 0 || return false
-            val card = e.player.cards.randomOrNull() ?: return false
-            val player = e.player.game!!.players.filter { p ->
-                p !== e.player && p!!.alive && p.cards.isNotEmpty()
+            e.whoseTurn.getSkillUseCount(SkillId.TAN_XU_BIAN_SHI) == 0 || return false
+            val card = e.whoseTurn.cards.randomOrNull() ?: return false
+            val player = e.whoseTurn.game!!.players.filter { p ->
+                p !== e.whoseTurn && p!!.alive && p.cards.isNotEmpty()
             }.randomOrNull() ?: return false
-            GameExecutor.post(e.player.game!!, {
+            GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_tan_xu_bian_shi_a_tos.newBuilder()
-                builder.targetPlayerId = e.player.getAlternativeLocation(player.location)
+                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
                 builder.cardId = card.id
-                skill.executeProtocol(e.player.game!!, e.player, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

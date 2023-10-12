@@ -15,7 +15,7 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
             return
         }
         val fsm = r.game!!.fsm as? SendPhaseStart
-        if (r !== fsm?.player) {
+        if (r !== fsm?.whoseTurn) {
             r.game!!.tryContinueResolveProtocol(r, pb)
             return
         }
@@ -39,14 +39,14 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
             }
             r.game!!.players[r.getAbstractLocation(it)]!!
         }
-        val sendCardError = r.canSendCard(fsm.player, card, r.cards, pb.cardDir, target, lockPlayers)
+        val sendCardError = r.canSendCard(fsm.whoseTurn, card, r.cards, pb.cardDir, target, lockPlayers)
         if (sendCardError != null) {
             log.error(sendCardError)
             r.sendErrorMessage(sendCardError)
             return
         }
         r.incrSeq()
-        r.game!!.resolve(OnSendCard(fsm.player, fsm.player, card, pb.cardDir, target, lockPlayers.toTypedArray()))
+        r.game!!.resolve(OnSendCard(fsm.whoseTurn, fsm.whoseTurn, card, pb.cardDir, target, lockPlayers.toTypedArray()))
     }
 
     companion object {

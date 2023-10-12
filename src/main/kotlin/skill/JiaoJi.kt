@@ -22,7 +22,7 @@ class JiaoJi : MainPhaseSkill(), InitialSkill {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? MainPhaseIdle
-        if (r !== fsm?.player) {
+        if (r !== fsm?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -121,7 +121,7 @@ class JiaoJi : MainPhaseSkill(), InitialSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.player) {
+            if (player !== fsm.whoseTurn) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -136,7 +136,7 @@ class JiaoJi : MainPhaseSkill(), InitialSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
                 return null
             }
-            val r = fsm.player
+            val r = fsm.whoseTurn
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -183,7 +183,7 @@ class JiaoJi : MainPhaseSkill(), InitialSkill {
     companion object {
         private val log = Logger.getLogger(JiaoJi::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             player.getSkillUseCount(SkillId.JIAO_JI) == 0 || return false
             val players = player.game!!.players.filter { it !== player && it!!.alive && it.cards.isNotEmpty() }
             val target = players.filter { player.isEnemy(it!!) }.randomOrNull()

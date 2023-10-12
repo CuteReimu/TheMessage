@@ -34,6 +34,9 @@ class Game private constructor(totalPlayerCount: Int) {
 
     val id: Int = ++increaseId
 
+    var resolvingEvents: List<Event> = emptyList()
+    private var unresolvedEvents: MutableList<Event> = ArrayList()
+
     private var gameStartTimeout: Timeout? = null
 
     @Volatile
@@ -309,6 +312,9 @@ class Game private constructor(totalPlayerCount: Int) {
         return newPlayers
     }
 
+    inline fun <reified E : Event> filterEvents() = resolvingEvents.filterIsInstance<E>()
+    fun addEvent(event: Event) = unresolvedEvents.add(event)
+
     /**
      * 继续处理当前状态机
      */
@@ -366,6 +372,8 @@ class Game private constructor(totalPlayerCount: Int) {
             }
             i = (i + 1) % players.size
         } while (i != beginLocation % players.size)
+        resolvingEvents = unresolvedEvents
+        unresolvedEvents = ArrayList()
         return null
     }
 

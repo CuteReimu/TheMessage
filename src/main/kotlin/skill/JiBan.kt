@@ -15,7 +15,7 @@ class JiBan : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.JI_BAN
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -150,9 +150,9 @@ class JiBan : MainPhaseSkill(), InitialSkill {
     companion object {
         private val log = Logger.getLogger(JiBan::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.player.getSkillUseCount(SkillId.JI_BAN) > 0) return false
-            GameExecutor.post(e.player.game!!, {
-                skill.executeProtocol(e.player.game!!, e.player, skill_ji_ban_a_tos.getDefaultInstance())
+            if (e.whoseTurn.getSkillUseCount(SkillId.JI_BAN) > 0) return false
+            GameExecutor.post(e.whoseTurn.game!!, {
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skill_ji_ban_a_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)
             return true
         }

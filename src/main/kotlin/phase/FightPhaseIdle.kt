@@ -1,8 +1,8 @@
 package com.fengsheng.phase
 
 import com.fengsheng.Config
-import com.fengsheng.Fsm
 import com.fengsheng.Player
+import com.fengsheng.ProcessFsm
 import com.fengsheng.ResolveResult
 import com.fengsheng.card.Card
 import com.fengsheng.skill.cannotPlayCardAndSkill
@@ -18,14 +18,14 @@ import com.fengsheng.skill.cannotPlayCardAndSkill
  * @param isMessageCardFaceUp 情报是否面朝上
  */
 data class FightPhaseIdle(
-    val whoseTurn: Player,
+    override val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,
     val inFrontOfWhom: Player,
     val whoseFightTurn: Player,
     val isMessageCardFaceUp: Boolean
-) : Fsm {
-    override fun resolve(): ResolveResult? {
+) : ProcessFsm() {
+    override fun resolve0(): ResolveResult? {
         if (!whoseFightTurn.alive || whoseFightTurn.cannotPlayCardAndSkill())
             return ResolveResult(FightPhaseNext(this), true)
         for (p in whoseTurn.game!!.players)

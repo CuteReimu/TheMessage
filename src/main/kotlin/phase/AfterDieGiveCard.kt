@@ -1,5 +1,6 @@
 package com.fengsheng.phase
 
+import com.fengsheng.DiscardCardEvent
 import com.fengsheng.Fsm
 import com.fengsheng.ResolveResult
 
@@ -20,6 +21,7 @@ data class AfterDieGiveCard(val dieGiveCard: WaitForDieGiveCard) : Fsm {
         dieGiveCard.diedIndex++
         if (cards.isEmpty())
             return ResolveResult(dieGiveCard, true)
-        return ResolveResult(OnDiscardCard(dieGiveCard.whoseTurn, player, dieGiveCard), true)
+        player.game!!.addEvent(DiscardCardEvent(dieGiveCard.whoseTurn, player))
+        return ResolveResult(dieGiveCard, true)
     }
 }

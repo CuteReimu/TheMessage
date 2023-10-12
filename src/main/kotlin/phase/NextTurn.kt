@@ -1,9 +1,6 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Fsm
-import com.fengsheng.Game
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
+import com.fengsheng.*
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.secret_task.Disturber
@@ -15,19 +12,18 @@ import org.apache.log4j.Logger
 /**
  * 即将跳转到下一回合时
  *
- * @param player 当前回合的玩家（不是下回合的玩家）
+ * @param whoseTurn 当前回合的玩家（不是下回合的玩家）
  */
-data class NextTurn(val player: Player) : Fsm {
-    override fun resolve(): ResolveResult {
-        val game = player.game!!
-        val result = game.dealListeningSkill(player.location)
-        if (result != null)
-            return result
+data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
+    override fun onSwitch() {
+        whoseTurn.game!!.addEvent(TurnEndEvent(whoseTurn))
+    }
+
+    override fun resolve0(): ResolveResult {
+        val game = whoseTurn.game!!
         if (checkDisturberWin(game))
             return ResolveResult(null, false)
-        if (game.checkOnlyOneAliveIdentityPlayers(player))
-            return ResolveResult(null, false)
-        var whoseTurn = player.location
+        var whoseTurn = whoseTurn.location
         while (true) {
             whoseTurn = (whoseTurn + 1) % game.players.size
             val player = game.players[whoseTurn]!!
@@ -43,11 +39,11 @@ data class NextTurn(val player: Player) : Fsm {
 
     private fun checkDisturberWin(game: Game): Boolean { // 无需判断簒夺者，因为簒夺者、搅局者都要求是自己回合
         val players = game.players.filterNotNull().filter { !it.lose }
-        if (player.identity != Black || player.secretTask != Disturber) return false // 不是搅局者
-        if (players.any { it !== player && it.alive && it.messageCards.countTrueCard() < 2 }) return false
-        val declaredWinner = arrayListOf(player)
-        val winner = arrayListOf(player)
-        game.changeGameResult(player, declaredWinner, winner)
+        if (whoseTurn.identity != Black || whoseTurn.secretTask != Disturber) return false // 不是搅局者
+        if (players.any { it !== whoseTurn && it.alive && it.messageCards.countTrueCard() < 2 }) return false
+        val declaredWinner = arrayListOf(whoseTurn)
+        val winner = arrayListOf(whoseTurn)
+        game.changeGameResult(whoseTurn, declaredWinner, winner)
         val declaredWinners = declaredWinner.toTypedArray()
         val winners = winner.toTypedArray()
         log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")

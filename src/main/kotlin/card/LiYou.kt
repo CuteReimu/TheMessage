@@ -1,13 +1,9 @@
 package com.fengsheng.card
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
 import com.fengsheng.skill.cannotPlayCard
@@ -51,7 +47,7 @@ class LiYou : Card {
     companion object {
         private val log = Logger.getLogger(LiYou::class.java)
         fun canUse(g: Game, r: Player, target: Player): Boolean {
-            if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+            if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
                 log.error("利诱的使用时机不对")
                 (r as? HumanPlayer)?.sendErrorMessage("利诱的使用时机不对")
                 return false
@@ -94,16 +90,14 @@ class LiYou : Card {
                         player.send(builder.build())
                     }
                 }
-                val newFsm =
-                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Li_You, MainPhaseIdle(r))
-                if (!joinIntoHand) OnAddMessageCard(r, newFsm, false)
-                else newFsm
+                if (!joinIntoHand) r.game!!.addEvent(AddMessageCardEvent(r, false))
+                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Li_You, MainPhaseIdle(r))
             }
-            g.resolve(OnUseCard(r, r, target, card?.getOriginCard(), card_type.Li_You, resolveFunc, g.fsm!!))
+            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), card_type.Li_You, resolveFunc, g.fsm!!))
         }
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Li_You) || return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()

@@ -1,7 +1,8 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Fsm
 import com.fengsheng.Player
+import com.fengsheng.ProcessFsm
+import com.fengsheng.ReceiveCardEvent
 import com.fengsheng.ResolveResult
 import com.fengsheng.card.Card
 
@@ -15,15 +16,17 @@ import com.fengsheng.card.Card
  * @param receiveOrder 接收第三张黑色情报牌的顺序（也就是后续结算死亡的顺序）
  */
 data class ReceivePhaseSkill(
-    val whoseTurn: Player,
+    override val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,
     val inFrontOfWhom: Player,
-    override val receiveOrder: ReceiveOrder = ReceiveOrder()
-) : Fsm, HasReceiveOrder {
-    override fun resolve(): ResolveResult {
-        val result = whoseTurn.game!!.dealListeningSkill(sender.location)
-        return result ?: ResolveResult(CheckWin(whoseTurn, receiveOrder, NextTurn(whoseTurn)), true)
+) : ProcessFsm() {
+    override fun onSwitch() {
+        whoseTurn.game!!.addEvent(ReceiveCardEvent(whoseTurn, sender, messageCard, inFrontOfWhom))
+    }
+
+    override fun resolve0(): ResolveResult {
+        return ResolveResult(NextTurn(whoseTurn), true)
     }
 
     override fun toString(): String {

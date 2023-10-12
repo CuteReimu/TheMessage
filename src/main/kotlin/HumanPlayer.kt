@@ -181,7 +181,7 @@ class HumanPlayer(
     }
 
     override fun notifyMainPhase(waitSecond: Int) {
-        val player = (game!!.fsm as MainPhaseIdle).player
+        val player = (game!!.fsm as MainPhaseIdle).whoseTurn
         val playerId = getAlternativeLocation(player.location)
         val builder = notify_phase_toc.newBuilder()
         builder.currentPlayerId = playerId
@@ -203,7 +203,7 @@ class HumanPlayer(
 
     override fun notifySendPhaseStart(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseStart
-        val player = fsm.player
+        val player = fsm.whoseTurn
         val playerId = getAlternativeLocation(player.location)
         val builder = notify_phase_toc.newBuilder()
         builder.currentPlayerId = playerId

@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.*
@@ -16,19 +16,18 @@ class BiFeng : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.BI_FENG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard ?: return null
-        fsm.player === askWhom || return null
-        fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        val oldResolveFunc = fsm.resolveFunc
-        return ResolveResult(excuteBiFeng(fsm.copy(resolveFunc = { valid ->
-            if (askWhom.getSkillUseCount(skillId) == 1) askWhom.resetSkillUseCount(skillId)
-            oldResolveFunc(valid)
-        }), askWhom), true)
+        var fsm: ResolveCard? = null
+        g.filterEvents<UseCardEvent>().any { event ->
+            event.resolveCard.player === askWhom || return@any false
+            event.resolveCard.cardType in arrayOf(Jie_Huo, Wu_Dao) || return@any false
+            askWhom.getSkillUseCount(skillId) == 0 || return@any false
+            fsm = event.resolveCard
+            event.checkResolve(this)
+        } || return null
+        return ResolveResult(excuteBiFeng(fsm!!, askWhom), true)
     }
 
-    private data class excuteBiFeng(val fsm: OnUseCard, val r: Player) : WaitingFsm {
+    private data class excuteBiFeng(val fsm: ResolveCard, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {

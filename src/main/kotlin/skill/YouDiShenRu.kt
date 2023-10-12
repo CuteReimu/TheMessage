@@ -80,7 +80,7 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
         }
         g.resolve(
             OnSendCard(
-                fsm.player, fsm.player, card, message.cardDir, target,
+                fsm.whoseTurn, fsm.whoseTurn, card, message.cardDir, target,
                 lockPlayers.toTypedArray(), isMessageCardFaceUp = true, needRemoveCardAndNotify = false
             )
         )
@@ -98,7 +98,7 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
         private val log = Logger.getLogger(YouDiShenRu::class.java)
 
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             val game = player.game!!
             val messageCard = player.cards.filter { it.direction != Up }.randomOrNull() ?: return false
             val direction = messageCard.direction

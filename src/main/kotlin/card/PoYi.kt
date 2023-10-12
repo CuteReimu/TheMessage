@@ -2,7 +2,7 @@ package com.fengsheng.card
 
 import com.fengsheng.*
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng
@@ -48,7 +48,7 @@ class PoYi : Card {
         val resolveFunc = { _: Boolean ->
             executePoYi(this@PoYi, fsm)
         }
-        g.resolve(OnUseCard(fsm.whoseTurn, r, null, getOriginCard(), card_type.Po_Yi, resolveFunc, fsm))
+        g.resolve(ResolveCard(fsm.whoseTurn, r, null, getOriginCard(), card_type.Po_Yi, resolveFunc, fsm))
     }
 
     private data class executePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {

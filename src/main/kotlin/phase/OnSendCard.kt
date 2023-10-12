@@ -3,6 +3,7 @@ package com.fengsheng.phase
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
+import com.fengsheng.SendCardEvent
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.send_message_card_toc
@@ -34,13 +35,14 @@ data class OnSendCard(
         var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
         if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.contentToString()}"
         log.info(s)
+        sender.game!!.addEvent(SendCardEvent(whoseTurn, sender, messageCard, dir))
         if (needRemoveCardAndNotify) {
             sender.cards.remove(messageCard)
             for (p in whoseTurn.game!!.players)
                 p!!.notifySendMessageCard(whoseTurn, sender, targetPlayer, lockedPlayers, messageCard, dir)
         }
         return ResolveResult(
-            OnSendCardSkill(whoseTurn, sender, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp), true
+            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp, sender), true
         )
     }
 

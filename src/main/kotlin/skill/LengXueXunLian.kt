@@ -28,17 +28,17 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
             return
         }
         val fsm = g.fsm
-        if (fsm is SendPhaseStart && r === fsm.player) {
-            g.resolve(executeLengXueXunLian(fsm.player, fsm.player, g.deck.draw(2)))
+        if (fsm is SendPhaseStart && r === fsm.whoseTurn) {
+            g.resolve(executeLengXueXunLian(fsm.whoseTurn, fsm.whoseTurn, g.deck.draw(2)))
         } else if (fsm is executeMiLing && r === fsm.target) {
             g.resolve(
                 OnFinishResolveCard(
-                    fsm.sendPhase.player,
-                    fsm.sendPhase.player,
+                    fsm.sendPhase.whoseTurn,
+                    fsm.sendPhase.whoseTurn,
                     fsm.target,
                     fsm.card,
                     Mi_Ling,
-                    executeLengXueXunLian(fsm.sendPhase.player, fsm.target, g.deck.draw(2)),
+                    executeLengXueXunLian(fsm.sendPhase.whoseTurn, fsm.target, g.deck.draw(2)),
                     discardAfterResolve = false
                 )
             )
@@ -243,8 +243,12 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
     companion object {
         private val log = Logger.getLogger(LengXueXunLian::class.java)
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
-            GameExecutor.post(e.player.game!!, {
-                skill.executeProtocol(e.player.game!!, e.player, skill_leng_xue_xun_lian_a_tos.getDefaultInstance())
+            GameExecutor.post(e.whoseTurn.game!!, {
+                skill.executeProtocol(
+                    e.whoseTurn.game!!,
+                    e.whoseTurn,
+                    skill_leng_xue_xun_lian_a_tos.getDefaultInstance()
+                )
             }, 2, TimeUnit.SECONDS)
             return true
         }

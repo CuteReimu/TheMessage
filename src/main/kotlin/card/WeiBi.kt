@@ -3,8 +3,7 @@ package com.fengsheng.card
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnGiveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
@@ -107,9 +106,9 @@ class WeiBi : Card {
                     p.send(builder.build())
                 }
             }
-            val newFsm = OnGiveCard(r, target, r, MainPhaseIdle(r))
+            r.game!!.addEvent(GiveCardEvent(r, target, r))
             return ResolveResult(
-                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, newFsm), true
+                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r)), true
             )
         }
 
@@ -133,7 +132,7 @@ class WeiBi : Card {
     companion object {
         private val log = Logger.getLogger(WeiBi::class.java)
         fun canUse(g: Game, r: Player, target: Player, wantType: card_type): Boolean {
-            if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+            if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
                 log.error("威逼的使用时机不对")
                 (r as? HumanPlayer)?.sendErrorMessage("威逼的使用时机不对")
                 return false
@@ -180,7 +179,7 @@ class WeiBi : Card {
                     OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
                 }
             }
-            g.resolve(OnUseCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, g.fsm!!))
+            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, g.fsm!!))
         }
 
         private fun hasCard(player: Player, cardType: card_type): Boolean {
@@ -192,7 +191,7 @@ class WeiBi : Card {
             listOf(card_type.Cheng_Qing, card_type.Jie_Huo, card_type.Diao_Bao, card_type.Wu_Dao)
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Wei_Bi) || return false
             val identity = player.identity
             val p = player.game!!.players.filter {

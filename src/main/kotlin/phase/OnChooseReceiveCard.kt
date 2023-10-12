@@ -1,5 +1,6 @@
 package com.fengsheng.phase
 
+import com.fengsheng.ChooseReceiveCardEvent
 import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
@@ -23,9 +24,8 @@ data class OnChooseReceiveCard(
     val isMessageCardFaceUp: Boolean
 ) : Fsm {
     override fun resolve(): ResolveResult {
-        val result = inFrontOfWhom.game!!.dealListeningSkill(inFrontOfWhom.location)
-        if (result != null) return result
         log.info("${inFrontOfWhom}选择接收情报")
+        whoseTurn.game!!.addEvent(ChooseReceiveCardEvent(whoseTurn, inFrontOfWhom))
         for (p in whoseTurn.game!!.players) p!!.notifyChooseReceiveCard(inFrontOfWhom)
         return ResolveResult(
             FightPhaseIdle(whoseTurn, sender, messageCard, inFrontOfWhom, inFrontOfWhom, isMessageCardFaceUp),

@@ -6,7 +6,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
 import com.fengsheng.skill.cannotPlayCard
@@ -69,9 +69,9 @@ class WuDao : Card {
          * g.resolve(WuDao.onUseCard(card, g, r, target))
          * ```
          * @param card 使用的那张【误导】卡牌。可以为 `null` ，因为SP阿芙罗拉技能【应变自如】可以视为使用了【误导】。
-         * @return 返回[OnUseCard]，要自行调用[Game.resolve]
+         * @return 返回[ResolveCard]，要自行调用[Game.resolve]
          */
-        fun onUseCard(card: Card?, g: Game, r: Player, target: Player): OnUseCard {
+        fun onUseCard(card: Card?, g: Game, r: Player, target: Player): ResolveCard {
             val fsm = g.fsm as FightPhaseIdle
             card?.apply { r.deleteCard(id) }
             val resolveFunc = { valid: Boolean ->
@@ -92,7 +92,7 @@ class WuDao : Card {
                     OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
                 }
             }
-            return OnUseCard(
+            return ResolveCard(
                 fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, resolveFunc, fsm,
                 valid = target !== fsm.inFrontOfWhom
             )

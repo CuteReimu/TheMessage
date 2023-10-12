@@ -3,7 +3,7 @@ package com.fengsheng.card
 import com.fengsheng.*
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
@@ -36,7 +36,7 @@ class MiLing : Card {
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用密令")
             return false
         }
-        if (r !== (g.fsm as? SendPhaseStart)?.player) {
+        if (r !== (g.fsm as? SendPhaseStart)?.whoseTurn) {
             log.error("密令的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("密令的使用时机不对")
             return false
@@ -92,7 +92,7 @@ class MiLing : Card {
             else
                 miLingChooseCard(this@MiLing, r, target, secret, fsm, timeout)
         }
-        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Mi_Ling, resolveFunc, fsm))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Mi_Ling, resolveFunc, fsm))
     }
 
     private data class miLingChooseCard(
@@ -249,7 +249,7 @@ class MiLing : Card {
                 target.game!!.players[target.getAbstractLocation(it)]!!
             }
             val sendCardError = target.canSendCard(
-                sendPhase.player,
+                sendPhase.whoseTurn,
                 messageCard,
                 availableCards,
                 pb.cardDir,
@@ -263,10 +263,17 @@ class MiLing : Card {
             }
             player.incrSeq()
             val newFsm =
-                OnSendCard(sendPhase.player, target, messageCard, pb.cardDir, messageTarget, lockPlayers.toTypedArray())
+                OnSendCard(
+                    sendPhase.whoseTurn,
+                    target,
+                    messageCard,
+                    pb.cardDir,
+                    messageTarget,
+                    lockPlayers.toTypedArray()
+                )
             return ResolveResult(
                 OnFinishResolveCard(
-                    sendPhase.player, sendPhase.player, target, card.getOriginCard(), card_type.Mi_Ling, newFsm,
+                    sendPhase.whoseTurn, sendPhase.whoseTurn, target, card.getOriginCard(), card_type.Mi_Ling, newFsm,
                     discardAfterResolve = false
                 ),
                 true
@@ -296,7 +303,7 @@ class MiLing : Card {
     companion object {
         private val log = Logger.getLogger(MiLing::class.java)
         fun ai(e: SendPhaseStart, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Mi_Ling) || return false
             val target = player.game!!.players.filter {
                 it !== player && it!!.alive && it.cards.isNotEmpty()

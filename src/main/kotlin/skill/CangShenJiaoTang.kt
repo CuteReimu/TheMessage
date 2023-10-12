@@ -3,7 +3,6 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
@@ -169,13 +168,10 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
                     }
                     log.info("${player}发动了[藏身教堂]，将${target}面前的${card}移到自己面前")
                     target.deleteMessageCard(message.cardId)
-                    fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target)
                     player.messageCards.add(card)
-                    fsm.receiveOrder.addPlayerIfHasThreeBlack(player)
                 } else {
                     log.info("${player}发动了[藏身教堂]，将${target}面前的${card}加入了手牌")
                     target.deleteMessageCard(message.cardId)
-                    fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target)
                     player.cards.add(card)
                 }
             }
@@ -191,8 +187,7 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            if (message.asMessageCard)
-                return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+            player.game!!.addEvent(AddMessageCardEvent(fsm.whoseTurn))
             return ResolveResult(fsm, true)
         }
 
