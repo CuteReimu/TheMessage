@@ -142,6 +142,7 @@ class HuoXin : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
+            r.game!!.addEvent(DiscardCardEvent(r, target))
             return ResolveResult(MainPhaseIdle(r), true)
         }
 

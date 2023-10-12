@@ -1,7 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_qi_huo_ke_ju_toc
@@ -17,23 +16,22 @@ class QiHuoKeJu : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.QI_HUO_KE_JU
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.inFrontOfWhom || return null
-        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
-        fsm.messageCard.colors.size == 2 || return null
-        fsm.inFrontOfWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeQiHuoKeJu(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.inFrontOfWhom || return@findEvent false
+            event.messageCard.colors.size == 2
+        } ?: return null
+        return ResolveResult(executeQiHuoKeJu(g.fsm!!, event), true)
     }
 
-    private data class executeQiHuoKeJu(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeQiHuoKeJu(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
+            for (p in event.whoseTurn.game!!.players)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.inFrontOfWhom) {
+            if (player !== event.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -52,7 +50,7 @@ class QiHuoKeJu : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -68,7 +66,6 @@ class QiHuoKeJu : InitialSkill, TriggeredSkill {
             r.incrSeq()
             log.info("${r}发动了[奇货可居]")
             r.deleteMessageCard(card.id)
-            fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(r)
             r.cards.add(card)
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -89,18 +86,13 @@ class QiHuoKeJu : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeQiHuoKeJu) return false
-            val p = fsm0.fsm.inFrontOfWhom
+            val p = fsm0.event.inFrontOfWhom
             val card = p.messageCards.find { it.colors.contains(color.Black) } ?: return false
-            GameExecutor.post(
-                p.game!!,
-                {
-                    val builder = skill_qi_huo_ke_ju_tos.newBuilder()
-                    builder.cardId = card.id
-                    p.game!!.tryContinueResolveProtocol(p, builder.build())
-                },
-                2,
-                TimeUnit.SECONDS
-            )
+            GameExecutor.post(p.game!!, {
+                val builder = skill_qi_huo_ke_ju_tos.newBuilder()
+                builder.cardId = card.id
+                p.game!!.tryContinueResolveProtocol(p, builder.build())
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

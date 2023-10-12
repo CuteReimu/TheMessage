@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_toc
 import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -64,11 +63,12 @@ class ZuoYouFengYuan : InitialSkill, ActiveSkill {
                 p.send(builder.build())
             }
         }
-        var newFsm: Fsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-        targets.asReversed().forEach { if (it.cards.isNotEmpty()) newFsm = OnDiscardCard(fsm.whoseTurn, it, newFsm) }
-        targets.forEach { g.playerDiscardCard(it, *it.cards.toTypedArray()) }
+        targets.forEach {
+            g.playerDiscardCard(it, *it.cards.toTypedArray())
+            g.addEvent(DiscardCardEvent(fsm.whoseTurn, it))
+        }
         targets.forEach { it.draw(3) }
-        g.resolve(newFsm)
+        g.resolve(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom))
     }
 
     companion object {

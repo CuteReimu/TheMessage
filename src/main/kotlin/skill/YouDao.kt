@@ -1,10 +1,6 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Role.skill_you_dao_toc
 import org.apache.log4j.Logger
@@ -16,11 +12,10 @@ class YouDao : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.YOU_DAO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard ?: return null
-        askWhom === fsm.player || return null
-        fsm.cardType == card_type.Wu_Dao || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
+        g.findEvent<UseCardEvent>(this) { event ->
+            askWhom === event.player || return@findEvent false
+            event.cardType == card_type.Wu_Dao
+        } ?: return null
         log.info("${askWhom}发动了[诱导]")
         for (p in g.players) {
             if (p is HumanPlayer) {
@@ -30,12 +25,7 @@ class YouDao : InitialSkill, TriggeredSkill {
             }
         }
         askWhom.draw(1)
-        val oldResolveFunc = fsm.resolveFunc
-        val newFsm = fsm.copy(resolveFunc = { valid ->
-            askWhom.resetSkillUseCount(skillId)
-            oldResolveFunc(valid)
-        })
-        return ResolveResult(newFsm, true)
+        return null
     }
 
     companion object {

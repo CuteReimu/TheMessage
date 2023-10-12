@@ -182,6 +182,7 @@ class RobotPlayer : Player() {
                     if (giveCards.isNotEmpty()) {
                         cards.removeAll(giveCards.toSet())
                         target.cards.addAll(giveCards)
+                        game!!.addEvent(GiveCardEvent(fsm.whoseTurn, this, target))
                         log.info("${this}给了${target}${giveCards.toTypedArray().contentToString()}")
                         for (p in game!!.players) {
                             if (p is HumanPlayer) {

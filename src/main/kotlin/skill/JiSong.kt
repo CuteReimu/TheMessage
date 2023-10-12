@@ -1,12 +1,8 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_ji_song_toc
 import com.fengsheng.protos.Role.skill_ji_song_tos
@@ -22,7 +18,7 @@ class JiSong : InitialSkill, ActiveSkill {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
-        if (r !== fsm?.whoseFightTurn) {
+        if (fsm == null || r !== fsm.whoseFightTurn) {
             log.error("现在不是发动[急送]的时机")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[急送]的时机")
             return
@@ -92,6 +88,7 @@ class JiSong : InitialSkill, ActiveSkill {
         } else {
             log.info("${r}发动了[急送]，选择弃掉两张手牌，将情报移至${target}面前")
             g.playerDiscardCard(r, *cards!!)
+            g.addEvent(DiscardCardEvent(fsm.whoseTurn, r))
         }
         for (p in g.players) {
             if (p is HumanPlayer) {
@@ -102,10 +99,7 @@ class JiSong : InitialSkill, ActiveSkill {
                 p.send(builder.build())
             }
         }
-        if (messageCard == null)
-            g.resolve(fsm.copy(inFrontOfWhom = target, whoseFightTurn = target))
-        else
-            g.resolve(OnDiscardCard(fsm.whoseTurn, r, fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)))
+        g.resolve(fsm.copy(inFrontOfWhom = target, whoseFightTurn = target))
     }
 
     companion object {

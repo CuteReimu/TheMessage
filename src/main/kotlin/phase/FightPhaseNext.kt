@@ -17,7 +17,7 @@ data class FightPhaseNext(val fightPhase: FightPhaseIdle) : Fsm {
         while (true) {
             whoseFightTurn = (whoseFightTurn + 1) % players.size
             if (whoseFightTurn == fightPhase.inFrontOfWhom.location) return ResolveResult(
-                ReceivePhase(
+                OnReceiveCard(
                     fightPhase.whoseTurn,
                     fightPhase.sender,
                     fightPhase.messageCard,

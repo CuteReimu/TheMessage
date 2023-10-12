@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.DieSkill
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -15,16 +13,16 @@ class YiXin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.YI_XIN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? DieSkill ?: return null
-        askWhom == fsm.diedQueue[fsm.diedIndex] || return null
-        askWhom.roleFaceUp || return null
-        askWhom.cards.isNotEmpty() || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeYiXin(fsm, askWhom), true)
+        val event = g.findEvent<PlayerDieEvent>(this) { event ->
+            askWhom === event.whoDie || return@findEvent false
+            askWhom.roleFaceUp || return@findEvent false
+            askWhom.cards.isNotEmpty() || return@findEvent false
+            g.players.any { it!!.alive }
+        } ?: return null
+        return ResolveResult(executeYiXin(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeYiXin(val fsm: DieSkill, val r: Player) : WaitingFsm {
+    private data class executeYiXin(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -128,7 +126,6 @@ class YiXin : InitialSkill, TriggeredSkill {
             log.info("${r}发动了[遗信]")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             log.info("${r}将${card}放置在${target}面前")
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -140,7 +137,8 @@ class YiXin : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+            g.addEvent(AddMessageCardEvent(event.whoseTurn))
+            return ResolveResult(fsm, true)
         }
 
         companion object {

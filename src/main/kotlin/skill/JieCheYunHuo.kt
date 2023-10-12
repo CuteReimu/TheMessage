@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.Game
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
-import com.fengsheng.phase.OnSendCardSkill
+import com.fengsheng.SendCardEvent
 import com.fengsheng.protos.Common.card_type.Wu_Dao
 
 /**
@@ -13,10 +13,9 @@ class JieCheYunHuo : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIE_CHE_YUN_HUO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnSendCardSkill ?: return null
-        askWhom === fsm.sender || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
+        g.findEvent<SendCardEvent>(this) { event ->
+            askWhom === event.sender
+        } ?: return null
         g.players.forEach { it!!.skills += CannotPlayCard(listOf(Wu_Dao)) }
         return null
     }

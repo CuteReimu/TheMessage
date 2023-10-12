@@ -1,15 +1,14 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Fsm
 import com.fengsheng.Player
+import com.fengsheng.ProcessFsm
 import com.fengsheng.ResolveResult
+import com.fengsheng.SendCardEvent
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.send_message_card_toc
-import org.apache.log4j.Logger
 
 /**
- * 选择了要传递哪张情报时
+ * 选择了要传递哪张情报时的角色技能
  *
  * @param whoseTurn     谁的回合
  * @param sender        情报传出者
@@ -18,29 +17,23 @@ import org.apache.log4j.Logger
  * @param targetPlayer  传递的目标角色
  * @param lockedPlayers 被锁定的玩家
  * @param isMessageCardFaceUp 情报是否面朝上
- * @param needRemoveCardAndNotify 是否需要移除手牌并且广播[send_message_card_toc]
  */
-data class OnSendCard(
-    val whoseTurn: Player,
+data class OnSendCardSkill(
+    override val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,
     val dir: direction,
     val targetPlayer: Player,
     val lockedPlayers: Array<Player>,
-    val isMessageCardFaceUp: Boolean = false,
-    val needRemoveCardAndNotify: Boolean = true
-) : Fsm {
-    override fun resolve(): ResolveResult {
-        var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
-        if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.contentToString()}"
-        log.info(s)
-        if (needRemoveCardAndNotify) {
-            sender.cards.remove(messageCard)
-            for (p in whoseTurn.game!!.players)
-                p!!.notifySendMessageCard(whoseTurn, sender, targetPlayer, lockedPlayers, messageCard, dir)
-        }
+    val isMessageCardFaceUp: Boolean,
+) : ProcessFsm() {
+    override fun onSwitch() {
+        sender.game!!.addEvent(SendCardEvent(whoseTurn, sender, messageCard, targetPlayer, dir))
+    }
+
+    override fun resolve0(): ResolveResult {
         return ResolveResult(
-            OnSendCardSkill(whoseTurn, sender, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp), true
+            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp, sender), true
         )
     }
 
@@ -48,7 +41,7 @@ data class OnSendCard(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as OnSendCard
+        other as OnSendCardSkill
 
         if (whoseTurn != other.whoseTurn) return false
         if (messageCard != other.messageCard) return false
@@ -66,9 +59,5 @@ data class OnSendCard(
         result = 31 * result + targetPlayer.hashCode()
         result = 31 * result + lockedPlayers.contentHashCode()
         return result
-    }
-
-    companion object {
-        private val log = Logger.getLogger(OnSendCard::class.java)
     }
 }

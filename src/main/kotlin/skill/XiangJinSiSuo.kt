@@ -1,8 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnSendCardSkill
-import com.fengsheng.phase.ReceivePhaseSkill
+import com.fengsheng.phase.ReceivePhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -15,13 +14,11 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.XIANG_JIN_SI_SUO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnSendCardSkill ?: return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeXiangJinSiSuoA(fsm, askWhom), true)
+        val event = g.findEvent<SendCardEvent>(this) { true } ?: return null
+        return ResolveResult(executeXiangJinSiSuoA(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeXiangJinSiSuoA(val fsm: OnSendCardSkill, val r: Player) : WaitingFsm {
+    private data class executeXiangJinSiSuoA(val fsm: Fsm, val event: SendCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -37,7 +34,7 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
                                 if (player.checkSeq(seq)) {
                                     val builder2 = skill_xiang_jin_si_suo_a_tos.newBuilder()
                                     builder2.enable = true
-                                    builder2.targetPlayerId = r.getAlternativeLocation(fsm.targetPlayer.location)
+                                    builder2.targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
                                     builder2.seq = seq
                                     player.game!!.tryContinueResolveProtocol(player, builder2.build())
                                 }
@@ -54,7 +51,7 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
                     val builder = skill_xiang_jin_si_suo_a_tos.newBuilder()
                     r.game!!.players.filter { it!!.alive }.randomOrNull()?.let {
                         builder.enable = true
-                        builder.targetPlayerId = r.getAlternativeLocation(fsm.targetPlayer.location)
+                        builder.targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
@@ -125,7 +122,7 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
         override val skillId = SkillId.UNKNOWN
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
-            val fsm = g.fsm as? ReceivePhaseSkill ?: return null
+            val fsm = g.fsm as? ReceivePhaseIdle ?: return null
             target === fsm.inFrontOfWhom || return null
             askWhom.alive || return null
             askWhom.getSkillUseCount(skillId) == 0 || return null

@@ -44,7 +44,13 @@ class WeiBi : Card {
         execute(this, g, r, target, wantType)
     }
 
-    private data class executeWeiBi(val r: Player, val target: Player, val card: WeiBi?, val wantType: card_type) :
+    private data class executeWeiBi(
+        val fsm: MainPhaseIdle,
+        val r: Player,
+        val target: Player,
+        val card: WeiBi?,
+        val wantType: card_type
+    ) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players) {
@@ -108,7 +114,7 @@ class WeiBi : Card {
             }
             r.game!!.addEvent(GiveCardEvent(r, target, r))
             return ResolveResult(
-                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r)), true
+                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm), true
             )
         }
 
@@ -156,11 +162,12 @@ class WeiBi : Card {
          * @param card 使用的那张【威逼】卡牌。可以为 `null` ，因为肥原龙川技能【诡诈】可以视为使用了【威逼】。
          */
         fun execute(card: WeiBi?, g: Game, r: Player, target: Player, wantType: card_type) {
+            val fsm = g.fsm as MainPhaseIdle
             val resolveFunc = { valid: Boolean ->
                 if (!valid) {
-                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm)
                 } else if (hasCard(target, wantType)) {
-                    executeWeiBi(r, target, card, wantType)
+                    executeWeiBi(fsm, r, target, card, wantType)
                 } else {
                     log.info("${target}向${r}展示了所有手牌")
                     for (p in g.players) {
@@ -176,10 +183,10 @@ class WeiBi : Card {
                             p.send(builder.build())
                         }
                     }
-                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm)
                 }
             }
-            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, g.fsm!!))
+            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, fsm))
         }
 
         private fun hasCard(player: Player, cardType: card_type): Boolean {

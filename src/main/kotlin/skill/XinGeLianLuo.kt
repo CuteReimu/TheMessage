@@ -1,7 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnSendCardSkill
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.direction.Up
 import com.fengsheng.protos.Role.*
@@ -16,15 +15,13 @@ class XinGeLianLuo : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.XIN_GE_LIAN_LUO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnSendCardSkill ?: return null
-        askWhom === fsm.sender || return null
-        fsm.dir !== Up || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeXinGeLianLuo(fsm, askWhom), true)
+        g.findEvent<SendCardEvent>(this) { event ->
+            askWhom === event.sender && event.dir !== Up
+        } ?: return null
+        return ResolveResult(executeXinGeLianLuo(g.fsm!!, askWhom), true)
     }
 
-    private data class executeXinGeLianLuo(val fsm: OnSendCardSkill, val r: Player) : WaitingFsm {
+    private data class executeXinGeLianLuo(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {

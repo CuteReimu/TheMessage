@@ -4,7 +4,6 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -40,9 +39,11 @@ class GuangFaBao : InitialSkill, ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         log.info("${r}发动了[广发报]")
         for (p in g.players) {
-            (p as? HumanPlayer)?.send(
-                skill_guang_fa_bao_a_toc.newBuilder().setPlayerId(p.getAlternativeLocation(r.location)).build()
-            )
+            if (p is HumanPlayer) {
+                val builder = skill_guang_fa_bao_a_toc.newBuilder()
+                builder.playerId = p.getAlternativeLocation(r.location)
+                p.send(builder.build())
+            }
         }
         r.draw(3)
         g.resolve(executeGuangFaBao(fsm, r, false))
@@ -128,9 +129,8 @@ class GuangFaBao : InitialSkill, ActiveSkill {
                         p.send(builder.build())
                     }
                 }
+                if (putCard) g.addEvent(AddMessageCardEvent(fsm.whoseTurn))
                 val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-                if (putCard)
-                    return ResolveResult(OnAddMessageCard(fsm.whoseTurn, newFsm), true)
                 return ResolveResult(newFsm, true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
@@ -179,9 +179,8 @@ class GuangFaBao : InitialSkill, ActiveSkill {
             }
             if (r.cards.isNotEmpty())
                 return ResolveResult(copy(putCard = true), true)
+            if (putCard) g.addEvent(AddMessageCardEvent(fsm.whoseTurn))
             val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-            if (putCard)
-                return ResolveResult(OnAddMessageCard(fsm.whoseTurn, newFsm), true)
             return ResolveResult(newFsm, true)
         }
 

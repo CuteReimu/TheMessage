@@ -21,13 +21,10 @@ class BianZeTong : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.BIAN_ZE_TONG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        var whoseTurn: Player? = null
-        g.filterEvents<SendPhaseStartEvent>().any { event ->
-            askWhom === event.whoseTurn || return@any false
-            whoseTurn = event.whoseTurn
-            event.checkResolve(this)
-        } || return null
-        return ResolveResult(executeBianZeTong(g.fsm!!, whoseTurn!!), true)
+        g.findEvent<SendPhaseStartEvent>(this) { event ->
+            askWhom === event.whoseTurn
+        } ?: return null
+        return ResolveResult(executeBianZeTong(g.fsm!!, askWhom), true)
     }
 
     private data class executeBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {

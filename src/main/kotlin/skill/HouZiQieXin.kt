@@ -1,13 +1,9 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_toc
 import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -95,7 +91,8 @@ class HouZiQieXin : MainPhaseSkill(), InitialSkill {
                 p.send(builder.build())
             }
         }
-        g.resolve(OnAddMessageCard(r, fsm))
+        g.addEvent(AddMessageCardEvent(r))
+        g.continueResolve()
     }
 
     companion object {

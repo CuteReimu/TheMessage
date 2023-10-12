@@ -2,8 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -17,21 +15,20 @@ class CongRongYingDui : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CONG_RONG_YING_DUI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnFinishResolveCard ?: return null
-        fsm.cardType == card_type.Shi_Tan || return null
-        askWhom === fsm.player || askWhom === fsm.targetPlayer || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        val target = if (askWhom === fsm.player) fsm.targetPlayer!! else fsm.player
-        val oldAfterResolveFunc = fsm.afterResolveFunc
-        val f = {
-            askWhom.resetSkillUseCount(skillId)
-            oldAfterResolveFunc()
-        }
-        return ResolveResult(executeCongRongYingDui(fsm.copy(afterResolveFunc = f), askWhom, target), true)
+        val event = g.findEvent<FinishResolveCardEvent>(this) { event ->
+            event.cardType == card_type.Shi_Tan || return@findEvent false
+            askWhom === event.player || askWhom === event.targetPlayer
+        } ?: return null
+        val target = if (askWhom === event.player) event.targetPlayer!! else event.player
+        return ResolveResult(executeCongRongYingDui(g.fsm!!, event, askWhom, target), true)
     }
 
-    private data class executeCongRongYingDui(val fsm: OnFinishResolveCard, val r: Player, val target: Player) :
+    private data class executeCongRongYingDui(
+        val fsm: Fsm,
+        val event: FinishResolveCardEvent,
+        val r: Player,
+        val target: Player
+    ) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
@@ -92,6 +89,7 @@ class CongRongYingDui : InitialSkill, TriggeredSkill {
                     log.info("${r}发动了[从容应对]，抽取了${target}的$c")
                     target.deleteCard(c.id)
                     player.cards.add(c)
+                    r.game!!.addEvent(GiveCardEvent(event.whoseTurn, target, r))
                 }
             } else {
                 log.info("${r}发动了[从容应对]，选择了双方各摸一张牌")
@@ -108,11 +106,9 @@ class CongRongYingDui : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            if (message.drawCard) {
-                r.game!!.sortedFrom(listOf(r, target), fsm.whoseTurn.location).forEach { it.draw(1) }
-                return ResolveResult(fsm, true)
-            }
-            return ResolveResult(OnGiveCard(fsm.whoseTurn, target, r, fsm), true)
+            if (message.drawCard)
+                r.game!!.sortedFrom(listOf(r, target), event.whoseTurn.location).forEach { it.draw(1) }
+            return ResolveResult(fsm, true)
         }
 
         companion object {

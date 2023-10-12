@@ -17,15 +17,15 @@ import com.fengsheng.protos.Common.card_type
  * @param valid 卡牌是否有效
  * @param discardAfterResolve 结算后是否置入弃牌堆
  */
-data class ResolveCard(
+class ResolveCard(
     override val whoseTurn: Player,
     val player: Player,
     val targetPlayer: Player?,
     val card: Card?,
     val cardType: card_type,
     val resolveFunc: (Boolean) -> Fsm,
-    val currentFsm: Fsm,
-    val valid: Boolean = true
+    val currentFsm: ProcessFsm,
+    var valid: Boolean = true
 ) : ProcessFsm() {
     override fun onSwitch() {
         whoseTurn.game!!.addEvent(UseCardEvent(this))

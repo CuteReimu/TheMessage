@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnDiscardCard
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -16,23 +14,22 @@ class JingMeng : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JING_MENG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.inFrontOfWhom || return null
-        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
-        fsm.messageCard.isBlack() || return null
-        fsm.inFrontOfWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeJingMengA(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.inFrontOfWhom || return@findEvent false
+            event.messageCard.isBlack()
+        } ?: return null
+        return ResolveResult(executeJingMengA(g.fsm!!, event), true)
     }
 
-    private data class executeJingMengA(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeJingMengA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
+            for (p in event.whoseTurn.game!!.players)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.inFrontOfWhom) {
+            if (player !== event.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -51,7 +48,7 @@ class JingMeng : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -81,7 +78,7 @@ class JingMeng : InitialSkill, TriggeredSkill {
             }
             r.incrSeq()
             log.info("${r}发动了[惊梦]，查看了${target}的手牌")
-            return ResolveResult(executeJingMengB(fsm, target), true)
+            return ResolveResult(executeJingMengB(fsm, event, target), true)
         }
 
         companion object {
@@ -89,9 +86,9 @@ class JingMeng : InitialSkill, TriggeredSkill {
         }
     }
 
-    private data class executeJingMengB(val fsm: ReceivePhaseSkill, val target: Player) : WaitingFsm {
+    private data class executeJingMengB(val fsm: Fsm, val event: ReceiveCardEvent, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -126,7 +123,7 @@ class JingMeng : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.inFrontOfWhom) {
+            if (player !== event.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -136,7 +133,7 @@ class JingMeng : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -161,7 +158,8 @@ class JingMeng : InitialSkill, TriggeredSkill {
                 }
             }
             g.playerDiscardCard(target, card)
-            return ResolveResult(OnDiscardCard(fsm.whoseTurn, target, fsm), true)
+            g.addEvent(DiscardCardEvent(event.whoseTurn, target))
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -172,7 +170,7 @@ class JingMeng : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeJingMengA) return false
-            val p = fsm0.fsm.inFrontOfWhom
+            val p = fsm0.event.inFrontOfWhom
             val target = p.game!!.players.filter {
                 it!!.alive && p.isEnemy(it) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false

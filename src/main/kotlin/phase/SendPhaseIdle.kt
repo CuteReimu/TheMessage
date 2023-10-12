@@ -25,6 +25,9 @@ data class SendPhaseIdle(
     val sender: Player,
 ) : ProcessFsm() {
     override fun onSwitch() {
+        for (p in whoseTurn.game!!.players) {
+            p!!.notifySendPhase()
+        }
         if (inFrontOfWhom.alive)
             whoseTurn.game!!.addEvent(MessageMoveNextEvent(whoseTurn, messageCard, inFrontOfWhom, isMessageCardFaceUp))
     }
@@ -32,7 +35,7 @@ data class SendPhaseIdle(
     override fun resolve0(): ResolveResult? {
         if (!inFrontOfWhom.alive) {
             return if (inFrontOfWhom === sender)
-                ResolveResult(ReceivePhase(whoseTurn, sender, messageCard, inFrontOfWhom), true)
+                ResolveResult(OnReceiveCard(whoseTurn, sender, messageCard, inFrontOfWhom), true)
             else // 死人的锁不会生效
                 ResolveResult(MessageMoveNext(this), true)
         }

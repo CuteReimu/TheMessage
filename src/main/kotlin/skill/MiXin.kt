@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
 import com.fengsheng.protos.Role.*
@@ -17,21 +16,24 @@ class MiXin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.MI_XIN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.inFrontOfWhom || return null
-        askWhom !== fsm.sender || return null
-        !askWhom.roleFaceUp || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        val color = fsm.messageCard.colors
-        return ResolveResult(executeMiXinA(fsm) { card -> card.colors.any { it in color } }, true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.inFrontOfWhom || return@findEvent false
+            askWhom !== event.sender || return@findEvent false
+            !askWhom.roleFaceUp
+        } ?: return null
+        val color = event.messageCard.colors
+        return ResolveResult(executeMiXinA(g.fsm!!, event) { card -> card.colors.any { it in color } }, true)
     }
 
-    private data class executeMiXinA(val fsm: ReceivePhaseSkill, val checkCard: (Card) -> Boolean) : WaitingFsm {
+    private data class executeMiXinA(
+        val fsm: Fsm,
+        val event: ReceiveCardEvent,
+        val checkCard: (Card) -> Boolean
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players) {
-                if (p === fsm.inFrontOfWhom) {
-                    p.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
+            for (p in event.whoseTurn.game!!.players) {
+                if (p === event.inFrontOfWhom) {
+                    p.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
                 } else if (p is HumanPlayer) {
                     val builder = unknown_waiting_toc.newBuilder()
                     builder.waitingSecond = Config.WaitSecond
@@ -42,7 +44,7 @@ class MiXin : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.inFrontOfWhom) {
+            if (player !== event.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -61,7 +63,7 @@ class MiXin : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -70,7 +72,7 @@ class MiXin : InitialSkill, TriggeredSkill {
             }
             r.incrSeq()
             g.playerSetRoleFaceUp(r, true)
-            val target = fsm.sender
+            val target = event.sender
             log.info("${r}发动了[密信]")
             r.draw(2)
             val hasNext = target.alive && r.cards.any(checkCard)
@@ -79,7 +81,7 @@ class MiXin : InitialSkill, TriggeredSkill {
                     val builder = skill_mi_xin_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.messageCard = fsm.messageCard.toPbCard()
+                    builder.messageCard = event.messageCard.toPbCard()
                     if (hasNext) {
                         builder.waitingSecond = Config.WaitSecond
                         if (p === r) builder.seq = p.seq
@@ -89,7 +91,7 @@ class MiXin : InitialSkill, TriggeredSkill {
             }
             if (!hasNext)
                 return ResolveResult(fsm, true)
-            return ResolveResult(executeMiXinB(fsm, checkCard), true)
+            return ResolveResult(executeMiXinB(fsm, event, checkCard), true)
         }
 
         companion object {
@@ -97,9 +99,10 @@ class MiXin : InitialSkill, TriggeredSkill {
         }
     }
 
-    private data class executeMiXinB(val fsm: ReceivePhaseSkill, val checkCard: (Card) -> Boolean) : WaitingFsm {
+    private data class executeMiXinB(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
+        WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val card = r.cards.filter(checkCard).random()
             if (r is HumanPlayer) {
                 val seq = r.seq
@@ -122,7 +125,7 @@ class MiXin : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.inFrontOfWhom) {
+            if (player !== event.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -132,7 +135,7 @@ class MiXin : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -152,11 +155,10 @@ class MiXin : InitialSkill, TriggeredSkill {
             }
             r.incrSeq()
             g.playerSetRoleFaceUp(r, true)
-            val target = fsm.sender
+            val target = event.sender
             log.info("${r}将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_mi_xin_b_toc.newBuilder()
@@ -166,6 +168,7 @@ class MiXin : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
+            g.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
         }
 
@@ -177,7 +180,7 @@ class MiXin : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeMiXinA) return false
-            val p = fsm0.fsm.inFrontOfWhom
+            val p = fsm0.event.inFrontOfWhom
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skill_mi_xin_a_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)

@@ -1,11 +1,7 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
+import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.skill_guan_hai_toc
@@ -18,13 +14,12 @@ class GuanHai : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.GUAN_HAI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard ?: return null
-        val fsm2 = fsm.currentFsm as? FightPhaseIdle ?: return null
-        fsm.player === askWhom || return null
-        fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
+        val event = g.findEvent<UseCardEvent>(this) { event ->
+            askWhom === event.player || return@findEvent false
+            event.cardType == Jie_Huo || event.cardType == Wu_Dao
+        } ?: return null
         log.info("${askWhom}发动了[观海]")
-        askWhom.addSkillUseCount(skillId)
+        val fsm2 = event.currentFsm as FightPhaseIdle
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_guan_hai_toc.newBuilder()
@@ -33,11 +28,7 @@ class GuanHai : InitialSkill, TriggeredSkill {
                 p.send(builder.build())
             }
         }
-        val oldResolveFunc = fsm.resolveFunc
-        return ResolveResult(fsm.copy(resolveFunc = { valid ->
-            askWhom.resetSkillUseCount(skillId)
-            oldResolveFunc(valid)
-        }), true)
+        return null
     }
 
     companion object {

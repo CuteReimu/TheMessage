@@ -49,6 +49,7 @@ class DiaoHuLiShan : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
         val isSkill = args[1] as Boolean
+        val fsm = g.fsm as MainPhaseIdle
         log.info("${r}对${target}使用了$this，isSkill: $isSkill")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
@@ -64,9 +65,9 @@ class DiaoHuLiShan : Card {
             }
             if (isSkill) InvalidSkill.deal(target)
             else target.skills += CannotPlayCard(forbidAllCard = true)
-            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, MainPhaseIdle(r))
+            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, fsm)
         }
-        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, resolveFunc, g.fsm!!))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, resolveFunc, fsm))
     }
 
     override fun toString(): String {

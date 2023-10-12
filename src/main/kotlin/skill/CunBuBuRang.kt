@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnDiscardCard
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -15,12 +13,11 @@ class CunBuBuRang : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CUN_BU_BU_RANG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm
-        if (fsm is OnDiscardCard) {
-            askWhom === fsm.player || return null
-            askWhom !== fsm.whoseTurn || return null
-            askWhom.getSkillUseCount(skillId) == 0 || return null
-            askWhom.addSkillUseCount(skillId)
+        val event1 = g.findEvent<DiscardCardEvent>(this) { event ->
+            askWhom === event.player || return@findEvent false
+            askWhom !== event.whoseTurn
+        }
+        if (event1 != null) {
             log.info("${askWhom}发动了[寸步不让]")
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -32,28 +29,25 @@ class CunBuBuRang : InitialSkill, TriggeredSkill {
                 }
             }
             askWhom.draw(1)
-            val oldResolveFunc = fsm.afterResolveFunc
-            return ResolveResult(fsm.copy(afterResolveFunc = {
-                askWhom.resetSkillUseCount(skillId)
-                oldResolveFunc()
-            }), true)
-        } else if (fsm is OnGiveCard) {
-            askWhom === fsm.fromPlayer || return null
-            askWhom !== fsm.toPlayer || return null
-            fsm.toPlayer.alive || return null
-            fsm.toPlayer.cards.isNotEmpty() || return null
-            askWhom.getSkillUseCount(skillId) == 0 || return null
-            askWhom.addSkillUseCount(skillId)
-            val oldResolveFunc = fsm.afterResolveFunc
-            return ResolveResult(executeCunBuBuRang(fsm.copy(afterResolveFunc = {
-                askWhom.resetSkillUseCount(skillId)
-                oldResolveFunc()
-            }), askWhom, fsm.toPlayer), true)
+            return null
         }
+        val event2 = g.findEvent<GiveCardEvent>(this) { event ->
+            askWhom === event.fromPlayer || return@findEvent false
+            askWhom !== event.toPlayer || return@findEvent false
+            event.toPlayer.alive || return@findEvent false
+            event.toPlayer.cards.isNotEmpty()
+        }
+        if (event2 != null)
+            return ResolveResult(executeCunBuBuRang(g.fsm!!, event2.whoseTurn, askWhom, event2.toPlayer), true)
         return null
     }
 
-    private data class executeCunBuBuRang(val fsm: OnGiveCard, val r: Player, val target: Player) : WaitingFsm {
+    private data class executeCunBuBuRang(
+        val fsm: Fsm,
+        val whoseTurn: Player,
+        val r: Player,
+        val target: Player
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -127,7 +121,8 @@ class CunBuBuRang : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnGiveCard(fsm.whoseTurn, target, r, fsm), true)
+            g.addEvent(GiveCardEvent(whoseTurn, target, r))
+            return ResolveResult(fsm, true)
         }
 
         companion object {

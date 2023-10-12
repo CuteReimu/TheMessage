@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -33,10 +32,10 @@ class JiBan : MainPhaseSkill(), InitialSkill {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        g.resolve(executeJiBan(r))
+        g.resolve(executeJiBan(g.fsm!!, r))
     }
 
-    private data class executeJiBan(val r: Player) : WaitingFsm {
+    private data class executeJiBan(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             log.info("${r}发动了[羁绊]")
@@ -127,7 +126,8 @@ class JiBan : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnGiveCard(r, r, target, MainPhaseIdle(r)), true)
+            g.addEvent(GiveCardEvent(r, r, target))
+            return ResolveResult(fsm, true)
         }
 
         private fun autoSelect(seq: Int) {

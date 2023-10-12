@@ -3,7 +3,6 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -60,10 +59,15 @@ class TanXuBianShi : MainPhaseSkill(), InitialSkill {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        g.resolve(executeTanXuBianShi(r, target, card))
+        g.resolve(executeTanXuBianShi(g.fsm!!, r, target, card))
     }
 
-    private data class executeTanXuBianShi(val r: Player, val target: Player, val card: Card) : WaitingFsm {
+    private data class executeTanXuBianShi(
+        val fsm: Fsm,
+        val r: Player,
+        val target: Player,
+        val card: Card
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             log.info("${r}发动了[探虚辨实]，给了${target}一张$card")
             r.deleteCard(card.id)
@@ -150,7 +154,9 @@ class TanXuBianShi : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnGiveCard(r, r, target, OnGiveCard(r, target, r, MainPhaseIdle(r))), true)
+            r.game!!.addEvent(GiveCardEvent(r, r, target))
+            r.game!!.addEvent(GiveCardEvent(r, target, r))
+            return ResolveResult(fsm, true)
         }
 
         companion object {

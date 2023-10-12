@@ -15,14 +15,14 @@ import com.fengsheng.protos.Common.card_type
  * @param nextFsm 接下来是什么阶段
  * @param discardAfterResolve 结算后是否进入弃牌堆
  */
-data class OnFinishResolveCard(
+class OnFinishResolveCard(
     override val whoseTurn: Player,
     val player: Player,
     val targetPlayer: Player?,
     val card: Card?,
     val cardType: card_type,
     val nextFsm: Fsm,
-    val discardAfterResolve: Boolean = true
+    var discardAfterResolve: Boolean = true
 ) : ProcessFsm() {
     override fun onSwitch() {
         whoseTurn.game!!.addEvent(FinishResolveCardEvent(this))

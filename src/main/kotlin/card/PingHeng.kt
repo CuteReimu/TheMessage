@@ -50,6 +50,7 @@ class PingHeng : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
+        val fsm = g.fsm as MainPhaseIdle
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
@@ -68,9 +69,9 @@ class PingHeng : Card {
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(3)
             target.draw(3)
-            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, MainPhaseIdle(r))
+            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, fsm)
         }
-        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, resolveFunc, g.fsm!!))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, resolveFunc, fsm))
     }
 
     override fun toString(): String {

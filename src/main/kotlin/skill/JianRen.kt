@@ -3,7 +3,6 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role.*
@@ -18,23 +17,22 @@ class JianRen : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIAN_REN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.inFrontOfWhom || return null
-        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
-        fsm.messageCard.isBlack() || return null
-        fsm.inFrontOfWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeJianRenA(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.inFrontOfWhom || return@findEvent false
+            event.messageCard.isBlack()
+        } ?: return null
+        return ResolveResult(executeJianRenA(g.fsm!!, event), true)
     }
 
-    private data class executeJianRenA(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeJianRenA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
+            for (p in event.whoseTurn.game!!.players)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             if (player !== r) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
@@ -68,7 +66,7 @@ class JianRen : InitialSkill, TriggeredSkill {
             }
             r.incrSeq()
             log.info("${r}发动了[坚韧]，展示了${cards[0]}")
-            return ResolveResult(executeJianRenB(fsm, cards), true)
+            return ResolveResult(executeJianRenB(fsm, event, cards), true)
         }
 
         companion object {
@@ -76,9 +74,9 @@ class JianRen : InitialSkill, TriggeredSkill {
         }
     }
 
-    private data class executeJianRenB(val fsm: ReceivePhaseSkill, val cards: List<Card>) : WaitingFsm {
+    private data class executeJianRenB(val fsm: Fsm, val event: ReceiveCardEvent, val cards: List<Card>) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val autoChoose = r.chooseBlackMessageCard()
             val card = cards[0]
             val isBlack = card.colors.contains(color.Black)
@@ -124,7 +122,7 @@ class JianRen : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.inFrontOfWhom) {
+            if (player !== event.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -134,7 +132,7 @@ class JianRen : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -166,7 +164,6 @@ class JianRen : InitialSkill, TriggeredSkill {
             r.incrSeq()
             log.info("${r}弃掉了${target}面前的$messageCard")
             target.deleteMessageCard(messageCard.id)
-            fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target)
             g.deck.discard(messageCard)
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -202,7 +199,7 @@ class JianRen : InitialSkill, TriggeredSkill {
 
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeJianRenA) return false
-            val p: Player = fsm0.fsm.inFrontOfWhom
+            val p: Player = fsm0.event.inFrontOfWhom
             GameExecutor.post(
                 p.game!!,
                 { p.game!!.tryContinueResolveProtocol(p, skill_jian_ren_a_tos.newBuilder().build()) },

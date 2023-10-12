@@ -1,10 +1,6 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.skill_shen_cang_toc
 import org.apache.log4j.Logger
@@ -16,12 +12,12 @@ class ShenCang : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.SHEN_CANG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard ?: return null
-        askWhom === fsm.player || return null
-        askWhom.alive || return null
-        fsm.cardType == Wei_Bi || fsm.cardType == Feng_Yun_Bian_Huan || fsm.cardType == Jie_Huo || return null
-        fsm.player.roleFaceUp || return null
-        askWhom.addSkillUseCount(skillId)
+        g.findEvent<UseCardEvent>(this) { event ->
+            askWhom === event.player || return@findEvent false
+            askWhom.alive || return@findEvent false
+            askWhom.roleFaceUp || return@findEvent false
+            event.cardType == Wei_Bi || event.cardType == Feng_Yun_Bian_Huan || event.cardType == Jie_Huo
+        } ?: return null
         log.info("${askWhom}发动了[深藏]")
         for (p in g.players) {
             if (p is HumanPlayer) {

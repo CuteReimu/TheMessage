@@ -2,8 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -17,23 +15,22 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIAN_DI_FENG_XING
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.sender || return null
-        askWhom !== fsm.inFrontOfWhom || return null
-        fsm.sender.getSkillUseCount(skillId) == 0 || return null
-        fsm.sender.addSkillUseCount(skillId)
-        return ResolveResult(executeJianDiFengXingA(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.sender || return@findEvent false
+            askWhom !== event.inFrontOfWhom
+        } ?: return null
+        return ResolveResult(executeJianDiFengXingA(g.fsm!!, event), true)
     }
 
-    private data class executeJianDiFengXingA(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeJianDiFengXingA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.sender.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender)
+            for (p in event.sender.game!!.players)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -60,7 +57,7 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
             player.incrSeq()
             log.info("${player}发动了[歼敌风行]")
             player.draw(2)
-            return ResolveResult(executeJianDiFengXingB(fsm), true)
+            return ResolveResult(executeJianDiFengXingB(fsm, event), true)
         }
 
         companion object {
@@ -68,9 +65,9 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
         }
     }
 
-    private data class executeJianDiFengXingB(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeJianDiFengXingB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.sender
+            val r = event.sender
             val hasBlack = r.cards.any { it.isPureBlack() }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -107,7 +104,7 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -137,8 +134,8 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
             log.info("${player}将${card}置入情报区")
             player.deleteCard(card.id)
             player.messageCards.add(card)
-            fsm.receiveOrder.addPlayerIfHasThreeBlack(player)
-            return ResolveResult(executeJianDiFengXingC(fsm, card), true)
+            player.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
+            return ResolveResult(executeJianDiFengXingC(fsm, event, card), true)
         }
 
         companion object {
@@ -146,10 +143,10 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
         }
     }
 
-    private data class executeJianDiFengXingC(val fsm: ReceivePhaseSkill, val card: Card) : WaitingFsm {
+    private data class executeJianDiFengXingC(val fsm: Fsm, val event: ReceiveCardEvent, val card: Card) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.sender
-            val messageExists = fsm.inFrontOfWhom.messageCards.any { it.id == fsm.messageCard.id }
+            val r = event.sender
+            val messageExists = event.inFrontOfWhom.messageCards.any { it.id == event.messageCard.id }
             if (!messageExists) log.warn("待收情报不存在了")
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -183,12 +180,12 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
                 }, 2, TimeUnit.SECONDS)
             }
             if (!messageExists)
-                return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+                return ResolveResult(fsm, true)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -213,7 +210,7 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+                return ResolveResult(fsm, true)
             }
             val card = player.deleteCard(message.cardId)
             if (card == null) {
@@ -221,25 +218,24 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
-            val target = fsm.inFrontOfWhom
+            val target = event.inFrontOfWhom
             player.incrSeq()
-            log.info("${player}将${target}面前的${fsm.messageCard}弃掉，并用${card}代替之")
-            target.deleteMessageCard(fsm.messageCard.id)
-            player.game!!.deck.discard(fsm.messageCard)
-            fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target)
+            log.info("${player}将${target}面前的${event.messageCard}弃掉，并用${card}代替之")
+            target.deleteMessageCard(event.messageCard.id)
+            player.game!!.deck.discard(event.messageCard)
             target.messageCards.add(card)
-            fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jian_di_feng_xing_c_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(player.location)
                     builder.enable = true
                     builder.card = card.toPbCard()
-                    builder.oldMessageCardId = fsm.messageCard.id
+                    builder.oldMessageCardId = event.messageCard.id
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm.copy(messageCard = card)), true)
+            event.messageCard = card
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -250,7 +246,7 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm: Fsm): Boolean {
             if (fsm !is executeJianDiFengXingA) return false
-            val p = fsm.fsm.sender
+            val p = fsm.event.sender
             GameExecutor.post(p.game!!, {
                 val builder = skill_jian_di_feng_xing_a_tos.newBuilder()
                 p.game!!.tryContinueResolveProtocol(p, builder.build())

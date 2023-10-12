@@ -3,7 +3,6 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -17,11 +16,10 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CANG_SHEN_JIAO_TANG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.sender || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        val target = fsm.inFrontOfWhom
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.sender
+        } ?: return null
+        val target = event.inFrontOfWhom
         val isHiddenRole = !target.isPublicRole
         val timeoutSecond = Config.WaitSecond
         for (player in g.players) {
@@ -42,15 +40,19 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
             askWhom.draw(1)
         }
         if (isHiddenRole && target.roleFaceUp)
-            return ResolveResult(executeCangShenJiaoTangB(fsm, timeoutSecond), true)
+            return ResolveResult(executeCangShenJiaoTangB(g.fsm!!, event, timeoutSecond), true)
         if (!isHiddenRole && target.messageCards.count(Black) > 0)
-            return ResolveResult(executeCangShenJiaoTangC(fsm, timeoutSecond), true)
-        return ResolveResult(fsm, true)
+            return ResolveResult(executeCangShenJiaoTangC(g.fsm!!, event, timeoutSecond), true)
+        return null
     }
 
-    private data class executeCangShenJiaoTangB(val fsm: ReceivePhaseSkill, val timeoutSecond: Int) : WaitingFsm {
+    private data class executeCangShenJiaoTangB(
+        val fsm: Fsm,
+        val event: ReceiveCardEvent,
+        val timeoutSecond: Int
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.sender
+            val r = event.sender
             if (r is HumanPlayer) {
                 val seq2 = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
@@ -72,7 +74,7 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -88,7 +90,7 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
                 return null
             }
             player.incrSeq()
-            val target = fsm.inFrontOfWhom
+            val target = event.inFrontOfWhom
             if (message.enable) player.game!!.playerSetRoleFaceUp(target, false)
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
@@ -107,9 +109,13 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
         }
     }
 
-    private data class executeCangShenJiaoTangC(val fsm: ReceivePhaseSkill, val timeoutSecond: Int) : WaitingFsm {
+    private data class executeCangShenJiaoTangC(
+        val fsm: Fsm,
+        val event: ReceiveCardEvent,
+        val timeoutSecond: Int
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.sender
+            val r = event.sender
             if (r is HumanPlayer) {
                 val seq2 = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
@@ -124,7 +130,7 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
                     builder.enable = true
-                    builder.cardId = fsm.inFrontOfWhom.messageCards.filter(Black).random().id
+                    builder.cardId = event.inFrontOfWhom.messageCards.filter(Black).random().id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -132,7 +138,7 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -147,7 +153,7 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
                 player.sendErrorMessage("操作太晚了")
                 return null
             }
-            val target = fsm.inFrontOfWhom
+            val target = event.inFrontOfWhom
             if (message.enable) {
                 val card = target.findMessageCard(message.cardId)
                 if (card == null) {
@@ -187,7 +193,7 @@ class CangShenJiaoTang : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            player.game!!.addEvent(AddMessageCardEvent(fsm.whoseTurn))
+            player.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
         }
 

@@ -1,7 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_lian_min_toc
@@ -17,24 +16,23 @@ class LianMin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.LIAN_MIN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.sender || return null
-        !fsm.messageCard.isBlack() || return null
-        askWhom.messageCards.any { it.isBlack() } || fsm.inFrontOfWhom.messageCards.any { it.isBlack() } || return null
-        fsm.sender.getSkillUseCount(skillId) == 0 || return null
-        fsm.sender.addSkillUseCount(skillId)
-        return ResolveResult(executeLianMin(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.sender || return@findEvent false
+            !event.messageCard.isBlack() || return@findEvent false
+            askWhom.messageCards.any { it.isBlack() } || event.inFrontOfWhom.messageCards.any { it.isBlack() }
+        } ?: return null
+        return ResolveResult(executeLianMin(g.fsm!!, event), true)
     }
 
-    private data class executeLianMin(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeLianMin(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.sender.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender)
+            for (p in event.sender.game!!.players)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -53,7 +51,7 @@ class LianMin : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.sender
+            val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
@@ -65,7 +63,7 @@ class LianMin : InitialSkill, TriggeredSkill {
                 return null
             }
             val target = r.game!!.players[r.getAbstractLocation(message.targetPlayerId)]
-            if (target !== r && target !== fsm.inFrontOfWhom) {
+            if (target !== r && target !== event.inFrontOfWhom) {
                 log.error("只能以自己或者情报接收者为目标")
                 (player as? HumanPlayer)?.sendErrorMessage("只能以自己或者情报接收者为目标")
                 return null
@@ -110,8 +108,8 @@ class LianMin : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeLianMin) return false
-            val p = fsm0.fsm.sender
-            for (target in arrayOf(p, fsm0.fsm.inFrontOfWhom)) {
+            val p = fsm0.event.sender
+            for (target in arrayOf(p, fsm0.event.inFrontOfWhom)) {
                 if (!target.alive || p.isEnemy(target)) continue
                 val card = target.messageCards.find { it.colors.contains(color.Black) } ?: continue
                 GameExecutor.post(p.game!!, {

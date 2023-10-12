@@ -317,7 +317,7 @@ class HumanPlayer(
     }
 
     override fun notifyReceivePhase() {
-        val fsm = game!!.fsm as ReceivePhase
+        val fsm = game!!.fsm as OnReceiveCard
         val builder = notify_phase_toc.newBuilder()
         builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
         builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)

@@ -10,19 +10,18 @@ import com.fengsheng.card.Card
  * 接收情报时的技能
  *
  * @param whoseTurn 谁的回合
+ * @param sender 情报传出者
  * @param messageCard 情报牌
- * @param receiveOrder 接收情报牌的顺序（也就是后续结算死亡的顺序）
  * @param inFrontOfWhom 情报在谁面前
- * @param receiveOrder 接收第三张黑色情报牌的顺序（也就是后续结算死亡的顺序）
  */
-data class ReceivePhaseSkill(
+class ReceivePhaseIdle(
     override val whoseTurn: Player,
     val sender: Player,
-    val messageCard: Card,
+    var messageCard: Card,
     val inFrontOfWhom: Player,
 ) : ProcessFsm() {
     override fun onSwitch() {
-        whoseTurn.game!!.addEvent(ReceiveCardEvent(whoseTurn, sender, messageCard, inFrontOfWhom))
+        whoseTurn.game!!.addEvent(ReceiveCardEvent(this))
     }
 
     override fun resolve0(): ResolveResult {

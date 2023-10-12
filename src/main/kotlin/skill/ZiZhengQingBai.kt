@@ -1,11 +1,7 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_toc
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_tos
@@ -65,7 +61,8 @@ class ZiZhengQingBai : MainPhaseSkill(), InitialSkill {
         }
         g.playerDiscardCard(r, card)
         r.draw(2)
-        g.resolve(OnDiscardCard(r, r, g.fsm!!))
+        g.addEvent(DiscardCardEvent(r, r))
+        g.continueResolve()
     }
 
     companion object {

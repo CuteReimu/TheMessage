@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -50,10 +49,10 @@ class JinBi : MainPhaseSkill(), InitialSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         log.info("${r}对${target}发动了[禁闭]")
-        g.resolve(executeJinBi(r, target))
+        g.resolve(executeJinBi(g.fsm!!, r, target))
     }
 
-    private data class executeJinBi(val r: Player, val target: Player) : WaitingFsm {
+    private data class executeJinBi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (target.cards.size < 2) {
                 doExecuteJinBi()
@@ -138,7 +137,8 @@ class JinBi : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnGiveCard(r, target, r, MainPhaseIdle(r)), true)
+            g.addEvent(GiveCardEvent(r, target, r))
+            return ResolveResult(fsm, true)
         }
 
         private fun doExecuteJinBi() {

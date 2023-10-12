@@ -3,9 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
-import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
@@ -81,10 +79,16 @@ class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
                 p.send(builder.build())
             }
         }
-        g.resolve(executeTanQiuZhenLi(r, target, waitingSecond))
+        g.addEvent(AddMessageCardEvent(r))
+        g.resolve(executeTanQiuZhenLi(g.fsm!!, r, target, waitingSecond))
     }
 
-    private data class executeTanQiuZhenLi(val r: Player, val target: Player, val waitingSecond: Int) : WaitingFsm {
+    private data class executeTanQiuZhenLi(
+        val fsm: Fsm,
+        val r: Player,
+        val target: Player,
+        val waitingSecond: Int
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (target is HumanPlayer) {
                 val seq = target.seq
@@ -146,7 +150,7 @@ class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(OnAddMessageCard(r, MainPhaseIdle(r)), true)
+                return ResolveResult(fsm, true)
             }
             val card =
                 if (message.fromHand) {
@@ -181,9 +185,7 @@ class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
-            val newFsm = CheckWin(r, MainPhaseIdle(r))
-            newFsm.receiveOrder.addPlayerIfHasThreeBlack(r)
-            return ResolveResult(OnAddMessageCard(r, newFsm), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {

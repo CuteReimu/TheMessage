@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -17,20 +15,15 @@ class ZhuanJiao : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.ZHUAN_JIAO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard ?: return null
-        askWhom === fsm.player || return null
-        askWhom.alive || return null
-        askWhom.messageCards.any { !it.isBlack() } || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        val oldResolveFunc = fsm.resolveFunc
-        return ResolveResult(executeZhuanJiao(fsm.copy(resolveFunc = { valid ->
-            askWhom.resetSkillUseCount(skillId)
-            oldResolveFunc(valid)
-        }), askWhom), true)
+        val event = g.findEvent<UseCardEvent>(this) { event ->
+            askWhom === event.player || return@findEvent false
+            askWhom.alive || return@findEvent false
+            askWhom.messageCards.any { !it.isBlack() }
+        } ?: return null
+        return ResolveResult(executeZhuanJiao(g.fsm!!, event.whoseTurn, askWhom), true)
     }
 
-    private data class executeZhuanJiao(val fsm: OnUseCard, val r: Player) : WaitingFsm {
+    private data class executeZhuanJiao(val fsm: Fsm, val whoseTurn: Player, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -164,7 +157,8 @@ class ZhuanJiao : InitialSkill, TriggeredSkill {
                 }
             }
             r.draw(2)
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+            g.addEvent(AddMessageCardEvent(whoseTurn))
+            return ResolveResult(fsm, true)
         }
 
         companion object {

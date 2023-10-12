@@ -11,10 +11,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.skill.InitialSkill
-import com.fengsheng.skill.RoleCache
-import com.fengsheng.skill.TriggeredSkill
-import com.fengsheng.skill.changeGameResult
+import com.fengsheng.skill.*
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
 import io.netty.util.Timeout
@@ -312,7 +309,9 @@ class Game private constructor(totalPlayerCount: Int) {
         return newPlayers
     }
 
-    inline fun <reified E : Event> filterEvents() = resolvingEvents.filterIsInstance<E>()
+    inline fun <reified E : Event> findEvent(skill: Skill, predicate: (E) -> Boolean) =
+        resolvingEvents.find { it is E && predicate(it) && it.checkResolve(skill) } as? E
+
     fun addEvent(event: Event) = unresolvedEvents.add(event)
 
     /**
@@ -363,6 +362,11 @@ class Game private constructor(totalPlayerCount: Int) {
      * 遍历监听列表，结算技能
      */
     fun dealListeningSkill(beginLocation: Int, includingDead: Boolean = false): ResolveResult? {
+        if (resolvingEvents.isEmpty()) {
+            if (unresolvedEvents.isEmpty()) return null
+            resolvingEvents = unresolvedEvents
+            unresolvedEvents = ArrayList()
+        }
         var i = beginLocation % players.size
         do {
             val player = players[i]!!

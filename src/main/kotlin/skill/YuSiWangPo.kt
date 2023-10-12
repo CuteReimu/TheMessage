@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -78,6 +77,8 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             }
         }
         g.playerDiscardCard(r, *cards.toTypedArray())
+        g.addEvent(DiscardCardEvent(r, r))
+        if (target.cards.isNotEmpty()) g.addEvent(DiscardCardEvent(r, target))
         if (discardAll) {
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -87,19 +88,17 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
-            var newFsm = g.fsm!!
-            if (target.cards.isNotEmpty()) newFsm = OnDiscardCard(r, target, newFsm)
-            newFsm = OnDiscardCard(r, r, newFsm)
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(1)
             target.draw(1)
-            g.resolve(newFsm)
+            g.continueResolve()
         } else {
-            g.resolve(executeYuSiWangPo(r, target, cards.size + 1, timeout))
+            g.resolve(executeYuSiWangPo(g.fsm!!, r, target, cards.size + 1, timeout))
         }
     }
 
     private data class executeYuSiWangPo(
+        val fsm: Fsm,
         val r: Player,
         val target: Player,
         val cardCount: Int,
@@ -169,7 +168,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             target.game!!.playerDiscardCard(target, *cards.toTypedArray())
             r.draw(1)
             target.draw(1)
-            return ResolveResult(OnDiscardCard(r, r, OnDiscardCard(r, target, MainPhaseIdle(r))), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {

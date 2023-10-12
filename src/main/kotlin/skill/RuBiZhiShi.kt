@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Fengsheng.*
@@ -55,10 +54,10 @@ class RuBiZhiShi : InitialSkill, ActiveSkill {
         r.addSkillUseCount(skillId)
         log.info("${r}发动了[如臂指使]，查看了${target}的手牌")
         g.playerSetRoleFaceUp(r, true)
-        g.resolve(excuteRuBiZhiShi(fsm, r, target))
+        g.resolve(excuteRuBiZhiShi(fsm as ProcessFsm, r, target))
     }
 
-    data class excuteRuBiZhiShi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
+    data class excuteRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {
@@ -124,10 +123,10 @@ class RuBiZhiShi : InitialSkill, ActiveSkill {
                 r.incrSeq()
                 notifyUseSkill(enable = true, useCard = false)
                 r.game!!.playerDiscardCard(target, card)
-                if (fsm is FightPhaseIdle) return ResolveResult(
-                    OnDiscardCard(fsm.whoseTurn, target, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)), true
-                )
-                return ResolveResult(OnDiscardCard((fsm as WaitForChengQing).whoseTurn, target, fsm), true)
+                r.game!!.addEvent(DiscardCardEvent(fsm.whoseTurn, target))
+                if (fsm is FightPhaseIdle)
+                    return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
+                return ResolveResult(fsm, true)
             }
             when (message) {
                 is use_jie_huo_tos -> {

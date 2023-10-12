@@ -8,18 +8,15 @@ import org.apache.log4j.Logger
  * 情报传递阶段开始时，选择传递一张情报
  */
 data class SendPhaseStart(override val whoseTurn: Player) : ProcessFsm() {
-    /** 刚刚切到这个状态，需要先给客户端发一遍notify消息 */
-    private var justSwitch = true
+    override fun onSwitch() {
+        val game = whoseTurn.game!!
+        game.addEvent(SendPhaseStartEvent(whoseTurn))
+        for (p in game.players)
+            p!!.notifySendPhaseStart()
+    }
 
     override fun resolve0(): ResolveResult? {
         val game = whoseTurn.game!!
-        if (justSwitch) {
-            justSwitch = false
-            game.addEvent(SendPhaseStartEvent(whoseTurn))
-            for (p in game.players)
-                p!!.notifySendPhaseStart()
-            return ResolveResult(this, true)
-        }
         if (whoseTurn.alive && whoseTurn.cards.isEmpty() && whoseTurn.findSkill(LENG_XUE_XUN_LIAN) == null) {
             log.info("${whoseTurn}没有情报可传，输掉了游戏")
             val messageCards = whoseTurn.messageCards.toTypedArray()
@@ -32,8 +29,6 @@ data class SendPhaseStart(override val whoseTurn: Player) : ProcessFsm() {
         }
         if (!whoseTurn.alive)
             return ResolveResult(NextTurn(whoseTurn), true)
-        if (game.checkOnlyOneAliveIdentityPlayers(whoseTurn))
-            return ResolveResult(null, false)
         for (p in game.players)
             p!!.notifySendPhaseStart(Config.WaitSecond)
         return null

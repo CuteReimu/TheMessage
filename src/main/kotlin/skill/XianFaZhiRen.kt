@@ -5,8 +5,6 @@ import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.HasReceiveOrder
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
 import com.fengsheng.protos.Role.*
@@ -21,16 +19,15 @@ class XianFaZhiRen : InitialSkill, ActiveSkill, TriggeredSkill {
     override val skillId = SkillId.XIAN_FA_ZHI_REN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnAddMessageCard ?: return null
-        !askWhom.roleFaceUp || return null
-        fsm.bySkill || return null
-        g.players.any { it!!.messageCards.isNotEmpty() } || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeXianFaZhiRenA(fsm, askWhom), true)
+        g.findEvent<AddMessageCardEvent>(this) { event ->
+            !askWhom.roleFaceUp || return@findEvent false
+            event.bySkill || return@findEvent false
+            g.players.any { it!!.messageCards.isNotEmpty() }
+        } ?: return null
+        return ResolveResult(executeXianFaZhiRenA(g.fsm!!, askWhom), true)
     }
 
-    private data class executeXianFaZhiRenA(val fsm: OnAddMessageCard, val r: Player) : WaitingFsm {
+    private data class executeXianFaZhiRenA(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {
@@ -117,7 +114,6 @@ class XianFaZhiRen : InitialSkill, ActiveSkill, TriggeredSkill {
             player.game!!.playerSetRoleFaceUp(player, true)
             log.info("${player}发动了[先发制人]，弃掉了${target}面前的$card")
             player.game!!.deck.discard(card)
-            (fsm.afterResolve as? HasReceiveOrder)?.receiveOrder?.removePlayerIfNotHaveThreeBlack(target)
             val timeout = Config.WaitSecond
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {

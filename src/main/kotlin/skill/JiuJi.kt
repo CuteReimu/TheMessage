@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role.*
@@ -17,29 +15,24 @@ class JiuJi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIU_JI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard ?: return null
-        askWhom === fsm.targetPlayer || return null
-        askWhom.alive || return null
-        fsm.cardType in cardTypes || return null
-        !askWhom.roleFaceUp || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        val oldResolveFunc = fsm.resolveFunc
-        return ResolveResult(executeJiuJi(fsm.copy(resolveFunc = { valid: Boolean ->
-            askWhom.resetSkillUseCount(skillId)
-            oldResolveFunc(valid)
-        }), askWhom), true)
+        val event = g.findEvent<UseCardEvent>(this) { event ->
+            askWhom === event.targetPlayer || return@findEvent false
+            askWhom.alive || return@findEvent false
+            event.cardType in cardTypes || return@findEvent false
+            !askWhom.roleFaceUp
+        } ?: return null
+        return ResolveResult(executeJiuJi(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeJiuJi(val fsm: OnUseCard, val r: Player) : WaitingFsm {
+    private data class executeJiuJi(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
                     if (player === r) {
                         val builder = skill_wait_for_jiu_ji_toc.newBuilder()
-                        builder.fromPlayerId = player.getAlternativeLocation(fsm.player.location)
-                        builder.cardType = fsm.cardType
-                        if (fsm.cardType != Shi_Tan) fsm.card?.let { builder.card = it.toPbCard() }
+                        builder.fromPlayerId = player.getAlternativeLocation(event.player.location)
+                        builder.cardType = event.cardType
+                        if (event.cardType != Shi_Tan) event.card?.let { builder.card = it.toPbCard() }
                         builder.waitingSecond = Config.WaitSecond
                         val seq2 = player.seq
                         builder.seq = seq2
@@ -99,7 +92,7 @@ class JiuJi : InitialSkill, TriggeredSkill {
             }
             g.playerSetRoleFaceUp(r, true)
             r.draw(2)
-            fsm.card?.let { r.skills += JiuJi2() }
+            event.card?.let { r.skills += JiuJi2() }
             return ResolveResult(fsm, true)
         }
 
@@ -112,10 +105,12 @@ class JiuJi : InitialSkill, TriggeredSkill {
         override val skillId = SkillId.UNKNOWN
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
-            val fsm = g.fsm as? OnFinishResolveCard ?: return null
-            askWhom === fsm.targetPlayer || return null
-            askWhom.alive || return null
-            val card = fsm.card ?: return null
+            val event = g.findEvent<FinishResolveCardEvent>(this) { event ->
+                askWhom === event.targetPlayer || return@findEvent false
+                askWhom.alive || return@findEvent false
+                event.card != null
+            } ?: return null
+            val card = event.card!!
             askWhom.cards.add(card)
             log.info("${askWhom}将使用的${card}加入了手牌")
             askWhom.skills = askWhom.skills.filterNot { it is JiuJi2 }
@@ -127,7 +122,8 @@ class JiuJi : InitialSkill, TriggeredSkill {
                     player.send(builder.build())
                 }
             }
-            return ResolveResult(fsm.copy(discardAfterResolve = false), true)
+            event.discardAfterResolve = false
+            return null
         }
 
         companion object {

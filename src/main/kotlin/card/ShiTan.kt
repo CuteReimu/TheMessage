@@ -54,6 +54,7 @@ class ShiTan : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
+        val fsm = g.fsm as MainPhaseIdle
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { valid: Boolean ->
@@ -67,15 +68,15 @@ class ShiTan : Card {
                         p.send(builder.build())
                     }
                 }
-                executeShiTan(r, target, this@ShiTan)
+                executeShiTan(fsm, r, target, this@ShiTan)
             } else {
                 OnFinishResolveCard(
-                    r, r, target, getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
+                    r, r, target, getOriginCard(), card_type.Shi_Tan, fsm,
                     discardAfterResolve = false
                 )
             }
         }
-        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Shi_Tan, resolveFunc, g.fsm!!))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Shi_Tan, resolveFunc, fsm))
     }
 
     private fun checkDrawCard(target: Player): Boolean {
@@ -94,7 +95,12 @@ class ShiTan : Card {
         }
     }
 
-    private data class executeShiTan(val r: Player, val target: Player, val card: ShiTan) : WaitingFsm {
+    private data class executeShiTan(
+        val fsm: MainPhaseIdle,
+        val r: Player,
+        val target: Player,
+        val card: ShiTan
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -156,7 +162,6 @@ class ShiTan : Card {
                 }
             }
             player.incrSeq()
-            var newFsm: Fsm = MainPhaseIdle(r)
             if (card.checkDrawCard(target)) {
                 log.info("${target}选择了[摸一张牌]")
                 card.notifyResult(target, true)
@@ -171,7 +176,7 @@ class ShiTan : Card {
             }
             return ResolveResult(
                 OnFinishResolveCard(
-                    r, r, target, card.getOriginCard(), card_type.Shi_Tan, newFsm,
+                    r, r, target, card.getOriginCard(), card_type.Shi_Tan, fsm,
                     discardAfterResolve = false
                 ),
                 true

@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.DieSkill
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -15,17 +13,16 @@ class RuGui : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.RU_GUI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? DieSkill ?: return null
-        askWhom === fsm.diedQueue[fsm.diedIndex] || return null
-        askWhom !== fsm.whoseTurn || return null
-        fsm.whoseTurn.alive || return null
-        askWhom.messageCards.isNotEmpty() || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeRuGui(fsm, askWhom), true)
+        val event = g.findEvent<PlayerDieEvent>(this) { event ->
+            askWhom === event.whoDie || return@findEvent false
+            askWhom !== event.whoseTurn || return@findEvent false
+            event.whoseTurn.alive || return@findEvent false
+            askWhom.messageCards.isNotEmpty()
+        } ?: return null
+        return ResolveResult(executeRuGui(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeRuGui(val fsm: DieSkill, val r: Player) : WaitingFsm {
+    private data class executeRuGui(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -98,7 +95,7 @@ class RuGui : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
-            val target = fsm.whoseTurn
+            val target = event.whoseTurn
             if (!target.alive) {
                 log.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
@@ -108,7 +105,6 @@ class RuGui : InitialSkill, TriggeredSkill {
             log.info("${r}发动了[如归]")
             r.deleteMessageCard(card.id)
             target.messageCards.add(card)
-            fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             log.info("${r}面前的${card}移到了${target}面前")
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -119,7 +115,8 @@ class RuGui : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+            g.addEvent(AddMessageCardEvent(event.whoseTurn))
+            return ResolveResult(fsm, true)
         }
 
         companion object {
