@@ -38,7 +38,6 @@ class DuMing : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            askWhom.addSkillUseCount(skillId, 2)
             return ResolveResult(waitForDuMing(fightPhase, event1, askWhom), true)
         }
         val event2 = g.findEvent<MessageMoveNextEvent>(this) { event ->
