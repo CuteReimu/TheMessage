@@ -91,8 +91,14 @@ class DuJi : InitialSkill, ActiveSkill {
             }
         }
         val twoPlayersAndCards = ArrayList<TwoPlayersAndCard>()
-        if (card1.colors.contains(color.Black)) twoPlayersAndCards.add(TwoPlayersAndCard(target1, target2, card1))
-        if (card2.colors.contains(color.Black)) twoPlayersAndCards.add(TwoPlayersAndCard(target2, target1, card2))
+        if (card2.colors.contains(color.Black))
+            twoPlayersAndCards.add(TwoPlayersAndCard(target2, target1, card2))
+        else
+            r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target1, r))
+        if (card1.colors.contains(color.Black))
+            twoPlayersAndCards.add(TwoPlayersAndCard(target1, target2, card1))
+        else
+            r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target2, r))
         g.resolve(executeDuJiA(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), fsm.whoseTurn, r, twoPlayersAndCards))
     }
 
@@ -176,6 +182,8 @@ class DuJi : InitialSkill, ActiveSkill {
                     }
                 }
                 if (asMessage) r.game!!.addEvent(AddMessageCardEvent(whoseTurn))
+                for (playerAndCard in playerAndCards)
+                    r.game!!.addEvent(GiveCardEvent(whoseTurn, playerAndCard.waitingPlayer, r))
                 return ResolveResult(fsm, true)
             }
             val index = playerAndCards.indexOfFirst { it.card.id == message.cardId }
