@@ -33,7 +33,7 @@ abstract class ProcessFsm : Fsm {
         if (needCheckWinAndDying) {
             val winResult = checkWin()
             if (winResult != null) return winResult
-            if (whoseTurn.game!!.checkOnlyOneAliveIdentityPlayers(whoseTurn))
+            if (whoseTurn.game!!.checkOnlyOneAlivePlayer(whoseTurn))
                 return ResolveResult(null, false)
             val dyingResult = checkDying()
             if (dyingResult != null) return dyingResult

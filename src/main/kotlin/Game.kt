@@ -382,37 +382,26 @@ class Game private constructor(totalPlayerCount: Int) {
     }
 
     /**
-     * 判断是否仅剩的一个阵营存活
+     * 判断是否仅剩一个人存活
      */
-    fun checkOnlyOneAliveIdentityPlayers(whoseTurn: Player): Boolean {
-        var identity: color? = null
+    fun checkOnlyOneAlivePlayer(whoseTurn: Player): Boolean {
         val players = players.filterNotNull().filter { !it.lose }
-        val alivePlayers = players.filter {
-            if (!it.alive) return@filter false
-            when (identity) {
-                null -> identity = it.identity
-                Black -> return false
-                it.identity -> {}
-                else -> {
-                    if (this.players.size != 4 || it.identity == Black) // 四人局潜伏和军情会同时获胜
-                        return false
-                }
-            }
-            true
-        }
+        val alivePlayers = players.filter { it.alive }
+        if (alivePlayers.size != 1) return false
+        val alivePlayer = alivePlayers.first()
+        val declaredWinners = arrayListOf(alivePlayer)
         val winner =
-            if (identity == Red || identity == Blue) {
+            if (alivePlayer.identity == Red || alivePlayer.identity == Blue) {
                 if (this.players.size == 4) // 四人局潜伏和军情会同时获胜
                     players.filter { it.identity == Red || it.identity == Blue }.toMutableList()
                 else
-                    players.filter { identity == it.identity }.toMutableList()
+                    players.filter { alivePlayer.identity == it.identity }.toMutableList()
             } else {
                 alivePlayers.toMutableList()
             }
-        val declaredWinners = ArrayList<Player>()
         changeGameResult(whoseTurn, declaredWinners, winner)
         val winners = winner.toTypedArray()
-        log.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
+        log.info("只剩下${alivePlayer}存活，胜利者有${winners.contentToString()}")
         allPlayerSetRoleFaceUp()
         end(declaredWinners, winner)
         return true

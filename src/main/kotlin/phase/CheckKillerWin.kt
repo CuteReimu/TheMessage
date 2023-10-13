@@ -62,6 +62,8 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             whoseTurn.game!!.end(emptyList(), emptyList())
             return ResolveResult(null, false)
         }
+        if (whoseTurn.game!!.checkOnlyOneAlivePlayer(whoseTurn))
+            return ResolveResult(null, false)
         return ResolveResult(WaitForDieGiveCard(whoseTurn, diedQueue, afterDieResolve), true)
     }
 
