@@ -200,10 +200,30 @@ class WeiBi : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Wei_Bi) || return false
+            val yaPao = player.game!!.players.find {
+                it!!.alive && it.findSkill(SkillId.SHOU_KOU_RU_PING) != null
+            }
+            if (yaPao === player) {
+                val p = player.game!!.players.run {
+                    filter { it!!.alive && it.isPartner(player) }.randomOrNull()
+                        ?: filter { it !== player && it!!.alive }.randomOrNull()
+                } ?: return false
+                val cardType = availableCardType.random()
+                GameExecutor.post(player.game!!, {
+                    card.execute(player.game!!, player, p, cardType)
+                }, 2, TimeUnit.SECONDS)
+                return true
+            } else if (yaPao != null && player.isPartner(yaPao)) {
+                val cardType = availableCardType.random()
+                GameExecutor.post(player.game!!, {
+                    card.execute(player.game!!, player, yaPao, cardType)
+                }, 2, TimeUnit.SECONDS)
+                return true
+            }
             val identity = player.identity
             val p = player.game!!.players.filter {
                 it !== player && it!!.alive &&
-                        (!it.roleFaceUp || it.findSkill(SkillId.CHENG_FU) == null) &&
+                        (!it.roleFaceUp || (it.findSkill(SkillId.CHENG_FU) == null && it.findSkill(SkillId.SHOU_KOU_RU_PING) == null)) &&
                         (identity == color.Black || identity != it.identity) &&
                         it.cards.any { card -> availableCardType.contains(card.type) }
             }.randomOrNull() ?: return false
