@@ -27,6 +27,8 @@ class ResolveCard(
     val currentFsm: ProcessFsm,
     var valid: Boolean = true
 ) : ProcessFsm() {
+    override val needCheckWinAndDying = false
+    
     override fun onSwitch() {
         whoseTurn.game!!.addEvent(UseCardEvent(this))
     }

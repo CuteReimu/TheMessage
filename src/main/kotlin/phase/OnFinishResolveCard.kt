@@ -24,6 +24,8 @@ class OnFinishResolveCard(
     val nextFsm: Fsm,
     var discardAfterResolve: Boolean = true
 ) : ProcessFsm() {
+    override val needCheckWinAndDying = false
+
     override fun onSwitch() {
         whoseTurn.game!!.addEvent(FinishResolveCardEvent(this))
     }
