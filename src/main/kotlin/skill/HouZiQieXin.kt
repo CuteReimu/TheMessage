@@ -112,12 +112,12 @@ class HouZiQieXin : MainPhaseSkill(), InitialSkill {
             val playerAndCard = player.game!!.players.flatMap {
                 if (it !== player && it!!.alive) {
                     it.messageCards.mapNotNull { card ->
-                        if (player.cards.any { c -> c.hasSameColor(card) }) PlayerAndCard(it, card)
+                        if (player.cards.any { c -> c.colorExactlyTheSame(card) }) PlayerAndCard(it, card)
                         else null
                     }
                 } else emptyList()
             }.randomOrNull() ?: return false
-            val card = player.cards.filter { it.hasSameColor(playerAndCard.card) }.randomOrNull() ?: return false
+            val card = player.cards.filter { it.colorExactlyTheSame(playerAndCard.card) }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_hou_zi_qie_xin_tos.newBuilder()
                 builder.handCardId = card.id
