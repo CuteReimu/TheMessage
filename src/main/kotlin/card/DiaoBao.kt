@@ -8,6 +8,8 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.color.Blue
+import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.log4j.Logger
@@ -83,6 +85,11 @@ class DiaoBao : Card {
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
             !player.cannotPlayCard(card_type.Diao_Bao) || return false
+            if (player.identity == Red) {
+                if (Blue in card.colors) return false
+            } else if (player.identity == Blue) {
+                if (Red in card.colors) return false
+            }
             if (player.isPartnerOrSelf(e.inFrontOfWhom)) {
                 if (card.getColorScore() <= e.messageCard.getColorScore()) return false
             } else {
