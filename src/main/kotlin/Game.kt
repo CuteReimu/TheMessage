@@ -11,10 +11,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.skill.InitialSkill
-import com.fengsheng.skill.RoleCache
-import com.fengsheng.skill.TriggeredSkill
-import com.fengsheng.skill.changeGameResult
+import com.fengsheng.skill.*
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
 import io.netty.util.Timeout
@@ -33,6 +30,9 @@ class Game private constructor(totalPlayerCount: Int) {
     val queue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
     val id: Int = ++increaseId
+
+    var resolvingEvents: List<Event> = emptyList()
+    private var unresolvedEvents: MutableList<Event> = ArrayList()
 
     private var gameStartTimeout: Timeout? = null
 
@@ -309,6 +309,11 @@ class Game private constructor(totalPlayerCount: Int) {
         return newPlayers
     }
 
+    inline fun <reified E : Event> findEvent(skill: Skill, predicate: (E) -> Boolean) =
+        resolvingEvents.find { it is E && it.checkResolve(skill) && predicate(it) } as? E
+
+    fun addEvent(event: Event) = unresolvedEvents.add(event)
+
     /**
      * 继续处理当前状态机
      */
@@ -357,6 +362,11 @@ class Game private constructor(totalPlayerCount: Int) {
      * 遍历监听列表，结算技能
      */
     fun dealListeningSkill(beginLocation: Int, includingDead: Boolean = false): ResolveResult? {
+        if (resolvingEvents.isEmpty()) {
+            if (unresolvedEvents.isEmpty()) return null
+            resolvingEvents = unresolvedEvents
+            unresolvedEvents = ArrayList()
+        }
         var i = beginLocation % players.size
         do {
             val player = players[i]!!
@@ -366,6 +376,8 @@ class Game private constructor(totalPlayerCount: Int) {
             }
             i = (i + 1) % players.size
         } while (i != beginLocation % players.size)
+        resolvingEvents = unresolvedEvents
+        unresolvedEvents = ArrayList()
         return null
     }
 

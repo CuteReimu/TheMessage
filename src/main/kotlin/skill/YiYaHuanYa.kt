@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_yi_ya_huan_ya_toc
@@ -19,24 +17,23 @@ class YiYaHuanYa : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.YI_YA_HUAN_YA
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.inFrontOfWhom || return null
-        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
-        fsm.messageCard.isBlack() || return null
-        fsm.inFrontOfWhom.cards.isNotEmpty() || return null
-        fsm.inFrontOfWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeYiYaHuanYa(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.inFrontOfWhom || return@findEvent false
+            event.messageCard.isBlack() || return@findEvent false
+            event.inFrontOfWhom.cards.isNotEmpty()
+        } ?: return null
+        return ResolveResult(executeYiYaHuanYa(g.fsm!!, event), true)
     }
 
-    private data class executeYiYaHuanYa(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeYiYaHuanYa(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
+            for (p in event.whoseTurn.game!!.players)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.inFrontOfWhom) {
+            if (player !== event.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -55,7 +52,7 @@ class YiYaHuanYa : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -84,7 +81,7 @@ class YiYaHuanYa : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
-            if (target !== fsm.sender && target !== fsm.sender.getNextLeftAlivePlayer() && target !== fsm.sender.getNextRightAlivePlayer()) {
+            if (target !== event.sender && target !== event.sender.getNextLeftAlivePlayer() && target !== event.sender.getNextRightAlivePlayer()) {
                 log.error("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
                 return null
@@ -93,7 +90,6 @@ class YiYaHuanYa : InitialSkill, TriggeredSkill {
             log.info("${r}发动了[以牙还牙]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_yi_ya_huan_ya_toc.newBuilder()
@@ -104,7 +100,8 @@ class YiYaHuanYa : InitialSkill, TriggeredSkill {
                 }
             }
             r.draw(1)
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+            g.addEvent(AddMessageCardEvent(event.whoseTurn))
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -115,8 +112,8 @@ class YiYaHuanYa : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeYiYaHuanYa) return false
-            val p = fsm0.fsm.inFrontOfWhom
-            var target = fsm0.fsm.whoseTurn
+            val p = fsm0.event.inFrontOfWhom
+            var target = fsm0.event.whoseTurn
             if (p === target) {
                 target = if (Random.nextBoolean()) target.getNextLeftAlivePlayer() else target.getNextRightAlivePlayer()
                 if (p === target) return false

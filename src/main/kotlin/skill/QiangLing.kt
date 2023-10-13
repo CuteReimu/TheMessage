@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnChooseReceiveCard
-import com.fengsheng.phase.OnSendCardSkill
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -16,22 +14,21 @@ class QiangLing : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.QIANG_LING
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm
-        if (fsm is OnSendCardSkill) {
-            askWhom === fsm.sender || return null
-            askWhom.getSkillUseCount(skillId) == 0 || return null
-            askWhom.addSkillUseCount(skillId)
-            return ResolveResult(executeQiangLing(fsm, askWhom), true)
-        } else if (fsm is OnChooseReceiveCard) {
-            askWhom === fsm.inFrontOfWhom || return null
-            askWhom.getSkillUseCount(skillId) <= 1 || return null
-            askWhom.addSkillUseCount(skillId, 2)
-            return ResolveResult(executeQiangLing(fsm, askWhom), true)
+        val event1 = g.findEvent<SendCardEvent>(this) { event ->
+            askWhom === event.sender
+        }
+        if (event1 != null)
+            return ResolveResult(executeQiangLing(g.fsm!!, event1, askWhom), true)
+        val event2 = g.findEvent<ChooseReceiveCardEvent>(this) { event ->
+            askWhom === event.inFrontOfWhom
+        }
+        if (event2 != null) {
+            return ResolveResult(executeQiangLing(g.fsm!!, event2, askWhom), true)
         }
         return null
     }
 
-    private data class executeQiangLing(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class executeQiangLing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -64,7 +61,7 @@ class QiangLing : InitialSkill, TriggeredSkill {
                         .filterNot { r.cannotPlayCard(it) }.run {
                             when (size) {
                                 0 -> listOf(Po_Yi, Cheng_Qing).filterNot { r.cannotPlayCard(it) }
-                                1 -> plus(if (fsm is OnSendCardSkill && !r.cannotPlayCard(Po_Yi)) Po_Yi else Cheng_Qing)
+                                1 -> plus(if (event is SendCardEvent && !r.cannotPlayCard(Po_Yi)) Po_Yi else Cheng_Qing)
                                 2 -> this
                                 else -> shuffled().subList(0, 2)
                             }

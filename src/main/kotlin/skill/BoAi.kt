@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -15,7 +14,7 @@ class BoAi : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.BO_AI
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -33,10 +32,10 @@ class BoAi : MainPhaseSkill(), InitialSkill {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        g.resolve(executeBoAi(r))
+        g.resolve(executeBoAi(g.fsm!!, r))
     }
 
-    private data class executeBoAi(val r: Player) : WaitingFsm {
+    private data class executeBoAi(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             log.info("${r}发动了[博爱]")
@@ -143,7 +142,8 @@ class BoAi : MainPhaseSkill(), InitialSkill {
                 }
             }
             if (target.isFemale) r.draw(1)
-            return ResolveResult(OnGiveCard(r, r, target, MainPhaseIdle(r)), true)
+            g.addEvent(GiveCardEvent(r, r, target))
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -154,10 +154,10 @@ class BoAi : MainPhaseSkill(), InitialSkill {
     companion object {
         private val log = Logger.getLogger(BoAi::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.player.getSkillUseCount(SkillId.BO_AI) > 0) return false
-            GameExecutor.post(e.player.game!!, {
+            if (e.whoseTurn.getSkillUseCount(SkillId.BO_AI) > 0) return false
+            GameExecutor.post(e.whoseTurn.game!!, {
                 skill.executeProtocol(
-                    e.player.game!!, e.player, skill_bo_ai_a_tos.getDefaultInstance()
+                    e.whoseTurn.game!!, e.whoseTurn, skill_bo_ai_a_tos.getDefaultInstance()
                 )
             }, 2, TimeUnit.SECONDS)
             return true

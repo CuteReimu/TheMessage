@@ -1,7 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnUseCard
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.*
@@ -16,19 +15,15 @@ class BiFeng : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.BI_FENG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard ?: return null
-        fsm.player === askWhom || return null
-        fsm.cardType == Jie_Huo || fsm.cardType == Wu_Dao || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        val oldResolveFunc = fsm.resolveFunc
-        return ResolveResult(excuteBiFeng(fsm.copy(resolveFunc = { valid ->
-            if (askWhom.getSkillUseCount(skillId) == 1) askWhom.resetSkillUseCount(skillId)
-            oldResolveFunc(valid)
-        }), askWhom), true)
+        val event = g.findEvent<UseCardEvent>(this) { event ->
+            event.player === askWhom || return@findEvent false
+            event.cardType in arrayOf(Jie_Huo, Wu_Dao) || return@findEvent false
+            askWhom.getSkillUseCount(skillId) == 0
+        } ?: return null
+        return ResolveResult(excuteBiFeng(g.fsm!!, event, askWhom), true)
     }
 
-    private data class excuteBiFeng(val fsm: OnUseCard, val r: Player) : WaitingFsm {
+    private data class excuteBiFeng(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {
@@ -87,13 +82,14 @@ class BiFeng : InitialSkill, TriggeredSkill {
                 if (p is HumanPlayer) {
                     val builder = skill_bi_feng_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.card = fsm.card!!.toPbCard()
-                    fsm.targetPlayer?.also { builder.targetPlayerId = p.getAlternativeLocation(it.location) }
+                    builder.card = event.card!!.toPbCard()
+                    event.targetPlayer?.also { builder.targetPlayerId = p.getAlternativeLocation(it.location) }
                     p.send(builder.build())
                 }
             }
             r.draw(2)
-            return ResolveResult(fsm.copy(valid = false), true)
+            event.valid = false
+            return ResolveResult(fsm, true)
         }
 
         companion object {

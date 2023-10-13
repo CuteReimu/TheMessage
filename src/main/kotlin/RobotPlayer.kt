@@ -23,7 +23,7 @@ class RobotPlayer : Player() {
 
     override fun notifyMainPhase(waitSecond: Int) {
         val fsm = game!!.fsm as MainPhaseIdle
-        if (this !== fsm.player) return
+        if (this !== fsm.whoseTurn) return
         for (skill in skills) {
             val ai = aiSkillMainPhase[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
@@ -40,7 +40,7 @@ class RobotPlayer : Player() {
     override fun notifySendPhaseStart(waitSecond: Int) {
         if (waitSecond == 0) return
         val fsm = game!!.fsm as SendPhaseStart
-        if (this !== fsm.player) return
+        if (this !== fsm.whoseTurn) return
         for (skill in skills) {
             val ai = aiSkillSendPhaseStart[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
@@ -182,6 +182,7 @@ class RobotPlayer : Player() {
                     if (giveCards.isNotEmpty()) {
                         cards.removeAll(giveCards.toSet())
                         target.cards.addAll(giveCards)
+                        game!!.addEvent(GiveCardEvent(fsm.whoseTurn, this, target))
                         log.info("${this}给了${target}${giveCards.toTypedArray().contentToString()}")
                         for (p in game!!.players) {
                             if (p is HumanPlayer) {

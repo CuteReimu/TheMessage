@@ -3,9 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
-import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
@@ -26,7 +24,7 @@ class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
         }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -81,10 +79,16 @@ class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
                 p.send(builder.build())
             }
         }
-        g.resolve(executeTanQiuZhenLi(r, target, waitingSecond))
+        g.addEvent(AddMessageCardEvent(r))
+        g.resolve(executeTanQiuZhenLi(g.fsm!!, r, target, waitingSecond))
     }
 
-    private data class executeTanQiuZhenLi(val r: Player, val target: Player, val waitingSecond: Int) : WaitingFsm {
+    private data class executeTanQiuZhenLi(
+        val fsm: Fsm,
+        val r: Player,
+        val target: Player,
+        val waitingSecond: Int
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (target is HumanPlayer) {
                 val seq = target.seq
@@ -146,7 +150,7 @@ class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(OnAddMessageCard(r, MainPhaseIdle(r)), true)
+                return ResolveResult(fsm, true)
             }
             val card =
                 if (message.fromHand) {
@@ -181,9 +185,7 @@ class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
-            val newFsm = CheckWin(r, MainPhaseIdle(r))
-            newFsm.receiveOrder.addPlayerIfHasThreeBlack(r)
-            return ResolveResult(OnAddMessageCard(r, newFsm), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -194,24 +196,24 @@ class TanQiuZhenLi : MainPhaseSkill(), InitialSkill {
     companion object {
         private val log = Logger.getLogger(TanQiuZhenLi::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.player.getSkillUseCount(SkillId.TAN_QIU_ZHEN_LI) > 0) return false
+            if (e.whoseTurn.getSkillUseCount(SkillId.TAN_QIU_ZHEN_LI) > 0) return false
             val availableColor = ArrayList<color>()
-            if (e.player.messageCards.count(Red) < 2) availableColor.add(Red)
-            if (e.player.messageCards.count(Blue) < 2) availableColor.add(Blue)
+            if (e.whoseTurn.messageCards.count(Red) < 2) availableColor.add(Red)
+            if (e.whoseTurn.messageCards.count(Blue) < 2) availableColor.add(Blue)
             val color = availableColor.randomOrNull() ?: return false
 
             fun isPureColor(c: Card) = c.colors.size == 1 && c.colors.first() == color
 
-            val target = e.player.game!!.players.filter {
-                it!!.isEnemy(e.player) && it.alive && it.messageCards.any(::isPureColor)
+            val target = e.whoseTurn.game!!.players.filter {
+                it!!.isEnemy(e.whoseTurn) && it.alive && it.messageCards.any(::isPureColor)
             }.randomOrNull() ?: return false
             val card = target.messageCards.filter(::isPureColor).randomOrNull() ?: return false
             val cardId = card.id
-            GameExecutor.post(e.player.game!!, {
+            GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_tan_qiu_zhen_li_a_tos.newBuilder()
-                builder.targetPlayerId = e.player.getAlternativeLocation(target.location)
+                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
                 builder.cardId = cardId
-                skill.executeProtocol(e.player.game!!, e.player, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

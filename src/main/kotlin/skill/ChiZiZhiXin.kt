@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -16,24 +15,28 @@ class ChiZiZhiXin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CHI_ZI_ZHI_XIN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.sender || return null
-        !fsm.messageCard.isBlack() || return null
-        fsm.inFrontOfWhom != fsm.sender || return null
-        fsm.sender.getSkillUseCount(skillId) == 0 || return null
-        fsm.sender.addSkillUseCount(skillId)
-        return ResolveResult(executeChiZiZhiXinA(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.sender || return@findEvent false
+            !event.messageCard.isBlack() || return@findEvent false
+            askWhom !== event.inFrontOfWhom
+        } ?: return null
+        return ResolveResult(executeChiZiZhiXinA(g.fsm!!, event), true)
     }
 
-    private data class executeChiZiZhiXinA(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeChiZiZhiXinA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.sender.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender)
+            for (p in event.sender.game!!.players)
+                p!!.notifyReceivePhase(
+                    event.whoseTurn,
+                    event.inFrontOfWhom,
+                    event.messageCard,
+                    event.sender
+                )
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -52,14 +55,14 @@ class ChiZiZhiXin : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.sender
+            val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             player.incrSeq()
-            return ResolveResult(executeChiZiZhiXinB(fsm), true)
+            return ResolveResult(executeChiZiZhiXinB(fsm, event), true)
         }
 
         companion object {
@@ -67,14 +70,14 @@ class ChiZiZhiXin : InitialSkill, TriggeredSkill {
         }
     }
 
-    private data class executeChiZiZhiXinB(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeChiZiZhiXinB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.sender
+            val r = event.sender
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_chi_zi_zhi_xin_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.messageCard = fsm.messageCard.toPbCard()
+                    builder.messageCard = event.messageCard.toPbCard()
                     builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = r.seq
@@ -102,7 +105,7 @@ class ChiZiZhiXin : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -112,7 +115,7 @@ class ChiZiZhiXin : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.sender
+            val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
@@ -126,7 +129,7 @@ class ChiZiZhiXin : InitialSkill, TriggeredSkill {
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
-                if (!card.hasSameColor(fsm.messageCard)) {
+                if (!card.hasSameColor(event.messageCard)) {
                     log.error("你选择的牌没有情报牌的颜色")
                     (player as? HumanPlayer)?.sendErrorMessage("你选择的牌没有情报牌的颜色")
                     return null
@@ -135,7 +138,7 @@ class ChiZiZhiXin : InitialSkill, TriggeredSkill {
                 r.incrSeq()
                 r.deleteCard(card.id)
                 r.messageCards.add(card)
-                fsm.receiveOrder.addPlayerIfHasThreeBlack(r)
+                r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             } else {
                 log.info("${r}发动了[赤子之心]，选择了摸两张牌")
                 r.incrSeq()
@@ -161,7 +164,7 @@ class ChiZiZhiXin : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeChiZiZhiXinA) return false
-            val p = fsm0.fsm.sender
+            val p = fsm0.event.sender
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skill_chi_zi_zhi_xin_a_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)

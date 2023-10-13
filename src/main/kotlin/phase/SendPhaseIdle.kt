@@ -1,9 +1,6 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Config
-import com.fengsheng.Fsm
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
+import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.direction
 
@@ -19,27 +16,34 @@ import com.fengsheng.protos.Common.direction
  * @param sender 情报传出者
  */
 data class SendPhaseIdle(
-    val whoseTurn: Player,
+    override val whoseTurn: Player,
     val messageCard: Card,
     val dir: direction,
     val inFrontOfWhom: Player,
     val lockedPlayers: Array<Player>,
     val isMessageCardFaceUp: Boolean,
     val sender: Player,
-) : Fsm {
-    override fun resolve(): ResolveResult? {
+) : ProcessFsm() {
+    override fun onSwitch() {
+        for (p in whoseTurn.game!!.players) {
+            p!!.notifySendPhase()
+        }
+        if (inFrontOfWhom.alive)
+            whoseTurn.game!!.addEvent(MessageMoveNextEvent(whoseTurn, messageCard, inFrontOfWhom, isMessageCardFaceUp))
+    }
+
+    override fun resolve0(): ResolveResult? {
         if (!inFrontOfWhom.alive) {
             return if (inFrontOfWhom === sender)
-                ResolveResult(ReceivePhase(whoseTurn, sender, messageCard, inFrontOfWhom), true)
+                ResolveResult(OnReceiveCard(whoseTurn, sender, messageCard, inFrontOfWhom), true)
             else // 死人的锁不会生效
                 ResolveResult(MessageMoveNext(this), true)
         }
         for (p in whoseTurn.game!!.players) {
             p!!.notifySendPhase(Config.WaitSecond)
         }
-        val result = whoseTurn.game!!.dealListeningSkill(inFrontOfWhom.location)
-        if (result == null) inFrontOfWhom.startSendPhaseTimer(Config.WaitSecond)
-        return result
+        inFrontOfWhom.startSendPhaseTimer(Config.WaitSecond)
+        return null
     }
 
     override fun toString(): String {

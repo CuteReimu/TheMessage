@@ -1,10 +1,6 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
-import com.fengsheng.phase.ReceivePhaseSkill
+import com.fengsheng.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.skill_zhi_yin_toc
@@ -17,26 +13,26 @@ class ZhiYin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.ZHI_YIN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.inFrontOfWhom || return null
-        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
-        val colors = fsm.messageCard.colors
-        Red in colors || Blue in colors || return null
-        fsm.inFrontOfWhom.addSkillUseCount(skillId)
-        log.info("${fsm.inFrontOfWhom}发动了[知音]")
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.inFrontOfWhom || return@findEvent false
+            event.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return@findEvent false
+            val colors = event.messageCard.colors
+            Red in colors || Blue in colors
+        } ?: return null
+        log.info("${event.inFrontOfWhom}发动了[知音]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_zhi_yin_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(fsm.inFrontOfWhom.location)
+                builder.playerId = p.getAlternativeLocation(event.inFrontOfWhom.location)
                 p.send(builder.build())
             }
         }
-        if (fsm.inFrontOfWhom === fsm.sender) {
-            fsm.inFrontOfWhom.draw(2)
+        if (event.inFrontOfWhom === event.sender) {
+            event.inFrontOfWhom.draw(2)
         } else {
-            val players = arrayListOf(fsm.inFrontOfWhom)
-            if (fsm.sender.alive) players.add(fsm.sender)
-            g.sortedFrom(players, fsm.whoseTurn.location).forEach { it.draw(1) }
+            val players = arrayListOf(event.inFrontOfWhom)
+            if (event.sender.alive) players.add(event.sender)
+            g.sortedFrom(players, event.whoseTurn.location).forEach { it.draw(1) }
         }
         return null
     }

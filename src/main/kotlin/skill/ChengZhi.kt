@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.DieSkill
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -16,23 +14,36 @@ class ChengZhi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CHENG_ZHI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? DieSkill ?: return null
-        askWhom.alive || return null
-        askWhom.roleFaceUp || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        val whoDie = fsm.diedQueue[fsm.diedIndex]
-        return ResolveResult(executeChengZhi(fsm, askWhom, whoDie.cards.isNotEmpty()), true)
+        val event = g.findEvent<PlayerDieEvent>(this) { event ->
+            askWhom !== event.whoDie || return@findEvent false
+            askWhom.alive || return@findEvent false
+            askWhom.roleFaceUp
+        } ?: return null
+        val whoDie = event.whoDie
+        return ResolveResult(
+            executeChengZhi(g.fsm!!, event.whoseTurn, askWhom, whoDie, whoDie.cards.isNotEmpty()),
+            true
+        )
     }
 
-    private data class executeChengZhi(val fsm: DieSkill, val r: Player, val hasCard: Boolean) : WaitingFsm {
+    private data class executeChengZhi(
+        val fsm: Fsm,
+        val whoseTurn: Player,
+        val r: Player,
+        val whoDie: Player,
+        val hasCard: Boolean
+    ) :
+        WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val whoDie = fsm.diedQueue[fsm.diedIndex]
             val cards = whoDie.cards.toTypedArray()
             whoDie.cards.clear()
             r.cards.addAll(cards)
-            if (hasCard) log.info("${r}发动了[承志]，获得了${whoDie}的${cards.contentToString()}并查看身份牌")
-            else log.info("${r}发动了[承志]，查看了${whoDie}的身份牌")
+            if (hasCard) {
+                log.info("${r}发动了[承志]，获得了${whoDie}的${cards.contentToString()}并查看身份牌")
+                r.game!!.addEvent(GiveCardEvent(whoseTurn, whoDie, r))
+            } else {
+                log.info("${r}发动了[承志]，查看了${whoDie}的身份牌")
+            }
             if (whoDie.identity == color.Has_No_Identity) return ResolveResult(fsm, true)
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -82,7 +93,6 @@ class ChengZhi : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val whoDie = fsm.diedQueue[fsm.diedIndex]
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -100,7 +110,7 @@ class ChengZhi : InitialSkill, TriggeredSkill {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(OnGiveCard(fsm.whoseTurn, whoDie, r, fsm), true)
+                return ResolveResult(fsm, true)
             }
             r.incrSeq()
             r.identity = whoDie.identity
@@ -116,7 +126,7 @@ class ChengZhi : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnGiveCard(fsm.whoseTurn, whoDie, r, fsm), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {

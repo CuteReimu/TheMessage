@@ -3,7 +3,6 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
-import com.fengsheng.phase.OnSendCardSkill
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction.Up
@@ -23,16 +22,16 @@ class WorkersAreKnowledgable : InitialSkill, ChangeDrawCardCountSkill, Triggered
     override fun changeGameResult(player: Player, oldCount: Int) = oldCount + player.messageCards.countTrueCard()
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnSendCardSkill ?: return null
-        askWhom === fsm.sender || return null
-        fsm.dir !== Up || return null
-        askWhom.messageCards.any { it.isBlack() } || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeWorkersAreKnowledgable(fsm, askWhom), true)
+        g.findEvent<SendCardEvent>(this) { event ->
+            askWhom === event.sender || return@findEvent false
+            event.dir !== Up || return@findEvent false
+            askWhom.messageCards.any { it.isBlack() }
+        } ?: return null
+        return ResolveResult(executeWorkersAreKnowledgable(g.fsm!!, askWhom), true)
     }
 
-    private data class executeWorkersAreKnowledgable(val fsm: OnSendCardSkill, val r: Player) : WaitingFsm {
+    private data class executeWorkersAreKnowledgable(val fsm: Fsm, val r: Player) :
+        WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {

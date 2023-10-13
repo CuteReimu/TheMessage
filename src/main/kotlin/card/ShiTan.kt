@@ -2,9 +2,8 @@ package com.fengsheng.card
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
@@ -35,7 +34,7 @@ class ShiTan : Card {
             return false
         }
         val target = args[0] as Player
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("试探的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("试探的使用时机不对")
             return false
@@ -55,6 +54,7 @@ class ShiTan : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
+        val fsm = g.fsm as MainPhaseIdle
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { valid: Boolean ->
@@ -68,15 +68,15 @@ class ShiTan : Card {
                         p.send(builder.build())
                     }
                 }
-                executeShiTan(r, target, this@ShiTan)
+                executeShiTan(fsm, r, target, this@ShiTan)
             } else {
                 OnFinishResolveCard(
-                    r, r, target, getOriginCard(), card_type.Shi_Tan, MainPhaseIdle(r),
+                    r, r, target, getOriginCard(), card_type.Shi_Tan, fsm,
                     discardAfterResolve = false
                 )
             }
         }
-        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Shi_Tan, resolveFunc, g.fsm!!))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Shi_Tan, resolveFunc, fsm))
     }
 
     private fun checkDrawCard(target: Player): Boolean {
@@ -95,7 +95,12 @@ class ShiTan : Card {
         }
     }
 
-    private data class executeShiTan(val r: Player, val target: Player, val card: ShiTan) : WaitingFsm {
+    private data class executeShiTan(
+        val fsm: MainPhaseIdle,
+        val r: Player,
+        val target: Player,
+        val card: ShiTan
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -157,7 +162,6 @@ class ShiTan : Card {
                 }
             }
             player.incrSeq()
-            var newFsm: Fsm = MainPhaseIdle(r)
             if (card.checkDrawCard(target)) {
                 log.info("${target}选择了[摸一张牌]")
                 card.notifyResult(target, true)
@@ -167,12 +171,12 @@ class ShiTan : Card {
                 card.notifyResult(target, false)
                 if (discardCard != null) {
                     target.game!!.playerDiscardCard(target, discardCard)
-                    newFsm = OnDiscardCard(r, target, newFsm)
+                    target.game!!.addEvent(DiscardCardEvent(r, target))
                 }
             }
             return ResolveResult(
                 OnFinishResolveCard(
-                    r, r, target, card.getOriginCard(), card_type.Shi_Tan, newFsm,
+                    r, r, target, card.getOriginCard(), card_type.Shi_Tan, fsm,
                     discardAfterResolve = false
                 ),
                 true
@@ -217,7 +221,7 @@ class ShiTan : Card {
     companion object {
         private val log = Logger.getLogger(ShiTan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Shi_Tan) || return false
             val p = player.game!!.players.filter {
                 it !== player && it!!.alive && (!it.roleFaceUp || it.findSkill(SkillId.CHENG_FU) == null)

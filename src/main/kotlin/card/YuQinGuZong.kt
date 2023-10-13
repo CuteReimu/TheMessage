@@ -6,7 +6,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.Blue
@@ -38,7 +38,7 @@ class YuQinGuZong : Card {
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用欲擒故纵")
             return false
         }
-        if (r !== (g.fsm as? SendPhaseStart)?.player) {
+        if (r !== (g.fsm as? SendPhaseStart)?.whoseTurn) {
             log.error("欲擒故纵的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("欲擒故纵的使用时机不对")
             return false
@@ -71,12 +71,12 @@ class YuQinGuZong : Card {
             r.draw(2)
             OnFinishResolveCard( // 这里先触发卡牌结算后，再触发情报传出时
                 r, r, target, getOriginCard(), type, OnSendCard(
-                    fsm.player, fsm.player, messageCard, dir, target, lockPlayers.toTypedArray(),
+                    fsm.whoseTurn, fsm.whoseTurn, messageCard, dir, target, lockPlayers.toTypedArray(),
                     isMessageCardFaceUp = true, needRemoveCardAndNotify = false
                 )
             )
         }
-        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Yu_Qin_Gu_Zong, resolveFunc, fsm))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Yu_Qin_Gu_Zong, resolveFunc, fsm))
     }
 
     override fun toPbCard(): card {
@@ -96,7 +96,7 @@ class YuQinGuZong : Card {
     companion object {
         private val log = Logger.getLogger(YuQinGuZong::class.java)
         fun ai(e: SendPhaseStart, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             val game = player.game!!
             val players = game.players
             !player.cannotPlayCard(card_type.Yu_Qin_Gu_Zong) || return false

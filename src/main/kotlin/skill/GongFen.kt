@@ -2,10 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.count
-import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.ReceiveOrder
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_gong_fen_toc
 import com.fengsheng.protos.Role.skill_gong_fen_tos
@@ -52,18 +49,12 @@ class GongFen : InitialSkill, ActiveSkill {
     private data class executeGongFen(
         val fsm: FightPhaseIdle,
         val q: ArrayDeque<Player>,
-        val asMessage: Boolean = false,
-        val receiveOrder: ReceiveOrder = ReceiveOrder(),
+        val asMessage: Boolean = false
     ) : Fsm {
         override fun resolve(): ResolveResult? {
             val target = q.removeFirstOrNull()
             if (target == null) {
-                if (asMessage) return ResolveResult(
-                    OnAddMessageCard(
-                        fsm.whoseTurn,
-                        CheckWin(fsm.whoseTurn, receiveOrder, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom))
-                    ), true
-                )
+                if (asMessage) fsm.whoseTurn.game!!.addEvent(AddMessageCardEvent(fsm.whoseTurn))
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             val r = fsm.whoseFightTurn
@@ -75,7 +66,6 @@ class GongFen : InitialSkill, ActiveSkill {
             if (asMessage) {
                 log.info("${card}被置入${target}的情报区")
                 target.messageCards.add(card)
-                receiveOrder.addPlayerIfHasThreeBlack(target)
             } else {
                 log.info("${card}加入${r}的手牌")
                 r.cards.add(card)

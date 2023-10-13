@@ -1,39 +1,52 @@
-package com.fengsheng.phase
+package com.fengsheng
 
-import com.fengsheng.Fsm
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
 import com.fengsheng.card.count
+import com.fengsheng.phase.StartWaitForChengQing
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.changeGameResult
 import org.apache.log4j.Logger
+import java.util.*
 
 /**
- * 判断是否有人胜利
- *  * 只有接收阶段正常接收情报才会进入 [ReceivePhaseSkill]
- *  * 其它情况均为置入情报区，一律进入这里。
+ * 游戏流程相关的状态机，进入这个状态时，先会处理所有事件，再判断输赢，最后再调用execute0函数
  */
-data class CheckWin(
-    /**
-     * 谁的回合
-     */
-    val whoseTurn: Player,
-    /**
-     * 接收第三张黑色情报的顺序
-     */
-    override val receiveOrder: ReceiveOrder,
-    /**
-     * 濒死结算后的下一个动作
-     */
-    val afterDieResolve: Fsm
-) : Fsm, HasReceiveOrder {
-    constructor(whoseTurn: Player, afterDieResolve: Fsm) : this(whoseTurn, ReceiveOrder(), afterDieResolve)
+abstract class ProcessFsm : Fsm {
+    abstract val whoseTurn: Player
 
-    override fun resolve(): ResolveResult {
+    private var justSwitch = true
+
+    open val needCheckWinAndDying = true
+
+    open val needCheckDieSkill = false
+
+    /** 刚切到这个状态时执行的操作 */
+    open fun onSwitch() {}
+
+    override fun resolve(): ResolveResult? {
+        if (justSwitch) {
+            justSwitch = false
+            onSwitch()
+        }
+        val result = whoseTurn.game!!.dealListeningSkill(whoseTurn.location, needCheckDieSkill)
+        if (result != null) return result
+        if (needCheckWinAndDying) {
+            val winResult = checkWin()
+            if (winResult != null) return winResult
+            if (whoseTurn.game!!.checkOnlyOneAliveIdentityPlayers(whoseTurn))
+                return ResolveResult(null, false)
+            val dyingResult = checkDying()
+            if (dyingResult != null) return dyingResult
+        }
+        whoseTurn.game!!.players.forEach { it!!.dieJustNow = false }
+        return resolve0()
+    }
+
+    private fun checkWin(): ResolveResult? {
         val game = whoseTurn.game!!
         val players = game.players.filterNotNull().filter { !it.lose }
-        val stealer = players.find { it.identity == Black && it.secretTask == Stealer } // 簒夺者
+        val stealer =
+            players.find { it.identity == Black && it.secretTask == Stealer } // 簒夺者
         val mutator = // 诱变者
             players.find { (it.alive || it.dieJustNow) && it.identity == Black && it.secretTask == Mutator }
         var declareWinner = HashMap<Int, Player>()
@@ -89,10 +102,24 @@ data class CheckWin(
             whoseTurn.game!!.end(declareWinners, winners)
             return ResolveResult(null, false)
         }
-        return ResolveResult(StartWaitForChengQing(whoseTurn, receiveOrder, afterDieResolve), true)
+        return null
     }
 
+    private fun checkDying(): ResolveResult? {
+        val g = whoseTurn.game!!
+        val dyingPlayers = g.players.filterNotNull().filter { it.alive && it.messageCards.count(Black) >= 3 }
+        if (dyingPlayers.isEmpty()) return null
+        val orderedDyingPlayers = g.sortedFrom(dyingPlayers, whoseTurn.location)
+        return ResolveResult(
+            StartWaitForChengQing(whoseTurn, LinkedList(orderedDyingPlayers), this),
+            true
+        )
+    }
+
+    abstract fun resolve0(): ResolveResult?
+
+
     companion object {
-        private val log = Logger.getLogger(CheckWin::class.java)
+        private val log = Logger.getLogger(ProcessFsm::class.java)
     }
 }

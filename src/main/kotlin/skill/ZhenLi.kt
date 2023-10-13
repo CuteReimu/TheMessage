@@ -1,10 +1,6 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
-import com.fengsheng.phase.ReceivePhaseSkill
+import com.fengsheng.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.skill_zhen_li_toc
@@ -17,12 +13,12 @@ class ZhenLi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.ZHEN_LI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.sender || return null
-        askWhom !== fsm.inFrontOfWhom || return null
-        Red in fsm.messageCard.colors || Blue in fsm.messageCard.colors || return null
-        askWhom.roleFaceUp || return null
-        askWhom.addSkillUseCount(skillId)
+        g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.sender || return@findEvent false
+            askWhom !== event.inFrontOfWhom || return@findEvent false
+            askWhom.roleFaceUp || return@findEvent false
+            Red in event.messageCard.colors || Blue in event.messageCard.colors
+        } ?: return null
         log.info("${askWhom}发动了[真理]")
         for (p in g.players) {
             if (p is HumanPlayer) {

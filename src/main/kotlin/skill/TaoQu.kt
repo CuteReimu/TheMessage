@@ -4,7 +4,6 @@ import com.fengsheng.*
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Role.*
@@ -27,7 +26,7 @@ class TaoQu : MainPhaseSkill(), InitialSkill {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? MainPhaseIdle
-        if (r !== fsm?.player) {
+        if (r !== fsm?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -131,7 +130,7 @@ class TaoQu : MainPhaseSkill(), InitialSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.player) {
+            if (player !== fsm.whoseTurn) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -188,7 +187,8 @@ class TaoQu : MainPhaseSkill(), InitialSkill {
                 }
             }
             target.draw(1)
-            return ResolveResult(OnDiscardCard(fsm.player, player, fsm), true)
+            g.addEvent(DiscardCardEvent(fsm.whoseTurn, player))
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -199,7 +199,7 @@ class TaoQu : MainPhaseSkill(), InitialSkill {
     companion object {
         private val log = Logger.getLogger(TaoQu::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             player.getSkillUseCount(SkillId.TAO_QU) == 0 || return false
             val players =
                 player.game!!.players.filter { it!!.alive && it.isEnemy(player) && it.messageCards.isNotEmpty() }

@@ -2,9 +2,8 @@ package com.fengsheng.card
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_ping_heng_toc
 import com.fengsheng.skill.cannotPlayCard
@@ -30,7 +29,7 @@ class PingHeng : Card {
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用平衡")
             return false
         }
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("平衡的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("平衡的使用时机不对")
             return false
@@ -51,6 +50,7 @@ class PingHeng : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
+        val fsm = g.fsm as MainPhaseIdle
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
@@ -63,16 +63,15 @@ class PingHeng : Card {
                     player.send(builder.build())
                 }
             }
-            var newFsm: Fsm = OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, MainPhaseIdle(r))
-            if (target.cards.isNotEmpty()) newFsm = OnDiscardCard(r, target, newFsm)
-            if (r.cards.isNotEmpty()) newFsm = OnDiscardCard(r, r, newFsm)
+            if (r.cards.isNotEmpty()) r.game!!.addEvent(DiscardCardEvent(r, r))
+            if (target.cards.isNotEmpty()) r.game!!.addEvent(DiscardCardEvent(r, target))
             g.playerDiscardCard(r, *r.cards.toTypedArray())
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(3)
             target.draw(3)
-            newFsm
+            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, fsm)
         }
-        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Ping_Heng, resolveFunc, g.fsm!!))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, resolveFunc, fsm))
     }
 
     override fun toString(): String {
@@ -82,7 +81,7 @@ class PingHeng : Card {
     companion object {
         private val log = Logger.getLogger(PingHeng::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Ping_Heng) || return false
             player.cards.size <= 3 || return false
             val identity = player.identity

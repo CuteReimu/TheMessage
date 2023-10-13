@@ -1,9 +1,6 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Config
-import com.fengsheng.Fsm
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
+import com.fengsheng.*
 import org.apache.log4j.Logger
 import java.util.*
 
@@ -18,14 +15,16 @@ import java.util.*
  * @param afterDieResolve 濒死结算后的下一个动作
  */
 data class WaitForChengQing(
-    val whoseTurn: Player,
+    override val whoseTurn: Player,
     val whoDie: Player,
     val askWhom: Player,
     val dyingQueue: Queue<Player>,
     val diedQueue: ArrayList<Player>,
     val afterDieResolve: Fsm
-) : Fsm {
-    override fun resolve(): ResolveResult? {
+) : ProcessFsm() {
+    override val needCheckWinAndDying = false
+    
+    override fun resolve0(): ResolveResult? {
         log.info("正在询问${askWhom}是否使用澄清")
         for (p in askWhom.game!!.players) {
             p!!.notifyAskForChengQing(whoDie, askWhom, Config.WaitSecond)

@@ -3,8 +3,7 @@ package com.fengsheng.card
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnGiveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
@@ -45,7 +44,13 @@ class WeiBi : Card {
         execute(this, g, r, target, wantType)
     }
 
-    private data class executeWeiBi(val r: Player, val target: Player, val card: WeiBi?, val wantType: card_type) :
+    private data class executeWeiBi(
+        val fsm: MainPhaseIdle,
+        val r: Player,
+        val target: Player,
+        val card: WeiBi?,
+        val wantType: card_type
+    ) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players) {
@@ -107,9 +112,9 @@ class WeiBi : Card {
                     p.send(builder.build())
                 }
             }
-            val newFsm = OnGiveCard(r, target, r, MainPhaseIdle(r))
+            r.game!!.addEvent(GiveCardEvent(r, target, r))
             return ResolveResult(
-                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, newFsm), true
+                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm), true
             )
         }
 
@@ -133,7 +138,7 @@ class WeiBi : Card {
     companion object {
         private val log = Logger.getLogger(WeiBi::class.java)
         fun canUse(g: Game, r: Player, target: Player, wantType: card_type): Boolean {
-            if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+            if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
                 log.error("威逼的使用时机不对")
                 (r as? HumanPlayer)?.sendErrorMessage("威逼的使用时机不对")
                 return false
@@ -157,11 +162,12 @@ class WeiBi : Card {
          * @param card 使用的那张【威逼】卡牌。可以为 `null` ，因为肥原龙川技能【诡诈】可以视为使用了【威逼】。
          */
         fun execute(card: WeiBi?, g: Game, r: Player, target: Player, wantType: card_type) {
+            val fsm = g.fsm as MainPhaseIdle
             val resolveFunc = { valid: Boolean ->
                 if (!valid) {
-                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm)
                 } else if (hasCard(target, wantType)) {
-                    executeWeiBi(r, target, card, wantType)
+                    executeWeiBi(fsm, r, target, card, wantType)
                 } else {
                     log.info("${target}向${r}展示了所有手牌")
                     for (p in g.players) {
@@ -177,10 +183,10 @@ class WeiBi : Card {
                             p.send(builder.build())
                         }
                     }
-                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, MainPhaseIdle(r))
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm)
                 }
             }
-            g.resolve(OnUseCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, g.fsm!!))
+            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, fsm))
         }
 
         private fun hasCard(player: Player, cardType: card_type): Boolean {
@@ -192,7 +198,7 @@ class WeiBi : Card {
             listOf(card_type.Cheng_Qing, card_type.Jie_Huo, card_type.Diao_Bao, card_type.Wu_Dao)
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Wei_Bi) || return false
             val identity = player.identity
             val p = player.game!!.players.filter {

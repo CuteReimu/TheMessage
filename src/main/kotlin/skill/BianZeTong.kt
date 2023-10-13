@@ -5,7 +5,6 @@ import com.fengsheng.card.DiaoBao
 import com.fengsheng.card.JieHuo
 import com.fengsheng.card.PoYi
 import com.fengsheng.card.WuDao
-import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.*
@@ -22,16 +21,14 @@ class BianZeTong : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.BIAN_ZE_TONG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? SendPhaseStart ?: return null
-        askWhom === fsm.player || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeBianZeTong(fsm), true)
+        g.findEvent<SendPhaseStartEvent>(this) { event ->
+            askWhom === event.whoseTurn
+        } ?: return null
+        return ResolveResult(executeBianZeTong(g.fsm!!, askWhom), true)
     }
 
-    private data class executeBianZeTong(val fsm: SendPhaseStart) : WaitingFsm {
+    private data class executeBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val r = fsm.player
             log.info("${r}发动了[变则通]")
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -68,7 +65,7 @@ class BianZeTong : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.player) {
+            if (player !== r) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -78,7 +75,6 @@ class BianZeTong : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.player
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")

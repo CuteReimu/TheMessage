@@ -18,7 +18,7 @@ class HuoXin : MainPhaseSkill(), InitialSkill {
         super.mainPhaseNeedNotify(r) && r.game!!.players.any { it !== r && it!!.alive && it.cards.isNotEmpty() }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -142,6 +142,7 @@ class HuoXin : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
+            r.game!!.addEvent(DiscardCardEvent(r, target))
             return ResolveResult(MainPhaseIdle(r), true)
         }
 
@@ -153,14 +154,14 @@ class HuoXin : MainPhaseSkill(), InitialSkill {
     companion object {
         private val log = Logger.getLogger(HuoXin::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.player.getSkillUseCount(SkillId.HUO_XIN) > 0) return false
-            val target = e.player.game!!.players.filter {
-                it!!.alive && it.isEnemy(e.player) && it.cards.isNotEmpty()
+            if (e.whoseTurn.getSkillUseCount(SkillId.HUO_XIN) > 0) return false
+            val target = e.whoseTurn.game!!.players.filter {
+                it!!.alive && it.isEnemy(e.whoseTurn) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
-            GameExecutor.post(e.player.game!!, {
+            GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_huo_xin_a_tos.newBuilder()
-                builder.targetPlayerId = e.player.getAlternativeLocation(target.location)
-                skill.executeProtocol(e.player.game!!, e.player, builder.build())
+                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

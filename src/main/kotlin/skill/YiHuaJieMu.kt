@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -140,6 +139,7 @@ class YiHuaJieMu : InitialSkill, ActiveSkill {
                 log.info("${fromPlayer}面前的${card}加入了${player}的手牌")
             } else {
                 toPlayer.messageCards.add(card)
+                player.game!!.addEvent(AddMessageCardEvent(fsm.whoseTurn))
                 log.info("${fromPlayer}面前的${card}加入了${toPlayer}的情报区")
             }
             for (p in player.game!!.players) {
@@ -153,10 +153,7 @@ class YiHuaJieMu : InitialSkill, ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-            if (!joinIntoHand)
-                return ResolveResult(OnAddMessageCard(fsm.whoseTurn, newFsm), true)
-            return ResolveResult(newFsm, true)
+            return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
         }
 
         companion object {

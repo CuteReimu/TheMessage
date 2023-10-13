@@ -6,7 +6,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
 import com.fengsheng.skill.*
@@ -32,7 +32,7 @@ class DiaoHuLiShan : Card {
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用调虎离山")
             return false
         }
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("调虎离山的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("调虎离山的使用时机不对")
             return false
@@ -49,6 +49,7 @@ class DiaoHuLiShan : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
         val isSkill = args[1] as Boolean
+        val fsm = g.fsm as MainPhaseIdle
         log.info("${r}对${target}使用了$this，isSkill: $isSkill")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
@@ -64,9 +65,9 @@ class DiaoHuLiShan : Card {
             }
             if (isSkill) InvalidSkill.deal(target)
             else target.skills += CannotPlayCard(forbidAllCard = true)
-            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, MainPhaseIdle(r))
+            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, fsm)
         }
-        g.resolve(OnUseCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, resolveFunc, g.fsm!!))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, resolveFunc, fsm))
     }
 
     override fun toString(): String {
@@ -76,7 +77,7 @@ class DiaoHuLiShan : Card {
     companion object {
         private val log = Logger.getLogger(DiaoHuLiShan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Diao_Hu_Li_Shan) || return false
             val p = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player)

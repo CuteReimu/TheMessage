@@ -6,7 +6,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
 import com.fengsheng.skill.cannotPlayCard
@@ -71,7 +71,7 @@ class DiaoBao : Card {
                 discardAfterResolve = false
             )
         }
-        g.resolve(OnUseCard(fsm.whoseTurn, r, null, getOriginCard(), card_type.Diao_Bao, resolveFunc, fsm))
+        g.resolve(ResolveCard(fsm.whoseTurn, r, null, getOriginCard(), card_type.Diao_Bao, resolveFunc, fsm))
     }
 
     override fun toString(): String {
@@ -83,7 +83,7 @@ class DiaoBao : Card {
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
             !player.cannotPlayCard(card_type.Diao_Bao) || return false
-            if (player.identity != color.Black && player.identity == e.inFrontOfWhom.identity) {
+            if (player.isPartnerOrSelf(e.inFrontOfWhom)) {
                 if (card.getColorScore() <= e.messageCard.getColorScore()) return false
             } else {
                 if (card.getColorScore() >= e.messageCard.getColorScore()) return false

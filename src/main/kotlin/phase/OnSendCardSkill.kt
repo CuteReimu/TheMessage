@@ -1,11 +1,11 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Fsm
 import com.fengsheng.Player
+import com.fengsheng.ProcessFsm
 import com.fengsheng.ResolveResult
+import com.fengsheng.SendCardEvent
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.direction
-import org.apache.log4j.Logger
 
 /**
  * 选择了要传递哪张情报时的角色技能
@@ -19,21 +19,21 @@ import org.apache.log4j.Logger
  * @param isMessageCardFaceUp 情报是否面朝上
  */
 data class OnSendCardSkill(
-    val whoseTurn: Player,
+    override val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,
     val dir: direction,
     val targetPlayer: Player,
     val lockedPlayers: Array<Player>,
-    val isMessageCardFaceUp: Boolean = false,
-) : Fsm {
-    override fun resolve(): ResolveResult {
-        val result = whoseTurn.game!!.dealListeningSkill(whoseTurn.location)
-        if (result != null) return result
-        log.info("情报到达${targetPlayer}面前")
+    val isMessageCardFaceUp: Boolean,
+) : ProcessFsm() {
+    override fun onSwitch() {
+        sender.game!!.addEvent(SendCardEvent(whoseTurn, sender, messageCard, targetPlayer, dir))
+    }
+
+    override fun resolve0(): ResolveResult {
         return ResolveResult(
-            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp, sender),
-            true
+            SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp, sender), true
         )
     }
 
@@ -59,9 +59,5 @@ data class OnSendCardSkill(
         result = 31 * result + targetPlayer.hashCode()
         result = 31 * result + lockedPlayers.contentHashCode()
         return result
-    }
-
-    companion object {
-        private val log = Logger.getLogger(OnSendCardSkill::class.java)
     }
 }

@@ -1,10 +1,6 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.card_type.Po_Yi
 import com.fengsheng.protos.Role.skill_huan_ri_toc
@@ -17,12 +13,12 @@ class HuanRi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.HUAN_RI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnUseCard ?: return null
-        askWhom === fsm.player || return null
-        askWhom.alive || return null
-        fsm.cardType == Diao_Bao || fsm.cardType == Po_Yi || return null
-        fsm.player.roleFaceUp || return null
-        askWhom.addSkillUseCount(skillId)
+        g.findEvent<UseCardEvent>(this) { event ->
+            askWhom === event.player || return@findEvent false
+            askWhom.alive || return@findEvent false
+            event.cardType == Diao_Bao || event.cardType == Po_Yi || return@findEvent false
+            event.player.roleFaceUp
+        } ?: return null
         log.info("${askWhom}发动了[换日]")
         for (p in g.players) {
             if (p is HumanPlayer) {

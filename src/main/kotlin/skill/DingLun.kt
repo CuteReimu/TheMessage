@@ -6,7 +6,7 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
-import com.fengsheng.phase.ReceivePhase
+import com.fengsheng.phase.OnReceiveCard
 import com.fengsheng.protos.Role.skill_ding_lun_toc
 import com.fengsheng.protos.Role.skill_ding_lun_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -61,7 +61,7 @@ class DingLun : InitialSkill, ActiveSkill {
             log.info("${r}将${fsm.messageCard}加入了手牌")
             r.cards.add(fsm.messageCard)
             g.resolve(NextTurn(fsm.whoseTurn))
-        } else g.resolve(ReceivePhase(fsm.whoseTurn, fsm.sender, fsm.messageCard, r))
+        } else g.resolve(OnReceiveCard(fsm.whoseTurn, fsm.sender, fsm.messageCard, r))
     }
 
     companion object {

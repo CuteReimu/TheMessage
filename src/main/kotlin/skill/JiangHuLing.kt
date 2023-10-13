@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnSendCardSkill
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -18,11 +16,10 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIANG_HU_LING
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? OnSendCardSkill ?: return null
-        askWhom === fsm.sender || return null
-        askWhom.getSkillUseCount(skillId) == 0 || return null
-        askWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeJiangHuLingA(fsm, askWhom), true)
+        g.findEvent<SendCardEvent>(this) { event ->
+            askWhom === event.sender
+        } ?: return null
+        return ResolveResult(executeJiangHuLingA(g.fsm!!, askWhom), true)
     }
 
     private data class executeJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
@@ -115,12 +112,11 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
         override val skillId = SkillId.UNKNOWN
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
-            val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-            askWhom === fsm.sender || return null
-            askWhom.alive || return null
-            askWhom.getSkillUseCount(skillId) == 0 || return null
-            askWhom.addSkillUseCount(skillId)
-            if (!fsm.inFrontOfWhom.messageCards.any { color in it.colors }) {
+            val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+                askWhom === event.sender || return@findEvent false
+                askWhom.alive
+            } ?: return null
+            if (!event.inFrontOfWhom.messageCards.any { color in it.colors }) {
                 for (p in askWhom.game!!.players) {
                     if (p is HumanPlayer) {
                         val builder = skill_jiang_hu_ling_b_toc.newBuilder()
@@ -131,19 +127,19 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
                 }
                 return null
             }
-            return ResolveResult(executeJiangHuLingB(fsm, color), true)
+            return ResolveResult(executeJiangHuLingB(g.fsm!!, event, color), true)
         }
     }
 
-    private data class executeJiangHuLingB(val fsm: ReceivePhaseSkill, val color: color) : WaitingFsm {
+    private data class executeJiangHuLingB(val fsm: Fsm, val event: ReceiveCardEvent, val color: color) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.sender.game!!.players) {
+            for (p in event.sender.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_wait_for_jiang_hu_ling_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(fsm.sender.location)
+                    builder.playerId = p.getAlternativeLocation(event.sender.location)
                     builder.color = color
                     builder.waitingSecond = Config.WaitSecond
-                    if (p === fsm.sender) {
+                    if (p === event.sender) {
                         val seq = p.seq
                         builder.seq = seq
                         p.timeout = GameExecutor.post(
@@ -162,9 +158,9 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            val p = fsm.sender
+            val p = event.sender
             if (p is RobotPlayer) {
-                val target = fsm.inFrontOfWhom
+                val target = event.inFrontOfWhom
                 run {
                     if (!target.alive) return@run
                     val card = target.messageCards.find {
@@ -190,7 +186,7 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -216,13 +212,13 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
                 log.error("错误的协议")
                 return null
             }
-            val r = fsm.sender
+            val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
-            val target = fsm.inFrontOfWhom
+            val target = event.inFrontOfWhom
             if (!target.alive) {
                 log.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
@@ -243,7 +239,6 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
             log.info("${r}发动了[江湖令]，弃掉了${target}面前的$card")
             target.deleteMessageCard(card.id)
             r.game!!.deck.discard(card)
-            fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(target)
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jiang_hu_ling_b_toc.newBuilder()

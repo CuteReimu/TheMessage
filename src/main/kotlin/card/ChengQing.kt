@@ -1,9 +1,6 @@
 package com.fengsheng.card
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
@@ -34,7 +31,7 @@ class ChengQing : Card {
         val targetCardId = args[1] as Int
         val fsm = g.fsm
         if (fsm is MainPhaseIdle) {
-            if (r !== fsm.player) {
+            if (r !== fsm.whoseTurn) {
                 log.error("澄清的使用时机不对")
                 (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
                 return false
@@ -79,7 +76,7 @@ class ChengQing : Card {
         val targetCardId = args[1] as Int
         log.info("${r}对${target}使用了$this")
         r.deleteCard(id)
-        val fsm = g.fsm
+        val fsm = g.fsm as ProcessFsm
         val resolveFunc = { _: Boolean ->
             val targetCard = target.deleteMessageCard(targetCardId)!!
             log.info("${target}面前的${targetCard}被置入弃牌堆")
@@ -95,17 +92,13 @@ class ChengQing : Card {
                 }
             }
             if (fsm is MainPhaseIdle) {
-                OnFinishResolveCard(fsm.player, r, target, getOriginCard(), card_type.Cheng_Qing, fsm)
+                OnFinishResolveCard(fsm.whoseTurn, r, target, getOriginCard(), card_type.Cheng_Qing, fsm)
             } else {
                 val newFsm = UseChengQingOnDying(fsm as WaitForChengQing)
                 OnFinishResolveCard(fsm.whoseTurn, r, target, getOriginCard(), card_type.Cheng_Qing, newFsm)
             }
         }
-        if (fsm is MainPhaseIdle) g.resolve(
-            OnUseCard(fsm.player, r, target, getOriginCard(), card_type.Cheng_Qing, resolveFunc, fsm)
-        ) else if (fsm is WaitForChengQing) g.resolve(
-            OnUseCard(fsm.whoseTurn, r, target, getOriginCard(), card_type.Cheng_Qing, resolveFunc, fsm)
-        )
+        g.resolve(ResolveCard(fsm.whoseTurn, r, target, getOriginCard(), card_type.Cheng_Qing, resolveFunc, fsm))
     }
 
     override fun toString(): String {
@@ -115,7 +108,7 @@ class ChengQing : Card {
     companion object {
         private val log = Logger.getLogger(ChengQing::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Cheng_Qing) || return false
             val p = player.game!!.players.filter { p -> p!!.alive && p.isPartnerOrSelf(player) }
                 .flatMap { p -> p!!.messageCards.filter(color.Black).map { c -> PlayerAndCard(p, c) } }

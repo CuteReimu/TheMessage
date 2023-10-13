@@ -2,8 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.count
-import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_mian_li_cang_zhen_toc
@@ -19,23 +17,22 @@ class MianLiCangZhen : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.MIAN_LI_CANG_ZHEN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.sender || return null
-        fsm.sender.cards.isNotEmpty() || return null
-        fsm.sender.getSkillUseCount(skillId) == 0 || return null
-        fsm.sender.addSkillUseCount(skillId)
-        return ResolveResult(executeMianLiCangZhen(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.sender || return@findEvent false
+            event.sender.cards.isNotEmpty()
+        } ?: return null
+        return ResolveResult(executeMianLiCangZhen(g.fsm!!, event), true)
     }
 
-    private data class executeMianLiCangZhen(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeMianLiCangZhen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.sender.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.sender)
+            for (p in event.sender.game!!.players)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.sender) {
+            if (player !== event.sender) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -54,7 +51,7 @@ class MianLiCangZhen : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.sender
+            val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
@@ -71,7 +68,7 @@ class MianLiCangZhen : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("你选择的不是黑色手牌")
                 return null
             }
-            val target = fsm.inFrontOfWhom
+            val target = event.inFrontOfWhom
             if (!target.alive) {
                 log.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
@@ -81,7 +78,6 @@ class MianLiCangZhen : InitialSkill, TriggeredSkill {
             log.info("${r}发动了[绵里藏针]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_mian_li_cang_zhen_toc.newBuilder()
@@ -92,7 +88,8 @@ class MianLiCangZhen : InitialSkill, TriggeredSkill {
                 }
             }
             r.draw(1)
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm), true)
+            r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -103,8 +100,8 @@ class MianLiCangZhen : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm: Fsm): Boolean {
             if (fsm !is executeMianLiCangZhen) return false
-            val p = fsm.fsm.sender
-            val target = fsm.fsm.inFrontOfWhom
+            val p = fsm.event.sender
+            val target = fsm.event.inFrontOfWhom
             if (!target.alive) return false
             val cards = p.cards.filter { it.isBlack() }.ifEmpty { return false }
             val c1 = target.identity

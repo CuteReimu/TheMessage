@@ -2,10 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -80,6 +77,8 @@ class DuJi : InitialSkill, ActiveSkill {
         target2.deleteCard(card2.id)
         r.cards.add(card1)
         r.cards.add(card2)
+        r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target2, target1))
+        r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target1, target2))
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_du_ji_a_toc.newBuilder()
@@ -94,28 +93,20 @@ class DuJi : InitialSkill, ActiveSkill {
         val twoPlayersAndCards = ArrayList<TwoPlayersAndCard>()
         if (card1.colors.contains(color.Black)) twoPlayersAndCards.add(TwoPlayersAndCard(target1, target2, card1))
         if (card2.colors.contains(color.Black)) twoPlayersAndCards.add(TwoPlayersAndCard(target2, target1, card2))
-        g.resolve(
-            executeDuJiA(
-                CheckWin(fsm.whoseTurn, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)),
-                r, twoPlayersAndCards, arrayListOf(target2 to r, target1 to r, target1 to target2, target2 to target1)
-            )
-        )
+        g.resolve(executeDuJiA(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), fsm.whoseTurn, r, twoPlayersAndCards))
     }
 
     private data class executeDuJiA(
-        val fsm: CheckWin,
+        val fsm: Fsm,
+        val whoseTurn: Player,
         val r: Player,
         val playerAndCards: ArrayList<TwoPlayersAndCard>,
-        val whoGiveWhoCard: ArrayList<Pair<Player, Player>>,
-        val addMessageCard: Boolean = false
+        val asMessage: Boolean = false
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (playerAndCards.isEmpty()) {
-                var nextFsm = if (addMessageCard) OnAddMessageCard(fsm.whoseTurn, fsm) else fsm
-                for ((fromPlayer, toPlayer) in whoGiveWhoCard) {
-                    nextFsm = OnGiveCard(fsm.whoseTurn, fromPlayer, toPlayer, nextFsm)
-                }
-                return ResolveResult(nextFsm, true)
+                if (asMessage) r.game!!.addEvent(AddMessageCardEvent(whoseTurn))
+                return ResolveResult(fsm, true)
             }
             val g = r.game!!
             for (p in g.players) {
@@ -184,11 +175,8 @@ class DuJi : InitialSkill, ActiveSkill {
                         p.send(builder.build())
                     }
                 }
-                var nextFsm: Fsm = fsm
-                for ((fromPlayer, toPlayer) in whoGiveWhoCard) {
-                    nextFsm = OnGiveCard(fsm.whoseTurn, fromPlayer, toPlayer, nextFsm)
-                }
-                return ResolveResult(nextFsm, true)
+                if (asMessage) r.game!!.addEvent(AddMessageCardEvent(whoseTurn))
+                return ResolveResult(fsm, true)
             }
             val index = playerAndCards.indexOfFirst { it.card.id == message.cardId }
             if (index < 0) {
@@ -198,8 +186,7 @@ class DuJi : InitialSkill, ActiveSkill {
             }
             val selection = playerAndCards.removeAt(index)
             r.incrSeq()
-            whoGiveWhoCard.removeIf { it.first === selection.waitingPlayer && it.second === r }
-            return ResolveResult(executeDuJiB(this, selection), true)
+            return ResolveResult(executeDuJiB(copy(asMessage = true), selection), true)
         }
 
         companion object {
@@ -270,7 +257,6 @@ class DuJi : InitialSkill, ActiveSkill {
             log.info("${r}选择将${card}放在${target}面前")
             fsm.r.deleteCard(card.id)
             target.messageCards.add(card)
-            fsm.fsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_du_ji_c_toc.newBuilder()
@@ -281,7 +267,7 @@ class DuJi : InitialSkill, ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(fsm.copy(addMessageCard = true), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {

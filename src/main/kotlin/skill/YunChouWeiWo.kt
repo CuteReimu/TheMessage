@@ -19,7 +19,7 @@ class YunChouWeiWo : InitialSkill, ActiveSkill {
         val fsm = g.fsm
         when (fsm) {
             is MainPhaseIdle -> {
-                if (r !== fsm.player) {
+                if (r !== fsm.whoseTurn) {
                     log.error("现在不是发动[运筹帷幄]的时机")
                     (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
                     return
@@ -162,7 +162,7 @@ class YunChouWeiWo : InitialSkill, ActiveSkill {
     companion object {
         private val log = Logger.getLogger(YunChouWeiWo::class.java)
         fun ai(e: Fsm, skill: ActiveSkill): Boolean {
-            val player = if (e is FightPhaseIdle) e.whoseFightTurn else (e as MainPhaseIdle).player
+            val player = if (e is FightPhaseIdle) e.whoseFightTurn else (e as MainPhaseIdle).whoseTurn
             if (player.roleFaceUp) return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_yun_chou_wei_wo_a_tos.getDefaultInstance())

@@ -2,9 +2,8 @@ package com.fengsheng.card
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
 import com.fengsheng.phase.OnFinishResolveCard
-import com.fengsheng.phase.OnUseCard
+import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
@@ -34,7 +33,7 @@ class FengYunBianHuan : Card {
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用风云变幻")
             return false
         }
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("风云变幻的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("风云变幻的使用时机不对")
             return false
@@ -69,7 +68,7 @@ class FengYunBianHuan : Card {
         val resolveFunc = { _: Boolean ->
             executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
-        g.resolve(OnUseCard(r, r, null, getOriginCard(), Feng_Yun_Bian_Huan, resolveFunc, fsm))
+        g.resolve(ResolveCard(r, r, null, getOriginCard(), Feng_Yun_Bian_Huan, resolveFunc, fsm))
     }
 
     private data class executeFengYunBianHuan(
@@ -80,12 +79,13 @@ class FengYunBianHuan : Card {
         val asMessageCard: Boolean = false
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val p = mainPhaseIdle.player
+            val p = mainPhaseIdle.whoseTurn
             val r = players.firstOrNull()
             if (r == null) {
-                mainPhaseIdle.player.game!!.deck.discard(*drawCards.toTypedArray())
+                mainPhaseIdle.whoseTurn.game!!.deck.discard(*drawCards.toTypedArray())
+                if (asMessageCard) p.game!!.addEvent(AddMessageCardEvent(p, false))
                 val newFsm = OnFinishResolveCard(p, p, null, card.getOriginCard(), Feng_Yun_Bian_Huan, mainPhaseIdle)
-                return ResolveResult(if (asMessageCard) OnAddMessageCard(p, newFsm, false) else newFsm, true)
+                return ResolveResult(newFsm, true)
             }
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
@@ -182,7 +182,7 @@ class FengYunBianHuan : Card {
     companion object {
         private val log = Logger.getLogger(FengYunBianHuan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             !player.cannotPlayCard(Feng_Yun_Bian_Huan) || return false
             GameExecutor.post(
                 player.game!!,

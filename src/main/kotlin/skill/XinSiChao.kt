@@ -1,11 +1,7 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Role.skill_xin_si_chao_toc
 import com.fengsheng.protos.Role.skill_xin_si_chao_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -22,7 +18,7 @@ class XinSiChao : MainPhaseSkill(), InitialSkill {
         super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -56,19 +52,20 @@ class XinSiChao : MainPhaseSkill(), InitialSkill {
         }
         g.playerDiscardCard(r, card)
         r.draw(2)
-        g.resolve(OnDiscardCard(r, r, g.fsm!!))
+        g.addEvent(DiscardCardEvent(r, r))
+        g.continueResolve()
     }
 
     companion object {
         private val log = Logger.getLogger(XinSiChao::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            e.player.getSkillUseCount(SkillId.XIN_SI_CHAO) == 0 || return false
-            val card = e.player.cards.randomOrNull() ?: return false
+            e.whoseTurn.getSkillUseCount(SkillId.XIN_SI_CHAO) == 0 || return false
+            val card = e.whoseTurn.cards.randomOrNull() ?: return false
             val cardId = card.id
-            GameExecutor.post(e.player.game!!, {
+            GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_xin_si_chao_tos.newBuilder()
                 builder.cardId = cardId
-                skill.executeProtocol(e.player.game!!, e.player, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

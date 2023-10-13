@@ -1,11 +1,7 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_toc
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_tos
@@ -25,7 +21,7 @@ class ZiZhengQingBai : MainPhaseSkill(), InitialSkill {
                         r.identity != Black && r.cards.any { r.identity !in it.colors })
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -65,21 +61,22 @@ class ZiZhengQingBai : MainPhaseSkill(), InitialSkill {
         }
         g.playerDiscardCard(r, card)
         r.draw(2)
-        g.resolve(OnDiscardCard(r, r, g.fsm!!))
+        g.addEvent(DiscardCardEvent(r, r))
+        g.continueResolve()
     }
 
     companion object {
         private val log = Logger.getLogger(ZiZhengQingBai::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.player.getSkillUseCount(SkillId.ZI_ZHENG_QING_BAI) > 0) return false
-            val card = e.player.cards.find {
-                e.player.identity == Black || e.player.identity !in it.colors
+            if (e.whoseTurn.getSkillUseCount(SkillId.ZI_ZHENG_QING_BAI) > 0) return false
+            val card = e.whoseTurn.cards.find {
+                e.whoseTurn.identity == Black || e.whoseTurn.identity !in it.colors
             } ?: return false
             val cardId = card.id
-            GameExecutor.post(e.player.game!!, {
+            GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_zi_zheng_qing_bai_tos.newBuilder()
                 builder.cardId = cardId
-                skill.executeProtocol(e.player.game!!, e.player, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

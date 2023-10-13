@@ -31,7 +31,6 @@ data class StartWaitForChengQing(
         if (dyingQueue.isEmpty()) {
             for (whoDie in diedQueue) {
                 whoDie.alive = false
-                whoDie.dieJustNow = true
                 for (p in whoseTurn.game!!.players) p!!.notifyDying(whoDie.location, false)
             }
             return ResolveResult(CheckKillerWin(whoseTurn, diedQueue, afterDieResolve), true)

@@ -62,7 +62,7 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             whoseTurn.game!!.end(emptyList(), emptyList())
             return ResolveResult(null, false)
         }
-        return ResolveResult(DieSkill(whoseTurn, diedQueue, afterDieResolve), true)
+        return ResolveResult(WaitForDieGiveCard(whoseTurn, diedQueue, afterDieResolve), true)
     }
 
     companion object {

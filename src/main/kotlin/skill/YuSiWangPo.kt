@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnDiscardCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -18,7 +17,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
         super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -78,6 +77,8 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             }
         }
         g.playerDiscardCard(r, *cards.toTypedArray())
+        g.addEvent(DiscardCardEvent(r, r))
+        if (target.cards.isNotEmpty()) g.addEvent(DiscardCardEvent(r, target))
         if (discardAll) {
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -87,19 +88,17 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
-            var newFsm = g.fsm!!
-            if (target.cards.isNotEmpty()) newFsm = OnDiscardCard(r, target, newFsm)
-            newFsm = OnDiscardCard(r, r, newFsm)
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(1)
             target.draw(1)
-            g.resolve(newFsm)
+            g.continueResolve()
         } else {
-            g.resolve(executeYuSiWangPo(r, target, cards.size + 1, timeout))
+            g.resolve(executeYuSiWangPo(g.fsm!!, r, target, cards.size + 1, timeout))
         }
     }
 
     private data class executeYuSiWangPo(
+        val fsm: Fsm,
         val r: Player,
         val target: Player,
         val cardCount: Int,
@@ -169,7 +168,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             target.game!!.playerDiscardCard(target, *cards.toTypedArray())
             r.draw(1)
             target.draw(1)
-            return ResolveResult(OnDiscardCard(r, r, OnDiscardCard(r, target, MainPhaseIdle(r))), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -180,17 +179,18 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
     companion object {
         private val log = Logger.getLogger(YuSiWangPo::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            e.player.getSkillUseCount(SkillId.YU_SI_WANG_PO) == 0 || return false
-            e.player.cards.isNotEmpty() || return false
-            val target = e.player.game!!.players.filter { it!!.alive && it.isEnemy(e.player) && it.cards.size >= 2 }
-                .randomOrNull() ?: return false
-            val count = (1..minOf(e.player.cards.size, target.cards.size - 1)).random()
-            val cardIds = e.player.cards.shuffled().subList(0, count).map { it.id }
-            GameExecutor.post(e.player.game!!, {
+            e.whoseTurn.getSkillUseCount(SkillId.YU_SI_WANG_PO) == 0 || return false
+            e.whoseTurn.cards.isNotEmpty() || return false
+            val target =
+                e.whoseTurn.game!!.players.filter { it!!.alive && it.isEnemy(e.whoseTurn) && it.cards.size >= 2 }
+                    .randomOrNull() ?: return false
+            val count = (1..minOf(e.whoseTurn.cards.size, target.cards.size - 1)).random()
+            val cardIds = e.whoseTurn.cards.shuffled().subList(0, count).map { it.id }
+            GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_yu_si_wang_po_a_tos.newBuilder()
-                builder.targetPlayerId = e.player.getAlternativeLocation(target.location)
+                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
                 builder.addAllCardIds(cardIds)
-                skill.executeProtocol(e.player.game!!, e.player, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

@@ -1,8 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.ReceivePhaseSkill
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_jin_shen_toc
@@ -18,24 +16,23 @@ class JinShen : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.JIN_SHEN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm as? ReceivePhaseSkill ?: return null
-        askWhom === fsm.inFrontOfWhom || return null
-        fsm.inFrontOfWhom.getSkillUseCount(skillId) == 0 || return null
-        fsm.messageCard.colors.size == 2 || return null
-        askWhom.findMessageCard(fsm.messageCard.id) != null || return null
-        fsm.inFrontOfWhom.addSkillUseCount(skillId)
-        return ResolveResult(executeJinShen(fsm), true)
+        val event = g.findEvent<ReceiveCardEvent>(this) { event ->
+            askWhom === event.inFrontOfWhom || return@findEvent false
+            event.messageCard.colors.size == 2 || return@findEvent false
+            askWhom.findMessageCard(event.messageCard.id) != null
+        } ?: return null
+        return ResolveResult(executeJinShen(g.fsm!!, event), true)
     }
 
-    private data class executeJinShen(val fsm: ReceivePhaseSkill) : WaitingFsm {
+    private data class executeJinShen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in fsm.whoseTurn.game!!.players)
-                p!!.notifyReceivePhase(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, fsm.inFrontOfWhom)
+            for (p in event.whoseTurn.game!!.players)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (player !== fsm.inFrontOfWhom) {
+            if (player !== event.inFrontOfWhom) {
                 log.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
@@ -54,7 +51,7 @@ class JinShen : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
-            val r = fsm.inFrontOfWhom
+            val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -68,24 +65,23 @@ class JinShen : InitialSkill, TriggeredSkill {
                 return null
             }
             r.incrSeq()
-            log.info("${r}发动了[谨慎]，用${card}交换了原情报${fsm.messageCard}")
-            val messageCard = fsm.messageCard
+            log.info("${r}发动了[谨慎]，用${card}交换了原情报${event.messageCard}")
+            val messageCard = event.messageCard
             r.deleteCard(card.id)
             r.deleteMessageCard(messageCard.id)
-            fsm.receiveOrder.removePlayerIfNotHaveThreeBlack(r)
             r.messageCards.add(card)
-            fsm.receiveOrder.addPlayerIfHasThreeBlack(r)
             r.cards.add(messageCard)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jin_shen_toc.newBuilder()
                     builder.card = card.toPbCard()
                     builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.messageCardId = fsm.messageCard.id
+                    builder.messageCardId = event.messageCard.id
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnAddMessageCard(fsm.whoseTurn, fsm.copy(messageCard = card)), true)
+            event.messageCard = card
+            return ResolveResult(fsm, true)
         }
 
         companion object {
@@ -96,7 +92,7 @@ class JinShen : InitialSkill, TriggeredSkill {
     companion object {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeJinShen) return false
-            val p = fsm0.fsm.inFrontOfWhom
+            val p = fsm0.event.inFrontOfWhom
             val card = p.cards.find { !it.colors.contains(color.Black) } ?: return false
             GameExecutor.post(
                 p.game!!,

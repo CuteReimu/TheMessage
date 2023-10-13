@@ -21,7 +21,7 @@ class GuiZha : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.GUI_ZHA
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -76,7 +76,7 @@ class GuiZha : MainPhaseSkill(), InitialSkill {
     companion object {
         private val log = Logger.getLogger(GuiZha::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            val player = e.player
+            val player = e.whoseTurn
             if (player.getSkillUseCount(SkillId.GUI_ZHA) > 0) return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()
@@ -92,8 +92,8 @@ class GuiZha : MainPhaseSkill(), InitialSkill {
             GameExecutor.post(game, {
                 val builder = skill_gui_zha_tos.newBuilder()
                 builder.cardType = card_type.Li_You
-                builder.targetPlayerId = e.player.getAlternativeLocation(p.location)
-                skill.executeProtocol(game, e.player, builder.build())
+                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(p.location)
+                skill.executeProtocol(game, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

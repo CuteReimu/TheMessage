@@ -1,6 +1,7 @@
 package com.fengsheng.phase
 
 import com.fengsheng.Fsm
+import com.fengsheng.PlayerDieEvent
 import com.fengsheng.ResolveResult
 import com.fengsheng.skill.cannotPlayCardAndSkill
 import org.apache.log4j.Logger
@@ -17,6 +18,7 @@ data class WaitNextForChengQing(val waitForChengQing: WaitForChengQing) : Fsm {
             askWhom = (askWhom + 1) % players.size
             if (askWhom == waitForChengQing.whoDie.location) {
                 log.info("无人拯救，${waitForChengQing.whoDie}已死亡")
+                game.addEvent(PlayerDieEvent(waitForChengQing.whoseTurn, waitForChengQing.whoDie))
                 waitForChengQing.diedQueue.add(waitForChengQing.whoDie)
                 return ResolveResult(
                     StartWaitForChengQing(

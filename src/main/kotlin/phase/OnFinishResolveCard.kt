@@ -1,8 +1,6 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Fsm
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
+import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.card_type
 
@@ -16,24 +14,23 @@ import com.fengsheng.protos.Common.card_type
  * @param cardType 出的牌的类型
  * @param nextFsm 接下来是什么阶段
  * @param discardAfterResolve 结算后是否进入弃牌堆
- * @param afterResolveFunc 结算后触发的一些效果，一般是用来清本回合使用次数
  */
-data class OnFinishResolveCard(
-    val whoseTurn: Player,
+class OnFinishResolveCard(
+    override val whoseTurn: Player,
     val player: Player,
     val targetPlayer: Player?,
     val card: Card?,
     val cardType: card_type,
     val nextFsm: Fsm,
-    val discardAfterResolve: Boolean = true,
-    val afterResolveFunc: () -> Unit = { },
-) : Fsm {
-    override fun resolve(): ResolveResult {
-        val result = player.game!!.dealListeningSkill(player.location)
-        if (result != null) return result
+    var discardAfterResolve: Boolean = true
+) : ProcessFsm() {
+    override fun onSwitch() {
+        whoseTurn.game!!.addEvent(FinishResolveCardEvent(this))
+    }
+
+    override fun resolve0(): ResolveResult {
         if (discardAfterResolve)
             card?.let { player.game!!.deck.discard(it.getOriginCard()) }
-        afterResolveFunc()
         return ResolveResult(nextFsm, true)
     }
 

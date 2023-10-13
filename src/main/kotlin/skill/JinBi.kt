@@ -2,7 +2,6 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -15,7 +14,7 @@ class JinBi : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.JIN_BI
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
-        if (r !== (g.fsm as? MainPhaseIdle)?.player) {
+        if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             log.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
@@ -50,10 +49,10 @@ class JinBi : MainPhaseSkill(), InitialSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         log.info("${r}对${target}发动了[禁闭]")
-        g.resolve(executeJinBi(r, target))
+        g.resolve(executeJinBi(g.fsm!!, r, target))
     }
 
-    private data class executeJinBi(val r: Player, val target: Player) : WaitingFsm {
+    private data class executeJinBi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (target.cards.size < 2) {
                 doExecuteJinBi()
@@ -138,7 +137,8 @@ class JinBi : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnGiveCard(r, target, r, MainPhaseIdle(r)), true)
+            g.addEvent(GiveCardEvent(r, target, r))
+            return ResolveResult(fsm, true)
         }
 
         private fun doExecuteJinBi() {
@@ -165,14 +165,14 @@ class JinBi : MainPhaseSkill(), InitialSkill {
         private val log = Logger.getLogger(JinBi::class.java)
 
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            e.player.getSkillUseCount(SkillId.JIN_BI) == 0 || return false
-            val player = e.player.game!!.players.filter { p ->
-                p!!.alive && p.isEnemy(e.player)
+            e.whoseTurn.getSkillUseCount(SkillId.JIN_BI) == 0 || return false
+            val player = e.whoseTurn.game!!.players.filter { p ->
+                p!!.alive && p.isEnemy(e.whoseTurn)
             }.randomOrNull() ?: return false
-            GameExecutor.post(e.player.game!!, {
+            GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_jin_bi_a_tos.newBuilder()
-                builder.targetPlayerId = e.player.getAlternativeLocation(player.location)
-                skill.executeProtocol(e.player.game!!, e.player, builder.build())
+                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

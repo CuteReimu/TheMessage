@@ -2,7 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.phase.*
+import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
@@ -20,11 +20,12 @@ class DuMing : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.DU_MING
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val fsm = g.fsm
-        if (fsm is OnFinishResolveCard) {
-            fsm.cardType == Diao_Bao || return null
-            askWhom.getSkillUseCount(skillId) < 2 || return null
-            val fightPhase = fsm.nextFsm as? FightPhaseIdle ?: return null
+        val event1 = g.findEvent<FinishResolveCardEvent>(this) { event ->
+            event.cardType == Diao_Bao || return@findEvent false
+            askWhom.getSkillUseCount(skillId) == 0
+        }
+        if (event1 != null) {
+            val fightPhase = event1.nextFsm as? FightPhaseIdle ?: return null
             for (p in g.players) { // 解决客户端动画问题
                 if (p is HumanPlayer) {
                     val builder = Fengsheng.notify_phase_toc.newBuilder()
@@ -38,23 +39,19 @@ class DuMing : InitialSkill, TriggeredSkill {
                 }
             }
             askWhom.addSkillUseCount(skillId, 2)
-            val oldAfterResolveFunc = fsm.afterResolveFunc
-            val f = {
-                askWhom.addSkillUseCount(skillId, -2)
-                oldAfterResolveFunc()
-            }
-            return ResolveResult(waitForDuMing(fsm.copy(afterResolveFunc = f), askWhom), true)
-        } else if (fsm is SendPhaseIdle) {
-            !fsm.isMessageCardFaceUp || return null
-            askWhom === fsm.inFrontOfWhom || return null
-            askWhom.getSkillUseCount(skillId) == 0 || return null
-            askWhom.addSkillUseCount(skillId)
-            return ResolveResult(waitForDuMing(fsm, askWhom), true)
+            return ResolveResult(waitForDuMing(fightPhase, event1, askWhom), true)
         }
+        val event2 = g.findEvent<MessageMoveNextEvent>(this) { event ->
+            !event.isMessageCardFaceUp || return@findEvent false
+            askWhom === event.inFrontOfWhom || return@findEvent false
+            askWhom.getSkillUseCount(skillId) == 0
+        }
+        if (event2 != null)
+            return ResolveResult(waitForDuMing(g.fsm!!, event2, askWhom), true)
         return null
     }
 
-    private data class waitForDuMing(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class waitForDuMing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {
@@ -113,24 +110,18 @@ class DuMing : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("不存在的颜色")
                 return null
             }
-            if (fsm is OnFinishResolveCard) {
-                val fightPhase = fsm.nextFsm as? FightPhaseIdle
+            if (event is FinishResolveCardEvent) {
+                val fightPhase = event.nextFsm as? FightPhaseIdle
                 if (fightPhase == null) {
-                    log.error("状态错误：${fsm.nextFsm}")
+                    log.error("状态错误：${event.nextFsm}")
                     (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
                     return null
                 }
                 r.incrSeq()
-                return ResolveResult(
-                    executeDuMing(fsm, fightPhase.whoseTurn, r, message.color, fightPhase.messageCard),
-                    true
-                )
-            } else if (fsm is SendPhaseIdle) {
+                return ResolveResult(executeDuMing(fsm, event, r, message.color, fightPhase.messageCard), true)
+            } else if (event is MessageMoveNextEvent) {
                 r.incrSeq()
-                return ResolveResult(
-                    executeDuMing(fsm, fsm.whoseTurn, r, message.color, fsm.messageCard),
-                    true
-                )
+                return ResolveResult(executeDuMing(fsm, event, r, message.color, event.messageCard), true)
             }
             log.error("状态错误：$fsm")
             (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
@@ -142,11 +133,16 @@ class DuMing : InitialSkill, TriggeredSkill {
         }
     }
 
-    private data class executeDuMing(val fsm: Fsm, val whoseTurn: Player, val r: Player, val c: color, val card: Card) :
-        WaitingFsm {
+    private data class executeDuMing(
+        val fsm: Fsm,
+        val event: Event,
+        val r: Player,
+        val c: color,
+        val card: Card
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            r.addSkillUseCount(SkillId.DU_MING, 99999)
+            r.addSkillUseCount(SkillId.DU_MING)
             log.info("${r}发动了赌命，声明了$c")
             r.draw(1)
             val needPutBlack = c !in card.colors && r.cards.any { it.isPureBlack() }
@@ -217,8 +213,6 @@ class DuMing : InitialSkill, TriggeredSkill {
             log.info("${r}将${card}置入情报区")
             r.deleteCard(card.id)
             r.messageCards.add(card)
-            val newFsm = CheckWin(whoseTurn, fsm)
-            newFsm.receiveOrder.addPlayerIfHasThreeBlack(r)
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_du_ming_b_toc.newBuilder()
@@ -227,7 +221,8 @@ class DuMing : InitialSkill, TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            return ResolveResult(OnAddMessageCard(whoseTurn, newFsm), true)
+            r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
+            return ResolveResult(fsm, true)
         }
 
         companion object {

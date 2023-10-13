@@ -2,10 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.phase.CheckWin
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.phase.OnAddMessageCard
-import com.fengsheng.phase.OnGiveCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -70,6 +67,7 @@ class JieDaoShaRen : InitialSkill, ActiveSkill {
             val g = r.game!!
             target.deleteCard(card.id)
             r.cards.add(card)
+            g.addEvent(GiveCardEvent(fsm.whoseTurn, target, r))
             log.info("${r}对${target}发动了[借刀杀人]，抽取了一张手牌$card")
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -97,8 +95,7 @@ class JieDaoShaRen : InitialSkill, ActiveSkill {
             }
             if (!card.colors.contains(color.Black)) {
                 r.draw(1)
-                val nextFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-                return ResolveResult(OnGiveCard(fsm.whoseTurn, target, r, nextFsm), true)
+                return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
@@ -163,8 +160,6 @@ class JieDaoShaRen : InitialSkill, ActiveSkill {
             log.info("${r}将${card}置于${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            val newFsm = CheckWin(fsm.whoseTurn, fsm.copy(whoseFightTurn = fsm.inFrontOfWhom))
-            newFsm.receiveOrder.addPlayerIfHasThreeBlack(target)
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jie_dao_sha_ren_b_toc.newBuilder()
@@ -176,10 +171,8 @@ class JieDaoShaRen : InitialSkill, ActiveSkill {
                 }
             }
             g.playerSetRoleFaceUp(r, false)
-            return ResolveResult(
-                OnGiveCard(fsm.whoseTurn, this.target, r, OnAddMessageCard(fsm.whoseTurn, newFsm)),
-                true
-            )
+            g.addEvent(AddMessageCardEvent(fsm.whoseTurn))
+            return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
         }
 
         companion object {

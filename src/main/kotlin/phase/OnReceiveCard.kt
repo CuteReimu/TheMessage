@@ -14,7 +14,7 @@ import org.apache.log4j.Logger
  * @param messageCard   情报牌
  * @param inFrontOfWhom 情报在谁面前
  */
-data class ReceivePhase(
+data class OnReceiveCard(
     val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,
@@ -26,8 +26,7 @@ data class ReceivePhase(
             player.messageCards.add(messageCard)
             log.info("${player}成功接收情报")
             for (p in player.game!!.players) p!!.notifyReceivePhase()
-            val next = ReceivePhaseSkill(whoseTurn, sender, messageCard, inFrontOfWhom)
-            next.receiveOrder.addPlayerIfHasThreeBlack(inFrontOfWhom)
+            val next = ReceivePhaseIdle(whoseTurn, sender, messageCard, inFrontOfWhom)
             return ResolveResult(next, true)
         }
         player.game!!.deck.discard(messageCard)
@@ -36,6 +35,6 @@ data class ReceivePhase(
     }
 
     companion object {
-        private val log = Logger.getLogger(ReceivePhase::class.java)
+        private val log = Logger.getLogger(OnReceiveCard::class.java)
     }
 }
