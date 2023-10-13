@@ -223,8 +223,27 @@ class ShiTan : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Shi_Tan) || return false
+            val yaPao = player.game!!.players.find {
+                it!!.alive && it.findSkill(SkillId.SHOU_KOU_RU_PING) != null
+            }
+            if (yaPao === player) {
+                val p = player.game!!.players.run {
+                    filter { it!!.alive && it.isPartner(player) }.randomOrNull()
+                        ?: filter { it !== player && it!!.alive }.randomOrNull()
+                } ?: return false
+                GameExecutor.post(player.game!!, {
+                    card.execute(player.game!!, player, p)
+                }, 2, TimeUnit.SECONDS)
+                return true
+            } else if (yaPao != null && player.isPartner(yaPao)) {
+                GameExecutor.post(player.game!!, {
+                    card.execute(player.game!!, player, yaPao)
+                }, 2, TimeUnit.SECONDS)
+                return true
+            }
             val p = player.game!!.players.filter {
-                it !== player && it!!.alive && (!it.roleFaceUp || it.findSkill(SkillId.CHENG_FU) == null)
+                it !== player && it!!.alive && (!it.roleFaceUp ||
+                        (it.findSkill(SkillId.CHENG_FU) == null && it.findSkill(SkillId.SHOU_KOU_RU_PING) == null))
             }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
             return true
