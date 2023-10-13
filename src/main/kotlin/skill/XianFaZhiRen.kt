@@ -19,11 +19,16 @@ class XianFaZhiRen : InitialSkill, ActiveSkill, TriggeredSkill {
     override val skillId = SkillId.XIAN_FA_ZHI_REN
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        g.findEvent<AddMessageCardEvent>(this) { event ->
-            !askWhom.roleFaceUp || return@findEvent false
-            event.bySkill || return@findEvent false
-            g.players.any { it!!.messageCards.isNotEmpty() }
-        } ?: return null
+        var found = false
+        while (true) {
+            g.findEvent<AddMessageCardEvent>(this) { event ->
+                !askWhom.roleFaceUp || return@findEvent false
+                event.bySkill || return@findEvent false
+                g.players.any { it!!.messageCards.isNotEmpty() }
+            } ?: break
+            found = true
+        }
+        if (!found) return null
         return ResolveResult(executeXianFaZhiRenA(g.fsm!!, askWhom), true)
     }
 

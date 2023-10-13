@@ -310,7 +310,7 @@ class Game private constructor(totalPlayerCount: Int) {
     }
 
     inline fun <reified E : Event> findEvent(skill: Skill, predicate: (E) -> Boolean) =
-        resolvingEvents.find { it is E && predicate(it) && it.checkResolve(skill) } as? E
+        resolvingEvents.find { it is E && it.checkResolve(skill) && predicate(it) } as? E
 
     fun addEvent(event: Event) = unresolvedEvents.add(event)
 
