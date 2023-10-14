@@ -74,11 +74,16 @@ class HuoXin : MainPhaseSkill(), InitialSkill {
                 p.send(builder.build())
             }
         }
-        g.resolve(executeHuoXin(r, target, showCards[0], waitingSecond))
+        g.resolve(executeHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))
     }
 
-    private data class executeHuoXin(val r: Player, val target: Player, val showCard: Card, val waitingSecond: Int) :
-        WaitingFsm {
+    private data class executeHuoXin(
+        val fsm: Fsm,
+        val r: Player,
+        val target: Player,
+        val showCard: Card,
+        val waitingSecond: Int
+    ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val card = target.cards.run { find { it.hasSameColor(showCard) } ?: first() }
             if (r is HumanPlayer) {
@@ -143,7 +148,7 @@ class HuoXin : MainPhaseSkill(), InitialSkill {
                 }
             }
             r.game!!.addEvent(DiscardCardEvent(r, target))
-            return ResolveResult(MainPhaseIdle(r), true)
+            return ResolveResult(fsm, true)
         }
 
         companion object {

@@ -1,7 +1,6 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -76,7 +75,7 @@ class CongRongYingDui : InitialSkill, TriggeredSkill {
             }
             if (!message.enable) {
                 player.incrSeq()
-                return ResolveResult(MainPhaseIdle(r), true)
+                return ResolveResult(fsm, true)
             }
             if (!message.drawCard && target.cards.isEmpty()) {
                 log.error("对方没有手牌")

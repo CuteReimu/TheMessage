@@ -56,7 +56,7 @@ class JinBi : MainPhaseSkill(), InitialSkill {
         override fun resolve(): ResolveResult? {
             if (target.cards.size < 2) {
                 doExecuteJinBi()
-                return ResolveResult(MainPhaseIdle(r), true)
+                return ResolveResult(fsm, true)
             }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -105,7 +105,7 @@ class JinBi : MainPhaseSkill(), InitialSkill {
             if (message.cardIdsCount == 0) {
                 target.incrSeq()
                 doExecuteJinBi()
-                return ResolveResult(MainPhaseIdle(r), true)
+                return ResolveResult(fsm, true)
             } else if (message.cardIdsCount != 2) {
                 log.error("给的牌数量不对：${message.cardIdsCount}")
                 (player as? HumanPlayer)?.sendErrorMessage("给的牌数量不对：${message.cardIdsCount}")

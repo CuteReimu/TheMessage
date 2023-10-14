@@ -103,7 +103,7 @@ class BoAi : MainPhaseSkill(), InitialSkill {
                         p.send(builder.build())
                     }
                 }
-                return ResolveResult(MainPhaseIdle(r), true)
+                return ResolveResult(fsm, true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误")
