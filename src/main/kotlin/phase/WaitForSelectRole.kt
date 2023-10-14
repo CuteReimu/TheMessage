@@ -78,9 +78,23 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         builder.waitingSecond = Config.WaitSecond * 2
         builder.addAllPossibleSecretTask(game.possibleSecretTasks)
         player.send(builder.build())
+        if (game.players.size < 5)
+            player.notifyIdentity()
     }
 
     companion object {
         private val log = Logger.getLogger(WaitForSelectRole::class.java)
+
+        private fun HumanPlayer.notifyIdentity() {
+            GameExecutor.post(game!!, {
+                sendErrorMessage(
+                    when (game!!.players.size) {
+                        2 -> "2人局中双方身份完全随机"
+                        3 -> "3人局中身份完全随机，但不会出现相同阵营，也不会所有人都是神秘人"
+                        else -> "4人局有两名神秘人，当潜伏或军情宣胜时，另一方会共同胜利"
+                    }
+                )
+            }, 1, TimeUnit.SECONDS)
+        }
     }
 }

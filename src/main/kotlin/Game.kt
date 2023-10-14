@@ -128,13 +128,7 @@ class Game private constructor(totalPlayerCount: Int) {
                 identities.add(color.forNumber(it and 2)!!)
             }
 
-            3 -> {
-                identities.add(Red)
-                identities.add(Blue)
-                identities.add(Black)
-            }
-
-            4 -> {
+            3, 4 -> {
                 identities.add(Red)
                 identities.add(Blue)
                 identities.add(Black)
