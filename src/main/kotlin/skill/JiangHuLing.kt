@@ -3,6 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -52,8 +53,8 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     val colors =
-                        if (r.identity == color.Black) listOf(color.Black, color.Red, color.Blue)
-                        else listOf(color.Black, color.Red, color.Blue) - r.identity
+                        if (r.identity == Black) listOf(Black, Red, Blue)
+                        else listOf(Black, Red, Blue) - r.identity
                     val color = colors.random()
                     val builder = skill_jiang_hu_ling_a_tos.newBuilder()
                     builder.enable = true
@@ -84,7 +85,7 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
                 r.incrSeq()
                 return ResolveResult(fsm, true)
             }
-            if (message.color == color.UNRECOGNIZED) {
+            if (message.color != Black && message.color != Red && message.color != Blue) {
                 log.error("未知的颜色类型")
                 (player as? HumanPlayer)?.sendErrorMessage("未知的颜色类型")
                 return null
@@ -161,26 +162,21 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
             val p = event.sender
             if (p is RobotPlayer) {
                 val target = event.inFrontOfWhom
-                run {
-                    if (!target.alive) return@run
-                    val card = target.messageCards.find {
-                        color in it.colors && p.isPartnerOrSelf(target) == it.isBlack()
-                    } ?: return@run
-                    GameExecutor.post(
-                        p.game!!,
-                        {
+                val card = target.messageCards.find { p.isEnemy(target) || p.identity !in it.colors }
+                GameExecutor.post(
+                    p.game!!,
+                    {
+                        if (card != null) {
                             val builder = skill_jiang_hu_ling_b_tos.newBuilder()
                             builder.cardId = card.id
                             p.game!!.tryContinueResolveProtocol(p, builder.build())
-                        },
-                        2,
-                        TimeUnit.SECONDS
-                    )
-                    return null
-                }
-                GameExecutor.TimeWheel.newTimeout({
-                    p.game!!.tryContinueResolveProtocol(p, end_receive_phase_tos.getDefaultInstance())
-                }, 2, TimeUnit.SECONDS)
+                        } else {
+                            p.game!!.tryContinueResolveProtocol(p, end_receive_phase_tos.getDefaultInstance())
+                        }
+                    },
+                    2,
+                    TimeUnit.SECONDS
+                )
             }
             return null
         }
