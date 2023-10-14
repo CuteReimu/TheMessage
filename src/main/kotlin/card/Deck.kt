@@ -108,15 +108,18 @@ class Deck(private val game: Game) {
 
     fun init(totalPlayerCount: Int) {
         cards.clear()
-        cards.addAll(DefaultDeck)
-        if (totalPlayerCount < 4) {
+        if (totalPlayerCount <= 4) {
+            cards.addAll(DefaultDeck.subList(0, 108))
             cards.removeAt(55)
             cards.removeAt(54)
             cards.subList(0, 18).clear()
-        } else if (totalPlayerCount <= 8) {
-            cards.removeAt(55)
-            cards.removeAt(54)
-            shiTanIndex.forEach { cards.removeAt(it) }
+        } else {
+            cards.addAll(DefaultDeck)
+            if (totalPlayerCount <= 8) {
+                cards.removeAt(55)
+                cards.removeAt(54)
+                shiTanIndex.forEach { cards.removeAt(it) }
+            }
         }
         nextId = DefaultDeck.last().id
         cards.shuffle()
