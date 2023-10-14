@@ -31,8 +31,8 @@ class Game private constructor(totalPlayerCount: Int) {
 
     val id: Int = ++increaseId
 
-    var resolvingEvents: List<Event> = emptyList()
-    private var unresolvedEvents: MutableList<Event> = ArrayList()
+    var resolvingEvents = emptyList<Event>()
+    private var unresolvedEvents = ArrayList<Event>()
 
     private var gameStartTimeout: Timeout? = null
 
@@ -362,22 +362,23 @@ class Game private constructor(totalPlayerCount: Int) {
      * 遍历监听列表，结算技能
      */
     fun dealListeningSkill(beginLocation: Int, includingDead: Boolean = false): ResolveResult? {
-        if (resolvingEvents.isEmpty()) {
-            if (unresolvedEvents.isEmpty()) return null
-            resolvingEvents = unresolvedEvents
-            unresolvedEvents = ArrayList()
-        }
-        var i = beginLocation % players.size
-        do {
-            val player = players[i]!!
-            player.skills.forEach { skill ->
-                if (includingDead || player.alive || skill !is InitialSkill)
-                    (skill as? TriggeredSkill)?.execute(this, player)?.let { return it }
+        repeat(100) { // 写个100，防止死循环
+            if (resolvingEvents.isEmpty()) {
+                if (unresolvedEvents.isEmpty()) return null
+                resolvingEvents = unresolvedEvents
+                unresolvedEvents = ArrayList()
             }
-            i = (i + 1) % players.size
-        } while (i != beginLocation % players.size)
-        resolvingEvents = unresolvedEvents
-        unresolvedEvents = ArrayList()
+            var i = beginLocation % players.size
+            do {
+                val player = players[i]!!
+                player.skills.forEach { skill ->
+                    if (includingDead || player.alive || skill !is InitialSkill)
+                        (skill as? TriggeredSkill)?.execute(this, player)?.let { return it }
+                }
+                i = (i + 1) % players.size
+            } while (i != beginLocation % players.size)
+            resolvingEvents = emptyList()
+        }
         return null
     }
 
