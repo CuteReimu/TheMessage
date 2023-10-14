@@ -59,7 +59,6 @@ fun Player.canSendCard(
         if (lockPlayers.size > 1) return "最多锁定一个目标"
         if (lockPlayers.isNotEmpty() && !card.canLock()) return "这张情报没有锁定标记"
     }
-    if (lockPlayers.any { it === this }) return "不能锁定自己"
     if (lockPlayers.toSet().size != lockPlayers.size) return "锁定目标重复"
     val checkDir = skills.lastOrNull { it is SendMessageDirectionSkill } as? SendMessageDirectionSkill
     if (checkDir != null) {

@@ -47,7 +47,7 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         val lockPlayers = pb.lockPlayerIdList.map {
-            if (it <= 0 || it >= r.game!!.players.size) {
+            if (it < 0 || it >= r.game!!.players.size) {
                 log.error("锁定目标错误: $it")
                 r.sendErrorMessage("锁定目标错误: $it")
                 return

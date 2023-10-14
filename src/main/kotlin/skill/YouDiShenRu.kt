@@ -48,7 +48,7 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
         }
         val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
         val lockPlayers = message.lockPlayerIdList.map {
-            if (it <= 0 || it >= g.players.size) {
+            if (it < 0 || it >= g.players.size) {
                 log.error("锁定目标错误: $it")
                 (r as? HumanPlayer)?.sendErrorMessage("锁定目标错误: $it")
                 return

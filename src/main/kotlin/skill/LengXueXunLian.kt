@@ -73,27 +73,21 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
                                 cards.sortBy { !it.isBlack() }
                                 val card = cards.first()
                                 builder2.sendCardId = card.id
-                                val nextLeftId = p.getAlternativeLocation(r.getNextLeftAlivePlayer().location)
-                                val nextRightId = p.getAlternativeLocation(r.getNextRightAlivePlayer().location)
                                 when (card.direction) {
-                                    Left -> {
-                                        builder2.targetPlayerId = nextLeftId
-                                        builder2.lockPlayerId = nextRightId
-                                    }
+                                    Left -> builder2.targetPlayerId =
+                                        p.getAlternativeLocation(r.getNextLeftAlivePlayer().location)
 
-                                    Right -> {
-                                        builder2.targetPlayerId = nextRightId
-                                        builder2.lockPlayerId = nextLeftId
-                                    }
+                                    Right -> builder2.targetPlayerId =
+                                        p.getAlternativeLocation(r.getNextRightAlivePlayer().location)
 
                                     Up -> {
                                         val target = g.players.filter { it !== p && it!!.alive }.random()!!
                                         builder2.targetPlayerId = p.getAlternativeLocation(target.location)
-                                        builder2.lockPlayerId = builder2.targetPlayerId
                                     }
 
                                     else -> {}
                                 }
+                                builder2.lockPlayerId = 0
                                 builder2.seq = seq
                                 g.tryContinueResolveProtocol(p, builder2.build())
                             }
@@ -170,7 +164,7 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
                 return null
             }
             val target = player.game!!.players[player.getAbstractLocation(pb.targetPlayerId)]!!
-            if (pb.lockPlayerId <= 0 || pb.lockPlayerId >= player.game!!.players.size) {
+            if (pb.lockPlayerId < 0 || pb.lockPlayerId >= player.game!!.players.size) {
                 log.error("锁定目标错误: ${pb.lockPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("锁定目标错误: ${pb.lockPlayerId}")
                 return null
