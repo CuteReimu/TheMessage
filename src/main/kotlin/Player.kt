@@ -121,13 +121,16 @@ abstract class Player protected constructor() {
         log.info("${this}摸了${cards.contentToString()}，现在有${this.cards.size}张手牌")
         for (player in game!!.players) {
             if (player === this)
-                player.notifyAddHandCard(location, 0, *cards)
+                player.notifyAddHandCard(this, 0, *cards)
             else
-                player!!.notifyAddHandCard(location, cards.size)
+                player!!.notifyAddHandCard(this, cards.size)
         }
     }
 
-    abstract fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card)
+    /**
+     * 通知摸牌
+     */
+    abstract fun notifyAddHandCard(player: Player, unknownCount: Int, vararg cards: Card)
 
     fun checkThreeSameMessageCard(vararg cards: Card): Boolean {
         var red = 0
@@ -238,6 +241,16 @@ abstract class Player protected constructor() {
             if (right >= game!!.players.size) right -= game!!.players.size
         }
         return game!!.players[right]!!
+    }
+
+    /**
+     * @return 一个[desk_location]协议结构
+     */
+    fun deskLocation(location: location, targetPlayer: Player? = null): desk_location {
+        val builder = desk_location.newBuilder()
+        builder.location = location
+        targetPlayer?.location?.let { builder.playerId = getAlternativeLocation(it) }
+        return builder.build()
     }
 
     /** @return 如果other是队友（不含自己），则返回true。如果是自己，或者不是队友，则返回false */

@@ -13,7 +13,7 @@ import java.util.function.Predicate
 import kotlin.random.Random
 
 class RobotPlayer : Player() {
-    override fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card) {
+    override fun notifyAddHandCard(player: Player, unknownCount: Int, vararg cards: Card) {
         // Do nothing
     }
 

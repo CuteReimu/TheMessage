@@ -1,14 +1,24 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Config
-import com.fengsheng.Player
-import com.fengsheng.ProcessFsm
-import com.fengsheng.ResolveResult
+import com.fengsheng.*
+import com.fengsheng.protos.Common.phase.Main_Phase
+import com.fengsheng.protos.Game.notify_phase_toc
 
 /**
  * 出牌阶段空闲时点
  */
 data class MainPhaseIdle(override val whoseTurn: Player) : ProcessFsm() {
+    override fun onSwitch() {
+        for (p in whoseTurn.game!!.players) {
+            if (p is HumanPlayer) {
+                val builder = notify_phase_toc.newBuilder()
+                builder.currentPlayerId = p.getAlternativeLocation(whoseTurn.location)
+                builder.currentPhase = Main_Phase
+                p.send(builder.build())
+            }
+        }
+    }
+
     override fun resolve0(): ResolveResult? {
         if (!whoseTurn.alive) {
             return ResolveResult(NextTurn(whoseTurn), true)

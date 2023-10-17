@@ -11,6 +11,8 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Game.notify_card_move_toc
+import com.fengsheng.protos.Game.notify_role_update_toc
 import com.fengsheng.skill.*
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
@@ -253,9 +255,10 @@ class Game private constructor(totalPlayerCount: Int) {
         deck.discard(*cards)
         for (p in players) {
             if (p is HumanPlayer) {
-                val builder = discard_card_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(player.location)
-                cards.forEach { builder.addCards(it.toPbCard()) }
+                val builder = notify_card_move_toc.newBuilder()
+                cards.forEach { builder.addCardIds(it.id) }
+                builder.from = p.deskLocation(location.handcard, player)
+                builder.to = p.deskLocation(location.discard_pile)
                 p.send(builder.build())
             }
         }

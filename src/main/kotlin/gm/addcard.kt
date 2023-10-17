@@ -48,9 +48,9 @@ class addcard : Function<Map<String, String>, Any> {
                         log.info("由于GM命令，${p}摸了${cards.contentToString()}，现在有${p.cards.size}张手牌")
                         for (player in g.players) {
                             if (player!!.location == playerId)
-                                player.notifyAddHandCard(playerId, 0, *cards)
+                                player.notifyAddHandCard(p, 0, *cards)
                             else
-                                player.notifyAddHandCard(playerId, cards.size)
+                                player.notifyAddHandCard(p, cards.size)
                         }
                     }
                 }

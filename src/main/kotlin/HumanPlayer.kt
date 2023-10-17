@@ -2,11 +2,13 @@ package com.fengsheng
 
 import com.fengsheng.card.Card
 import com.fengsheng.phase.*
+import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.phase.*
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Errcode.error_message_toc
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Game.*
 import com.fengsheng.protos.Role.skill_leng_xue_xun_lian_a_tos
 import com.fengsheng.skill.ActiveSkill
 import com.fengsheng.skill.SkillId
@@ -162,28 +164,30 @@ class HumanPlayer(
         send(builder.build())
     }
 
-    override fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card) {
-        val builder = add_card_toc.newBuilder()
-        builder.playerId = getAlternativeLocation(location)
-        builder.unknownCardCount = unknownCount
-        cards.forEach { builder.addCards(it.toPbCard()) }
+    override fun notifyAddHandCard(player: Player, unknownCount: Int, vararg cards: Card) {
+        val builder = notify_card_move_toc.newBuilder()
+        cards.forEach { builder.addCardIds(it.id) }
+        repeat(unknownCount) { builder.addCardIds(0) }
+        builder.from = deskLocation(Common.location.deck)
+        builder.to = deskLocation(Common.location.handcard, player)
         send(builder.build())
     }
 
     override fun notifyDrawPhase() {
-        val player = (game!!.fsm as DrawPhase).player
+        val player = (game!!.fsm as DrawPhase).whoseTurn
         val playerId = getAlternativeLocation(player.location)
         val builder = notify_phase_toc.newBuilder()
         builder.currentPlayerId = playerId
         builder.currentPhase = Draw_Phase
-        builder.waitingPlayerId = playerId
         send(builder.build())
     }
 
     override fun notifyMainPhase(waitSecond: Int) {
         val player = (game!!.fsm as MainPhaseIdle).whoseTurn
         val playerId = getAlternativeLocation(player.location)
-        val builder = notify_phase_toc.newBuilder()
+        val builder = player_waiting_toc.newBuilder()
+        builder.playerId = playerId
+        builder.waitingType = Common.wait_type.play_card
         builder.currentPlayerId = playerId
         builder.currentPhase = Main_Phase
         builder.waitingPlayerId = playerId

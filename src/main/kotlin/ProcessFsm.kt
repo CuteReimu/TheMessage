@@ -12,8 +12,6 @@ import java.util.*
  * 游戏流程相关的状态机，进入这个状态时，先会处理所有事件，再判断输赢，最后再调用execute0函数
  */
 abstract class ProcessFsm : Fsm {
-    abstract val whoseTurn: Player
-
     private var justSwitch = true
 
     open val needCheckWinAndDying = true
