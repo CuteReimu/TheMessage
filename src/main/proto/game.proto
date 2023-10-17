@@ -1,0 +1,221 @@
+syntax = "proto3";
+option java_package = "com.fengsheng.protos";
+import "common.proto";
+import "google/protobuf/any.proto";
+
+// 通知客户端，到谁的哪个阶段了
+message notify_phase_toc {
+  uint32 current_player_id = 1; // 当前回合玩家
+  phase  current_phase = 2; // 当前阶段
+}
+
+// 通知客户端角色变化
+message notify_role_update_toc {
+  uint32 player_id = 1;
+  role   role = 2; // 值为unknown=0时表示盖上角色
+}
+
+// 通知客户端，牌堆的剩余数量
+message sync_deck_num_toc {
+  uint32 num = 1; // 剩余数量
+  bool   shuffled = 2; // 是否发生了洗牌
+}
+
+// 通知客户端，玩家把卡加入手牌
+message card_add_to_handcard_toc {
+  uint32          player_id = 1;
+  repeated uint32 card_ids = 2; //加入手牌的卡
+  desk_location   from = 3;
+}
+
+// 通知客户端，牌从谁的手牌被弃掉
+message discard_handcard_toc {
+  uint32          player_id = 1;
+  repeated uint32 card_ids = 2;
+}
+
+// 通知客户端，情报置入玩家的情报区
+message message_placed_into_message_zone_toc {
+  uint32          player_id = 1;
+  repeated uint32 message_ids = 2; //置入情报区的卡
+  desk_location   from = 3;
+}
+
+// 通知客户端，情报从情报区弃置
+message message_removed_from_message_zone_toc {
+  uint32          player_id = 1;
+  repeated uint32 message_ids = 2;
+}
+
+// 通知客户端，展示卡牌
+message show_card_toc {
+  repeated uint32 card_ids = 1;
+  desk_location   location = 2;
+}
+
+// 通知客户端，有人传出情报
+message send_message_card_toc {
+  uint32          sender_id = 1; // 传出情报的玩家ID。有可能不是当前回合玩家传出的情报。
+  uint32          card_id = 2;  //  传出的那张卡
+  uint32          target_player_id = 3; // 目标
+  repeated uint32 lock_player_ids = 4; // 被锁定的玩家ID
+  direction       card_dir = 5; // 传递的方向
+  bool            is_face_up = 6; //是否正面朝上传递
+  desk_location   from = 7;    // 传出前这张卡在什么位置
+}
+
+// 通知客户端，情报传递
+message message_card_transmit_toc {
+  uint32 message_player_id = 1; // 情报传递到的玩家
+}
+
+// 通知客户端，情报被替换
+message message_card_replaced_toc {
+  uint32         new_message_id = 1; //替换原情报的卡
+  desk_location  from = 2;    // 替换前这张卡在什么位置
+}
+
+// 通知客户端，情报被弃置
+message message_card_removed_toc {
+  uint32         message_id = 1; //被弃置的情报
+  desk_location  from = 2;    // 被弃置前情报的位置
+}
+
+// 通知客户端，翻开传递中的情报
+message show_message_card_toc {
+  uint32 message_id = 1;
+}
+
+// 通知客户端，查看传递中的情报
+message check_message_card_toc {
+  uint32 player_id = 1;
+  uint32 message_id = 2;
+}
+
+// 通知客户端，有人选择接收情报
+message choose_receive_toc {
+  uint32 player_id = 1; // 接收者
+}
+
+// 通知客户端，某个角色濒死
+message notify_dying_toc {
+  uint32 player_id = 1;
+}
+
+// 通知客户端，某个角色死亡
+message notify_die_toc {
+  uint32 player_id = 1;
+  bool   lose_game = 2; // true表示因为轮到传递情报时没情报传了导致输掉游戏
+}
+
+//通知客户端，有人使用卡牌
+message play_card_toc {
+  uint32 player_id = 1; //使用卡牌的玩家
+  uint32 card_id = 2; //使用的那张卡，看不到传0
+  uint32 card_type = 3; //那张卡作为什么卡使用
+  uint32 target_player_id = 4; // 目标角色
+}
+
+//通知客户端，卡牌结算
+message card_on_effect_toc {
+  uint32 player_id = 1; //使用卡牌的玩家
+  uint32 card_id = 2; //使用的那张卡，看不到传0
+  card_type card_type = 3;
+  uint32 target_player_id = 4;
+  google.protobuf.Any params = 5; //根据不同协议需要传递的额外参数
+}
+
+//通知客户端，卡牌结算完成
+message card_effect_end_toc {
+}
+
+//通知客户端，有人使用技能
+message use_skill_toc {
+  uint32 player_id = 1; //使用技能的玩家
+  uint32 skill_id = 2; //使用的技能
+}
+
+//通知客户端，技能结算
+message skill_on_effect_toc {
+  uint32 player_id = 1; //使用技能的玩家
+  uint32 skill_id = 2; //使用的技能
+  google.protobuf.Any params = 3; //根据不同协议需要传递的额外参数
+}
+
+//通知客户端，技能结算完成
+message skill_effect_end_toc {
+}
+
+//通知客户端，某个玩家读条
+message player_waiting_toc {
+  uint32 player_id = 1;
+  uint64 start_waiting_time = 2; // 读条开始时间
+  uint64 end_waiting_time = 3; // 读条结束时间
+  wait_type waiting_type = 4;
+  google.protobuf.Any params = 5; //根据读条类型需要传递的额外参数
+  uint32 seq = 6;
+}
+
+// 有人要发技能，全场读条
+message unknown_waiting_toc {
+  uint32 waiting_second = 1;
+}
+
+//通知客户端，全场读条
+message unknown_player_waiting_toc {
+  uint64 start_waiting_time = 1; // 读条开始时间
+  uint64 end_waiting_time = 2; // 读条结束时间
+}
+
+//通知服务端，使用卡牌
+message play_card_tos {
+  uint32 card_id = 1; //使用的那张卡
+  uint32 card_type = 2; //那张卡作为什么卡使用
+  uint32 target_player_id = 3; // 目标
+  uint32 seq = 4;
+}
+
+//通知服务端，使用技能
+message use_skill_tos {
+  uint32 skill_id = 1; //使用的技能
+  uint32 seq = 2;
+}
+
+// 通知服务端，结束当前阶段，进入下一阶段
+message end_phase_tos {
+  uint32 seq = 1;
+}
+
+// 通知服务端，请求传情报
+message send_message_card_tos {
+  uint32          card_id = 1;
+  uint32          target_player_id = 2;
+  repeated uint32 lock_player_id = 3;
+  direction       card_dir = 4;
+  uint32          seq = 5;
+}
+
+// 通知服务端，选择是否接收情报
+message choose_whether_receive_tos {
+  bool   receive = 1;
+  uint32 seq = 2;
+}
+
+// 通知服务端，濒死使用澄清
+message cheng_qing_save_die_tos {
+  bool   enable = 1; // 是否使用澄清
+  uint32 card_id = 2; // 使用的澄清卡牌ID
+  uint32 target_card_id = 3; // 目标卡牌ID
+  uint32 seq = 4;
+}
+
+message die_give_card_tos {
+  uint32          target_player_id = 1; // 不给就填0
+  repeated uint32 card_id = 2; // 不给就填空数组
+  uint32          seq = 3;
+}
+
+// 同步客户端没有或者改变了的卡牌
+message sync_cards_toc {
+  repeated card cards = 1;
+}

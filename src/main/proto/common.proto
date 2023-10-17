@@ -124,3 +124,118 @@ message card {
   bool           can_lock = 6; // 是否有锁定标记
   repeated color secret_color = 7; // （密令卡）长度为3的数组，[东风对应颜色，西风对应颜色，静风对应颜色]
 }
+
+enum skill {
+  unknown_skill = 0; // 没有名字的技能
+  invalid_skill = -1; // 被无效的技能
+  lian_luo = 1; // 联络
+  ming_er = 2; // 明饵
+  xin_si_chao = 3; // 新思潮
+  mian_li_cang_zhen = 4; // 绵里藏针
+  qi_huo_ke_ju = 5; // 奇货可居
+  jin_shen = 6; // 谨慎
+  gui_zha = 7; // 诡诈
+  yi_ya_huan_ya = 8; // 以牙还牙
+  tou_tian = 9; // 偷天
+  huan_ri = 10; // 换日
+  yi_hua_jie_mu = 11; // 移花接木
+  lian_min = 12; // 怜悯
+  fu_hei = 13; // 腹黑
+  shi_si = 14; // 视死
+  ru_gui = 15; // 如归
+  ji_zhi = 16; // 集智
+  cheng_zhi = 17; // 承志
+  wei_sheng = 18; // 尾声
+  jiu_ji = 19; // 就计
+  cheng_fu = 20; // 城府
+  yi_xin = 21; // 遗信
+  zhi_yin = 22; // 知音
+  jing_meng = 23; // 惊梦
+  jie_dao_sha_ren = 24; // 借刀杀人
+  jiao_ji = 25; // 交际
+  ji_song = 26; // 急送
+  zhuan_jiao = 27; // 转交
+  miao_bi_qiao_bian = 28; // 妙笔巧辩
+  jin_bi = 29; // 禁闭
+  jin_kou_yi_kai = 30; // 金口一开
+  ji_ban = 31; // 羁绊
+  ying_bian = 32; // 应变
+  you_dao = 33; // 诱导
+  bo_ai = 34; // 博爱
+  guang_fa_bao = 35; // 广发报
+  qiang_ling = 36; // 强令
+  jian_ren = 37; // 坚韧
+  miao_shou = 38; // 妙手
+  sou_ji = 39; // 搜辑
+  jiang_hu_ling = 40; // 江湖令
+  dui_zheng_xia_yao = 41; // 对症下药
+  du_ji = 42; // 毒计
+  cang_shen_jiao_tang = 43; // 藏身教堂
+  xian_fa_zhi_ren = 44; // 先发制人
+  leng_xue_xun_lian = 45; // 冷血训练
+  guan_hai = 46; // 观海
+  bi_feng = 47; // 避风
+  zuo_you_feng_yuan = 48; // 左右逢源
+  bi_yi_shuang_fei = 49; // 比翼双飞
+  tan_qiu_zhen_li = 50; // 探求真理
+  ru_bi_zhi_shi = 51; // 如臂指使
+  shen_cang = 52; // 深藏
+  gong_fen = 53; // 共焚
+  huo_xin = 54; // 惑心
+  cong_rong_ying_dui = 55; // 从容应对
+  chi_zi_zhi_xin = 56; // 赤子之心
+  yun_chou_wei_wo = 57; // 运筹帷幄
+  hou_lai_ren = 58; // 后来人
+  zi_zheng_qing_bai = 59; // 自证清白
+  shou_kou_ru_ping = 60; // 守口如瓶
+  du_ming = 61; // 赌命
+  lian_xin = 62; // 联信
+  shun_shi_er_wei = 63; // 顺势而为
+  mi_xin = 64; // 密信
+  jiang_ji_jiu_ji = 65; // 将计就计
+  han_hou_lao_shi = 66; // 憨厚老实
+  yi_wen_an_hao = 67; // 译文暗号
+  yu_si_wang_po = 68; // 鱼死网破
+  ding_lun = 69; // 定论
+  zhen_li = 70; // 真理
+  ying_bian_zi_ru = 71; // 应变自如
+  hun_shui_mo_yu = 72; // 浑水摸鱼
+  tao_qu = 73; // 套取
+  tan_xu_bian_shi = 74; // 探虚辨实
+  cun_bu_bu_rang = 75; // 寸步不让
+  xin_ge_lian_luo = 76; // 信鸽联络
+  hou_zi_qie_xin = 77; // 猴子窃信
+  bian_ze_tong = 78; // 变则通
+  you_di_shen_ru = 79; // 诱敌深入
+  jian_di_feng_xing = 80; // 歼敌风行
+  xiang_jin_si_suo = 81; // 详尽思索
+  qiang_ying_xia_ling = 82; // 强硬下令
+  jie_che_yun_huo = 83; // 借车运货
+  workers_are_knowledgable = 84; // 咱们工人有知识
+}
+
+enum wait_type {
+  play_card = 0; // 出牌阶段空闲时点、争夺阶段空闲时点、濒死求澄清阶段空闲时点
+  card_on_effect = 1; // 卡牌结算
+  use_skill = 2; // 使用技能
+  skill_on_effect = 3; // 技能结算
+  send_message = 4; //传递情报
+  choose_whether_receive_message = 5; //询问是否接收情报
+  save_die = 6; //濒死求澄清
+  die_give_card = 7; //死亡给牌
+}
+
+enum location {
+  deck = 0; //牌堆
+  discard_pile = 1; //弃牌堆
+  handcard = 2; //手牌
+  message_zone = 3; //情报区
+  message_in_transmiting = 4; //传递中的情报
+  card_in_using = 5; //正在使用的卡牌
+  removed_from_game = 6; //移出游戏
+}
+
+message desk_location {
+  location location = 1;
+  uint32   player_id = 2; //哪个玩家的手牌或情报区，location为2或3时才有意义
+}

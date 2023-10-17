@@ -51,8 +51,6 @@ message skill_yi_hua_jie_mu_a_tos {
 // 广播使用【移花接木】A，并广播询问使用【移花接木】B
 message skill_yi_hua_jie_mu_a_toc {
   uint32 player_id = 1; // 韩梅的ID
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 韩梅【移花接木】B：然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情牌加入你的手牌。
@@ -163,13 +161,6 @@ message skill_shi_si_toc {
   uint32 player_id = 1;
 }
 
-// 广播询问客户端使用【如归】
-message skill_wait_for_ru_gui_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
-}
-
 // 老汉【如归】：你死亡前，可以将你情报区中的一张情报置入当前回合角色的情报区中。
 message skill_ru_gui_tos {
   bool   enable = 1; // 是否发动
@@ -182,13 +173,6 @@ message skill_ru_gui_toc {
   uint32 player_id = 1;
   uint32 card_id = 2;
   bool   enable = 3; // 是否发动
-}
-
-// 广播询问客户端使用【转交】
-message skill_wait_for_zhuan_jiao_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 白小年【转交】：你使用一张手牌后，可以从你的情报区选择一张非黑色情报，将其置入另一名角色的情报区，然后你摸两张牌。你不能通过此技能让任何角色收集三张或更多同色情报。
@@ -228,8 +212,6 @@ message skill_wait_for_cheng_zhi_toc {
   repeated card cards = 3; // 死亡角色的所有手牌（只有发动者能看到）
   color         identity = 4; // 死亡角色的身份牌
   secret_task   secret_task = 5; // 死亡角色的机密任务（如果是神秘人）
-  uint32        waiting_second = 6;
-  uint32        seq = 7;
 }
 
 // 顾小梦【承志】：一名其他角色死亡前，若此角色牌已翻开，则你获得其所有手牌，并查看其身份牌，你可以获得该身份牌，并将你原本的身份牌面朝下移出游戏。
@@ -243,15 +225,6 @@ message skill_cheng_zhi_toc {
   uint32 player_id = 1; // 发动者
   uint32 die_player_id = 2; // 死亡角色
   bool   enable = 3; // 是否发动
-}
-
-// 广播询问使用【就计】，李宁玉会收到这条协议，其他人（包括使用者）走全场读条协议
-message skill_wait_for_jiu_ji_toc {
-  uint32 from_player_id = 1; // 谁对你使用了牌
-  card_type card_type = 2; // 什么牌（李宁玉被威逼的时候不知道威逼了什么）
-  card card = 3; // 那张牌（肥源龙川的技能使用的威逼和利诱，这个字段为null，如果是试探，李宁玉看不到，这个字段也为null）
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
 }
 
 // 李宁玉【就计】A：你被【试探】【威逼】或【利诱】指定为目标后，你可以翻开此角色牌，然后摸两张牌。
@@ -279,13 +252,6 @@ message skill_jiu_ji_b_toc {
   uint32 player_id = 1;
   card   card = 2; // 拿走的那张卡牌
   uint32 unknown_card_count = 3; // 如果是【试探】且结算后要被李宁玉拿走时，其他人将会看不到这张牌。
-}
-
-// 广播询问客户端使用【遗信】
-message skill_wait_for_yi_xin_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 李宁玉【遗信】：你死亡前，可以将一张手牌置入另一名角色的情报区。
@@ -320,8 +286,6 @@ message skill_jing_meng_a_toc {
   uint32        player_id = 1;
   uint32        target_player_id = 2;
   repeated card cards = 3; // 目标角色的手牌，只有你能看到这个字段，其他人为空
-  uint32        waiting_second = 4;
-  uint32        seq = 5;
 }
 
 // 程小蝶【惊梦】B：然后从中选择一张弃置。
@@ -348,8 +312,6 @@ message skill_jie_dao_sha_ren_a_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
   card   card = 3; // 那张抽取的牌，所有人都能看到
-  uint32 waiting_second = 4; // 如果是黑色，则这个也会大于0。如果是非黑色，则这个也会等于0
-  uint32 seq = 5;
 }
 
 // 商玉【借刀杀人】B：若展示的牌是黑色，则你可以将其置入一名角色的情报区，并将你的角色牌翻至面朝下。
@@ -379,8 +341,6 @@ message skill_jiao_ji_a_toc {
   uint32        target_player_id = 2;
   repeated card cards = 3; // 抽到的牌，只有使用者和目标角色能看到这个
   uint32        unknown_card_count = 4; // 其他人看不到抽到的牌，只有数量
-  uint32        waiting_second = 5; // 如果不需要还，waiting_second就为0
-  uint32        seq = 6;
 }
 
 // 裴玲【交际】B：然后将等量手牌交给该角色。你每收集一张黑色情报，便可以少交一张牌。
@@ -409,8 +369,6 @@ message skill_miao_bi_qiao_bian_a_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
   uint32 card_id = 3;
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
 }
 
 // 连鸢【妙笔巧辩】B，选择第二张牌
@@ -439,8 +397,6 @@ message skill_jin_bi_a_tos {
 message skill_jin_bi_a_toc {
   uint32 player_id = 1; // 王田香的ID
   uint32 target_player_id = 2; // 被禁闭的人的ID
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
 }
 
 // 王田香【禁闭】B：除非其交给你两张手牌，否则其本回合不能使用手牌，且所有角色技能无效。
@@ -468,9 +424,7 @@ message skill_miao_shou_a_toc {
   uint32        player_id = 1;
   uint32        target_player_id = 2;
   repeated card cards = 3; // 他的手牌，只有阿芙罗拉能看见
-  uint32        waiting_second = 4;
-  uint32        seq = 5;
-  card          message_card = 6; // 被弃掉的待收情报，所有人都能看见
+  card          message_card = 4; // 被弃掉的待收情报，所有人都能看见
 }
 
 // 阿芙罗拉【妙手】B：从中选择一张牌作为待收情报，面朝上移至一名角色的面前。
@@ -499,8 +453,6 @@ message skill_jin_kou_yi_kai_a_tos {
 message skill_jin_kou_yi_kai_a_toc {
   uint32 player_id = 1;
   card card = 2; // 那张牌，只有玄青子能看见
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
 }
 
 // 玄青子【金口一开】B：然后选择一项：
@@ -515,13 +467,6 @@ message skill_jin_kou_yi_kai_b_tos {
 message skill_jin_kou_yi_kai_b_toc {
   uint32 player_id = 1;
   bool exchange = 2; // false-摸一张牌，true-互换。摸牌走摸牌协议，互换由客户端自行处理。
-}
-
-// 广播询问客户端使用【江湖令】A
-message skill_wait_for_jiang_hu_ling_a_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 王富贵【江湖令】A：你传出情报后，可以宣言一个颜色。
@@ -541,22 +486,20 @@ message skill_jiang_hu_ling_a_toc {
 message skill_wait_for_jiang_hu_ling_b_toc {
   uint32 player_id = 1;
   color color = 2;
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
 }
 
 // 王富贵【江湖令】B：本回合中，当情报被接收后，你可以从接收者的情报区弃置一张被宣言颜色的情报，若弃置的是黑色情报，则你摸一张牌。
-// 如果不发动，则直接发 end_receive_phase_toc 即可
 message skill_jiang_hu_ling_b_tos {
-  uint32 card_id = 1;
-  uint32 seq = 2;
+  bool enable = 1;
+  uint32 card_id = 2;
+  uint32 seq = 3;
 }
 
 // 广播使用【江湖令】B，摸牌走摸牌协议
 message skill_jiang_hu_ling_b_toc {
-  bool enable = 3;
-  uint32 player_id = 1;
-  uint32 card_id = 2;
+  bool enable = 1;
+  uint32 player_id = 2;
+  uint32 card_id = 3;
 }
 
 // SP顾小梦【羁绊】A：出牌阶段限一次，可以摸两张牌。
@@ -567,8 +510,6 @@ message skill_ji_ban_a_tos {
 // 广播使用【羁绊】A，摸牌走摸牌协议，并等待给牌（摸牌协议会在这个协议之前发）
 message skill_ji_ban_a_toc {
   uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // SP顾小梦【羁绊】B：然后将至少一张手牌交给另一名角色。
@@ -604,8 +545,6 @@ message skill_bo_ai_a_tos {
 // 广播使用【博爱】A，摸牌走摸牌协议，并等待给牌（摸牌协议会在这个协议之前发）
 message skill_bo_ai_a_toc {
   uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 白沧浪【博爱】B：然后可以将一张手牌交给另一名角色，若交给了女性角色，则你再摸一张牌。
@@ -636,8 +575,6 @@ message skill_guang_fa_bao_a_toc {
 // 广播询问客户端使用【广发报】B
 message skill_wait_for_guang_fa_bao_b_toc {
   uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 小九【广发报】B：并且你可以将你的任意张手牌置入任意名角色的情报区。你不能通过此技能让任何角色收集三张或更多的同色情报。
@@ -654,13 +591,6 @@ message skill_guang_fa_bao_b_toc {
   bool          enable = 2; // true-发，还能继续，false-不发，就不继续了。如果发完没牌了，这里还是true但不继续。如果继续就会接着发上面的wait，不继续就不再发wait了。
   uint32        target_player_id = 3;
   repeated card cards = 4; // 给的牌
-}
-
-// 广播询问客户端使用【强令】
-message skill_wait_for_qiang_ling_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 张一挺【强令】：你传出情报后，或你决定接收情报后，可以宣言至多两个卡牌名称。本回合中，所有角色均不能使用被宣言的卡牌。
@@ -685,8 +615,6 @@ message skill_jian_ren_a_tos {
 message skill_jian_ren_a_toc {
   uint32 player_id = 1;
   card card = 2; // 展示的牌
-  uint32 waiting_second = 3; // 若是黑色牌，则有等待时间
-  uint32 seq = 4;
 }
 
 // 吴志国【坚韧】B：并从一名角色的情报区弃置一张黑色情报。
@@ -715,8 +643,6 @@ message skill_sou_ji_a_toc {
   uint32 target_player_id = 2; // 目标角色
   repeated card cards = 3; // 目标角色的手牌，只有李醒可以看到
   card message_card = 4; // 待收情报，只有李醒可以看到
-  uint32 waiting_second = 5;
-  uint32 seq = 6;
 }
 
 // 李醒【搜辑】B：并且你可以选择其中任意张黑色牌，展示并加入你的手牌。
@@ -742,8 +668,6 @@ message skill_dui_zheng_xia_yao_a_tos {
 // 广播使用【对症下药】A
 message skill_dui_zheng_xia_yao_a_toc {
   uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 黄济仁【对症下药】B：并且你可以展示两张含有相同颜色的手牌。
@@ -758,8 +682,6 @@ message skill_dui_zheng_xia_yao_b_toc {
   uint32 player_id = 1;
   bool enable = 2;
   repeated card cards = 3;
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
 }
 
 // 黄济仁【对症下药】C：然后从一名角色的情报区，弃置一张对应颜色情报。
@@ -794,8 +716,6 @@ message skill_wait_for_du_ji_b_toc {
   uint32 player_id = 1;
   repeated uint32 target_player_ids = 2;
   repeated uint32 card_ids = 3; // 能选的卡牌ID，只有白昆山能看见，上面的target_player_ids对应的是这张牌会给谁选择
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
 }
 
 // 白昆山【毒计】B：若展示的是黑色牌，你可以改为令抽取者选择一项。
@@ -812,8 +732,6 @@ message skill_du_ji_b_toc {
   uint32 waiting_player_id = 3; // 读秒的玩家ID
   uint32 target_player_id = 4; // 对方的玩家ID
   card card = 5; // 做选择的卡牌
-  uint32 waiting_second = 6;
-  uint32 seq = 7;
 }
 
 // 白昆山【毒计】C：
@@ -838,8 +756,6 @@ message skill_cang_shen_jiao_tang_a_toc {
   uint32 player_id = 1; // 玛利亚的ID
   uint32 target_player_id = 2; // 接收者的ID
   bool is_hidden_role = 3; // 是否是隐藏角色
-  uint32 waiting_second = 4; // 如果对方是隐藏角色但是是面朝下，或者是公开角色但是没有黑色情报，就不用选，最后两个字段都为0
-  uint32 seq = 5;
 }
 
 // 玛利亚【藏身教堂】B（对方是隐藏角色）：在A之后，将该角色翻至面朝下
@@ -872,12 +788,6 @@ message skill_cang_shen_jiao_tang_c_toc {
   bool as_message_card = 5; // 是否作为情报牌
 }
 
-// 广播询问客户端使用【先发制人】A（仅在一张牌因角色技能置入情报区后才会发送，争夺阶段没有这个，由客户端主动发送。只有钱敏才会收到这条协议）
-message wait_for_skill_xian_fa_zhi_ren_a_toc {
-  uint32 waiting_second = 1;
-  uint32 seq = 2;
-}
-
 // 钱敏【先发制人】A：一张牌因角色技能置入情报区后，或争夺阶段，你可以翻开此角色，然后弃置一名角色情报区的一张情报
 message skill_xian_fa_zhi_ren_a_tos {
   bool enable = 1; // 如果是被上一条协议触发的，需要发一个enable=false的协议来表示不发动
@@ -892,8 +802,6 @@ message skill_xian_fa_zhi_ren_a_toc {
   uint32 player_id = 2; // 钱敏的ID
   uint32 target_player_id = 3;
   uint32 card_id = 4;
-  uint32 waiting_second = 5;
-  uint32 seq = 6;
 }
 
 // 钱敏【先发制人】B：并令一张角色牌本回合所有技能无效，若其是面朝下的隐藏角色牌，你可以将其翻开（超时会选择A的目标角色，不翻开）
@@ -919,8 +827,6 @@ message skill_leng_xue_xun_lian_a_tos {
 message skill_leng_xue_xun_lian_a_toc {
   uint32 player_id = 1; // SP韩梅的ID
   repeated card cards = 2;
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
 }
 
 // SP韩梅【冷血训练】B：从中选择一张（若有黑色牌则必须选择一张黑色牌）作为情报面朝上传出，并锁定一名角色，且令所有角色本回合中不能使用【调包】，之后将未选择的那张加入你的手牌。
@@ -944,13 +850,6 @@ message skill_leng_xue_xun_lian_b_toc {
 message skill_guan_hai_toc {
   uint32 player_id = 1; // 池镜海的id
   card card = 2; // 只有池镜海能看到这张牌
-}
-
-// 广播询问使用【避风】
-message wait_for_skill_bi_feng_toc {
-  uint32 player_id = 1; // 池镜海的id
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 池镜海【避风】：争夺阶段限一次，“观海”后你可以无效你使用的【截获】或【误导】，然后摸两张牌。
@@ -990,8 +889,6 @@ message skill_tan_qiu_zhen_li_a_toc {
   uint32 player_id = 1; // SP连鸢的ID
   uint32 target_player_id = 2;
   uint32 card_id = 3;
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
 }
 
 // SP连鸢【探求真理】B：然后该角色可以将其手牌或情报区中的一张纯黑色牌置入你的情报区。
@@ -1022,8 +919,6 @@ message skill_ru_bi_zhi_shi_a_toc {
   uint32 player_id = 1; // 盛老板的ID
   uint32 target_player_id = 2;
   repeated card cards = 3; // 目标的手牌，只有盛老板能看到
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
 }
 
 // 盛老板【如臂指使】B：然后可以从中选择一张弃置，或选择一张符合使用时机的牌，由该角色使用（若如【误导】等需要做出选择的，则由你选择）。
@@ -1070,8 +965,6 @@ message skill_huo_xin_a_toc {
   uint32 target_player_id = 2;
   card show_card = 3; // 展示的牌
   repeated card cards = 4; // 目标角色的手牌，只有高桥智子能看见
-  uint32 waiting_second = 5;
-  uint32 seq = 6;
 }
 
 // 高桥智子【惑心】B：从中选择一张弃置，若弃置了含有展示牌颜色的牌，则将该弃置牌加入你的手牌。
@@ -1086,14 +979,6 @@ message skill_huo_xin_b_toc {
   uint32 target_player_id = 2;
   card discard_card = 3; // 因为可能加入手牌，所以不走弃牌协议，这条协议自己处理
   bool join_into_hand = 4;
-}
-
-// 广播询问使用【从容应对】
-message wait_for_skill_cong_rong_ying_dui_toc {
-  uint32 player_id = 1; // 简先生的ID
-  uint32 target_player_id = 2;
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
 }
 
 // 简先生【从容应对】：你对一名角色使用的【试探】结算后，或一名角色对你使用的【试探】结算后，你可以抽取该角色的一张手牌，或令你和该角色各摸一张牌。
@@ -1121,8 +1006,6 @@ message skill_chi_zi_zhi_xin_a_tos {
 message skill_chi_zi_zhi_xin_a_toc {
   uint32 player_id = 1; // 简先生的ID
   card message_card = 2; // 那张接收的情报
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
 }
 
 // SP小九【赤子之心】B：你可以摸两张牌，或从手牌中选择一张含有该情报颜色的牌，将其置入你的情报区。
@@ -1148,8 +1031,6 @@ message skill_yun_chou_wei_wo_a_tos {
 message skill_yun_chou_wei_wo_a_toc {
   uint32 player_id = 1; // 老虎的ID
   repeated card cards = 2; // 五张牌，只有老虎能看见
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
 }
 
 // 老虎【运筹帷幄】B：从中选择三张加入手牌，其余的卡牌按任意顺序放回牌堆顶
@@ -1175,8 +1056,6 @@ message skill_hou_lai_ren_a_toc {
   uint32 player_id = 1; // SP端木静的ID
   uint32 remain_card_id = 2; // 保留的那张情报
   repeated role roles = 3; // 三张角色牌，只有SP端木静可以看到
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
 }
 
 // SP端木静【后来人】B：从中选择一张作为你的新角色牌（隐藏角色则面朝下），剩余的角色牌放回角色牌堆底。
@@ -1218,13 +1097,6 @@ message skill_shou_kou_ru_ping_toc {
   uint32 unknown_card_count = 6; // 被试探无效时，除使用者外其余人看不见那张试探牌，这个字段为1。肥源龙川的技能使用的威逼，这个字段为0。
 }
 
-// 当【调包】结算后，广播询问使用【赌命】
-message skill_wait_for_du_ming_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
-}
-
 // 金自来【赌命】A：一回合一次，情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。
 message skill_du_ming_a_tos {
   bool enable = 1;
@@ -1237,8 +1109,6 @@ message skill_du_ming_a_toc {
   uint32 player_id = 1;
   color color = 3;
   card card = 4; // 那张情报牌，只有金自来能看到
-  uint32 waiting_second = 5; // 如果有后续，则这个值大于0
-  uint32 seq = 6; // 如果有后续且为自己，则这个值大于0
 }
 
 // 金自来【赌命】B：若猜错且你有纯黑色手牌，则你必须将一张纯黑色手牌置入自己的情报区。
@@ -1263,8 +1133,6 @@ message skill_lian_xin_a_toc {
   uint32 player_id = 1; // 成年小九的ID
   uint32 target_player_id = 2;
   card message_card = 3;
-  uint32 waiting_second = 4; // 如果没有满足条件的手牌，则这个字段为0
-  uint32 seq = 5;
 }
 
 // 成年小九【联信】B：然后将一张含该情报不同颜色的手牌置入传出者的情报区
@@ -1295,8 +1163,6 @@ message skill_mi_xin_a_toc {
   uint32 player_id = 1; // 成年韩梅的ID
   uint32 target_player_id = 2;
   card message_card = 3;
-  uint32 waiting_second = 4; // 如果没有满足条件的手牌，则这个字段为0
-  uint32 seq = 5;
 }
 
 // 成年韩梅【密信】B：然后将一张含该情报相同颜色的手牌置入传出者的情报区
@@ -1329,8 +1195,6 @@ message skill_yu_si_wang_po_a_toc {
   uint32 player_id = 1; // 秦无命的ID
   uint32 target_player_id = 2;
   uint32 card_count = 3; // 秦无命弃牌的数量+1，弃牌走弃牌协议
-  uint32 waiting_second = 4; // 如果全弃，则这个字段为0
-  uint32 seq = 5;
 }
 
 // 秦无命【鱼死网破】B：对方弃牌（如果全弃，不用客户端请求）
@@ -1374,8 +1238,6 @@ message skill_ying_bian_zi_ru_a_tos {
 message skill_ying_bian_zi_ru_a_toc {
   uint32 player_id = 1;
   card card = 2;
-  uint32 waiting_second = 3; // 仅当是黑单色时，才有后续
-  uint32 seq = 4;
 }
 
 // SP阿芙罗拉【应变自如】B，选择【误导】的目标
@@ -1405,8 +1267,6 @@ message skill_tao_qu_a_tos {
 message skill_tao_qu_a_toc {
   uint32 player_id = 1;
   repeated color colors = 2; // 可以选的颜色
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
 }
 
 // SP白菲菲【套取】B：将一名其他角色情报区的一张同色情报加入手牌，该角色摸一张牌
@@ -1435,8 +1295,6 @@ message skill_tan_xu_bian_shi_a_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;
   card card = 3; // 只有凌素秋和那名角色能看见
-  uint32 waiting_second = 4;
-  uint32 seq = 5;
 }
 
 // 凌素秋【探虚辨实】B：该角色还你一张手牌，且需优先选择含其身份颜色的牌（潜伏=红，军情=蓝，神秘人=任意颜色）
@@ -1452,14 +1310,6 @@ message skill_tan_xu_bian_shi_b_toc {
   card card = 3; // 只有凌素秋和那名角色能看见
 }
 
-// 广播询问使用【寸步不让】（摸牌不询问，直接发下面的toc）
-message skill_wait_for_cun_bu_bu_rang_toc {
-  uint32 player_id = 1; // 凌素秋的ID
-  uint32 target_player_id = 2;
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
-}
-
 // 凌素秋【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。你在回合外弃置手牌后，可以摸一张牌。
 message skill_cun_bu_bu_rang_tos {
   bool enable = 1;
@@ -1473,13 +1323,6 @@ message skill_cun_bu_bu_rang_toc {
   bool is_draw_card = 3; // false-抽牌，true-摸牌。如果是摸牌，则下面两个字段无意义
   uint32 target_player_id = 4;
   card card = 5; // 只有凌素秋和那名角色能看见
-}
-
-// 广播询问使用【信鸽联络】
-message skill_wait_for_xin_ge_lian_luo_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 小铃铛【信鸽联络】：每当你传出非直达情报时，可以选择一名角色本轮的传递阶段中不能选择接收情报。
@@ -1509,13 +1352,6 @@ message skill_hou_zi_qie_xin_toc {
   card hand_card = 2;
   uint32 target_player_id = 3;
   uint32 message_card_id = 4;
-}
-
-// 广播询问使用【变则通】
-message skill_wait_for_bian_ze_tong_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 陈大耳【变则通】：你的传递阶段开始时，摸一张牌，然后你可以宣言两种卡牌类型“A”和“B”，直到回合结束，所有玩家的A牌只能当B牌使用。
@@ -1562,8 +1398,6 @@ message skill_jian_di_feng_xing_a_tos {
 // 广播使用【歼敌风行】A
 message skill_jian_di_feng_xing_a_toc {
   uint32 player_id = 1;
-  uint32 waiting_second = 2; // 如果没有纯黑色手牌，则这个字段为0
-  uint32 seq = 3;
 }
 
 // 边云疆【歼敌风行】B：将一张纯黑色手牌置入自己的情报区
@@ -1576,8 +1410,6 @@ message skill_jian_di_feng_xing_b_tos {
 message skill_jian_di_feng_xing_b_toc {
   uint32 player_id = 1;
   card card = 2;
-  uint32 waiting_second = 3; // 如果原情报因为别人的技能消失了，则这个字段为0
-  uint32 seq = 4;
 }
 
 // 边云疆【歼敌风行】C：然后可以弃掉接收到的情报，用一张黑色手牌代替之
@@ -1593,13 +1425,6 @@ message skill_jian_di_feng_xing_c_toc {
   bool enable = 2;
   card card = 3;
   uint32 old_message_card_id = 4;
-}
-
-// 广播询问使用【详尽思索】
-message skill_wait_for_xiang_jin_si_suo_toc {
-  uint32 player_id = 1; // 孙守謨的ID
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 孙守謨【详尽思索】A：每当情报传出时，你可以指定一名角色
@@ -1619,13 +1444,6 @@ message skill_xiang_jin_si_suo_a_toc {
 // 广播使用【详尽思索】B：若最后情报被该角色接收，你摸两张牌（摸牌走摸牌协议）
 message skill_xiang_jin_si_suo_b_toc {
   uint32 player_id = 1; // 孙守謨的ID
-}
-
-// 广播询问使用【咱们工人有知识】
-message skill_wait_for_workers_are_knowledgable_toc {
-  uint32 player_id = 1;
-  uint32 waiting_second = 2;
-  uint32 seq = 3;
 }
 
 // 火车司机【咱们工人有知识】：你传出非直达情报时，每有一张黑情报，你可以选择一名角色本回合不能接收情报。

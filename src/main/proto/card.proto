@@ -1,0 +1,281 @@
+syntax = "proto3";
+option java_package = "com.fengsheng.protos";
+import "common.proto";
+
+// 请求使用试探
+message use_shi_tan_tos {
+  uint32 card_id = 1; // 卡牌ID
+  uint32 player_id = 2;
+  uint32 seq = 3;
+}
+
+// 通知客户端，谁对谁使用了试探
+message use_shi_tan_toc {
+  uint32 player_id = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者
+  uint32 card_id = 3; // 此时，只有使用者能看到这个id，其他人都是0
+}
+
+// 向被试探者展示试探，并等待回应
+message show_shi_tan_toc {
+  uint32 player_id = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者
+  card   card = 3; // 只有自己是使用者或者被使用者时，这个字段才会有值，否则为null/nil
+}
+
+// 被试探者执行试探
+message execute_shi_tan_tos {
+  repeated uint32 card_id = 1; // 摸牌或者弃牌但是没牌，就发送空数组。有牌弃就发送弃的牌的id。
+  uint32          seq = 2;
+}
+
+message execute_shi_tan_toc {
+  uint32 player_id = 1; // 被试探者
+  bool   is_draw_card = 2; // 若他选择了摸牌，则为true。（摸了牌和弃了牌是另外的协议）
+}
+
+// 请求使用利诱
+message use_li_you_tos {
+  uint32 card_id = 1; // 卡牌ID
+  uint32 player_id = 2;
+  uint32 seq = 3;
+}
+
+// 通知客户端使用利诱的结果
+message use_li_you_toc {
+  uint32 player_id = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者
+  card   li_you_card = 3; // 使用的这张利诱牌
+  card   message_card = 4; // 利诱翻出来的牌。如果牌堆和弃牌堆全用完了，则为null/nil
+  bool   join_into_hand = 5; // 是否改为加入使用者手牌
+}
+
+// 请求使用平衡
+message use_ping_heng_tos {
+  uint32 card_id = 1; // 卡牌ID
+  uint32 player_id = 2;
+  uint32 seq = 3;
+}
+
+// 通知客户端使用平衡的结果
+message use_ping_heng_toc {
+  uint32 player_id = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者
+  card   ping_heng_card = 3; // 使用的这张平衡牌
+}
+
+// 请求使用威逼
+message use_wei_bi_tos {
+  uint32    card_id = 1; // 卡牌ID
+  uint32    player_id = 2;
+  card_type want_type = 3; // 声明的卡牌类型（截获/误导/调包/澄清）
+  uint32    seq = 4;
+}
+
+// 威逼等待给牌
+message wei_bi_wait_for_give_card_toc {
+  card      card = 1; // 使用的那张威逼卡牌
+  uint32    player_id = 2;
+  uint32    target_player_id = 3;
+  card_type want_type = 4; // 声明的卡牌类型（截获/误导/调包/澄清）
+}
+
+// 威逼给牌
+message wei_bi_give_card_tos {
+  uint32 card_id = 1; // 给出去的卡牌ID
+  uint32 seq = 2;
+}
+
+// 通知所有人威逼给牌
+message wei_bi_give_card_toc {
+  uint32 player_id = 1;
+  uint32 target_player_id = 2;
+  card   card = 3; // 给出去的卡牌，其它人看不到牌，就为空
+}
+
+// 通知所有人威逼的牌没有，展示所有手牌
+message wei_bi_show_hand_card_toc {
+  card          card = 1; // 使用的那张威逼卡牌
+  uint32        player_id = 2;
+  card_type     want_type = 3; // 声明的卡牌类型（截获/误导/调包/澄清）
+  uint32        target_player_id = 4;
+  repeated card cards = 5; // 展示所有手牌，只有使用者能看到，其他人收到的都是空数组
+}
+
+// 请求使用澄清
+message use_cheng_qing_tos {
+  uint32 card_id = 1; // 卡牌ID
+  uint32 player_id = 2;
+  uint32 target_card_id = 3;
+  uint32 seq = 4;
+}
+
+// 通知所有人澄清
+message use_cheng_qing_toc {
+  card   card = 1;
+  uint32 player_id = 2;
+  uint32 target_player_id = 3;
+  uint32 target_card_id = 4;
+}
+
+// 使用破译
+message use_po_yi_tos {
+  uint32 card_id = 1; // 用的那张破译牌
+  uint32 seq = 2;
+}
+
+// 通知所有人使用破译，并询问是否翻开并摸一张牌（只有黑情报才能翻开）
+message use_po_yi_toc {
+  card   card = 1; // 用的那张破译牌
+  uint32 player_id = 2; // 使用者
+  card   message_card = 3; // 只有使用者才能看到这张情报
+}
+
+message po_yi_show_tos {
+  bool   show = 1; // 是否翻开并摸一张牌（只有黑情报才能翻开）
+  uint32 seq = 2;
+}
+
+message po_yi_show_toc {
+  uint32 player_id = 1; // 使用者
+  bool   show = 2; // 是否翻开并摸一张牌（只有黑情报才能翻开）（摸牌直接走摸牌协议）
+  card   message_card = 3; // 只有选择翻开时，才会显示这个情报
+}
+
+// 使用截获
+message use_jie_huo_tos {
+  uint32 card_id = 1; // 用的那张截获牌
+  uint32 seq = 2;
+}
+
+// 通知所有人使用截获
+message use_jie_huo_toc {
+  card   card = 1; // 用的那张截获牌
+  uint32 player_id = 2; // 使用者
+}
+
+// 使用调包
+message use_diao_bao_tos {
+  uint32 card_id = 1; // 用的那张截获牌
+  uint32 seq = 2;
+}
+
+// 通知所有人使用调包
+message use_diao_bao_toc {
+  uint32 card_id = 1; // 用的那张调包牌（但是调包后，这张调包会面朝下代替原情报继续传递），只有使用调包的人能收到这个值
+  card   old_message_card = 2; // 被弃掉的那张原来的情报
+  uint32 player_id = 3; // 使用者
+}
+
+// 使用误导
+message use_wu_dao_tos {
+  uint32 card_id = 1; // 用的那张误导牌
+  uint32 target_player_id = 2; // 误导的目标
+  uint32 seq = 3;
+}
+
+// 通知所有人使用误导
+message use_wu_dao_toc {
+  card   card = 1; // 用的那张误导牌
+  uint32 player_id = 2; // 使用者
+  uint32 target_player_id = 3; // 误导的目标
+}
+
+// 使用风云变幻
+message use_feng_yun_bian_huan_tos {
+  uint32 card_id = 1;
+  uint32 seq = 2;
+}
+
+// 通知所有人使用风云变幻，并翻牌
+message use_feng_yun_bian_huan_toc {
+  card          card = 1; // 用的那张风云变幻牌
+  uint32        player_id = 2; // 使用者
+  repeated card show_cards = 3; // 翻开的牌
+}
+
+// 通知客户端，风云变幻轮到谁选牌了
+message wait_for_feng_yun_bian_huan_choose_card_toc {
+  uint32 player_id = 1;
+}
+
+// 风云变幻选牌
+message feng_yun_bian_huan_choose_card_tos {
+  uint32 card_id = 1; // 选的牌
+  bool   as_message_card = 2; // 是否作为情报牌
+  uint32 seq = 3;
+}
+
+// 通知客户端，风云变幻谁选了什么牌
+message feng_yun_bian_huan_choose_card_toc {
+  uint32 player_id = 1;
+  uint32 card_id = 2;
+  bool   as_message_card = 3; // 是否作为情报牌
+}
+
+// 使用密令
+message use_mi_ling_tos {
+  uint32 card_id = 1; // 被使用的那张密令牌
+  uint32 target_player_id = 2; // 被使用者，不能没有手牌
+  uint32 secret = 3; // 0-东风，1-西风，2-静风
+  uint32 seq = 4;
+}
+
+// 通知所有人使用密令，客户端接下来应该由使用者(has_color为false)发 mi_ling_choose_card_tos 或者被使用者(has_color为true)发 send_message_card_tos
+message use_mi_ling_toc {
+  uint32        player_id = 1; // 使用者
+  uint32        target_player_id = 2; // 被使用者，也就是传情报的人
+  uint32        secret = 3; // 0-东风，1-西风，2-静风
+  card          card = 4; // 只有自己是使用者或者被使用者时，这个字段才会有值，否则为null/nil
+  bool          has_color = 5; // 为true表示有这个颜色，由被使用者选牌。为false表示没有这个颜色，由使用者选牌。
+  repeated card hand_cards = 6; // 被使用者的手牌，只有has_color为false且自己是使用者时，这个字段才有值
+}
+
+// 密令没有对应颜色的牌时，由自己选牌
+message mi_ling_choose_card_tos {
+  uint32 card_id = 1; // 被挑选的牌
+  uint32 seq = 2;
+}
+
+// 通知所有人密令选牌，等待传情报。接下来应该由被使用者发 send_message_card_tos
+message mi_ling_choose_card_toc {
+  uint32 player_id = 1; // 使用者
+  uint32 target_player_id = 2;
+  card   card = 3; // 被挑选的牌，只有使用者和被使用者能看到
+}
+
+// 调虎离山
+message use_diao_hu_li_shan_tos {
+  uint32 card_id = 1;
+  uint32 target_player_id = 2;
+  bool is_skill = 3; // true-禁用技能，false-禁用手牌
+  uint32 seq = 4;
+}
+
+// 广播使用调虎离山
+message use_diao_hu_li_shan_toc {
+  card   card = 1; // 那张调虎离山牌
+  uint32 player_id = 2; // 使用者
+  uint32 target_player_id = 3;
+  bool is_skill = 4; // true-禁用技能，false-禁用手牌
+}
+
+// 欲擒故纵
+message use_yu_qin_gu_zong_tos {
+  uint32          card_id = 1;  // 那张欲擒故纵牌
+  uint32          message_card_id = 2;
+  uint32          target_player_id = 3;
+  repeated uint32 lock_player_id = 4;
+  direction       card_dir = 5;
+  uint32          seq = 6;
+}
+
+// 广播使用欲擒故纵
+message use_yu_qin_gu_zong_toc {
+  card            card = 1;  // 那张欲擒故纵牌
+  uint32          message_card_id = 2;
+  uint32          player_id = 3; // 当前回合玩家ID，一定是传出者
+  uint32          target_player_id = 4; // 目标
+  repeated uint32 lock_player_ids = 5; // 被锁定的玩家ID
+  direction       card_dir = 6; // 传递的方向
+}
