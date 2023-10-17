@@ -89,7 +89,10 @@ class YingBianZiRu : InitialSkill, ActiveSkill {
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
-                        val target = arrayOf(r.getNextLeftAlivePlayer(), r.getNextRightAlivePlayer()).random()
+                        val target = arrayOf(
+                            fsm.inFrontOfWhom.getNextLeftAlivePlayer(),
+                            fsm.inFrontOfWhom.getNextRightAlivePlayer()
+                        ).random()
                         val builder = skill_ying_bian_zi_ru_b_tos.newBuilder()
                         builder.targetPlayerId = r.getAlternativeLocation(target.location)
                         builder.seq = seq
@@ -98,7 +101,10 @@ class YingBianZiRu : InitialSkill, ActiveSkill {
                 }, r.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
-                    val target = arrayOf(r.getNextLeftAlivePlayer(), r.getNextRightAlivePlayer()).random()
+                    val target = arrayOf(
+                        fsm.inFrontOfWhom.getNextLeftAlivePlayer(),
+                        fsm.inFrontOfWhom.getNextRightAlivePlayer()
+                    ).random()
                     val builder = skill_ying_bian_zi_ru_b_tos.newBuilder()
                     builder.targetPlayerId = r.getAlternativeLocation(target.location)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
