@@ -9,6 +9,7 @@ import com.fengsheng.protos.Common.secret_task.*
 import org.apache.log4j.Logger
 import java.io.BufferedReader
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -154,23 +155,27 @@ object ScoreFactory {
 
         val playerCountAppearCount = TreeMap<Int, IntArray>()
         val playerCountWinCount = TreeMap<Int, IntArray>()
-        FileInputStream("stat.csv").use { `is` ->
-            BufferedReader(InputStreamReader(`is`)).use { reader ->
-                var line: String?
-                while (true) {
-                    line = reader.readLine()
-                    if (line == null) break
-                    val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
-                    val playerCount = a[4].toInt()
-                    val playerCountAppear = playerCountAppearCount.computeIfAbsent(playerCount) { IntArray(10) }
-                    val playerCountWin = playerCountWinCount.computeIfAbsent(playerCount) { IntArray(10) }
-                    val index =
-                        if ("Black" == a[2]) secret_task.valueOf(a[3]).number + 3
-                        else null
-                    playerCountAppear.inc(index)
-                    if (a[1].toBoolean()) playerCountWin.inc(index)
+        try {
+            FileInputStream("stat.csv").use { `is` ->
+                BufferedReader(InputStreamReader(`is`)).use { reader ->
+                    var line: String?
+                    while (true) {
+                        line = reader.readLine()
+                        if (line == null) break
+                        val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
+                        val playerCount = a[4].toInt()
+                        val playerCountAppear = playerCountAppearCount.computeIfAbsent(playerCount) { IntArray(10) }
+                        val playerCountWin = playerCountWinCount.computeIfAbsent(playerCount) { IntArray(10) }
+                        val index =
+                            if ("Black" == a[2]) secret_task.valueOf(a[3]).number + 3
+                            else null
+                        playerCountAppear.inc(index)
+                        if (a[1].toBoolean()) playerCountWin.inc(index)
+                    }
                 }
             }
+        } catch (_: FileNotFoundException) {
+            // Ignored
         }
 
         fun Int.parseSecretTask() = when (this) {
