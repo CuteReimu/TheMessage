@@ -226,13 +226,13 @@ enum wait_type {
 }
 
 enum location {
-  deck = 0; //牌堆
-  discard_pile = 1; //弃牌堆
-  handcard = 2; //手牌
-  message_zone = 3; //情报区
-  message_in_transmiting = 4; //传递中的情报
-  card_in_using = 5; //正在使用的卡牌
-  removed_from_game = 6; //移出游戏
+  deck = 0; // 牌堆
+  discard_pile = 1; // 弃牌堆
+  handcard = 2; // 手牌
+  message_zone = 3; // 情报区
+  message_in_transmiting = 4; // 传递中的情报
+  card_in_using = 5; // 正在使用的卡牌
+  removed_from_game = 6; // 移出游戏
 }
 
 message desk_location {
