@@ -282,6 +282,7 @@ abstract class Player protected constructor() {
                 Red -> "红方"
                 Blue -> "蓝方"
                 Black -> "神秘人"
+                Has_No_Identity -> "无身份"
                 else -> "未知身份：$c"
             }
         }
