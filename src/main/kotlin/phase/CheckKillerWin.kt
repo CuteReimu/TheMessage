@@ -19,10 +19,8 @@ import org.apache.log4j.Logger
  */
 data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, val afterDieResolve: Fsm) : Fsm {
     override fun resolve(): ResolveResult {
-        if (diedQueue.isEmpty()) {
-            whoseTurn.game!!.players.forEach { it!!.dieJustNow = false }
+        if (diedQueue.isEmpty())
             return ResolveResult(afterDieResolve, true)
-        }
         val players = whoseTurn.game!!.players.filterNotNull().filter { !it.lose }
         val killer = players.find { it.identity == Black && it.secretTask == Killer } // 镇压者
         val stealer = players.find { it.identity == Black && it.secretTask == Stealer } // 簒夺者
