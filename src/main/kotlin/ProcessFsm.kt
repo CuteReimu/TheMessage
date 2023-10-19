@@ -37,8 +37,8 @@ abstract class ProcessFsm : Fsm {
                 return ResolveResult(null, false)
             val dyingResult = checkDying()
             if (dyingResult != null) return dyingResult
+            whoseTurn.game!!.players.forEach { it!!.dieJustNow = false }
         }
-        whoseTurn.game!!.players.forEach { it!!.dieJustNow = false }
         return resolve0()
     }
 
