@@ -220,7 +220,7 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
-            if (!card.isPureBlack()) {
+            if (!card.isBlack()) {
                 log.error("这张牌不是黑色")
                 (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色")
                 return null
