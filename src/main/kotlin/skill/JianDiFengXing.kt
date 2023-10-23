@@ -147,7 +147,7 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
         override fun resolve(): ResolveResult? {
             val r = event.sender
             val messageExists = event.inFrontOfWhom.messageCards.any { it.id == event.messageCard.id }
-            if (!messageExists) log.warn("待收情报不存在了")
+            if (!messageExists) log.info("待收情报不存在了")
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jian_di_feng_xing_b_toc.newBuilder()
@@ -174,8 +174,10 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
             if (messageExists && r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     val builder2 = skill_jian_di_feng_xing_c_tos.newBuilder()
-                    builder2.enable = true
-                    builder2.cardId = r.cards.random().id
+                    r.cards.filter { it.isBlack() }.randomOrNull()?.let { card ->
+                        builder2.enable = true
+                        builder2.cardId = card.id
+                    }
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -216,6 +218,11 @@ class JianDiFengXing : InitialSkill, TriggeredSkill {
             if (card == null) {
                 log.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                return null
+            }
+            if (!card.isPureBlack()) {
+                log.error("这张牌不是黑色")
+                (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色")
                 return null
             }
             val target = event.inFrontOfWhom
