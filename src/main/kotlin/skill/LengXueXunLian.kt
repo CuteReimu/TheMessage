@@ -3,11 +3,13 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.MiLing.executeMiLing
+import com.fengsheng.card.count
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.card_type.Mi_Ling
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -99,26 +101,34 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder2 = skill_leng_xue_xun_lian_b_tos.newBuilder()
-                    cards.sortBy { !it.isBlack() }
-                    val card = cards.first()
+                    val card = cards.find { it.isPureBlack() } ?: cards.find { it.isBlack() }
+                    ?: if (r.identity == Black) cards.random()
+                    else cards.find { r.identity in it.colors } ?: cards.random()
                     builder2.sendCardId = card.id
-                    val nextLeftId = r.getAlternativeLocation(r.getNextLeftAlivePlayer().location)
-                    val nextRightId = r.getAlternativeLocation(r.getNextRightAlivePlayer().location)
                     when (card.direction) {
                         Left -> {
-                            builder2.targetPlayerId = nextLeftId
-                            builder2.lockPlayerId = nextRightId
+                            builder2.targetPlayerId = r.getAlternativeLocation(r.getNextLeftAlivePlayer().location)
+                            builder2.lockPlayerId = if (card.isBlack())
+                                r.getAlternativeLocation(g.players.filter { it!!.alive && it.isEnemy(r) }
+                                    .maxByOrNull { it!!.messageCards.count(Black) }?.location ?: 0
+                                ) else 0
                         }
 
                         Right -> {
-                            builder2.targetPlayerId = nextRightId
-                            builder2.lockPlayerId = nextLeftId
+                            builder2.targetPlayerId = r.getAlternativeLocation(r.getNextRightAlivePlayer().location)
+                            builder2.lockPlayerId = if (card.isBlack())
+                                r.getAlternativeLocation(g.players.filter { it!!.alive && it.isEnemy(r) }
+                                    .maxByOrNull { it!!.messageCards.count(Black) }?.location ?: 0
+                                ) else 0
                         }
 
                         Up -> {
-                            val target = g.players.filter { it !== r && it!!.alive }.random()!!
+                            val target =
+                                (if (card.isBlack()) g.players.filter { it!!.alive && it.isEnemy(r) }.randomOrNull()
+                                else g.players.filter { it!!.alive && it.isPartner(r) }.randomOrNull())
+                                    ?: g.players.filter { it !== r && it!!.alive }.random()!!
                             builder2.targetPlayerId = r.getAlternativeLocation(target.location)
-                            builder2.lockPlayerId = builder2.targetPlayerId
+                            builder2.lockPlayerId = if (card.isBlack()) builder2.targetPlayerId else 0
                         }
 
                         else -> {}
