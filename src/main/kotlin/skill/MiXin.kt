@@ -154,7 +154,6 @@ class MiXin : InitialSkill, TriggeredSkill {
                 return null
             }
             r.incrSeq()
-            g.playerSetRoleFaceUp(r, true)
             val target = event.sender
             log.info("${r}将${card}置入${target}的情报区")
             r.deleteCard(card.id)
