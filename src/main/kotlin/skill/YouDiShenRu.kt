@@ -7,7 +7,7 @@ import com.fengsheng.Player
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
-import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_toc
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
@@ -100,7 +100,10 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
             val game = player.game!!
-            val messageCard = player.cards.filter { it.direction != Up }.randomOrNull() ?: return false
+            val messageCard = player.cards.filter {
+                it.direction != Up && (player.identity == Black ||
+                        player.identity in it.colors && !(Red in it.colors && Blue in it.colors))
+            }.randomOrNull() ?: return false
             val direction = messageCard.direction
             val target = when (direction) {
                 Left -> player.getNextLeftAlivePlayer().let { if (it !== player) it else null }

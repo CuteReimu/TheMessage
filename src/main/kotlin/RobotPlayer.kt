@@ -76,14 +76,18 @@ class RobotPlayer : Player() {
             if (ai != null && ai.test(fsm, card)) return
         }
         GameExecutor.post(game!!, {
-            val colors = fsm.messageCard.colors
             val receive = fsm.mustReceiveMessage() || // 如果必须接收，则接收
                     !fsm.cannotReceiveMessage() && // 如果不能接收，则不接收
-                    if (colors.size == 1) { // 如果是单色，纯黑则不接，纯非黑则有一半几率接，已翻开的纯非黑则必接
-                        colors.first() != color.Black && (fsm.isMessageCardFaceUp || Random.nextBoolean())
-                    } else {
-                        Random.nextInt(4) == 0 // 如果是双色，则有四分之一几率接
-                    }
+                    (!fsm.messageCard.isBlack() || // 如果是非黑则必接
+                            fsm.messageCard.colors.size == 2 && // 必须非纯黑才可能接，纯黑则不接
+                            if (identity != color.Black) { // 不是神秘人
+                                if (identity in fsm.messageCard.colors) // 是自己身份颜色的
+                                    messageCards.count(identity) >= messageCards.count(color.Black) // 自己颜色情报数量不少于黑情报数量才接
+                                else // 不是自己身份颜色的
+                                    messageCards.count(color.Black) <= 1 || Random.nextBoolean() // 不超过1黑才接，否则有一半几率接
+                            } else { // 是神秘人
+                                Random.nextBoolean() // 有一半几率接
+                            })
             game!!.resolve(
                 if (receive)
                     OnChooseReceiveCard(

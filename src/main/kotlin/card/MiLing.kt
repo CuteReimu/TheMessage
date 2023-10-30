@@ -303,14 +303,18 @@ class MiLing : Card {
     companion object {
         private val log = Logger.getLogger(MiLing::class.java)
         fun ai(e: SendPhaseStart, card: Card): Boolean {
+            card as MiLing
             val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Mi_Ling) || return false
             val target = player.game!!.players.filter {
-                it !== player && it!!.alive && it.cards.isNotEmpty()
+                it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
+            val secret =
+                if (player.identity == color.Black) (0..2).random()
+                else (0..2).first { card.secret[it] == player.identity }
             GameExecutor.post(
                 player.game!!,
-                { card.execute(player.game!!, player, target, (0..2).random()) },
+                { card.execute(player.game!!, player, target, secret) },
                 2,
                 TimeUnit.SECONDS
             )
