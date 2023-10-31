@@ -189,6 +189,13 @@ class Game private constructor(totalPlayerCount: Int) {
         }))
     }
 
+    val affectScore: Boolean
+        get() = players.filterNotNull().run {
+            size >= 5 && (all { it is HumanPlayer } || all {
+                it !is HumanPlayer || (Statistics.getScore(it.playerName) ?: 0) < 60
+            })
+        }
+
     fun end(declaredWinners: List<Player>?, winners: List<Player>?, forceEnd: Boolean = false) {
         isEnd = true
         GameCache.remove(id)
@@ -196,14 +203,16 @@ class Game private constructor(totalPlayerCount: Int) {
         val addScoreMap = HashMap<String, Int>()
         val newScoreMap = HashMap<String, Int>()
         if (declaredWinners != null && winners != null) {
-            if (players.size == humanPlayers.size && players.size >= 5) {
+            if (affectScore) {
                 if (winners.isNotEmpty() && winners.size < players.size) {
                     val totalWinners = winners.sumOf { (Statistics.getScore(it.playerName) ?: 0).coerceIn(180..1900) }
                     val totalPlayers = players.sumOf { (Statistics.getScore(it!!.playerName) ?: 0).coerceIn(180..1900) }
                     val totalLoser = totalPlayers - totalWinners
                     val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
                     for ((i, p) in humanPlayers.withIndex()) {
-                        val score = p.calScore(players.filterNotNull(), winners, delta / 10)
+                        val score = p.calScore(players.filterNotNull(), winners, delta / 10).let {
+                            if (players.size == humanPlayers.size) it else it.coerceAtMost(1)
+                        }
                         val (newScore, deltaScore) = Statistics.updateScore(
                             p.playerName,
                             score,
@@ -214,25 +223,27 @@ class Game private constructor(totalPlayerCount: Int) {
                         newScoreMap[p.playerName] = newScore
                     }
                 }
-                val records = ArrayList<Statistics.Record>(players.size)
-                val playerGameResultList = ArrayList<PlayerGameResult>()
-                for (p in players) {
-                    val win = p!! in winners
-                    records.add(
-                        Statistics.Record(
-                            p.originRole,
-                            win,
-                            p.originIdentity,
-                            p.originSecretTask,
-                            players.size
+                if (players.size == humanPlayers.size) {
+                    val records = ArrayList<Statistics.Record>(players.size)
+                    val playerGameResultList = ArrayList<PlayerGameResult>()
+                    for (p in players) {
+                        val win = p!! in winners
+                        records.add(
+                            Statistics.Record(
+                                p.originRole,
+                                win,
+                                p.originIdentity,
+                                p.originSecretTask,
+                                players.size
+                            )
                         )
-                    )
-                    if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.playerName, win))
+                        if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.playerName, win))
+                    }
+                    Statistics.add(records)
+                    Statistics.addPlayerGameCount(playerGameResultList)
+                    MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
                 }
-                Statistics.add(records)
-                Statistics.addPlayerGameCount(playerGameResultList)
                 Statistics.calculateRankList()
-                MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
             }
             this.players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }
         }

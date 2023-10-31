@@ -1,5 +1,6 @@
 package com.fengsheng.handler
 
+import com.fengsheng.Config
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Fengsheng
 import org.apache.log4j.Logger
@@ -19,6 +20,10 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
         }
         if (oldPlayers.size <= 2) {
             r.sendErrorMessage("至少2人局")
+            return
+        }
+        if (!Config.IsGmEnable && oldPlayers.size <= 5) {
+            r.sendErrorMessage("至少5人局")
             return
         }
         val players = oldPlayers.filterIndexed { i, _ -> i != index }.toTypedArray()

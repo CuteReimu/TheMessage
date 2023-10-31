@@ -1,8 +1,6 @@
 package com.fengsheng.network
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
+import com.fengsheng.*
 import com.fengsheng.handler.ProtoHandler
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.leave_room_toc
@@ -92,7 +90,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         GameExecutor.post(game) {
             if (player.game !== game) return@post
             if (game.isStarted) {
-                if (game.players.all { it !is HumanPlayer || !it.isActive })
+                if (game.players.all { it !is HumanPlayer || !it.isActive } && !game.affectScore)
                     game.end(null, null)
                 else
                     player.notifyPlayerUpdateStatus()

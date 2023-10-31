@@ -119,7 +119,7 @@ class join_room_tos : ProtoHandler {
             player.game = newGame
             val builder = Fengsheng.get_room_info_toc.newBuilder()
             builder.myPosition = player.location
-            builder.onlineCount = Game.playerNameCache.size
+            builder.onlineCount = Game.GameCache.values.sumOf { it.players.size } + newGame.players.count { it != null }
             for (p in player.game!!.players) {
                 if (p == null) {
                     builder.addNames("")

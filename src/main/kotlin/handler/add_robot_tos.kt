@@ -12,19 +12,18 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             return
         }
         if (!Config.IsGmEnable) {
-            val score = Statistics.getScore(r.playerName) ?: 0
-            if (score <= 0) {
-                val now = System.currentTimeMillis()
-                val startTrialTime = Statistics.getTrialStartTime(r.playerName)
-                if (startTrialTime == 0L) {
-                    Statistics.setTrialStartTime(r.playerName, now)
-                } else if (now - 3 * 24 * 3600 * 1000 >= startTrialTime) {
-                    r.sendErrorMessage("您已被禁止添加机器人，多参与群内活动即可解锁")
-                    return
-                }
-            }
-            val humanCount = r.game!!.players.count { it is HumanPlayer }
-            if (humanCount >= 2) {
+//            val score = Statistics.getScore(r.playerName) ?: 0
+//            if (score <= 0) {
+//                val now = System.currentTimeMillis()
+//                val startTrialTime = Statistics.getTrialStartTime(r.playerName)
+//                if (startTrialTime == 0L) {
+//                    Statistics.setTrialStartTime(r.playerName, now)
+//                } else if (now - 3 * 24 * 3600 * 1000 >= startTrialTime) {
+//                    r.sendErrorMessage("您已被禁止添加机器人，多参与群内活动即可解锁")
+//                    return
+//                }
+//            }
+            if (r.game!!.affectScore) {
                 r.sendErrorMessage("房间内有其他玩家，禁止添加机器人")
                 return
             }
