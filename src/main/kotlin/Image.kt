@@ -190,7 +190,7 @@ object Image {
         g.color = Color.BLACK
         g.font = font
         val aveColor = Color(250, 180, 180)
-        val g0 = Gradient(lines.indices.map { 50.0 - it }, minColor = Color.WHITE, aveColor = aveColor)
+        val g0 = Gradient(lines.indices.map { 50.0 - it })
         lines.forEachIndexed { index, line ->
             g.color = g0.getColor(50.0 - index)
             g.fillRect(0, (index + 1) * CELL_H, CELL_W * 2 + font.size * 2, CELL_H)
@@ -209,9 +209,7 @@ object Image {
         val g1 = Gradient(lines.map { it.score.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
         val g2 = Gradient(lines.map { it.gameCount.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
         val g3 = Gradient(lines.map { PlayerGameCount(it.winCount, it.gameCount).rate })
-        val g4 = Gradient(lines.mapNotNull {
-            if (it.lastTime == 0L) null else it.lastTime.toDouble()
-        }, minColor = Color.WHITE, aveColor = aveColor)
+        val g4 = Gradient(lines.mapNotNull { if (it.lastTime == 0L) null else it.lastTime.toDouble() })
         lines.forEachIndexed { index, line ->
             val rank = ScoreFactory.getRankStringNameByScore(line.score)
             g.color = g1.getColor(line.score.toDouble())
