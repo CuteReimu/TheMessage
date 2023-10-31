@@ -223,9 +223,9 @@ class Game private constructor(totalPlayerCount: Int) {
                         newScoreMap[p.playerName] = newScore
                     }
                 }
+                val playerGameResultList = ArrayList<PlayerGameResult>()
                 if (players.size == humanPlayers.size) {
                     val records = ArrayList<Statistics.Record>(players.size)
-                    val playerGameResultList = ArrayList<PlayerGameResult>()
                     for (p in players) {
                         val win = p!! in winners
                         records.add(
@@ -240,10 +240,11 @@ class Game private constructor(totalPlayerCount: Int) {
                         if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.playerName, win))
                     }
                     Statistics.add(records)
-                    Statistics.addPlayerGameCount(playerGameResultList)
-                    MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
                 }
+                Statistics.addPlayerGameCount(playerGameResultList)
                 Statistics.calculateRankList()
+                if (players.size == humanPlayers.size)
+                    MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
             }
             this.players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }
         }
