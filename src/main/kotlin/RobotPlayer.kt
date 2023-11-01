@@ -78,13 +78,14 @@ class RobotPlayer : Player() {
         GameExecutor.post(game!!, {
             val receive = fsm.mustReceiveMessage() || // 如果必须接收，则接收
                     !fsm.cannotReceiveMessage() && // 如果不能接收，则不接收
-                    (!fsm.messageCard.isBlack() || // 如果是非黑则必接
+                    (identity == color.Black && secretTask == secret_task.Pioneer || // 如果是先行则一定接
+                            !fsm.messageCard.isBlack() || // 如果是非黑则必接
                             fsm.messageCard.colors.size == 2 && // 必须非纯黑才可能接，纯黑则不接
                             if (identity != color.Black) { // 不是神秘人
                                 if (identity in fsm.messageCard.colors) // 是自己身份颜色的
                                     messageCards.count(identity) >= messageCards.count(color.Black) // 自己颜色情报数量不少于黑情报数量才接
                                 else // 不是自己身份颜色的
-                                    messageCards.count(color.Black) <= 1 || Random.nextBoolean() // 不超过1黑才接，否则有一半几率接
+                                    messageCards.count(color.Black) == 0 || Random.nextBoolean() // 0黑则必接，否则有一半几率接
                             } else { // 是神秘人
                                 Random.nextBoolean() // 有一半几率接
                             })

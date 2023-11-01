@@ -90,7 +90,8 @@ class JieHuo : Card {
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
             !player.cannotPlayCard(card_type.Jie_Huo) || return false
-            e.inFrontOfWhom !== player && !e.messageCard.isPureBlack() || return false
+            e.inFrontOfWhom !== player || return false
+            !e.messageCard.isPureBlack() || player.identity == color.Black && player.secretTask == secret_task.Pioneer || return false
             Random.nextBoolean() || return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true
