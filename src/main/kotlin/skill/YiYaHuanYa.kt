@@ -113,7 +113,7 @@ class YiYaHuanYa : InitialSkill, TriggeredSkill {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeYiYaHuanYa) return false
             val p = fsm0.event.inFrontOfWhom
-            var target = fsm0.event.whoseTurn
+            var target = fsm0.event.sender
             if (p === target) {
                 target = if (Random.nextBoolean()) target.getNextLeftAlivePlayer() else target.getNextRightAlivePlayer()
                 if (p === target) return false
