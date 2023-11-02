@@ -211,7 +211,7 @@ class Game private constructor(totalPlayerCount: Int) {
                     val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
                     for ((i, p) in humanPlayers.withIndex()) {
                         val score = p.calScore(players.filterNotNull(), winners, delta / 10).let {
-                            if (players.size == humanPlayers.size) it else it.coerceAtMost(1)
+                            if (players.size == humanPlayers.size) it else it.coerceIn(-1..1)
                         }
                         val (newScore, deltaScore) = Statistics.updateScore(
                             p.playerName,
