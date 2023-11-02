@@ -23,7 +23,8 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
 //                    return
 //                }
 //            }
-            if (r.game!!.affectScore) {
+            val humanCount = r.game!!.players.count { it is HumanPlayer }
+            if (humanCount >= 5) {
                 r.sendErrorMessage("房间内有其他玩家，禁止添加机器人")
                 return
             }
