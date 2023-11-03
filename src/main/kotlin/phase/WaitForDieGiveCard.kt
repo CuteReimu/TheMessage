@@ -20,7 +20,6 @@ data class WaitForDieGiveCard(
     val afterDieResolve: Fsm
 ) : ProcessFsm() {
     override val needCheckWinAndDying = false
-    override val needCheckDieSkill = true
 
     /**
      * 结算到dieQueue的第几个人的死亡给三张牌了

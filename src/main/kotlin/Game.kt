@@ -367,7 +367,7 @@ class Game private constructor(totalPlayerCount: Int) {
     /**
      * 遍历监听列表，结算技能
      */
-    fun dealListeningSkill(beginLocation: Int, includingDead: Boolean = false): ResolveResult? {
+    fun dealListeningSkill(beginLocation: Int): ResolveResult? {
         repeat(100) { // 写个100，防止死循环
             if (resolvingEvents.isEmpty()) {
                 if (unresolvedEvents.isEmpty()) return null
@@ -378,7 +378,7 @@ class Game private constructor(totalPlayerCount: Int) {
             do {
                 val player = players[i]!!
                 player.skills.forEach { skill ->
-                    if (includingDead || player.alive || skill !is InitialSkill)
+                    if (player.alive || skill is BeforeDieSkill || skill !is InitialSkill)
                         (skill as? TriggeredSkill)?.execute(this, player)?.let { return it }
                 }
                 i = (i + 1) % players.size

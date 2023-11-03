@@ -93,3 +93,8 @@ interface OneTurnSkill : Skill {
         }
     }
 }
+
+/**
+ * 自己死亡前技能。对于这种技能，自己无需存活也能发动。
+ */
+interface BeforeDieSkill : Skill

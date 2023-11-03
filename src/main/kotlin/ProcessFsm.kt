@@ -18,8 +18,6 @@ abstract class ProcessFsm : Fsm {
 
     open val needCheckWinAndDying = true
 
-    open val needCheckDieSkill = false
-
     /** 刚切到这个状态时执行的操作 */
     open fun onSwitch() {}
 
@@ -28,7 +26,7 @@ abstract class ProcessFsm : Fsm {
             justSwitch = false
             onSwitch()
         }
-        val result = whoseTurn.game!!.dealListeningSkill(whoseTurn.location, needCheckDieSkill)
+        val result = whoseTurn.game!!.dealListeningSkill(whoseTurn.location)
         if (result != null) return result
         if (needCheckWinAndDying) {
             val winResult = checkWin()
