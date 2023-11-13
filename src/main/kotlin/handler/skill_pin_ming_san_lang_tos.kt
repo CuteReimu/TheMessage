@@ -6,9 +6,9 @@ import com.fengsheng.skill.ActiveSkill
 import com.fengsheng.skill.SkillId
 import org.apache.log4j.Logger
 
-class skill_yu_si_wang_po_a_tos : AbstractProtoHandler<Role.skill_yu_si_wang_po_a_tos>() {
-    override fun handle0(r: HumanPlayer, pb: Role.skill_yu_si_wang_po_a_tos) {
-        val skill = r.findSkill(SkillId.YU_SI_WANG_PO) as? ActiveSkill
+class skill_pin_ming_san_lang_tos : AbstractProtoHandler<Role.skill_pin_ming_san_lang_tos>() {
+    override fun handle0(r: HumanPlayer, pb: Role.skill_pin_ming_san_lang_tos) {
+        val skill = r.findSkill(SkillId.PIN_MING_SAN_LANG) as? ActiveSkill
         if (skill == null) {
             log.error("你没有这个技能")
             r.sendErrorMessage("你没有这个技能")
@@ -18,6 +18,6 @@ class skill_yu_si_wang_po_a_tos : AbstractProtoHandler<Role.skill_yu_si_wang_po_
     }
 
     companion object {
-        private val log = Logger.getLogger(skill_yu_si_wang_po_a_tos::class.java)
+        private val log = Logger.getLogger(skill_pin_ming_san_lang_tos::class.java)
     }
 }

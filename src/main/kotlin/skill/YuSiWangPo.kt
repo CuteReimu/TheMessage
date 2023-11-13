@@ -1,14 +1,16 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 秦无命技能【鱼死网破】：出牌阶段限一次，你可以弃掉任意张数手牌（至少1），让一名其他玩家弃置对应数量+1的手牌（不足则全弃），然后你们各摸一张牌。
+ * 秦无命技能【鱼死网破】：出牌阶段限一次，你可以弃置一张手牌，令一名其他角色弃置（你的黑情报数量+1）的手牌（不足则全弃）。
  */
 class YuSiWangPo : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.YU_SI_WANG_PO
@@ -49,16 +51,14 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
-        val cards = pb.cardIdsList.map {
-            val card = r.findCard(it)
-            if (card == null) {
-                log.error("没有这张卡")
-                (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
-                return
-            }
-            card
+        val card = r.findCard(pb.cardId)
+        if (card == null) {
+            log.error("没有这张卡")
+            (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+            return
         }
-        val discardAll = cards.size + 1 >= target.cards.size
+        val discardCount = r.messageCards.count(Black)
+        val discardAll = discardCount >= target.cards.size
         r.incrSeq()
         r.addSkillUseCount(skillId)
         log.info("${r}对${target}发动了[鱼死网破]")
@@ -68,7 +68,6 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
                 val builder = skill_yu_si_wang_po_a_toc.newBuilder()
                 builder.playerId = p.getAlternativeLocation(r.location)
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.cardCount = cards.size + 1
                 if (!discardAll) {
                     builder.waitingSecond = timeout
                     if (p === target) builder.seq = p.seq
@@ -76,7 +75,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
                 p.send(builder.build())
             }
         }
-        g.playerDiscardCard(r, *cards.toTypedArray())
+        g.playerDiscardCard(r, card)
         g.addEvent(DiscardCardEvent(r, r))
         if (target.cards.isNotEmpty()) g.addEvent(DiscardCardEvent(r, target))
         if (discardAll) {
@@ -89,11 +88,9 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
                 }
             }
             g.playerDiscardCard(target, *target.cards.toTypedArray())
-            r.draw(1)
-            target.draw(1)
             g.continueResolve()
         } else {
-            g.resolve(executeYuSiWangPo(g.fsm!!, r, target, cards.size + 1, timeout))
+            g.resolve(executeYuSiWangPo(g.fsm!!, r, target, discardCount, timeout))
         }
     }
 
@@ -180,16 +177,14 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
         private val log = Logger.getLogger(YuSiWangPo::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.whoseTurn.getSkillUseCount(SkillId.YU_SI_WANG_PO) == 0 || return false
-            e.whoseTurn.cards.isNotEmpty() || return false
+            val card = e.whoseTurn.cards.randomOrNull() ?: return false
             val target =
                 e.whoseTurn.game!!.players.filter { it!!.alive && it.isEnemy(e.whoseTurn) && it.cards.size >= 2 }
                     .randomOrNull() ?: return false
-            val count = (1..minOf(e.whoseTurn.cards.size, target.cards.size - 1)).random()
-            val cardIds = e.whoseTurn.cards.shuffled().subList(0, count).map { it.id }
             GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_yu_si_wang_po_a_tos.newBuilder()
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
-                builder.addAllCardIds(cardIds)
+                builder.cardId = card.id
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true

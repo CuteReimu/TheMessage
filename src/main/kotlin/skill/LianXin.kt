@@ -10,7 +10,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 成年小九技能【联信】：接收其他角色情报后，可以翻开此角色，摸两张牌，然后将一张含该情报不同颜色的手牌置入传出者的情报区。
+ * 成年小九技能【联信】：接收其他角色情报后，可以翻开此角色，摸两张牌，然后将一张含该情报相同颜色的手牌置入传出者的情报区。
  */
 class LianXin : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.LIAN_XIN
@@ -22,7 +22,7 @@ class LianXin : InitialSkill, TriggeredSkill {
             !askWhom.roleFaceUp
         } ?: return null
         val color = event.messageCard.colors
-        return ResolveResult(executeLianXinA(g.fsm!!, event) { card -> card.colors.any { it !in color } }, true)
+        return ResolveResult(executeLianXinA(g.fsm!!, event) { card -> card.colors.any { it in color } }, true)
     }
 
     private data class executeLianXinA(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :

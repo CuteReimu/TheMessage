@@ -16,10 +16,10 @@ enum class SkillId(private val cName: String) {
     CONG_RONG_YING_DUI("从容应对"), CHI_ZI_ZHI_XIN("赤子之心"), YUN_CHOU_WEI_WO("运筹帷幄"), HOU_LAI_REN("后来人"),
     ZI_ZHENG_QING_BAI("自证清白"), SHOU_KOU_RU_PING("守口如瓶"), DU_MING("赌命"), LIAN_XIN("联信"), SHUN_SHI_ER_WEI("顺势而为"),
     MI_XIN("密信"), JIANG_JI_JIU_JI("将计就计"), HAN_HOU_LAO_SHI("憨厚老实"), YI_WEN_AN_HAO("译文暗号"),
-    YU_SI_WANG_PO("鱼死网破"), DING_LUN("定论"), ZHEN_LI("真理"), YING_BIAN_ZI_RU("应变自如"), HUN_SHUI_MO_YU("浑水摸鱼"),
-    TAO_QU("套取"), TAN_XU_BIAN_SHI("探虚辨实"), CUN_BU_BU_RANG("寸步不让"), XIN_GE_LIAN_LUO("信鸽联络"),
-    HOU_ZI_QIE_XIN("猴子窃信"), BIAN_ZE_TONG("变则通"), YOU_DI_SHEN_RU("诱敌深入"), JIAN_DI_FENG_XING("歼敌风行"),
-    XIANG_JIN_SI_SUO("详尽思索"), QIANG_YING_XIA_LING("强硬下令"), JIE_CHE_YUN_HUO("借车运货"),
+    PIN_MING_SAN_LANG("拼命三郎"), YU_SI_WANG_PO("鱼死网破"), DING_LUN("定论"), ZHEN_LI("真理"), YING_BIAN_ZI_RU("应变自如"),
+    HUN_SHUI_MO_YU("浑水摸鱼"), TAO_QU("套取"), TAN_XU_BIAN_SHI("探虚辨实"), CUN_BU_BU_RANG("寸步不让"),
+    XIN_GE_LIAN_LUO("信鸽联络"), HOU_ZI_QIE_XIN("猴子窃信"), BIAN_ZE_TONG("变则通"), YOU_DI_SHEN_RU("诱敌深入"),
+    JIAN_DI_FENG_XING("歼敌风行"), XIANG_JIN_SI_SUO("详尽思索"), QIANG_YING_XIA_LING("强硬下令"), JIE_CHE_YUN_HUO("借车运货"),
     WORKERS_ARE_KNOWLEDGABLE("咱们工人有知识");
 
 
