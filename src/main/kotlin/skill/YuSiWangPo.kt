@@ -163,8 +163,6 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
                 }
             }
             target.game!!.playerDiscardCard(target, *cards.toTypedArray())
-            r.draw(1)
-            target.draw(1)
             return ResolveResult(fsm, true)
         }
 
