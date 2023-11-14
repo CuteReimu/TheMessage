@@ -39,7 +39,7 @@ class Recorder {
     }
 
     fun save(g: Game, p: HumanPlayer, notify: Boolean) {
-        if (list.isEmpty() || g.fsm is StartGame || g.fsm is WaitForSelectRole) return
+        if (list.size < 10 || g.fsm is StartGame || g.fsm is WaitForSelectRole) return
         val now = Date()
         val localDateTime = now.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
         val timeStr = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"))
