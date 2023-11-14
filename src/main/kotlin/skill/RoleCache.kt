@@ -85,16 +85,9 @@ object RoleCache {
     private val doubleProbabilityRoles = listOf(
         role.adult_xiao_jiu,
         role.adult_han_mei,
-        role.chen_an_na,
         role.ya_pao,
         role.qin_wu_ming,
-        role.li_shu_yun,
         role.sp_bai_fei_fei,
-        role.sp_a_fu_luo_la,
-        role.ling_su_qiu,
-        role.xiao_ling_dang,
-        role.chen_da_er,
-        role.bian_yun_jiang,
     )
 
     init {
