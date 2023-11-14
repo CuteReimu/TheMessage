@@ -57,7 +57,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
             (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
             return
         }
-        val discardCount = r.messageCards.count(Black)
+        val discardCount = r.messageCards.count(Black) + 1
         val discardAll = discardCount >= target.cards.size
         r.incrSeq()
         r.addSkillUseCount(skillId)
