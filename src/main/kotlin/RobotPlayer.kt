@@ -289,6 +289,7 @@ class RobotPlayer : Player() {
             SkillId.HUO_XIN to BiPredicate { e, skill -> HuoXin.ai(e, skill) },
             SkillId.YUN_CHOU_WEI_WO to BiPredicate { e, skill -> YunChouWeiWo.ai(e, skill) },
             SkillId.ZI_ZHENG_QING_BAI to BiPredicate { e, skill -> ZiZhengQingBai.ai(e, skill) },
+            SkillId.PIN_MING_SAN_LANG to BiPredicate { e, skill -> PinMingSanLang.ai(e, skill) },
             SkillId.YU_SI_WANG_PO to BiPredicate { e, skill -> YuSiWangPo.ai(e, skill) },
             SkillId.TAO_QU to BiPredicate { e, skill -> TaoQu.ai(e, skill) },
             SkillId.TAN_XU_BIAN_SHI to BiPredicate { e, skill -> TanXuBianShi.ai(e, skill) },
