@@ -182,7 +182,7 @@ class XianFaZhiRen : InitialSkill, ActiveSkill, TriggeredSkill {
         }
         r.incrSeq()
         r.game!!.playerSetRoleFaceUp(r, true)
-        log.error("${r}发动了[先发制人]，弃掉了${target}面前的$card")
+        log.info("${r}发动了[先发制人]，弃掉了${target}面前的$card")
         r.game!!.deck.discard(card)
         val timeout = Config.WaitSecond
         for (p in r.game!!.players) {
