@@ -162,7 +162,8 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
             val p = event.sender
             if (p is RobotPlayer) {
                 val target = event.inFrontOfWhom
-                val card = target.messageCards.find { p.isEnemy(target) || p.identity !in it.colors }
+                val card =
+                    target.messageCards.find { (p.isEnemy(target) || p.identity !in it.colors) && color in it.colors }
                 GameExecutor.post(
                     p.game!!,
                     {
@@ -226,7 +227,7 @@ class JiangHuLing : InitialSkill, TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
-            if (!card.colors.contains(color)) {
+            if (color !in card.colors) {
                 log.error("你选择的情报不是宣言的颜色")
                 (player as? HumanPlayer)?.sendErrorMessage("你选择的情报不是宣言的颜色")
                 return null
