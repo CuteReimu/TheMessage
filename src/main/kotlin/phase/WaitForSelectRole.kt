@@ -31,7 +31,8 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             } else {
                 selected[player!!.location] = options[player.location].run {
                     if (Config.IsGmEnable) return@run firstOrNull()
-                    maxByOrNull { it.role.number % 1000 + it.role.number / 1000 * 30 }
+                    find { it.role == role.shang_yu }
+                        ?: maxByOrNull { it.role.number % 1000 + it.role.number / 1000 * 30 }
                 } ?: RoleSkillsData()
                 player.roleSkillsData = selected[player.location]!!
                 player.originRole = selected[player.location]!!.role

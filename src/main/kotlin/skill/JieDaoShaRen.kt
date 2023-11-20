@@ -8,6 +8,7 @@ import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 商玉技能【借刀杀人】：争夺阶段，你可以翻开此角色牌，然后抽取另一名角色的一张手牌并展示之。若展示的牌是：**黑色**，则你可以将其置入一名角色的情报区，并将你的角色牌翻至面朝下。**非黑色**，则你摸一张牌。
@@ -185,7 +186,7 @@ class JieDaoShaRen : InitialSkill, ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
-            player.getSkillUseCount(SkillId.JIE_DAO_SHA_REN) < 2 || return false
+            player.getSkillUseCount(SkillId.JIE_DAO_SHA_REN) == 0 || Random.nextBoolean() || return false
             val target = player.game!!.players.filter {
                 it !== player && it!!.alive && it.cards.isNotEmpty() &&
                         it.cards.all { card -> card.colors.contains(color.Black) }
