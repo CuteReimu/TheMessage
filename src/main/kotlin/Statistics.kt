@@ -69,30 +69,30 @@ object Statistics {
     }
 
     fun addPlayerGameCount(playerGameResultList: List<PlayerGameResult>) {
-        pool.trySend {
-            try {
-                val now = System.currentTimeMillis()
-                var win = 0
-                var game = 0
-                var updateTrial = false
-                for (count in playerGameResultList) {
-                    if (count.isWin) {
-                        win++
-                        if (trialStartTime.remove(count.playerName) != null) updateTrial = true
-                    }
-                    game++
-                    playerInfoMap.computeIfPresent(count.playerName) { _, v ->
-                        val addWin = if (count.isWin) 1 else 0
-                        v.copy(winCount = v.winCount + addWin, gameCount = v.gameCount + 1, lastTime = now)
-                    }
+        try {
+            val now = System.currentTimeMillis()
+            var win = 0
+            var game = 0
+            var updateTrial = false
+            for (count in playerGameResultList) {
+                if (count.isWin) {
+                    win++
+                    if (trialStartTime.remove(count.playerName) != null) updateTrial = true
                 }
-                totalWinCount.addAndGet(win)
-                totalGameCount.addAndGet(game)
+                game++
+                playerInfoMap.computeIfPresent(count.playerName) { _, v ->
+                    val addWin = if (count.isWin) 1 else 0
+                    v.copy(winCount = v.winCount + addWin, gameCount = v.gameCount + 1, lastTime = now)
+                }
+            }
+            totalWinCount.addAndGet(win)
+            totalGameCount.addAndGet(game)
+            pool.trySend {
                 savePlayerInfo()
                 if (updateTrial) saveTrials()
-            } catch (e: Exception) {
-                log.error("execute task failed", e)
             }
+        } catch (e: Exception) {
+            log.error("add player game count failed: ", e)
         }
     }
 
