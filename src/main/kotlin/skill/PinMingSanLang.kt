@@ -17,7 +17,7 @@ class PinMingSanLang : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.PIN_MING_SAN_LANG
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && r.cards.any { it.isPureBlack() }
+        super.mainPhaseNeedNotify(r) && r.cards.any { it.isPureBlack() } && r.messageCards.count(Black) < 2
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {

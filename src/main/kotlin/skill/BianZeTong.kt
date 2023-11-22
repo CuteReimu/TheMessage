@@ -119,7 +119,7 @@ class BianZeTong : InitialSkill, TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(YuSiWangPo::class.java)
+            private val log = Logger.getLogger(executeBianZeTong::class.java)
         }
     }
 
