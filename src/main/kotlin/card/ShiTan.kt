@@ -4,8 +4,8 @@ import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
-import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.cannotPlayCard
@@ -207,13 +207,10 @@ class ShiTan : Card {
     }
 
     override fun toString(): String {
-        val color: String = cardColorToString(colors)
-        if (whoDrawCard.size == 1) return Player.identityColorToString(whoDrawCard[0]) + "+1试探"
-        val set = hashSetOf(Common.color.Black, Common.color.Red, Common.color.Blue)
-        set.remove(whoDrawCard[0])
-        set.remove(whoDrawCard[1])
-        for (whoDiscardCard in set) {
-            return color + Player.identityColorToString(whoDiscardCard) + "-1试探"
+        val color = cardColorToString(colors)
+        if (whoDrawCard.size == 1) return color + Player.identityColorToString(whoDrawCard.first()) + "+1试探"
+        listOf(Black, Red, Blue).find { it !in whoDrawCard }?.let {
+            return color + Player.identityColorToString(it) + "-1试探"
         }
         throw RuntimeException("impossible whoDrawCard: ${whoDrawCard.toTypedArray().contentToString()}")
     }
