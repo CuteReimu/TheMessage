@@ -50,7 +50,7 @@ class DiaoHuLiShan : Card {
         val target = args[0] as Player
         val isSkill = args[1] as Boolean
         val fsm = g.fsm as MainPhaseIdle
-        log.info("${r}对${target}使用了$this，isSkill: $isSkill")
+        log.info("${r}对${target}使用了$this，禁用" + if (isSkill) "技能" else "出牌")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
             for (player in g.players) {
