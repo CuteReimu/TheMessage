@@ -16,10 +16,10 @@ abstract class ProcessFsm : Fsm {
 
     private var justSwitch = true
 
-    open val needCheckWinAndDying = true
+    protected open val needCheckWinAndDying = true
 
     /** 刚切到这个状态时执行的操作 */
-    open fun onSwitch() {}
+    protected open fun onSwitch() {}
 
     override fun resolve(): ResolveResult? {
         if (justSwitch) {

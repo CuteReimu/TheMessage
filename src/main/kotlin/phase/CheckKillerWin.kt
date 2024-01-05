@@ -45,8 +45,8 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             declaredWinner = arrayListOf(stealer)
             winner = arrayListOf(stealer)
         }
-        whoseTurn.game!!.changeGameResult(whoseTurn, declaredWinner, winner)
         if (declaredWinner.isNotEmpty()) {
+            whoseTurn.game!!.changeGameResult(whoseTurn, declaredWinner, winner)
             val declaredWinners = declaredWinner.toTypedArray()
             val winners = winner.toTypedArray()
             log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
