@@ -15,7 +15,7 @@ class ZhuanJiao : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.ZHUAN_JIAO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val event = g.findEvent<UseCardEvent>(this) { event ->
+        val event = g.findEvent<FinishResolveCardEvent>(this) { event ->
             askWhom === event.player || return@findEvent false
             askWhom.alive || return@findEvent false
             askWhom.messageCards.any { !it.isBlack() }

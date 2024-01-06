@@ -13,7 +13,7 @@ class HuanRi : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.HUAN_RI
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        g.findEvent<UseCardEvent>(this) { event ->
+        g.findEvent<FinishResolveCardEvent>(this) { event ->
             askWhom === event.player || return@findEvent false
             askWhom.alive || return@findEvent false
             event.cardType == Diao_Bao || event.cardType == Po_Yi || return@findEvent false

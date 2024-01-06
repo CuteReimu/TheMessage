@@ -12,7 +12,7 @@ class YouDao : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.YOU_DAO
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        g.findEvent<UseCardEvent>(this) { event ->
+        g.findEvent<FinishResolveCardEvent>(this) { event ->
             askWhom === event.player || return@findEvent false
             event.cardType == card_type.Wu_Dao
         } ?: return null

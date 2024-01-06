@@ -12,7 +12,7 @@ class ShenCang : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.SHEN_CANG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        g.findEvent<UseCardEvent>(this) { event ->
+        g.findEvent<FinishResolveCardEvent>(this) { event ->
             askWhom === event.player || return@findEvent false
             askWhom.alive || return@findEvent false
             askWhom.roleFaceUp || return@findEvent false
