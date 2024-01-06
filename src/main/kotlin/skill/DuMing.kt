@@ -6,8 +6,6 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
-import com.fengsheng.protos.Common.phase.Fight_Phase
-import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
@@ -24,22 +22,8 @@ class DuMing : InitialSkill, TriggeredSkill {
             event.cardType == Diao_Bao || return@findEvent false
             askWhom.getSkillUseCount(skillId) == 0
         }
-        if (event1 != null) {
-            val fightPhase = event1.nextFsm as? FightPhaseIdle ?: return null
-            for (p in g.players) { // 解决客户端动画问题
-                if (p is HumanPlayer) {
-                    val builder = Fengsheng.notify_phase_toc.newBuilder()
-                    builder.currentPlayerId = p.getAlternativeLocation(fightPhase.whoseTurn.location)
-                    builder.messagePlayerId = p.getAlternativeLocation(fightPhase.inFrontOfWhom.location)
-                    builder.waitingPlayerId = p.getAlternativeLocation(fightPhase.whoseFightTurn.location)
-                    builder.currentPhase = Fight_Phase
-                    if (fightPhase.isMessageCardFaceUp)
-                        builder.messageCard = fightPhase.messageCard.toPbCard()
-                    p.send(builder.build())
-                }
-            }
-            return ResolveResult(waitForDuMing(fightPhase, event1, askWhom), true)
-        }
+        if (event1 != null)
+            return ResolveResult(waitForDuMing(event1.nextFsm, event1, askWhom), true)
         val event2 = g.findEvent<MessageMoveNextEvent>(this) { event ->
             !event.isMessageCardFaceUp || return@findEvent false
             askWhom === event.inFrontOfWhom || return@findEvent false

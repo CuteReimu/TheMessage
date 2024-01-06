@@ -10,6 +10,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
+import com.fengsheng.protos.Fengsheng.notify_phase_toc
 import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.log4j.Logger
@@ -63,6 +64,16 @@ class DiaoBao : Card {
                 isMessageCardFaceUp = false,
                 whoseFightTurn = fsm.inFrontOfWhom
             )
+            for (p in g.players) { // 解决客户端动画问题
+                if (p is HumanPlayer) {
+                    val builder = notify_phase_toc.newBuilder()
+                    builder.currentPlayerId = p.getAlternativeLocation(newFsm.whoseTurn.location)
+                    builder.messagePlayerId = p.getAlternativeLocation(newFsm.inFrontOfWhom.location)
+                    builder.waitingPlayerId = p.getAlternativeLocation(newFsm.whoseFightTurn.location)
+                    builder.currentPhase = phase.Fight_Phase
+                    p.send(builder.build())
+                }
+            }
             OnFinishResolveCard(
                 fsm.whoseTurn,
                 r,
