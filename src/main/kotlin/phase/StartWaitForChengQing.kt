@@ -2,6 +2,7 @@ package com.fengsheng.phase
 
 import com.fengsheng.Fsm
 import com.fengsheng.Player
+import com.fengsheng.PlayerDieEvent
 import com.fengsheng.ResolveResult
 import com.fengsheng.skill.cannotPlayCardAndSkill
 import org.apache.log4j.Logger
@@ -32,6 +33,7 @@ data class StartWaitForChengQing(
             for (whoDie in diedQueue) {
                 whoDie.alive = false
                 whoDie.dieJustNow = true
+                whoDie.game!!.addEvent(PlayerDieEvent(whoseTurn, whoDie))
                 for (p in whoseTurn.game!!.players) p!!.notifyDying(whoDie.location, false)
             }
             return ResolveResult(CheckKillerWin(whoseTurn, diedQueue, afterDieResolve), true)
