@@ -19,20 +19,33 @@ class JiangJiJiuJi : InitialSkill, TriggeredSkill {
             askWhom.roleFaceUp || return@findEvent false
             askWhom === event.player || askWhom === event.targetPlayer || askWhom === (event.currentFsm as? FightPhaseIdle)?.inFrontOfWhom
         } ?: return null
-        log.info("${askWhom}发动了[将计就计]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_jiang_ji_jiu_ji_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(askWhom.location)
-                p.send(builder.build())
-            }
-        }
-        askWhom.draw(1)
-        g.playerSetRoleFaceUp(askWhom, false)
+        askWhom.skills += JiangJiJiuJi2()
         return null
     }
 
-    companion object {
-        private val log = Logger.getLogger(JiangJiJiuJi::class.java)
+    private class JiangJiJiuJi2 : TriggeredSkill {
+        override val skillId = SkillId.UNKNOWN
+
+        override fun execute(g: Game, askWhom: Player): ResolveResult? {
+            g.findEvent<FinishResolveCardEvent>(this) {
+                askWhom.alive
+            } ?: return null
+            log.info("${askWhom}发动了[将计就计]")
+            for (p in g.players) {
+                if (p is HumanPlayer) {
+                    val builder = skill_jiang_ji_jiu_ji_toc.newBuilder()
+                    builder.playerId = p.getAlternativeLocation(askWhom.location)
+                    p.send(builder.build())
+                }
+            }
+            askWhom.draw(1)
+            g.playerSetRoleFaceUp(askWhom, false)
+            askWhom.skills = askWhom.skills.filterNot { it is JiangJiJiuJi2 }
+            return null
+        }
+
+        companion object {
+            private val log = Logger.getLogger(JiangJiJiuJi2::class.java)
+        }
     }
 }
