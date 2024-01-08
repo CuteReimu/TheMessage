@@ -8,6 +8,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.log4j.Logger
@@ -86,6 +87,18 @@ class WuDao : Card {
                         }
                     }
                     val newFsm = fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
+                    for (p in g.players) { // 解决客户端动画问题
+                        if (p is HumanPlayer) {
+                            val builder = Fengsheng.notify_phase_toc.newBuilder()
+                            builder.currentPlayerId = p.getAlternativeLocation(newFsm.whoseTurn.location)
+                            builder.messagePlayerId = p.getAlternativeLocation(newFsm.inFrontOfWhom.location)
+                            builder.waitingPlayerId = p.getAlternativeLocation(newFsm.whoseFightTurn.location)
+                            builder.currentPhase = phase.Fight_Phase
+                            if (newFsm.isMessageCardFaceUp)
+                                builder.messageCard = newFsm.messageCard.toPbCard()
+                            p.send(builder.build())
+                        }
+                    }
                     OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
                 } else {
                     val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)

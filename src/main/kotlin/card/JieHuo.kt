@@ -76,6 +76,18 @@ class JieHuo : Card {
                         }
                     }
                     val newFsm = fsm.copy(inFrontOfWhom = r, whoseFightTurn = r)
+                    for (p in g.players) { // 解决客户端动画问题
+                        if (p is HumanPlayer) {
+                            val builder = Fengsheng.notify_phase_toc.newBuilder()
+                            builder.currentPlayerId = p.getAlternativeLocation(newFsm.whoseTurn.location)
+                            builder.messagePlayerId = p.getAlternativeLocation(newFsm.inFrontOfWhom.location)
+                            builder.waitingPlayerId = p.getAlternativeLocation(newFsm.whoseFightTurn.location)
+                            builder.currentPhase = phase.Fight_Phase
+                            if (newFsm.isMessageCardFaceUp)
+                                builder.messageCard = newFsm.messageCard.toPbCard()
+                            p.send(builder.build())
+                        }
+                    }
                     OnFinishResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), card_type.Jie_Huo, newFsm)
                 } else {
                     val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
