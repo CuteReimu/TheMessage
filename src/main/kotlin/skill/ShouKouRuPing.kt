@@ -7,7 +7,7 @@ import com.fengsheng.protos.Role.skill_shou_kou_ru_ping_toc
 import org.apache.log4j.Logger
 
 /**
- * 哑炮技能【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，这张牌无效。如果这是本回合首次触发此技能，双方各摸一张牌。
+ * 哑炮技能【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，这张牌无效。如果这是本回合首次触发此技能，双方各摸一张牌，否则你摸一张牌。
  */
 class ShouKouRuPing : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.SHOU_KOU_RU_PING
@@ -40,6 +40,8 @@ class ShouKouRuPing : InitialSkill, TriggeredSkill {
         }
         if (askWhom.getSkillUseCount(skillId) == 1)
             g.sortedFrom(listOf(event.player, event.targetPlayer!!), event.whoseTurn.location).forEach { it.draw(1) }
+        else
+            askWhom.draw(1)
         event.valid = false
         return null
     }

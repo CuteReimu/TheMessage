@@ -11,17 +11,12 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 小铃铛技能【猴子窃信】：出牌阶段限一次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
+ * 小铃铛技能【猴子窃信】：出牌阶段限两次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
  */
 class HouZiQieXin : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.HOU_ZI_QIE_XIN
 
-    override fun mainPhaseNeedNotify(r: Player) =
-        super.mainPhaseNeedNotify(r) && r.game!!.players.any {
-            it !== r && it!!.alive && it.messageCards.any { card1 ->
-                r.cards.any { card2 -> card1.colorExactlyTheSame(card2) }
-            }
-        }
+    override fun mainPhaseNeedNotify(r: Player) = false
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? MainPhaseIdle
@@ -30,9 +25,9 @@ class HouZiQieXin : MainPhaseSkill(), InitialSkill {
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
-        if (r.getSkillUseCount(skillId) > 0) {
-            log.error("[猴子窃信]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[猴子窃信]一回合只能发动一次")
+        if (r.getSkillUseCount(skillId) >= 2) {
+            log.error("[猴子窃信]一回合只能发动两次")
+            (r as? HumanPlayer)?.sendErrorMessage("[猴子窃信]一回合只能发动两次")
             return
         }
         val pb = message as skill_hou_zi_qie_xin_tos

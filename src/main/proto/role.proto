@@ -1208,7 +1208,7 @@ message skill_yi_wen_an_hao_toc {
   uint32 player_id = 1;
 }
 
-// 广播使用【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，这张牌无效。如果这是本回合首次触发此技能，双方各摸一张牌。（摸牌走摸牌协议）
+// 广播使用【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，这张牌无效。如果这是本回合首次触发此技能，双方各摸一张牌，否则你摸一张牌。（摸牌走摸牌协议）
 message skill_shou_kou_ru_ping_toc {
   uint32 player_id = 1;
   uint32 card_player_id = 2; // 使用牌的角色
@@ -1506,7 +1506,7 @@ message skill_xin_ge_lian_luo_toc {
   uint32 target_player_id = 2;
 }
 
-// 小铃铛【猴子窃信】：出牌阶段限一次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
+// 小铃铛【猴子窃信】：出牌阶段限两次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
 message skill_hou_zi_qie_xin_tos {
   uint32 hand_card_id = 1;
   uint32 target_player_id = 2;
