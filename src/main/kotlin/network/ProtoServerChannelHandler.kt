@@ -88,7 +88,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         val buf = ByteArray(msgLen - 2)
         msg.readBytes(buf)
         val message = protoInfo.parser.parseFrom(buf) as GeneratedMessageV3
-        if (id != heartMsgId && id != autoPlayMsgId) {
+        if (id != heartMsgId) {
             log.debug(
                 "recv@${ctx.channel().id().asShortText()} len: ${msgLen - 2} ${protoInfo.name} | " +
                         printer.printToString(message).replace("\n *".toRegex(), " ")
@@ -119,7 +119,6 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         private val printer = TextFormat.printer().escapingNonAscii(false)
         private val ProtoInfoMap = HashMap<Short, ProtoInfo>()
         private val heartMsgId: Short = stringHash("heart_tos")
-        private val autoPlayMsgId: Short = stringHash("auto_play_tos")
 
         init {
             try {

@@ -44,7 +44,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         val buf = ByteArray(msg.readableBytes())
         msg.readBytes(buf)
         val message = protoInfo.parser.parseFrom(buf) as GeneratedMessageV3
-        if ("heart_tos" != protoName && "auto_play_tos" != protoName) {
+        if ("heart_tos" != protoName) {
             log.debug(
                 "recv@%s len: %d %s | %s".format(
                     ctx.channel().id().asShortText(), buf.size, protoName,
