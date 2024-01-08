@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 object Config {
-    val ListenPort: Int
+    // val ListenPort: Int
     val ListenWebSocketPort: Int
     val TotalPlayerCount: Int
     val HandCardCountBegin: Int
@@ -39,7 +39,7 @@ object Config {
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
-        pps.putIfAbsent("listen_port", "9091")
+//        pps.putIfAbsent("listen_port", "9091")
         pps.putIfAbsent("listen_websocket_port", "12222")
         pps.putIfAbsent("player.total_count", "5")
         pps.putIfAbsent("rule.hand_card_count_begin", "3")
@@ -57,7 +57,7 @@ object Config {
         pps.putIfAbsent("push.robot_qq", "12345678")
         pps.putIfAbsent("push.push_qq_groups", "")
         pps.putIfAbsent("waiting_second", "15")
-        ListenPort = pps.getProperty("listen_port").toInt()
+//        ListenPort = pps.getProperty("listen_port").toInt()
         ListenWebSocketPort = pps.getProperty("listen_websocket_port").toInt()
         TotalPlayerCount = pps.getProperty("player.total_count").toInt()
         HandCardCountBegin = pps.getProperty("rule.hand_card_count_begin").toInt()
@@ -94,7 +94,7 @@ object Config {
     fun save() {
         synchronized(this) {
             val pps = Properties()
-            pps["listen_port"] = ListenPort.toString()
+//            pps["listen_port"] = ListenPort.toString()
             pps["listen_websocket_port"] = ListenWebSocketPort.toString()
             pps["player.total_count"] = TotalPlayerCount.toString()
             pps["rule.hand_card_count_begin"] = HandCardCountBegin.toString()

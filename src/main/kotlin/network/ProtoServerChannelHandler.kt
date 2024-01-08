@@ -19,6 +19,10 @@ import org.apache.log4j.Logger
 import java.lang.reflect.InvocationTargetException
 import java.net.SocketException
 
+/**
+ * @suppress 不再使用普通tcp连接，请改用[WebSocketServerChannelHandler]
+ */
+@Deprecated(level = DeprecationLevel.WARNING, message = "不再使用普通tcp连接")
 class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
     override fun channelActive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
@@ -110,6 +114,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
     private data class ProtoInfo(val name: String, val parser: Parser<*>, val handler: ProtoHandler)
 
     companion object {
+        @Suppress("DEPRECATION")
         private val log = Logger.getLogger(ProtoServerChannelHandler::class.java)
         private val printer = TextFormat.printer().escapingNonAscii(false)
         private val ProtoInfoMap = HashMap<Short, ProtoInfo>()

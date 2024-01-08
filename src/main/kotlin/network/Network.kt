@@ -9,7 +9,7 @@ import java.util.concurrent.CountDownLatch
 
 object Network {
     fun init() {
-        Thread { initGameNetwork() }.start()
+//         Thread { initGameNetwork() }.start()
         Thread { initGameWebSocketNetwork() }.start()
         Thread { initGmNetwork() }.start()
         try {
@@ -21,25 +21,25 @@ object Network {
     }
 
     private val cd = CountDownLatch(3)
-    private fun initGameNetwork() {
-        val bossGroup: EventLoopGroup = NioEventLoopGroup()
-        val workerGroup: EventLoopGroup = NioEventLoopGroup()
-        try {
-            val bootstrap = ServerBootstrap()
-            bootstrap.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel::class.java)
-                .childHandler(ProtoServerInitializer())
-            val future = bootstrap.bind(Config.ListenPort)
-            cd.countDown()
-            future.channel().closeFuture().sync()
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-            throw RuntimeException(e)
-        } finally {
-            bossGroup.shutdownGracefully()
-            workerGroup.shutdownGracefully()
-        }
-    }
+//    private fun initGameNetwork() {
+//        val bossGroup: EventLoopGroup = NioEventLoopGroup()
+//        val workerGroup: EventLoopGroup = NioEventLoopGroup()
+//        try {
+//            val bootstrap = ServerBootstrap()
+//            bootstrap.group(bossGroup, workerGroup)
+//                .channel(NioServerSocketChannel::class.java)
+//                .childHandler(ProtoServerInitializer())
+//            val future = bootstrap.bind(Config.ListenPort)
+//            cd.countDown()
+//            future.channel().closeFuture().sync()
+//        } catch (e: InterruptedException) {
+//            Thread.currentThread().interrupt()
+//            throw RuntimeException(e)
+//        } finally {
+//            bossGroup.shutdownGracefully()
+//            workerGroup.shutdownGracefully()
+//        }
+//    }
 
     private fun initGameWebSocketNetwork() {
         val bossGroup: EventLoopGroup = NioEventLoopGroup()
