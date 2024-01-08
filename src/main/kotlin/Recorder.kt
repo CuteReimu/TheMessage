@@ -164,7 +164,7 @@ class Recorder {
         }
         player.send(reconnect_toc.newBuilder().setIsEnd(true).build())
         list.lastOrNull()?.let { line ->
-            player.send(line.protoName, line.messageBuf.toByteArray(), false)
+            player.send(line.protoName, line.messageBuf.toByteArray(), true)
         }
     }
 
