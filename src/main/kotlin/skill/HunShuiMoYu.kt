@@ -20,6 +20,6 @@ class HunShuiMoYu : InitialSkill, ConvertCardSkill(null, listOf(Yu_Qin_Gu_Zong, 
                 p.send(builder.build())
             }
         }
-        r.skills = r.skills.filterNot { it is HunShuiMoYu }
+        r.skills = r.skills.filterNot { it === this }
     }
 }

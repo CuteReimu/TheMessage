@@ -63,7 +63,7 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        r.skills = r.skills.filterNot { it is YouDiShenRu }
+        r.skills = r.skills.filterNot { it === this }
         log.info("${r}发动了[诱敌深入]")
         r.deleteCard(card.id)
         g.players.forEach { it!!.skills += YouDiShenRu2() }

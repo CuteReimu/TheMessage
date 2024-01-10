@@ -113,7 +113,7 @@ class JiuJi : InitialSkill, TriggeredSkill {
             val card = event.card!!
             askWhom.cards.add(card)
             log.info("${askWhom}将使用的${card}加入了手牌")
-            askWhom.skills = askWhom.skills.filterNot { it is JiuJi2 }
+            askWhom.skills = askWhom.skills.filterNot { it === this }
             for (player in g.players) {
                 if (player is HumanPlayer) {
                     val builder = skill_jiu_ji_b_toc.newBuilder()
