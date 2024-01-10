@@ -86,6 +86,7 @@ object RoleCache {
         role.ya_pao,
         role.qin_wu_ming,
         role.sp_bai_fei_fei,
+        role.xiao_ling_dang,
     )
 
     init {
