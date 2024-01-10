@@ -170,11 +170,7 @@ class MiLing : Card {
         val timeout: Int
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val canSendPureBlack = target.findSkill(SkillId.HAN_HOU_LAO_SHI) == null ||
-                    target.cards.filter { this.card.secret[secret] in it.colors }.all { it.isPureBlack() }
-            val card = messageCard
-                ?: if (canSendPureBlack) target.cards.find { this.card.secret[secret] in it.colors }!!
-                else target.cards.find { this.card.secret[secret] in it.colors && !it.isPureBlack() }!!
+            val card = messageCard ?: target.cards.find { this.card.secret[secret] in it.colors }!!
             val messageTarget = when (card.direction) {
                 direction.Left -> target.getNextLeftAlivePlayer()
                 direction.Right -> target.getNextRightAlivePlayer()
@@ -262,6 +258,7 @@ class MiLing : Card {
                 return null
             }
             player.incrSeq()
+            target.deleteCard(messageCard.id)
             val newFsm =
                 OnSendCard(
                     sendPhase.whoseTurn,
@@ -269,7 +266,8 @@ class MiLing : Card {
                     messageCard,
                     pb.cardDir,
                     messageTarget,
-                    lockPlayers.toTypedArray()
+                    lockPlayers.toTypedArray(),
+                    needRemoveCard = false
                 )
             return ResolveResult(
                 OnFinishResolveCard(

@@ -28,14 +28,16 @@ data class OnSendCard(
     val targetPlayer: Player,
     val lockedPlayers: Array<Player>,
     val isMessageCardFaceUp: Boolean = false,
-    val needRemoveCardAndNotify: Boolean = true
+    val needRemoveCard: Boolean = true,
+    val needNotify: Boolean = true
 ) : Fsm {
     override fun resolve(): ResolveResult {
         var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
         if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.contentToString()}"
         log.info(s)
-        if (needRemoveCardAndNotify) {
-            sender.cards.remove(messageCard)
+        if (needRemoveCard)
+            sender.deleteCard(messageCard.id)
+        if (needNotify) {
             for (p in whoseTurn.game!!.players)
                 p!!.notifySendMessageCard(whoseTurn, sender, targetPlayer, lockedPlayers, messageCard, dir)
         }

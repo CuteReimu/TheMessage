@@ -206,7 +206,7 @@ class LengXueXunLian : InitialSkill, ActiveSkill {
             return ResolveResult(
                 OnSendCard(
                     whoseTurn, r, card, card.direction, target, arrayOf(lockPlayer),
-                    isMessageCardFaceUp = true, needRemoveCardAndNotify = false
+                    isMessageCardFaceUp = true, needRemoveCard = false, needNotify = false
                 ), true
             )
         }

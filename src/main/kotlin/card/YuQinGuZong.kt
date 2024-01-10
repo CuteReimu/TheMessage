@@ -67,12 +67,12 @@ class YuQinGuZong : Card {
                     p.send(builder.build())
                 }
             }
-            r.messageCards.remove(messageCard) // 欲擒故纵可能传出面前的情报
+            r.deleteMessageCard(messageCard.id) // 欲擒故纵可能传出面前的情报
             r.draw(2)
             OnFinishResolveCard( // 这里先触发卡牌结算后，再触发情报传出时
                 r, r, target, getOriginCard(), type, OnSendCard(
                     fsm.whoseTurn, fsm.whoseTurn, messageCard, dir, target, lockPlayers.toTypedArray(),
-                    isMessageCardFaceUp = true, needRemoveCardAndNotify = false
+                    isMessageCardFaceUp = true, needRemoveCard = false, needNotify = false
                 )
             )
         }
