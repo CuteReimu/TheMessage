@@ -1203,7 +1203,7 @@ message skill_zi_zheng_qing_bai_toc {
   repeated color colors = 2; // 弃的那张牌的颜色
 }
 
-// 广播使用【译文暗号】：你可以将【破译】作为【调包】面朝下打出。
+// 广播使用【译文暗号】：一局游戏限一次，你可以将【破译】作为【调包】面朝下打出。
 message skill_yi_wen_an_hao_toc {
   uint32 player_id = 1;
 }
@@ -1280,7 +1280,7 @@ message skill_lian_xin_b_toc {
   card card = 3;
 }
 
-// 广播使用【顺势而为】：你使用【截获】或者成为【截获】的目标时，可以将此角色牌翻回背面，摸一张牌。
+// 广播使用【顺势而为】：你使用【截获】或者你面前的情报被【截获】后，可以将此角色牌翻回背面，摸一张牌。
 message skill_shun_shi_er_wei_toc {
   uint32 player_id = 1;
 }
@@ -1312,12 +1312,12 @@ message skill_mi_xin_b_toc {
   card card = 3;
 }
 
-// 广播使用【将计就计】：你使用【误导】或者成为【误导】的目标之一时，可以将此角色牌翻回背面，摸一张牌。
+// 广播使用【将计就计】：你使用【误导】或者你面前的情报被【误导】后，可以将此角色牌翻回背面，摸一张牌。
 message skill_jiang_ji_jiu_ji_toc {
   uint32 player_id = 1;
 }
 
-// 秦无命【拼命三郎】：出牌阶段限一次，你可以将一张纯黑色手牌置入自己的情报区，然后摸三张牌。你不能以此法令自己有三张或更多的黑情报。
+// 秦无命【拼命三郎】：出牌阶段限一次，你可以将一张纯黑色手牌置入自己的情报区，然后摸三张牌。
 message skill_pin_ming_san_lang_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
@@ -1406,21 +1406,22 @@ message skill_ying_bian_zi_ru_b_toc {
   uint32 target_player_id = 2;
 }
 
-// SP白菲菲【套取】A：出牌阶段限一次，你可以弃置两张含含相同颜色的牌
+// SP白菲菲【套取】A：出牌阶段限一次，你可以展示两张含含相同颜色的牌
 message skill_tao_qu_a_tos {
   repeated uint32 card_ids = 1;
   uint32 seq = 2;
 }
 
-// 广播使用【套取】A，弃牌走弃牌协议
+// 广播使用【套取】A
 message skill_tao_qu_a_toc {
   uint32 player_id = 1;
   repeated color colors = 2; // 可以选的颜色
-  uint32 waiting_second = 3;
-  uint32 seq = 4;
+  repeated card cards = 3;
+  uint32 waiting_second = 4;
+  uint32 seq = 5;
 }
 
-// SP白菲菲【套取】B：将一名其他角色情报区的一张同色情报加入手牌
+// SP白菲菲【套取】B：将一名其他角色情报区的一张同色情报加入手牌，其摸一张牌
 message skill_tao_qu_b_tos {
   uint32 target_player_id = 1;
   uint32 card_id = 2;
@@ -1506,7 +1507,7 @@ message skill_xin_ge_lian_luo_toc {
   uint32 target_player_id = 2;
 }
 
-// 小铃铛【猴子窃信】：出牌阶段限两次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
+// 小铃铛【猴子窃信】：出牌阶段限一次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
 message skill_hou_zi_qie_xin_tos {
   uint32 hand_card_id = 1;
   uint32 target_player_id = 2;

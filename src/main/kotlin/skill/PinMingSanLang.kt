@@ -11,7 +11,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 秦无命技能【拼命三郎】：出牌阶段限一次，你可以将一张纯黑色手牌置入自己的情报区，然后摸三张牌。你不能以此法令自己有三张或更多的黑情报。
+ * 秦无命技能【拼命三郎】：出牌阶段限一次，你可以将一张纯黑色手牌置入自己的情报区，然后摸三张牌。
  */
 class PinMingSanLang : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.PIN_MING_SAN_LANG
@@ -45,11 +45,6 @@ class PinMingSanLang : MainPhaseSkill(), InitialSkill {
         if (!card.isPureBlack()) {
             log.error("这张牌不是纯黑色")
             (r as? HumanPlayer)?.sendErrorMessage("这张牌不是纯黑色")
-            return
-        }
-        if (r.messageCards.count(Black) >= 2) {
-            log.error("你不能以此法令自己有三张或更多的黑情报")
-            (r as? HumanPlayer)?.sendErrorMessage("你不能以此法令自己有三张或更多的黑情报")
             return
         }
         r.incrSeq()

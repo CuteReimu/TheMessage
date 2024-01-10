@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
@@ -12,7 +13,7 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * SP白菲菲技能【套取】：出牌阶段限一次，你可以弃置两张含含相同颜色的牌，将一名其他角色情报区的一张同色情报加入手牌。
+ * SP白菲菲技能【套取】：出牌阶段限一次，你可以展示两张含含相同颜色的牌，将一名其他角色情报区的一张同色情报加入手牌，其摸一张牌。
  */
 class TaoQu : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.TAO_QU
@@ -73,12 +74,16 @@ class TaoQu : MainPhaseSkill(), InitialSkill {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info("${r}发动了[套取]")
-        g.playerDiscardCard(r, *cards.toTypedArray())
-        g.resolve(executeTaoQu(fsm, r, colors))
+        log.info("${r}发动了[套取]，展示了${cards.toTypedArray().contentToString()}")
+        g.resolve(executeTaoQu(fsm, r, cards, colors))
     }
 
-    private data class executeTaoQu(val fsm: MainPhaseIdle, val r: Player, val colors: List<color>) :
+    private data class executeTaoQu(
+        val fsm: MainPhaseIdle,
+        val r: Player,
+        val cards: List<Card>,
+        val colors: List<color>
+    ) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
@@ -87,6 +92,7 @@ class TaoQu : MainPhaseSkill(), InitialSkill {
                     val builder = skill_tao_qu_a_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.addAllColors(colors)
+                    cards.forEach { builder.addCards(it.toPbCard()) }
                     builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
@@ -186,6 +192,7 @@ class TaoQu : MainPhaseSkill(), InitialSkill {
                     p.send(builder.build())
                 }
             }
+            target.draw(1)
             g.addEvent(DiscardCardEvent(fsm.whoseTurn, player))
             return ResolveResult(fsm, true)
         }

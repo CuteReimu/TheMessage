@@ -7,7 +7,7 @@ import com.fengsheng.protos.Common.card_type.Po_Yi
 import com.fengsheng.protos.Role.skill_yi_wen_an_hao_toc
 
 /**
- * 陈安娜技能【译文暗号】：你可以将【破译】作为【调包】面朝下打出。
+ * 陈安娜技能【译文暗号】：一局游戏限一次，你可以将【破译】作为【调包】面朝下打出。
  */
 class YiWenAnHao : InitialSkill, ConvertCardSkill(Po_Yi, listOf(Diao_Bao), false) {
     override val skillId = SkillId.YI_WEN_AN_HAO
@@ -20,5 +20,6 @@ class YiWenAnHao : InitialSkill, ConvertCardSkill(Po_Yi, listOf(Diao_Bao), false
                 p.send(builder.build())
             }
         }
+        r.skills = r.skills.filterNot { it === this }
     }
 }
