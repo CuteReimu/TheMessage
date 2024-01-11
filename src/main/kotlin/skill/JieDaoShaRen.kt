@@ -16,6 +16,8 @@ import kotlin.random.Random
 class JieDaoShaRen : InitialSkill, ActiveSkill {
     override val skillId = SkillId.JIE_DAO_SHA_REN
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {

@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit
 class SouJi : InitialSkill, ActiveSkill {
     override val skillId = SkillId.SOU_JI
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {

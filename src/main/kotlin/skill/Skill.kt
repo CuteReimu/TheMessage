@@ -4,6 +4,7 @@ import com.fengsheng.Fsm
 import com.fengsheng.Game
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
+import com.fengsheng.phase.FightPhaseIdle
 import com.google.protobuf.GeneratedMessageV3
 
 /**
@@ -50,6 +51,8 @@ class InvalidSkill private constructor(val originSkill: InitialSkill) : Skill {
  * 仅在出牌阶段可以使用的技能（结束时需要提醒还未发动）
  */
 abstract class MainPhaseSkill : ActiveSkill {
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
+
     /**
      * 出牌阶段结束是是否需要提醒
      */
@@ -60,6 +63,11 @@ abstract class MainPhaseSkill : ActiveSkill {
  * 主动技能，一般是在出牌阶段空闲时点、争夺阶段空闲时点由玩家主动发动的技能
  */
 interface ActiveSkill : Skill {
+    /**
+     * 争夺阶段是否可以使用
+     */
+    fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean
+
     /**
      * 玩家协议或机器人请求发动技能时调用
      */

@@ -5,7 +5,7 @@ import com.fengsheng.Player
 import com.fengsheng.ProcessFsm
 import com.fengsheng.ResolveResult
 import com.fengsheng.card.Card
-import com.fengsheng.skill.cannotPlayCardAndSkill
+import com.fengsheng.skill.cannotPlayCardAndSkillForFightPhase
 
 /**
  * 争夺阶段空闲时点
@@ -26,7 +26,7 @@ data class FightPhaseIdle(
     val isMessageCardFaceUp: Boolean
 ) : ProcessFsm() {
     override fun resolve0(): ResolveResult? {
-        if (!whoseFightTurn.alive || whoseFightTurn.cannotPlayCardAndSkill())
+        if (!whoseFightTurn.alive || whoseFightTurn.cannotPlayCardAndSkillForFightPhase(this))
             return ResolveResult(FightPhaseNext(this), true)
         for (p in whoseTurn.game!!.players)
             p!!.notifyFightPhase(Config.WaitSecond)

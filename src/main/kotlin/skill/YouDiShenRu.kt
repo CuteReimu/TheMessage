@@ -4,6 +4,7 @@ import com.fengsheng.Game
 import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
+import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
@@ -21,6 +22,8 @@ import java.util.concurrent.TimeUnit
  */
 class YouDiShenRu : InitialSkill, ActiveSkill {
     override val skillId = SkillId.YOU_DI_SHEN_RU
+
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         message as skill_you_di_shen_ru_tos

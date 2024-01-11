@@ -19,6 +19,8 @@ import kotlin.random.Random
 class TouTian : InitialSkill, ActiveSkill {
     override val skillId = SkillId.TOU_TIAN
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (!JieHuo.canUse(g, r)) return
         if (r.roleFaceUp) {

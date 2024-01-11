@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit
 class GuangFaBao : InitialSkill, ActiveSkill {
     override val skillId = SkillId.GUANG_FA_BAO
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {

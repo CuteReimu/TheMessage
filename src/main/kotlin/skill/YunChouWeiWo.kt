@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit
 class YunChouWeiWo : InitialSkill, ActiveSkill {
     override val skillId = SkillId.YUN_CHOU_WEI_WO
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
+    
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm
         when (fsm) {

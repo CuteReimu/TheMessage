@@ -18,6 +18,8 @@ import java.util.concurrent.TimeUnit
 class JiZhi : InitialSkill, ActiveSkill {
     override val skillId = SkillId.JI_ZHI
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm
         if ((fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) && (fsm !is WaitForChengQing || r !== fsm.askWhom)) {

@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.UseChengQingOnDying
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.role.unknown
@@ -14,6 +15,8 @@ import java.util.concurrent.TimeUnit
  */
 class HouLaiRen : InitialSkill, ActiveSkill {
     override val skillId = SkillId.HOU_LAI_REN
+
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? WaitForChengQing

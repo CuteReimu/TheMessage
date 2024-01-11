@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.MiLing.executeMiLing
 import com.fengsheng.card.count
+import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseStart
@@ -21,6 +22,8 @@ import java.util.concurrent.TimeUnit
  */
 class LengXueXunLian : InitialSkill, ActiveSkill {
     override val skillId = SkillId.LENG_XUE_XUN_LIAN
+
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         message as skill_leng_xue_xun_lian_a_tos

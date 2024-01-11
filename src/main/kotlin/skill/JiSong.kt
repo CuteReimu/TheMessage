@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit
 class JiSong : InitialSkill, ActiveSkill {
     override val skillId = SkillId.JI_SONG
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean =
+        r.cards.size >= 2 || r.messageCards.any { !it.isBlack() }
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {

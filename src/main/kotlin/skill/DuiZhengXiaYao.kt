@@ -17,6 +17,8 @@ import kotlin.random.Random
 class DuiZhengXiaYao : InitialSkill, ActiveSkill {
     override val skillId = SkillId.DUI_ZHENG_XIA_YAO
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {

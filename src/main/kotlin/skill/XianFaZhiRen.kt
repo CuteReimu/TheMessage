@@ -18,6 +18,8 @@ import java.util.concurrent.TimeUnit
 class XianFaZhiRen : InitialSkill, ActiveSkill, TriggeredSkill {
     override val skillId = SkillId.XIAN_FA_ZHI_REN
 
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
+    
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         var found = false
         while (true) {
