@@ -144,7 +144,7 @@ class Recorder {
             val diffNanoTime = list[currentIndex].nanoTime - line.nanoTime
             if (diffNanoTime > 100000000) {
                 var maxInterval = 2000000000L
-                if (list[currentIndex].protoName == "notify_phase_toc" && line.protoName == "notify_phase_toc")
+                if (list[currentIndex].protoName in fastDisplayProtoNames && line.protoName in fastDisplayProtoNames)
                     maxInterval /= 2
                 GameExecutor.TimeWheel.newTimeout(
                     { displayNext(player) },
@@ -179,6 +179,7 @@ class Recorder {
             "error_message_toc",
             "notify_player_update_toc"
         )
+        private val fastDisplayProtoNames = listOf("notify_phase_toc", "wait_for_cheng_qing_toc")
 
         init {
             @OptIn(DelicateCoroutinesApi::class)
