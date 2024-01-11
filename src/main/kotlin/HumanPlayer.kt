@@ -117,6 +117,7 @@ class HumanPlayer(
 
     fun setAutoPlay(autoPlay: Boolean) {
         if (this.autoPlay == autoPlay) return
+        log.debug("${this}托管状态：$autoPlay")
         timeoutCount = 0
         this.autoPlay = autoPlay
         if (autoPlay) {
