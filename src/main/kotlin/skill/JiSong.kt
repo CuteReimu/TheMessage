@@ -17,7 +17,7 @@ class JiSong : InitialSkill, ActiveSkill {
     override val skillId = SkillId.JI_SONG
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean =
-        r.cards.size >= 2 || r.messageCards.any { !it.isBlack() }
+        (r.cards.size >= 2 || r.messageCards.any { !it.isBlack() }) && r.getSkillUseCount(skillId) == 0
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
