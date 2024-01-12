@@ -7,38 +7,20 @@ import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 凌素秋技能【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。你在回合外弃置手牌后，可以摸一张牌。
+ * 凌素秋技能【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。
  */
 class CunBuBuRang : InitialSkill, TriggeredSkill {
     override val skillId = SkillId.CUN_BU_BU_RANG
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val event1 = g.findEvent<DiscardCardEvent>(this) { event ->
-            askWhom === event.player || return@findEvent false
-            askWhom !== event.whoseTurn
-        }
-        if (event1 != null) {
-            log.info("${askWhom}发动了[寸步不让]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_cun_bu_bu_rang_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(askWhom.location)
-                    builder.enable = true
-                    builder.isDrawCard = true
-                    p.send(builder.build())
-                }
-            }
-            askWhom.draw(1)
-            return null
-        }
-        val event2 = g.findEvent<GiveCardEvent>(this) { event ->
+        val event = g.findEvent<GiveCardEvent>(this) { event ->
             askWhom === event.fromPlayer || return@findEvent false
             askWhom !== event.toPlayer || return@findEvent false
             event.toPlayer.alive || return@findEvent false
             event.toPlayer.cards.isNotEmpty()
         }
-        if (event2 != null)
-            return ResolveResult(executeCunBuBuRang(g.fsm!!, event2.whoseTurn, askWhom, event2.toPlayer), true)
+        if (event != null)
+            return ResolveResult(executeCunBuBuRang(g.fsm!!, event.whoseTurn, askWhom, event.toPlayer), true)
         return null
     }
 
@@ -115,7 +97,6 @@ class CunBuBuRang : InitialSkill, TriggeredSkill {
                     val builder = skill_cun_bu_bu_rang_toc.newBuilder()
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.enable = true
-                    builder.isDrawCard = false
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     if (p === r || p === target) builder.card = card.toPbCard()
                     p.send(builder.build())

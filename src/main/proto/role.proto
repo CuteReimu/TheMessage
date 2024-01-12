@@ -1472,7 +1472,7 @@ message skill_wait_for_cun_bu_bu_rang_toc {
   uint32 seq = 4;
 }
 
-// 凌素秋【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。你在回合外弃置手牌后，可以摸一张牌。
+// 凌素秋【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。
 message skill_cun_bu_bu_rang_tos {
   bool enable = 1;
   uint32 seq = 2;
@@ -1482,7 +1482,6 @@ message skill_cun_bu_bu_rang_tos {
 message skill_cun_bu_bu_rang_toc {
   uint32 player_id = 1; // 凌素秋的ID
   bool enable = 2;
-  bool is_draw_card = 3; // false-抽牌，true-摸牌。如果是摸牌，则下面两个字段无意义
   uint32 target_player_id = 4;
   card card = 5; // 只有凌素秋和那名角色能看见
 }
