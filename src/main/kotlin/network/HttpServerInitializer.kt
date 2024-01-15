@@ -12,6 +12,6 @@ class HttpServerInitializer : ChannelInitializer<SocketChannel>() {
         pipeline.addLast(IdleStateHandler(60, 0, 0, TimeUnit.SECONDS))
         pipeline.addLast("httpServerCodec", HttpServerCodec())
         pipeline.addLast("httpServerHandler", HttpServerChannelHandler())
-        pipeline.addLast(HeartBeatServerHandler())
+        pipeline.addLast(HeartBeatServerHandler("http_server"))
     }
 }

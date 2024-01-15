@@ -6,12 +6,12 @@ import io.netty.handler.timeout.IdleState
 import io.netty.handler.timeout.IdleStateEvent
 import org.apache.log4j.Logger
 
-class HeartBeatServerHandler : ChannelInboundHandlerAdapter() {
+class HeartBeatServerHandler(private val name: String) : ChannelInboundHandlerAdapter() {
     @Throws(Exception::class)
     override fun userEventTriggered(ctx: ChannelHandlerContext, evt: Any) {
         if (evt is IdleStateEvent) {
             if (evt.state() == IdleState.READER_IDLE) {
-                log.info(ctx.channel().id().asShortText() + " heart timeout")
+                log.info(ctx.channel().id().asShortText() + " heart timeout | $name")
                 ctx.channel().close()
             } else {
                 super.userEventTriggered(ctx, evt)

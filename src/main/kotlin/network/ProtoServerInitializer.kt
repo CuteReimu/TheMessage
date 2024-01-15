@@ -19,6 +19,6 @@ class ProtoServerInitializer : ChannelInitializer<SocketChannel>() {
         pipeline.addLast(LengthFieldBasedFrameDecoder(ByteOrder.LITTLE_ENDIAN, 65535, 0, 2, 0, 2, true))
         @Suppress("DEPRECATION")
         pipeline.addLast(ProtoServerChannelHandler())
-        pipeline.addLast(HeartBeatServerHandler())
+        pipeline.addLast(HeartBeatServerHandler("proto_server"))
     }
 }

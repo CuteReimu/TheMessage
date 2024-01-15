@@ -16,6 +16,6 @@ class WebSocketServerInitializer : ChannelInitializer<SocketChannel>() {
         pipeline.addLast("http-aggregator", HttpObjectAggregator(65535))
         pipeline.addLast("ws-handler", WebSocketServerProtocolHandler("/ws"))
         pipeline.addLast("webSocketServerHandler", WebSocketServerChannelHandler())
-        pipeline.addLast(HeartBeatServerHandler())
+        pipeline.addLast(HeartBeatServerHandler("websocket_server"))
     }
 }
