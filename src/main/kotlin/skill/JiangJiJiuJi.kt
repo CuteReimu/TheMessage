@@ -23,7 +23,7 @@ class JiangJiJiuJi : InitialSkill, TriggeredSkill {
         return null
     }
 
-    private class JiangJiJiuJi2 : TriggeredSkill, OneTurnSkill {
+    private class JiangJiJiuJi2 : TriggeredSkill {
         override val skillId = SkillId.UNKNOWN
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
@@ -40,6 +40,7 @@ class JiangJiJiuJi : InitialSkill, TriggeredSkill {
             }
             askWhom.draw(1)
             g.playerSetRoleFaceUp(askWhom, false)
+            askWhom.skills = askWhom.skills.filterNot { it === this }
             return null
         }
 
