@@ -10,6 +10,7 @@ import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role.skill_leng_xue_xun_lian_a_tos
 import com.fengsheng.skill.ActiveSkill
 import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.mustReceiveMessage
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
 import io.netty.channel.Channel
@@ -271,14 +272,7 @@ class HumanPlayer(
         timeout = GameExecutor.post(game!!, {
             if (checkSeq(seq)) {
                 incrSeq()
-                var isLocked = false
-                for (p in fsm.lockedPlayers) {
-                    if (p === this) {
-                        isLocked = true
-                        break
-                    }
-                }
-                if (isLocked || fsm.inFrontOfWhom === fsm.sender) game!!.resolve(
+                if (fsm.mustReceiveMessage()) game!!.resolve( // 如果必须接收，则接收。否则一定不接收
                     OnChooseReceiveCard(
                         fsm.whoseTurn,
                         fsm.sender,
