@@ -16,7 +16,7 @@ class YuSiWangPo : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.YU_SI_WANG_PO
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
+        super.mainPhaseNeedNotify(r) && r.cards.size > 1
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
