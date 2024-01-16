@@ -44,29 +44,6 @@ gm.listen_port=9092
 
 见`src/main/resources/log4j.properties`
 
-## 游戏步骤
-
-玩家按照逆时针的顺序依次进行回合
-
-```mermaid
-graph RL;
-    id1([玩家A])-->id2([玩家B]);
-    id2-->id3([玩家C]);
-    id3-->id4([玩家D]);
-    id4-->id5([玩家E]);
-    id5-->id1;
-```
-
-每个回合只有五个阶段，且按照顺序进行
-
-```mermaid
-graph TD;
-    id1([摸牌阶段])-->id2([出牌阶段]);
-    id2-->id3([情报传递阶段]);
-    id3-->id4([争夺阶段]);
-    id4-->id5([情报接收阶段]);
-```
-
 ## 关于GM命令
 
 直接GET请求 http://127.0.0.1:9092/xxxx?a=1&b=2 即可使用。目前支持的GM命令有：
