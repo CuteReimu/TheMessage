@@ -10,7 +10,6 @@ import kotlin.random.Random
  */
 data class StartGame(val game: Game) : Fsm {
     override fun resolve(): ResolveResult? {
-        Game.GameCache[game.id] = game
         val players = game.players
         log.info("游戏开始了，场上的角色依次是：${players.contentToString()}")
         game.deck.init(players.size)

@@ -119,6 +119,7 @@ class Game private constructor(totalPlayerCount: Int) {
         players.all { it != null } || return
         !isStarted || return
         isStarted = true
+        GameCache[id] = this
         newInstance()
         MiraiPusher.notifyStart()
         val identities = ArrayList<color>()

@@ -3,6 +3,7 @@ package com.fengsheng.gm
 import com.fengsheng.Game
 import com.fengsheng.GameExecutor
 import com.fengsheng.card.*
+import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Common.card_type
 import org.apache.log4j.Logger
 import java.util.function.Function
@@ -19,6 +20,7 @@ class addcard : Function<Map<String, String>, Any> {
             val availableCards = Deck.DefaultDeck.filter { it.type == cardType }
             for (g in Game.GameCache.values) {
                 GameExecutor.post(g) {
+                    if (!g.isStarted || g.fsm == null || g.fsm is WaitForSelectRole) return@post
                     if (playerId < g.players.size && playerId >= 0 && g.players[playerId]!!.alive) {
                         val cardList: MutableList<Card> = ArrayList()
                         for (i in 0..<finalCount) {
