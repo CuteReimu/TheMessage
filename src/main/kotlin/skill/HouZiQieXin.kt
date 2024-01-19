@@ -16,7 +16,12 @@ import java.util.concurrent.TimeUnit
 class HouZiQieXin : MainPhaseSkill(), InitialSkill {
     override val skillId = SkillId.HOU_ZI_QIE_XIN
 
-    override fun mainPhaseNeedNotify(r: Player) = false
+    override fun mainPhaseNeedNotify(r: Player) =
+        super.mainPhaseNeedNotify(r) && r.game!!.players.any {
+            it !== r && it!!.alive && it.messageCards.any { card1 ->
+                r.cards.any { card2 -> card1.colorExactlyTheSame(card2) }
+            }
+        }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? MainPhaseIdle
