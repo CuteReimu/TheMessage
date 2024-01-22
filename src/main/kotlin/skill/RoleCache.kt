@@ -82,16 +82,6 @@ object RoleCache {
     private val mapCache: Map<role, RoleSkillsData>
     private val pool = Channel<() -> Unit>(Channel.UNLIMITED)
     private val forbiddenRoleCache = ArrayList<RoleSkillsData>()
-    private val doubleProbabilityRoles = listOf(
-        role.adult_xiao_jiu,
-        role.adult_han_mei,
-        role.ya_pao,
-        role.qin_wu_ming,
-        role.sp_bai_fei_fei,
-        role.xiao_ling_dang,
-        role.chen_an_na,
-        role.ling_su_qiu,
-    )
 
     init {
         mapCache = EnumMap(role::class.java)
@@ -150,16 +140,12 @@ object RoleCache {
      */
     fun getRandomRoles(n: Int): Array<RoleSkillsData> = runBlocking {
         mu.withLock {
-            val doubleProbabilityRolesIndex = doubleProbabilityRoles.mapNotNull { role ->
-                cache.indexOfLast { it.role == role }.let { if (it >= 0) it else null }
-            }
-            val indexList0 = (cache.indices + doubleProbabilityRolesIndex).shuffled()
-            val indexSet = BooleanArray(cache.size)
-            val indexList = ArrayList<Int>()
-            for (index in indexList0) {
-                if (!indexSet[index]) {
-                    indexSet[index] = true
-                    indexList.add(index)
+            val yaPaoIndex = cache.indexOfLast { it.role == role.ya_pao }
+            var indexList = cache.indices.shuffled().run { if (size > n) subList(0, n) else this }
+            if (yaPaoIndex !in indexList) {
+                indexList = indexList.toMutableList().apply {
+                    set(0, yaPaoIndex)
+                    shuffle()
                 }
             }
             Array(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }

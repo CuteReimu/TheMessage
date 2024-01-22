@@ -1218,6 +1218,13 @@ message skill_shou_kou_ru_ping_toc {
   uint32 unknown_card_count = 6; // 被试探无效时，除使用者外其余人看不见那张试探牌，这个字段为1。肥源龙川的技能使用的威逼，这个字段为0。
 }
 
+// 广播使用【憨厚老实】：你无法传出纯黑色情报（除非手牌仅有纯黑色），接收你情报的玩家抽取你一张手牌。
+message skill_han_hou_lao_shi_toc {
+  uint32 player_id = 1; // 哑巴的id
+  uint32 target_player_id = 2; // 情报接收者
+  card card = 3; // 给的那张牌，只有哑巴和情报接收者可以看到
+}
+
 // 当【调包】结算后，广播询问使用【赌命】
 message skill_wait_for_du_ming_toc {
   uint32 player_id = 1;
