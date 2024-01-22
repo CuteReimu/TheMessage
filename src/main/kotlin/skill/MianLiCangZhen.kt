@@ -19,7 +19,7 @@ class MianLiCangZhen : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->
             askWhom === event.sender || return@findEvent false
-            event.sender.cards.isNotEmpty()
+            askWhom.cards.isNotEmpty()
         } ?: return null
         return ResolveResult(executeMianLiCangZhen(g.fsm!!, event), true)
     }

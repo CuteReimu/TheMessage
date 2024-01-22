@@ -20,7 +20,7 @@ class YiYaHuanYa : InitialSkill, TriggeredSkill {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->
             askWhom === event.inFrontOfWhom || return@findEvent false
             event.messageCard.isBlack() || return@findEvent false
-            event.inFrontOfWhom.cards.isNotEmpty()
+            askWhom.cards.isNotEmpty()
         } ?: return null
         return ResolveResult(executeYiYaHuanYa(g.fsm!!, event), true)
     }

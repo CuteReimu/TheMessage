@@ -60,7 +60,7 @@ class JieDaoShaRen : InitialSkill, ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        val card = target.cards.toTypedArray().random()
+        val card = target.cards.random()
         g.resolve(executeJieDaoShaRen(fsm, r, target, card))
     }
 

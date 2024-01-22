@@ -16,6 +16,7 @@ class JingMeng : InitialSkill, TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->
             askWhom === event.inFrontOfWhom || return@findEvent false
+            g.players.any { it!!.alive && it.cards.isNotEmpty() }
             event.messageCard.isBlack()
         } ?: return null
         return ResolveResult(executeJingMengA(g.fsm!!, event), true)
@@ -58,11 +59,6 @@ class JingMeng : InitialSkill, TriggeredSkill {
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 log.error("目标错误：${message.targetPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误：${message.targetPlayerId}")
-                return null
-            }
-            if (message.targetPlayerId == 0) {
-                log.error("不能以自己为目标")
-                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
