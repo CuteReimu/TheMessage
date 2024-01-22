@@ -142,7 +142,7 @@ object RoleCache {
         mu.withLock {
             val yaPaoIndex = cache.indexOfLast { it.role == role.ya_pao }
             var indexList = cache.indices.shuffled().run { if (size > n) subList(0, n) else this }
-            if (yaPaoIndex !in indexList) {
+            if (yaPaoIndex >= 0 && indexList.isNotEmpty() && yaPaoIndex !in indexList) {
                 indexList = indexList.toMutableList().apply {
                     set(0, yaPaoIndex)
                     shuffle()

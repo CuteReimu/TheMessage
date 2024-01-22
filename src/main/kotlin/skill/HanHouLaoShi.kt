@@ -1,20 +1,16 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.Card
 import com.fengsheng.protos.Role.skill_han_hou_lao_shi_toc
 import org.apache.log4j.Logger
 
 /**
- * 哑炮技能【憨厚老实】：你的回合，你无法主动传出纯黑色情报（除非你只能传出纯黑色情报），接收你情报的玩家抽取你一张手牌。
+ * 哑炮技能【憨厚老实】：其他角色接收你传出的情报后，抽取你一张牌。
  */
-class HanHouLaoShi : TriggeredSkill, SendMessageCardSkill {
+class HanHouLaoShi : TriggeredSkill {
     override val skillId = SkillId.HAN_HOU_LAO_SHI
 
     override val isInitialSkill = true
-
-    override fun checkSendCard(player: Player, whoseTurn: Player, availableCards: List<Card>, card: Card) =
-        player !== whoseTurn || !card.isPureBlack() || availableCards.all { it.isPureBlack() }
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->
