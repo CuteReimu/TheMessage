@@ -12,11 +12,13 @@ import java.util.concurrent.TimeUnit
 /**
  * 老虎技能【运筹帷幄】：出牌阶段或争夺阶段，你可以翻开此角色牌，然后查看牌堆顶的五张牌，从中选择三张加入手牌，其余的卡牌按任意顺序放回牌堆顶。
  */
-class YunChouWeiWo : InitialSkill, ActiveSkill {
+class YunChouWeiWo : ActiveSkill {
     override val skillId = SkillId.YUN_CHOU_WEI_WO
 
+    override val isInitialSkill = true
+
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
-    
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm
         when (fsm) {

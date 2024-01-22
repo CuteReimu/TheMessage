@@ -12,8 +12,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 成年小九技能【联信】：接收其他角色情报后，可以翻开此角色，摸两张牌，然后将一张含该情报相同颜色的手牌置入传出者的情报区。
  */
-class LianXin : InitialSkill, TriggeredSkill {
+class LianXin : TriggeredSkill {
     override val skillId = SkillId.LIAN_XIN
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->

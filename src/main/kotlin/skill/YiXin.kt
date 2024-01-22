@@ -9,8 +9,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 李宁玉技能【遗信】：你死亡前，可以将一张手牌置入另一名角色的情报区。
  */
-class YiXin : InitialSkill, TriggeredSkill, BeforeDieSkill {
+class YiXin : TriggeredSkill, BeforeDieSkill {
     override val skillId = SkillId.YI_XIN
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<PlayerDieEvent>(this) { event ->

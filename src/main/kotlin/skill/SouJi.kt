@@ -14,8 +14,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 李醒技能【搜辑】：争夺阶段，你可以翻开此角色牌，然后查看一名角色的手牌和待收情报，并且你可以选择其中任意张黑色牌，展示并加入你的手牌。
  */
-class SouJi : InitialSkill, ActiveSkill {
+class SouJi : ActiveSkill {
     override val skillId = SkillId.SOU_JI
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 

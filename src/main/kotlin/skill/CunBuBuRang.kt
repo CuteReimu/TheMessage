@@ -9,8 +9,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 凌素秋技能【寸步不让】：在其他角色获得你的手牌结算之后，你可以抽该角色一张手牌。
  */
-class CunBuBuRang : InitialSkill, TriggeredSkill {
+class CunBuBuRang : TriggeredSkill {
     override val skillId = SkillId.CUN_BU_BU_RANG
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<GiveCardEvent>(this) { event ->

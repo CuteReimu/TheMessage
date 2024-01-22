@@ -10,8 +10,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 孙守謨技能【详尽思索】：每当情报传出时，你可以指定一名角色，若最后情报被该角色接收，你摸两张牌。
  */
-class XiangJinSiSuo : InitialSkill, TriggeredSkill {
+class XiangJinSiSuo : TriggeredSkill {
     override val skillId = SkillId.XIANG_JIN_SI_SUO
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<SendCardEvent>(this) { true } ?: return null
@@ -120,6 +122,8 @@ class XiangJinSiSuo : InitialSkill, TriggeredSkill {
 
     private class XiangJinSiSuo2(val target: Player) : TriggeredSkill, OneTurnSkill {
         override val skillId = SkillId.UNKNOWN
+
+        override val isInitialSkill = false
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
             val fsm = g.fsm as? ReceivePhaseIdle ?: return null

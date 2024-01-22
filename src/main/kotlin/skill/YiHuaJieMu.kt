@@ -10,8 +10,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 韩梅技能【移花接木】：争夺阶段，你可以翻开此角色牌，然后从一名角色的情报区选择一张情报，将其置入另一名角色的情报区，若如此做会让其收集三张或更多同色情报，则改为将该情报加入你的手牌。
  */
-class YiHuaJieMu : InitialSkill, ActiveSkill {
+class YiHuaJieMu : ActiveSkill {
     override val skillId = SkillId.YI_HUA_JIE_MU
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 

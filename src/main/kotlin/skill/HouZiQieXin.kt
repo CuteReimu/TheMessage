@@ -13,8 +13,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 小铃铛技能【猴子窃信】：出牌阶段限一次，你可以用手牌和一名其他角色情报区的完全同色的情报互换。
  */
-class HouZiQieXin : MainPhaseSkill(), InitialSkill {
+class HouZiQieXin : MainPhaseSkill() {
     override val skillId = SkillId.HOU_ZI_QIE_XIN
+
+    override val isInitialSkill = true
 
     override fun mainPhaseNeedNotify(r: Player) =
         super.mainPhaseNeedNotify(r) && r.game!!.players.any {

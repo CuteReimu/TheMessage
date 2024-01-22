@@ -8,8 +8,10 @@ import org.apache.log4j.Logger
 /**
  * SP李宁玉技能【诱导】：你使用【误导】后，摸一张牌。
  */
-class YouDao : InitialSkill, TriggeredSkill {
+class YouDao : TriggeredSkill {
     override val skillId = SkillId.YOU_DAO
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         g.findEvent<FinishResolveCardEvent>(this) { event ->

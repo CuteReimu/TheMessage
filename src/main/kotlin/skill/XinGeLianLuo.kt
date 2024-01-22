@@ -11,8 +11,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 小铃铛技能【信鸽联络】：每当你传出非直达情报时，可以选择一名角色本轮的传递阶段中不能选择接收情报。
  */
-class XinGeLianLuo : InitialSkill, TriggeredSkill {
+class XinGeLianLuo : TriggeredSkill {
     override val skillId = SkillId.XIN_GE_LIAN_LUO
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         g.findEvent<SendCardEvent>(this) { event ->
@@ -115,6 +117,8 @@ class XinGeLianLuo : InitialSkill, TriggeredSkill {
      * 有这个技能的角色本回合不能接收情报
      */
     private class XinGeLianLuo2 : MustReceiveMessage() {
+        override val isInitialSkill = false
+
         override fun mustReceive(sendPhase: SendPhaseIdle) = false
 
         override fun cannotReceive(sendPhase: SendPhaseIdle) = true

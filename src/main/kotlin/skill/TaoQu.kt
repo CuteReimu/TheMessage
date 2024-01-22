@@ -15,8 +15,10 @@ import java.util.concurrent.TimeUnit
 /**
  * SP白菲菲技能【套取】：出牌阶段限一次，你可以展示两张含含相同颜色的牌，将一名其他角色情报区的一张同色情报加入手牌，其摸一张牌。
  */
-class TaoQu : MainPhaseSkill(), InitialSkill {
+class TaoQu : MainPhaseSkill() {
     override val skillId = SkillId.TAO_QU
+
+    override val isInitialSkill = true
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && arrayOf(Black, Red, Blue).any {

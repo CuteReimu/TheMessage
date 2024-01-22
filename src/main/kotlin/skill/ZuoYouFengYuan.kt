@@ -12,11 +12,13 @@ import kotlin.random.Random
 /**
  * 秦圆圆技能【左右逢源】：争夺阶段，你可以翻开此角色牌，然后指定两名角色，他们弃置所有手牌，然后摸三张牌（由你指定的角色先摸）。
  */
-class ZuoYouFengYuan : InitialSkill, ActiveSkill {
+class ZuoYouFengYuan : ActiveSkill {
     override val skillId = SkillId.ZUO_YOU_FENG_YUAN
 
+    override val isInitialSkill = true
+
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
-    
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || fsm.whoseFightTurn !== r) {

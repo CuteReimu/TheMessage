@@ -6,8 +6,10 @@ import com.fengsheng.protos.Common.color.Has_No_Identity
 /**
  * 顾小梦技能【尾声】：你获得胜利时，没有身份牌的玩家与你一同获得胜利。
  */
-class WeiSheng : InitialSkill, ChangeGameResultSkill {
+class WeiSheng : ChangeGameResultSkill {
     override val skillId = SkillId.WEI_SHENG
+
+    override val isInitialSkill = true
 
     override fun changeGameResult(
         r: Player,

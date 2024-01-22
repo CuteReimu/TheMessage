@@ -15,8 +15,10 @@ import kotlin.random.Random
  *  * 将其置入自己的情报区
  *  * 将其置入对方的情报区
  */
-class DuJi : InitialSkill, ActiveSkill {
+class DuJi : ActiveSkill {
     override val skillId = SkillId.DU_JI
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 

@@ -7,8 +7,10 @@ import org.apache.log4j.Logger
 /**
  * 老汉技能【视死】：你接收黑色情报后，摸两张牌。
  */
-class ShiSi : InitialSkill, TriggeredSkill {
+class ShiSi : TriggeredSkill {
     override val skillId = SkillId.SHI_SI
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->

@@ -9,8 +9,10 @@ import org.apache.log4j.Logger
 /**
  * 成年韩梅技能【将计就计】：你使用【误导】或者你面前的情报被【误导】后，可以将此角色牌翻回背面，摸一张牌。
  */
-class JiangJiJiuJi : InitialSkill, TriggeredSkill {
+class JiangJiJiuJi : TriggeredSkill {
     override val skillId = SkillId.JIANG_JI_JIU_JI
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         g.findEvent<UseCardEvent>(this) { event ->
@@ -25,6 +27,8 @@ class JiangJiJiuJi : InitialSkill, TriggeredSkill {
 
     private class JiangJiJiuJi2 : TriggeredSkill {
         override val skillId = SkillId.UNKNOWN
+
+        override val isInitialSkill = false
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
             g.findEvent<FinishResolveCardEvent>(this) {

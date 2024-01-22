@@ -8,8 +8,10 @@ import org.apache.log4j.Logger
 /**
  * 哑炮技能【憨厚老实】：你的回合，你无法主动传出纯黑色情报（除非你只能传出纯黑色情报），接收你情报的玩家抽取你一张手牌。
  */
-class HanHouLaoShi : InitialSkill, TriggeredSkill, SendMessageCardSkill {
+class HanHouLaoShi : TriggeredSkill, SendMessageCardSkill {
     override val skillId = SkillId.HAN_HOU_LAO_SHI
+
+    override val isInitialSkill = true
 
     override fun checkSendCard(player: Player, whoseTurn: Player, availableCards: List<Card>, card: Card) =
         player !== whoseTurn || !card.isPureBlack() || availableCards.all { it.isPureBlack() }

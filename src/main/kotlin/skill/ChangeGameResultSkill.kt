@@ -27,7 +27,7 @@ fun Game.changeGameResult(whoseTurn: Player, declaredWinners: MutableList<Player
     do {
         val player = players[i]!!
         player.skills.forEach { skill ->
-            if ((player.alive || skill !is InitialSkill) && skill is ChangeGameResultSkill)
+            if ((player.alive || !skill.isInitialSkill) && skill is ChangeGameResultSkill)
                 skill.changeGameResult(player, whoseTurn, declaredWinners, winners)
         }
         i = (i + 1) % players.size

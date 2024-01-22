@@ -20,8 +20,10 @@ import java.util.concurrent.TimeUnit
  * 边云疆技能【诱敌深入】：整局限一次，你的传递阶段，改为将一张手牌作为情报明面传出，该情报含有身份颜色的玩家，在本阶段必须选则接收该情报，不含身份颜色的玩家不能选择接收。
  * （潜伏=红色，特工=蓝色，神秘人不受限）
  */
-class YouDiShenRu : InitialSkill, ActiveSkill {
+class YouDiShenRu : ActiveSkill {
     override val skillId = SkillId.YOU_DI_SHEN_RU
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
@@ -90,6 +92,8 @@ class YouDiShenRu : InitialSkill, ActiveSkill {
     }
 
     private class YouDiShenRu2 : MustReceiveMessage() {
+        override val isInitialSkill = false
+
         override fun mustReceive(sendPhase: SendPhaseIdle) =
             sendPhase.inFrontOfWhom.identity.let { it != Black && it in sendPhase.messageCard.colors }
 

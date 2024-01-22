@@ -379,7 +379,7 @@ class Game private constructor(totalPlayerCount: Int) {
             do {
                 val player = players[i]!!
                 player.skills.forEach { skill ->
-                    if (player.alive || skill is BeforeDieSkill || skill !is InitialSkill)
+                    if (player.alive || skill is BeforeDieSkill || !skill.isInitialSkill)
                         (skill as? TriggeredSkill)?.execute(this, player)?.let { return it }
                 }
                 i = (i + 1) % players.size

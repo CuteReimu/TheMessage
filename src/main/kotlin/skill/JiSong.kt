@@ -13,8 +13,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 鬼脚技能【急送】：争夺阶段限一次，你可以弃置两张手牌，或从你的情报区弃置一张非黑色情报，然后将待收情报移至一名角色面前。
  */
-class JiSong : InitialSkill, ActiveSkill {
+class JiSong : ActiveSkill {
     override val skillId = SkillId.JI_SONG
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean =
         (r.cards.size >= 2 || r.messageCards.any { !it.isBlack() }) && r.getSkillUseCount(skillId) == 0

@@ -12,8 +12,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 成年韩梅技能【密信】：接收其他角色情报后，可以翻开此角色，摸两张牌，然后将一张含该情报不同颜色的手牌置入传出者的情报区。
  */
-class MiXin : InitialSkill, TriggeredSkill {
+class MiXin : TriggeredSkill {
     override val skillId = SkillId.MI_XIN
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->

@@ -10,8 +10,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 程小蝶技能【惊梦】：你接收黑色情报后，可以查看一名角色的手牌。
  */
-class JingMeng : InitialSkill, TriggeredSkill {
+class JingMeng : TriggeredSkill {
     override val skillId = SkillId.JING_MENG
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->

@@ -14,8 +14,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 金自来技能【赌命】：一回合一次，情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。若猜错且你有纯黑色手牌，则你必须将一张纯黑色手牌置入自己的情报区。
  */
-class DuMing : InitialSkill, TriggeredSkill {
+class DuMing : TriggeredSkill {
     override val skillId = SkillId.DU_MING
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event1 = g.findEvent<FinishResolveCardEvent>(this) { event ->

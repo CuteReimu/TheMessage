@@ -9,8 +9,10 @@ import org.apache.log4j.Logger
 /**
  * 哑炮技能【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，这张牌无效。如果这是本回合首次触发此技能，双方各摸一张牌，否则你摸一张牌。
  */
-class ShouKouRuPing : InitialSkill, TriggeredSkill {
+class ShouKouRuPing : TriggeredSkill {
     override val skillId = SkillId.SHOU_KOU_RU_PING
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<UseCardEvent>(this) { event ->

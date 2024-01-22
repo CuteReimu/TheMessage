@@ -9,8 +9,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 老汉技能【如归】：你死亡前，可以将你情报区中的一张情报置入当前回合角色的情报区中。
  */
-class RuGui : InitialSkill, TriggeredSkill, BeforeDieSkill {
+class RuGui : TriggeredSkill, BeforeDieSkill {
     override val skillId = SkillId.RU_GUI
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<PlayerDieEvent>(this) { event ->

@@ -9,8 +9,10 @@ import org.apache.log4j.Logger
 /**
  * 李宁玉技能【城府】：【试探】和【威逼】对你无效。
  */
-class ChengFu : InitialSkill, TriggeredSkill {
+class ChengFu : TriggeredSkill {
     override val skillId = SkillId.CHENG_FU
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<UseCardEvent>(this) { event ->

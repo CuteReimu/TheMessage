@@ -10,8 +10,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 简先生技能【从容应对】：你对一名角色使用的【试探】结算后，或一名角色对你使用的【试探】结算后，你可以抽取该角色的一张手牌，或令你和该角色各摸一张牌。
  */
-class CongRongYingDui : InitialSkill, TriggeredSkill {
+class CongRongYingDui : TriggeredSkill {
     override val skillId = SkillId.CONG_RONG_YING_DUI
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<FinishResolveCardEvent>(this) { event ->

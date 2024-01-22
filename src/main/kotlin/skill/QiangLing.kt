@@ -10,8 +10,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 张一挺技能【强令】：你传出情报后，或你决定接收情报后，可以宣言至多两个卡牌名称。本回合中，所有角色均不能使用被宣言的卡牌。
  */
-class QiangLing : InitialSkill, TriggeredSkill {
+class QiangLing : TriggeredSkill {
     override val skillId = SkillId.QIANG_LING
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event1 = g.findEvent<SendCardEvent>(this) { event ->

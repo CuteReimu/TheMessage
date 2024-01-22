@@ -11,8 +11,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 李宁玉技能【就计】：你被【试探】【威逼】或【利诱】指定为目标后，你可以翻开此角色牌，然后摸两张牌，并在触发此技能的卡牌结算后，将其加入你的手牌。
  */
-class JiuJi : InitialSkill, TriggeredSkill {
+class JiuJi : TriggeredSkill {
     override val skillId = SkillId.JIU_JI
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<UseCardEvent>(this) { event ->
@@ -103,6 +105,8 @@ class JiuJi : InitialSkill, TriggeredSkill {
 
     private class JiuJi2 : TriggeredSkill {
         override val skillId = SkillId.UNKNOWN
+
+        override val isInitialSkill = false
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
             val event = g.findEvent<FinishResolveCardEvent>(this) { event ->

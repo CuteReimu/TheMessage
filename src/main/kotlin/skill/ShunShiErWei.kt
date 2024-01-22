@@ -9,8 +9,10 @@ import org.apache.log4j.Logger
 /**
  * 成年小九技能【顺势而为】：你使用【截获】或者你面前的情报被【截获】后，可以将此角色牌翻回背面，摸一张牌。
  */
-class ShunShiErWei : InitialSkill, TriggeredSkill {
+class ShunShiErWei : TriggeredSkill {
     override val skillId = SkillId.SHUN_SHI_ER_WEI
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         g.findEvent<UseCardEvent>(this) { event ->
@@ -25,6 +27,8 @@ class ShunShiErWei : InitialSkill, TriggeredSkill {
 
     private class ShunShiErWei2 : TriggeredSkill {
         override val skillId = SkillId.UNKNOWN
+
+        override val isInitialSkill = false
 
         override fun execute(g: Game, askWhom: Player): ResolveResult? {
             g.findEvent<FinishResolveCardEvent>(this) {

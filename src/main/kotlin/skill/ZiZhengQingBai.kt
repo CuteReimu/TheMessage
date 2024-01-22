@@ -12,8 +12,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 陈安娜技能【自证清白】：出牌阶段限一次，你可以弃置一张与自己身份颜色不同的手牌，然后摸两张牌。（潜伏=红色，特工=蓝色，神秘人随意弃牌）
  */
-class ZiZhengQingBai : MainPhaseSkill(), InitialSkill {
+class ZiZhengQingBai : MainPhaseSkill() {
     override val skillId = SkillId.ZI_ZHENG_QING_BAI
+
+    override val isInitialSkill = true
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && (

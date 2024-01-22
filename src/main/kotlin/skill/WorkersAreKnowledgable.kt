@@ -16,8 +16,10 @@ import java.util.concurrent.TimeUnit
  * * 摸牌阶段：每张红/蓝情报，多摸一张牌
  * * 你传出非直达情报时：每张黑情报，可以选择一名角色本轮不能选择接收情报
  */
-class WorkersAreKnowledgable : InitialSkill, ChangeDrawCardCountSkill, TriggeredSkill {
+class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
     override val skillId = SkillId.WORKERS_ARE_KNOWLEDGABLE
+
+    override val isInitialSkill = true
 
     override fun changeGameResult(player: Player, oldCount: Int) = oldCount + player.messageCards.countTrueCard()
 
@@ -139,6 +141,8 @@ class WorkersAreKnowledgable : InitialSkill, ChangeDrawCardCountSkill, Triggered
      * 有这个技能的角色本回合不能接收情报
      */
     private class WorkersAreKnowledgable2 : MustReceiveMessage() {
+        override val isInitialSkill = false
+
         override fun mustReceive(sendPhase: SendPhaseIdle) = false
 
         override fun cannotReceive(sendPhase: SendPhaseIdle) = true

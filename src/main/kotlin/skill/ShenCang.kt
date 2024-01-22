@@ -8,8 +8,10 @@ import org.apache.log4j.Logger
 /**
  * 盛老板技能【深藏】：你使用【威逼】、【风云变幻】或【截获】后，可以将此角色牌翻至面朝下。
  */
-class ShenCang : InitialSkill, TriggeredSkill {
+class ShenCang : TriggeredSkill {
     override val skillId = SkillId.SHEN_CANG
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         g.findEvent<FinishResolveCardEvent>(this) { event ->

@@ -13,8 +13,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 吴志国技能【坚韧】：你接收黑色情报后，可以展示牌堆顶的一张牌，若是黑色牌，则将展示的牌加入你的手牌，并从一名角色的情报区弃置一张黑色情报。
  */
-class JianRen : InitialSkill, TriggeredSkill {
+class JianRen : TriggeredSkill {
     override val skillId = SkillId.JIAN_REN
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->

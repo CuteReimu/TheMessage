@@ -15,8 +15,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 顾小梦技能【集智】：一名角色濒死时，或争夺阶段，你可以翻开此角色牌，然后摸四张牌。
  */
-class JiZhi : InitialSkill, ActiveSkill {
+class JiZhi : ActiveSkill {
     override val skillId = SkillId.JI_ZHI
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 

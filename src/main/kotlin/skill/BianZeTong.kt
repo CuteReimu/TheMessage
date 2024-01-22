@@ -17,8 +17,10 @@ import java.util.concurrent.TimeUnit
  *
  * （AB可选 [【破译】][PoYi] [【调包】][DiaoBao] [【误导】][WuDao] [【截获】][JieHuo] ，且不能相同）
  */
-class BianZeTong : InitialSkill, TriggeredSkill {
+class BianZeTong : TriggeredSkill {
     override val skillId = SkillId.BIAN_ZE_TONG
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         g.findEvent<SendPhaseStartEvent>(this) { event ->
@@ -127,7 +129,9 @@ class BianZeTong : InitialSkill, TriggeredSkill {
      * 有这个技能的玩家，[cardTypeA]只能当作[cardTypeB]使用
      */
     private class BianZeTong2(cardTypeA: card_type, cardTypeB: card_type) : OneTurnSkill,
-        ConvertCardSkill(cardTypeA, listOf(cardTypeB), true)
+        ConvertCardSkill(cardTypeA, listOf(cardTypeB), true) {
+        override val isInitialSkill = false
+    }
 
 
     companion object {

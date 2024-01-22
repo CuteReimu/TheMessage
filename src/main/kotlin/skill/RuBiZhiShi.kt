@@ -13,11 +13,13 @@ import java.util.concurrent.TimeUnit
 /**
  * 盛老板技能【如臂指使】：一名角色濒死时，或争夺阶段，你可以翻开此角色牌，查看一名角色的手牌，然后可以从中选择一张弃置，或选择一张符合使用时机的牌，由该角色使用（若如【误导】等需要做出选择的，则由你选择）。
  */
-class RuBiZhiShi : InitialSkill, ActiveSkill {
+class RuBiZhiShi : ActiveSkill {
     override val skillId = SkillId.RU_BI_ZHI_SHI
 
+    override val isInitialSkill = true
+
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
-    
+
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm
         if ((fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) && (fsm !is WaitForChengQing || r !== fsm.askWhom)) {

@@ -14,8 +14,10 @@ import kotlin.random.Random
  *  * 你摸一张牌。
  *  * 将牌堆顶的一张牌和待接收情报面朝下互换
  */
-class JinKouYiKai : InitialSkill, ActiveSkill {
+class JinKouYiKai : ActiveSkill {
     override val skillId = SkillId.JIN_KOU_YI_KAI
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = fightPhase.whoseTurn === r
 

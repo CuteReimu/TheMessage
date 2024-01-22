@@ -10,8 +10,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 白沧浪技能【博爱】：出牌阶段限一次，你可以摸一张牌，然后可以将一张手牌交给另一名角色，若交给了女性角色，则你再摸一张牌。
  */
-class BoAi : MainPhaseSkill(), InitialSkill {
+class BoAi : MainPhaseSkill() {
     override val skillId = SkillId.BO_AI
+
+    override val isInitialSkill = true
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {

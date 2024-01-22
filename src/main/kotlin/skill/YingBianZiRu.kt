@@ -18,8 +18,10 @@ import java.util.concurrent.TimeUnit
  * 2. 黑单色：视为对其使用了【误导】，摸两张牌。
  * 3. 双色情报：弃置该情报，摸三张牌。
  */
-class YingBianZiRu : InitialSkill, ActiveSkill {
+class YingBianZiRu : ActiveSkill {
     override val skillId = SkillId.YING_BIAN_ZI_RU
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 

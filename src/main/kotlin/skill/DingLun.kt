@@ -17,8 +17,10 @@ import kotlin.random.Random
 /**
  * 李书云技能【定论】：争夺阶段，若情报在你面前，可以翻开此角色，直接成功接收，但若因此达成同色三张，则改为入手。
  */
-class DingLun : InitialSkill, ActiveSkill {
+class DingLun : ActiveSkill {
     override val skillId = SkillId.DING_LUN
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean =
         !r.roleFaceUp && fightPhase.inFrontOfWhom === r

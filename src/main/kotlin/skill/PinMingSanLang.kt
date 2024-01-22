@@ -13,8 +13,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 秦无命技能【拼命三郎】：出牌阶段限一次，你可以将一张纯黑色手牌置入自己的情报区，然后摸三张牌。
  */
-class PinMingSanLang : MainPhaseSkill(), InitialSkill {
+class PinMingSanLang : MainPhaseSkill() {
     override val skillId = SkillId.PIN_MING_SAN_LANG
+
+    override val isInitialSkill = true
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && r.cards.any { it.isPureBlack() } && r.messageCards.count(Black) < 2

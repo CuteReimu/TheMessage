@@ -16,8 +16,10 @@ import kotlin.random.Random
 /**
  * 鄭文先技能【偷天】：争夺阶段你可以翻开此角色牌，然后视为你使用了一张【截获】。
  */
-class TouTian : InitialSkill, ActiveSkill {
+class TouTian : ActiveSkill {
     override val skillId = SkillId.TOU_TIAN
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 

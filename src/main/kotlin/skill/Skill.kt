@@ -15,26 +15,26 @@ interface Skill {
      * 获取技能ID
      */
     val skillId: SkillId
-}
 
-/**
- * 玩家初始拥有的技能。
- *
- * 只有[InitialSkill]会被无效。
- *
- * 技能产生出来的二段技能不会被无效，不要继承[InitialSkill]。
- */
-interface InitialSkill : Skill
+    /**
+     * 是否是初始技能。
+     *
+     * 只有初始技能会被无效，技能产生出来的二段技能不会被无效。
+     */
+    val isInitialSkill: Boolean
+}
 
 /**
  * 直到回合结束无效的技能
  */
-class InvalidSkill private constructor(val originSkill: InitialSkill) : Skill {
+class InvalidSkill private constructor(val originSkill: Skill) : Skill {
     override val skillId = SkillId.INVALID
+
+    override val isInitialSkill = false
 
     companion object {
         fun deal(player: Player) {
-            player.skills = player.skills.map { if (it is InitialSkill) InvalidSkill(it) else it }
+            player.skills = player.skills.map { if (it.isInitialSkill) InvalidSkill(it) else it }
         }
 
         fun reset(game: Game) {

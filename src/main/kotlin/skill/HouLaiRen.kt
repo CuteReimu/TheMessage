@@ -13,8 +13,10 @@ import java.util.concurrent.TimeUnit
 /**
  * SP端木静技能【后来人】：你濒死时，可以翻开此角色牌并将其移出游戏，弃置你情报区中的情报，直到剩下一张红色或蓝色情报为止，然后从角色牌堆顶秘密抽取三张牌，从中选择一张作为你的新角色牌（隐藏角色则面朝下），剩余的角色牌放回角色牌堆底。
  */
-class HouLaiRen : InitialSkill, ActiveSkill {
+class HouLaiRen : ActiveSkill {
     override val skillId = SkillId.HOU_LAI_REN
+
+    override val isInitialSkill = true
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 

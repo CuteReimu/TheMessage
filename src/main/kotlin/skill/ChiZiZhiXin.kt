@@ -11,8 +11,10 @@ import java.util.concurrent.TimeUnit
 /**
  * SP小九技能【赤子之心】：你传出的非黑色情报被其他角色接收后，你可以摸两张牌，或从手牌中选择一张含有该情报颜色的牌，将其置入你的情报区。
  */
-class ChiZiZhiXin : InitialSkill, TriggeredSkill {
+class ChiZiZhiXin : TriggeredSkill {
     override val skillId = SkillId.CHI_ZI_ZHI_XIN
+
+    override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->

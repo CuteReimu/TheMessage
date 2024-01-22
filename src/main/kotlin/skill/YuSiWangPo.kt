@@ -12,8 +12,10 @@ import java.util.concurrent.TimeUnit
 /**
  * 秦无命技能【鱼死网破】：出牌阶段限一次，你可以弃置一张手牌，令一名其他角色弃置（你的黑情报数量+1）的手牌（不足则全弃）。
  */
-class YuSiWangPo : MainPhaseSkill(), InitialSkill {
+class YuSiWangPo : MainPhaseSkill() {
     override val skillId = SkillId.YU_SI_WANG_PO
+
+    override val isInitialSkill = true
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && r.cards.size > 1

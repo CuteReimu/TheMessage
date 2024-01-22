@@ -15,11 +15,13 @@ import java.util.concurrent.TimeUnit
 /**
  * 钱敏技能【先发制人】：一张牌因角色技能置入情报区后，或争夺阶段，你可以翻开此角色，然后弃置一名角色情报区的一张情报，并令一张角色牌本回合所有技能无效，若其是面朝下的隐藏角色牌，你可以将其翻开。
  */
-class XianFaZhiRen : InitialSkill, ActiveSkill, TriggeredSkill {
+class XianFaZhiRen : ActiveSkill, TriggeredSkill {
     override val skillId = SkillId.XIAN_FA_ZHI_REN
 
+    override val isInitialSkill = true
+
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
-    
+
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         var found = false
         while (true) {
