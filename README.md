@@ -23,22 +23,43 @@
 
 ```properties
 # 服务端监听端口
-listen_port=9091
+listen_websocket_port=9091
 # 游戏开始时摸牌数
 rule.hand_card_count_begin=3
 # 每回合摸牌数
 rule.hand_card_count_each_turn=3
 # 最大房间数
 room_count=200
-# 玩家总人数
+# 默认的房间人数
 player.total_count=5
+# 默认的读条时间
+waiting_second=20
 # 需要的客户端最低版本号
 client_version=1
-# 测试时强制设置的角色，按进入房间的顺序安排
-gm.debug_roles=22,26
-gm.enable=false
+# 客户端显示的录像列表中最多显示的对局数量
+record_list_size=20
+# 游戏公告内容
+notice=公告
+# GM命令的端口，不受下面的gm.enable影响
 gm.listen_port=9092
+# 如果为true，下面的gm.debug_roles才会生效，同时还会禁用各种房间人数、机器人等限制
+gm.enable=false
+# 测试时强制设置的角色，按进入房间的顺序安排，需要gm.enable=true才会生效
+gm.debug_roles=22,26
+## 以下是推送相关的配置，通过mirai的http-api向qq推送消息
+# 是否开启推送
+push.enable_push=true
+# 机器人的qq号
+push.robot_qq=12345678
+# mirai的http-api的地址
+push.mirai_http_url=http\://127.0.0.1\:8080
+# mirai的http-api的verify_key
+push.mirai_verify_key=AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPp
+# 往哪个QQ群推送消息，可以是多个，用逗号分隔
+push.push_qq_groups=12345678
 ```
+
+请注意，游戏运行时有可能也会自动更新这个文件，所以最好不要在运行时手动修改这个文件。
 
 **log4j配置**
 
