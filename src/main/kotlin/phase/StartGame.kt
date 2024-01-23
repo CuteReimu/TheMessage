@@ -8,12 +8,11 @@ import kotlin.random.Random
 /**
  * 游戏马上开始
  */
-data class StartGame(val game: Game) : Fsm {
+data class StartGame(val game: Game, val whoseTurn: Int) : Fsm {
     override fun resolve(): ResolveResult? {
         val players = game.players
         log.info("游戏开始了，场上的角色依次是：${players.contentToString()}")
         game.deck.init(players.size)
-        val whoseTurn = Random.nextInt(players.size)
         for (i in players.indices) players[(whoseTurn + i) % players.size]!!.init()
         for (i in players.indices) {
             val player = players[(whoseTurn + i) % players.size]!!

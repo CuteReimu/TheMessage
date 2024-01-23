@@ -7,12 +7,15 @@ import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.log4j.Logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 等待玩家选择角色
  */
 data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsData>>) : WaitingFsm {
     private val selected: Array<RoleSkillsData?> = arrayOfNulls(game.players.size)
+    private val whoseTurn = Random.nextInt(game.players.size)
+
     override fun resolve(): ResolveResult? {
         for (player in game.players) {
             if (player is HumanPlayer) {
@@ -39,7 +42,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             }
         }
         for (role in selected) if (role == null) return null
-        return ResolveResult(StartGame(game), true)
+        return ResolveResult(StartGame(game, whoseTurn), true)
     }
 
     override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
@@ -67,7 +70,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         player.originRole = roleSkillsData.role
         (player as? HumanPlayer)?.send(select_role_toc.newBuilder().setRole(roleSkillsData.role).build())
         for (role in selected) if (role == null) return null
-        return ResolveResult(StartGame(game), true)
+        return ResolveResult(StartGame(game, whoseTurn), true)
     }
 
     fun notifySelectRole(player: HumanPlayer) {
@@ -78,6 +81,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(role.unknown) })
         builder.waitingSecond = Config.WaitSecond * 2
         builder.addAllPossibleSecretTask(game.possibleSecretTasks)
+        builder.position = player.getAbstractLocation(whoseTurn) + 1
         player.send(builder.build())
         if (game.players.size < 5)
             player.notifyIdentity()
