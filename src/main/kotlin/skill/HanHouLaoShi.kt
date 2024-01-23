@@ -28,7 +28,7 @@ class HanHouLaoShi : TriggeredSkill {
                 val builder = skill_han_hou_lao_shi_toc.newBuilder()
                 builder.playerId = p.getAlternativeLocation(askWhom.location)
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.card = card.toPbCard()
+                if (askWhom === p || target === p) builder.card = card.toPbCard()
                 p.send(builder.build())
             }
         }
