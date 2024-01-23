@@ -125,6 +125,7 @@ message wait_for_select_role_toc {
   repeated role roles = 4; // 发给你的角色
   uint32        waiting_second = 5; // 读多少秒
   repeated secret_task possible_secret_task = 6; // 可能的神秘人任务
+  uint32        position = 7; // 你的位置，最先出牌的是一号位
 }
 
 // 托管
