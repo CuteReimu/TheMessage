@@ -15,7 +15,7 @@ import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Fengsheng.use_yu_qin_gu_zong_toc
 import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.cannotPlayCard
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -34,12 +34,12 @@ class YuQinGuZong : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用欲擒故纵")
+            logger.error("你被禁止使用欲擒故纵")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用欲擒故纵")
             return false
         }
         if (r !== (g.fsm as? SendPhaseStart)?.whoseTurn) {
-            log.error("欲擒故纵的使用时机不对")
+            logger.error("欲擒故纵的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("欲擒故纵的使用时机不对")
             return false
         }
@@ -53,7 +53,7 @@ class YuQinGuZong : Card {
         val dir = args[1] as direction
         val target = args[2] as Player
         val lockPlayers = args[3] as List<Player>
-        log.info("${r}使用了$this，选择了${messageCard}传递")
+        logger.info("${r}使用了$this，选择了${messageCard}传递")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
             for (p in r.game!!.players) {
@@ -94,7 +94,6 @@ class YuQinGuZong : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(YuQinGuZong::class.java)
         fun ai(e: SendPhaseStart, card: Card): Boolean {
             val player = e.whoseTurn
             val game = player.game!!

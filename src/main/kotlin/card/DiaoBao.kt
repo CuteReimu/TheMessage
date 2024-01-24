@@ -13,7 +13,7 @@ import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Fengsheng.notify_phase_toc
 import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
 import com.fengsheng.skill.cannotPlayCard
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 class DiaoBao : Card {
@@ -31,12 +31,12 @@ class DiaoBao : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用调包")
+            logger.error("你被禁止使用调包")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用调包")
             return false
         }
         if (r !== (g.fsm as? FightPhaseIdle)?.whoseFightTurn) {
-            log.error("调包的使用时机不对")
+            logger.error("调包的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("调包的使用时机不对")
             return false
         }
@@ -45,7 +45,7 @@ class DiaoBao : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val fsm = g.fsm as FightPhaseIdle
-        log.info("${r}使用了$this")
+        logger.info("${r}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
             val oldCard = fsm.messageCard
@@ -92,7 +92,6 @@ class DiaoBao : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(DiaoBao::class.java)
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
             !player.cannotPlayCard(card_type.Diao_Bao) || return false

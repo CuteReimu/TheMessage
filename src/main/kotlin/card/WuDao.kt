@@ -11,7 +11,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
 import com.fengsheng.skill.cannotPlayCard
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -30,21 +30,21 @@ class WuDao : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用误导")
+            logger.error("你被禁止使用误导")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用误导")
             return false
         }
         val target = args[0] as Player
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null) {
-            log.error("误导的使用时机不对")
+            logger.error("误导的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机不对")
             return false
         }
         val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
         val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
         if (target === fsm.inFrontOfWhom || target !== left && target !== right) {
-            log.error("误导只能选择情报当前人左右两边的人作为目标")
+            logger.error("误导只能选择情报当前人左右两边的人作为目标")
             (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
             return false
         }
@@ -53,7 +53,7 @@ class WuDao : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
-        log.info("${r}对${target}使用了$this")
+        logger.info("${r}对${target}使用了$this")
         g.resolve(onUseCard(this, g, r, target))
     }
 
@@ -62,8 +62,6 @@ class WuDao : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(WuDao::class.java)
-
         /**
          * 执行【误导】的效果。示例：
          * ```

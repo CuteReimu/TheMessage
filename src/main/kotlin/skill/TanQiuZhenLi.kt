@@ -9,7 +9,7 @@ import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -27,46 +27,46 @@ class TanQiuZhenLi : MainPhaseSkill() {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("现在不是出牌阶段空闲时点")
+            logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
-            log.error("[探求真理]一回合只能发动一次")
+            logger.error("[探求真理]一回合只能发动一次")
             (r as? HumanPlayer)?.sendErrorMessage("[探求真理]一回合只能发动一次")
             return
         }
         val pb = message as skill_tan_qiu_zhen_li_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
-            log.error("目标错误")
+            logger.error("目标错误")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         val card = target.findMessageCard(pb.cardId)
         if (card == null) {
-            log.error("没有这张情报")
+            logger.error("没有这张情报")
             (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
             return
         }
         if (r.checkThreeSameMessageCard(card)) {
-            log.error("你不能以此技能令你收集三张或更多同色情报")
+            logger.error("你不能以此技能令你收集三张或更多同色情报")
             (r as? HumanPlayer)?.sendErrorMessage("你不能以此技能令你收集三张或更多同色情报")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info("${r}发动了[探求真理]，将${target}面前的${card}移到自己面前")
+        logger.info("${r}发动了[探求真理]，将${target}面前的${card}移到自己面前")
         target.deleteMessageCard(card.id)
         r.messageCards.add(card)
         val waitingSecond = Config.WaitSecond
@@ -126,18 +126,18 @@ class TanQiuZhenLi : MainPhaseSkill() {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== target) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_tan_qiu_zhen_li_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (target is HumanPlayer && !target.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${target.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${target.seq}, actual Seq: ${message.seq}")
                 target.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -158,20 +158,20 @@ class TanQiuZhenLi : MainPhaseSkill() {
                 if (message.fromHand) {
                     val card1 = target.deleteCard(message.cardId)
                     if (card1 == null) {
-                        log.error("没有这张牌")
+                        logger.error("没有这张牌")
                         (target as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
-                    log.info("${target}将手牌中的${card1}置入${r}的情报区")
+                    logger.info("${target}将手牌中的${card1}置入${r}的情报区")
                     card1
                 } else {
                     val card1 = target.deleteMessageCard(message.cardId)
                     if (card1 == null) {
-                        log.error("没有这张情报")
+                        logger.error("没有这张情报")
                         (target as? HumanPlayer)?.sendErrorMessage("没有这张情报")
                         return null
                     }
-                    log.info("${target}将情报区的${card1}置入${r}的情报区")
+                    logger.info("${target}将情报区的${card1}置入${r}的情报区")
                     card1
                 }
             target.incrSeq()
@@ -191,12 +191,10 @@ class TanQiuZhenLi : MainPhaseSkill() {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeTanQiuZhenLi::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(TanQiuZhenLi::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.whoseTurn.getSkillUseCount(SkillId.TAN_QIU_ZHEN_LI) > 0) return false
             val availableColor = ArrayList<color>()

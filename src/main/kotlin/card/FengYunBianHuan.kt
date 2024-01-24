@@ -13,7 +13,7 @@ import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -32,12 +32,12 @@ class FengYunBianHuan : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用风云变幻")
+            logger.error("你被禁止使用风云变幻")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用风云变幻")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("风云变幻的使用时机不对")
+            logger.error("风云变幻的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("风云变幻的使用时机不对")
             return false
         }
@@ -56,7 +56,7 @@ class FengYunBianHuan : Card {
         while (players.size > drawCards.size) {
             players.removeLast() // 兼容牌库抽完的情况
         }
-        log.info("${r}使用了${this}，翻开了${drawCards.toTypedArray().contentToString()}")
+        logger.info("${r}使用了${this}，翻开了${drawCards.toTypedArray().contentToString()}")
         for (player in r.game!!.players) {
             if (player is HumanPlayer) {
                 val builder = use_feng_yun_bian_huan_toc.newBuilder()
@@ -116,25 +116,25 @@ class FengYunBianHuan : Card {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is feng_yun_bian_huan_choose_card_tos) {
-                log.error("现在正在结算风云变幻")
+                logger.error("现在正在结算风云变幻")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算风云变幻")
                 return null
             }
             val chooseCard = drawCards.find { c -> c.id == message.cardId }
             if (chooseCard == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             if (player !== players.first()) {
-                log.error("还没轮到你选牌")
+                logger.error("还没轮到你选牌")
                 (player as? HumanPlayer)?.sendErrorMessage("还没轮到你选牌")
                 return null
             }
             if (message.asMessageCard) {
                 val containsSame = player.messageCards.any { c -> c.hasSameColor(chooseCard) }
                 if (containsSame) {
-                    log.error("已有相同颜色情报，不能作为情报牌")
+                    logger.error("已有相同颜色情报，不能作为情报牌")
                     (player as? HumanPlayer)?.sendErrorMessage("已有相同颜色情报，不能作为情报牌")
                     return null
                 }
@@ -143,10 +143,10 @@ class FengYunBianHuan : Card {
             players.removeFirst()
             drawCards.removeAt(drawCards.indexOfFirst { c -> c.id == chooseCard.id })
             if (message.asMessageCard) {
-                log.info("${player}把${chooseCard}置入情报区")
+                logger.info("${player}把${chooseCard}置入情报区")
                 player.messageCards.add(chooseCard)
             } else {
-                log.info("${player}把${chooseCard}加入手牌")
+                logger.info("${player}把${chooseCard}加入手牌")
                 player.cards.add(chooseCard)
             }
             for (p in player.game!!.players) {
@@ -230,7 +230,6 @@ class FengYunBianHuan : Card {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeFengYunBianHuan::class.java)
         }
     }
 
@@ -239,7 +238,6 @@ class FengYunBianHuan : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(FengYunBianHuan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Feng_Yun_Bian_Huan) || return false

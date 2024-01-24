@@ -8,7 +8,7 @@ import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.RoleSkillsData
 import com.fengsheng.skill.Skill
 import com.fengsheng.skill.SkillId
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import kotlin.random.Random
 
 abstract class Player protected constructor() {
@@ -97,7 +97,7 @@ abstract class Player protected constructor() {
     )
 
     open fun init() {
-        log.info("${this}的身份是${identityColorToString(identity, secretTask)}")
+        logger.info("${this}的身份是${identityColorToString(identity, secretTask)}")
     }
 
     open fun incrSeq() {}
@@ -118,7 +118,7 @@ abstract class Player protected constructor() {
     fun draw(n: Int) {
         val cards = game!!.deck.draw(n)
         this.cards.addAll(cards)
-        log.info("${this}摸了${cards.contentToString()}，现在有${this.cards.size}张手牌")
+        logger.info("${this}摸了${cards.contentToString()}，现在有${this.cards.size}张手牌")
         for (player in game!!.players) {
             if (player === this)
                 player.notifyAddHandCard(location, 0, *cards)
@@ -272,8 +272,6 @@ abstract class Player protected constructor() {
     }
 
     companion object {
-        private val log = Logger.getLogger(Player::class.java)
-
         /**
          * （日志用）将颜色转为角色身份的字符串
          */

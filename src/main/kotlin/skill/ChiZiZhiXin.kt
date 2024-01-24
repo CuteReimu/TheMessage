@@ -5,7 +5,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -39,13 +39,13 @@ class ChiZiZhiXin : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.sender) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                    log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                     player.sendErrorMessage("操作太晚了")
                     return null
                 }
@@ -53,13 +53,13 @@ class ChiZiZhiXin : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message !is skill_chi_zi_zhi_xin_a_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -68,7 +68,6 @@ class ChiZiZhiXin : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeChiZiZhiXinA::class.java)
         }
     }
 
@@ -108,18 +107,18 @@ class ChiZiZhiXin : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.sender) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_chi_zi_zhi_xin_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -127,22 +126,22 @@ class ChiZiZhiXin : TriggeredSkill {
             if (!message.drawCard) {
                 card = r.findCard(message.cardId)
                 if (card == null) {
-                    log.error("没有这张卡")
+                    logger.error("没有这张卡")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
                 if (!card.hasSameColor(event.messageCard)) {
-                    log.error("你选择的牌没有情报牌的颜色")
+                    logger.error("你选择的牌没有情报牌的颜色")
                     (player as? HumanPlayer)?.sendErrorMessage("你选择的牌没有情报牌的颜色")
                     return null
                 }
-                log.info("${r}发动了[赤子之心]，将手牌中的${card}置入自己的情报区")
+                logger.info("${r}发动了[赤子之心]，将手牌中的${card}置入自己的情报区")
                 r.incrSeq()
                 r.deleteCard(card.id)
                 r.messageCards.add(card)
                 r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             } else {
-                log.info("${r}发动了[赤子之心]，选择了摸两张牌")
+                logger.info("${r}发动了[赤子之心]，选择了摸两张牌")
                 r.incrSeq()
             }
             for (p in r.game!!.players) {
@@ -159,7 +158,6 @@ class ChiZiZhiXin : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeChiZiZhiXinB::class.java)
         }
     }
 

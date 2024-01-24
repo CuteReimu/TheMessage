@@ -6,7 +6,7 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_toc
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_tos
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -24,35 +24,35 @@ class ZiZhengQingBai : MainPhaseSkill() {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("现在不是出牌阶段空闲时点")
+            logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
-            log.error("[自证清白]一回合只能发动一次")
+            logger.error("[自证清白]一回合只能发动一次")
             (r as? HumanPlayer)?.sendErrorMessage("[自证清白]一回合只能发动一次")
             return
         }
         val pb = message as skill_zi_zheng_qing_bai_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
-            log.error("没有这张卡")
+            logger.error("没有这张卡")
             (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
             return
         }
         if (r.identity != Black && r.identity in card.colors) {
-            log.error("你不能弃置与自己身份相同颜色的牌")
+            logger.error("你不能弃置与自己身份相同颜色的牌")
             (r as? HumanPlayer)?.sendErrorMessage("你不能弃置与自己身份相同颜色的牌")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info("${r}发动了[自证清白]")
+        logger.info("${r}发动了[自证清白]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_zi_zheng_qing_bai_toc.newBuilder()
@@ -68,7 +68,6 @@ class ZiZhengQingBai : MainPhaseSkill() {
     }
 
     companion object {
-        private val log = Logger.getLogger(ZiZhengQingBai::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.whoseTurn.getSkillUseCount(SkillId.ZI_ZHENG_QING_BAI) > 0) return false
             val card = e.whoseTurn.cards.find {

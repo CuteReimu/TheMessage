@@ -13,7 +13,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.time.Duration
 
 object MiraiPusher {
@@ -45,7 +45,7 @@ object MiraiPusher {
                     Config.PushQQGroups.forEach { sendGroupMessage(session, it, "开了", *at) }
                     release(session)
                 } catch (e: Throwable) {
-                    log.error("catch throwable", e)
+                    logger.error("catch throwable", e)
                 }
             }
         }
@@ -98,7 +98,7 @@ object MiraiPusher {
                 Config.PushQQGroups.forEach { sendGroupMessage(session, it, text, *at) }
                 release(session)
             } catch (e: Throwable) {
-                log.error("catch throwable", e)
+                logger.error("catch throwable", e)
             }
         }
     }
@@ -148,5 +148,4 @@ object MiraiPusher {
     private val client = OkHttpClient().newBuilder().connectTimeout(Duration.ofMillis(20000)).build()
     private val contentType = "application/json; charset=utf-8".toMediaTypeOrNull()
     private val gson = Gson()
-    private val log = Logger.getLogger(MiraiPusher::class.java)
 }

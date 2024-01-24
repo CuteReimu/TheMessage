@@ -10,7 +10,7 @@ import com.fengsheng.protos.Fengsheng.po_yi_show_toc
 import com.fengsheng.protos.Fengsheng.use_po_yi_toc
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 class PoYi : Card {
@@ -28,13 +28,13 @@ class PoYi : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用破译")
+            logger.error("你被禁止使用破译")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用破译")
             return false
         }
         val fsm = g.fsm as? SendPhaseIdle
         if (r !== fsm?.inFrontOfWhom) {
-            log.error("破译的使用时机不对")
+            logger.error("破译的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("破译的使用时机不对")
             return false
         }
@@ -43,7 +43,7 @@ class PoYi : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val fsm = g.fsm as SendPhaseIdle
-        log.info("${r}使用了$this")
+        logger.info("${r}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
             executePoYi(this@PoYi, fsm)
@@ -90,17 +90,17 @@ class PoYi : Card {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is Fengsheng.po_yi_show_tos) {
-                log.error("现在正在结算破译")
+                logger.error("现在正在结算破译")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算破译")
                 return null
             }
             if (player !== sendPhase.inFrontOfWhom) {
-                log.error("你不是破译的使用者")
+                logger.error("你不是破译的使用者")
                 (player as? HumanPlayer)?.sendErrorMessage("你不是破译的使用者")
                 return null
             }
             if (message.show && !sendPhase.messageCard.colors.contains(color.Black)) {
-                log.error("非黑牌不能翻开")
+                logger.error("非黑牌不能翻开")
                 (player as? HumanPlayer)?.sendErrorMessage("非黑牌不能翻开")
                 return null
             }
@@ -116,7 +116,7 @@ class PoYi : Card {
         private fun showAndDrawCard(show: Boolean) {
             val r = sendPhase.inFrontOfWhom
             if (show) {
-                log.info("${sendPhase.messageCard}被翻开了")
+                logger.info("${sendPhase.messageCard}被翻开了")
                 r.draw(1)
             }
             for (player in r.game!!.players) {
@@ -131,7 +131,6 @@ class PoYi : Card {
         }
 
         companion object {
-            private val log = Logger.getLogger(executePoYi::class.java)
         }
     }
 
@@ -140,7 +139,6 @@ class PoYi : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(PoYi::class.java)
         fun ai(e: SendPhaseIdle, card: Card): Boolean {
             val player = e.inFrontOfWhom
             !player.cannotPlayCard(card_type.Po_Yi) || return false

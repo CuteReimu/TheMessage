@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
 import io.netty.util.CharsetUtil
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.lang.reflect.InvocationTargetException
@@ -28,7 +28,7 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
             } else {
                 try {
                     val uri = URI(msg.uri())
-                    log.info("GM HTTP receive: $uri")
+                    logger.info("GM HTTP receive: $uri")
                     val form = HashMap<String, String>()
                     val query = uri.rawQuery
                     if (query != null) {
@@ -106,6 +106,5 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
     }
 
     companion object {
-        private val log = Logger.getLogger(HttpServerChannelHandler::class.java)
     }
 }

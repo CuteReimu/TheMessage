@@ -7,7 +7,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -24,25 +24,25 @@ class DuiZhengXiaYao : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
-            log.error("现在不是发动[对症下药]的时机")
+            logger.error("现在不是发动[对症下药]的时机")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[对症下药]的时机")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[对症下药]")
+            logger.error("你现在正面朝上，不能发动[对症下药]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[对症下药]")
             return
         }
         val pb = message as skill_dui_zheng_xia_yao_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        log.info("${r}发动了[对症下药]")
+        logger.info("${r}发动了[对症下药]")
         r.draw(3)
         g.resolve(executeDuiZhengXiaYaoA(fsm, r))
     }
@@ -100,18 +100,18 @@ class DuiZhengXiaYao : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_dui_zheng_xia_yao_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -128,14 +128,14 @@ class DuiZhengXiaYao : ActiveSkill {
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             if (message.cardIdsCount != 2) {
-                log.error("enable为true时必须要发两张牌")
+                logger.error("enable为true时必须要发两张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("不足两张牌")
                 return null
             }
             val cards = Array(2) { i ->
                 val card = r.findCard(message.getCardIds(i))
                 if (card == null) {
-                    log.error("没有这张卡")
+                    logger.error("没有这张卡")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
@@ -143,13 +143,13 @@ class DuiZhengXiaYao : ActiveSkill {
             }
             val colors = getSameColors(cards[0], cards[1])
             if (colors.isEmpty()) {
-                log.error("两张牌没有相同的颜色")
+                logger.error("两张牌没有相同的颜色")
                 (player as? HumanPlayer)?.sendErrorMessage("两张牌没有相同的颜色")
                 return null
             }
             val playerAndCard = findColorMessageCard(g, colors)
             if (playerAndCard == null) {
-                log.error("场上没有选择的颜色的情报牌")
+                logger.error("场上没有选择的颜色的情报牌")
                 (player as? HumanPlayer)?.sendErrorMessage("场上没有选择的颜色的情报牌")
                 return null
             }
@@ -158,7 +158,6 @@ class DuiZhengXiaYao : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeDuiZhengXiaYaoA::class.java)
         }
     }
 
@@ -170,7 +169,7 @@ class DuiZhengXiaYao : ActiveSkill {
         val defaultSelection: PlayerAndCard
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            log.info("${r}展示了${cards.contentToString()}")
+            logger.info("${r}展示了${cards.contentToString()}")
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -207,35 +206,35 @@ class DuiZhengXiaYao : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_dui_zheng_xia_yao_c_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-                log.error("目标错误")
+                logger.error("目标错误")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.messageCardId)
             if (card == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
@@ -247,12 +246,12 @@ class DuiZhengXiaYao : ActiveSkill {
                 }
             }
             if (!contains) {
-                log.error("选择的情报不含有指定的颜色")
+                logger.error("选择的情报不含有指定的颜色")
                 (player as? HumanPlayer)?.sendErrorMessage("选择的情报不含有指定的颜色")
                 return null
             }
             r.incrSeq()
-            log.info("${r}弃掉了${target}面前的${card}")
+            logger.info("${r}弃掉了${target}面前的${card}")
             g.deck.discard(target.deleteMessageCard(card.id)!!)
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -291,12 +290,10 @@ class DuiZhengXiaYao : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeDuiZhengXiaYaoB::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(DuiZhengXiaYao::class.java)
         private fun getSameColors(card1: Card, card2: Card): List<color> {
             val colors = ArrayList<color>()
             for (color in arrayOf(color.Black, color.Red, color.Blue)) {

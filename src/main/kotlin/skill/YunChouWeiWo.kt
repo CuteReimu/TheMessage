@@ -6,7 +6,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -24,7 +24,7 @@ class YunChouWeiWo : ActiveSkill {
         when (fsm) {
             is MainPhaseIdle -> {
                 if (r !== fsm.whoseTurn) {
-                    log.error("现在不是发动[运筹帷幄]的时机")
+                    logger.error("现在不是发动[运筹帷幄]的时机")
                     (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
                     return
                 }
@@ -32,32 +32,32 @@ class YunChouWeiWo : ActiveSkill {
 
             is FightPhaseIdle -> {
                 if (r !== fsm.whoseFightTurn) {
-                    log.error("现在不是发动[运筹帷幄]的时机")
+                    logger.error("现在不是发动[运筹帷幄]的时机")
                     (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
                     return
                 }
             }
 
             else -> {
-                log.error("现在不是发动[运筹帷幄]的时机")
+                logger.error("现在不是发动[运筹帷幄]的时机")
                 (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
                 return
             }
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[运筹帷幄]")
+            logger.error("你现在正面朝上，不能发动[运筹帷幄]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[运筹帷幄]")
             return
         }
         val pb = message as skill_yun_chou_wei_wo_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         val cards = g.deck.peek(5)
         if (cards.size < 5) {
-            log.error("牌堆中的牌不够了")
+            logger.error("牌堆中的牌不够了")
             (r as? HumanPlayer)?.sendErrorMessage("牌堆中的牌不够了")
             return
         }
@@ -70,7 +70,7 @@ class YunChouWeiWo : ActiveSkill {
     private data class executeYunChouWeiWo(val fsm: Fsm, val r: Player, val cards: List<Card>) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            log.info("${r}发动了[运筹帷幄]，查看了牌堆顶的五张牌")
+            logger.info("${r}发动了[运筹帷幄]，查看了牌堆顶的五张牌")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_yun_chou_wei_wo_a_toc.newBuilder()
@@ -107,30 +107,30 @@ class YunChouWeiWo : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yun_chou_wei_wo_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.deckCardIdsCount != 2) {
-                log.error("你必须选择两张牌放回牌堆顶")
+                logger.error("你必须选择两张牌放回牌堆顶")
                 (player as? HumanPlayer)?.sendErrorMessage("你必须选择两张牌放回牌堆顶")
                 return null
             }
             val deckCards = message.deckCardIdsList.map {
                 val card = cards.find { card -> card.id == it }
                 if (card == null) {
-                    log.error("没有这张牌")
+                    logger.error("没有这张牌")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
@@ -138,7 +138,7 @@ class YunChouWeiWo : ActiveSkill {
             }
             val handCards = cards.filter { it.id != deckCards[0].id && it.id != deckCards[1].id }
             r.incrSeq()
-            log.info(
+            logger.info(
                 "${r}将${handCards.toTypedArray().contentToString()}加入手牌，" +
                         "将${deckCards.toTypedArray().contentToString()}放回牌堆顶"
             )
@@ -159,12 +159,10 @@ class YunChouWeiWo : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeYunChouWeiWo::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(YunChouWeiWo::class.java)
         fun ai(e: Fsm, skill: ActiveSkill): Boolean {
             val player = if (e is FightPhaseIdle) e.whoseFightTurn else (e as MainPhaseIdle).whoseTurn
             if (player.roleFaceUp) return false

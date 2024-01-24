@@ -5,7 +5,7 @@ import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -64,18 +64,18 @@ class JiuJi : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jiu_ji_a_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -84,7 +84,7 @@ class JiuJi : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             r.incrSeq()
-            log.info("${r}发动了[就计]")
+            logger.info("${r}发动了[就计]")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jiu_ji_a_toc.newBuilder()
@@ -99,7 +99,6 @@ class JiuJi : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeJiuJi::class.java)
         }
     }
 
@@ -116,7 +115,7 @@ class JiuJi : TriggeredSkill {
             } ?: return null
             val card = event.card!!
             askWhom.cards.add(card)
-            log.info("${askWhom}将使用的${card}加入了手牌")
+            logger.info("${askWhom}将使用的${card}加入了手牌")
             askWhom.skills = askWhom.skills.filterNot { it === this }
             for (player in g.players) {
                 if (player is HumanPlayer) {
@@ -131,7 +130,6 @@ class JiuJi : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(JiuJi::class.java)
         }
     }
 

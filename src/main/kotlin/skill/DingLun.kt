@@ -10,7 +10,7 @@ import com.fengsheng.phase.OnReceiveCard
 import com.fengsheng.protos.Role.skill_ding_lun_toc
 import com.fengsheng.protos.Role.skill_ding_lun_tos
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -28,30 +28,30 @@ class DingLun : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
-            log.error("不是你发技能的时机")
+            logger.error("不是你发技能的时机")
             (r as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
             return
         }
         if (r !== fsm.inFrontOfWhom) {
-            log.error("情报不在你面前，不能发动[定论]")
+            logger.error("情报不在你面前，不能发动[定论]")
             (r as? HumanPlayer)?.sendErrorMessage("情报不在你面前，不能发动[定论]")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[定论]")
+            logger.error("你现在正面朝上，不能发动[定论]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[定论]")
             return
         }
         val pb = message as skill_ding_lun_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        log.info("${r}发动了[定论]")
+        logger.info("${r}发动了[定论]")
         val joinIntoHand = r.checkThreeSameMessageCard(fsm.messageCard)
         for (p in g.players) {
             if (p is HumanPlayer) {
@@ -63,14 +63,13 @@ class DingLun : ActiveSkill {
             }
         }
         if (joinIntoHand) {
-            log.info("${r}将${fsm.messageCard}加入了手牌")
+            logger.info("${r}将${fsm.messageCard}加入了手牌")
             r.cards.add(fsm.messageCard)
             g.resolve(NextTurn(fsm.whoseTurn))
         } else g.resolve(OnReceiveCard(fsm.whoseTurn, fsm.sender, fsm.messageCard, r))
     }
 
     companion object {
-        private val log = Logger.getLogger(DingLun::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false

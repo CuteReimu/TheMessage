@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -33,13 +33,13 @@ class JingMeng : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                    log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                     player.sendErrorMessage("操作太晚了")
                     return null
                 }
@@ -47,40 +47,39 @@ class JingMeng : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message !is skill_jing_meng_a_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-                log.error("目标错误：${message.targetPlayerId}")
+                logger.error("目标错误：${message.targetPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误：${message.targetPlayerId}")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target.cards.isEmpty()) {
-                log.error("目标没有手牌")
+                logger.error("目标没有手牌")
                 (player as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
                 return null
             }
             r.incrSeq()
-            log.info("${r}发动了[惊梦]，查看了${target}的手牌")
+            logger.info("${r}发动了[惊梦]，查看了${target}的手牌")
             return ResolveResult(executeJingMengB(fsm, event, target), true)
         }
 
         companion object {
-            private val log = Logger.getLogger(executeJingMengA::class.java)
         }
     }
 
@@ -122,30 +121,30 @@ class JingMeng : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jing_meng_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             val card = target.findCard(message.cardId)
             if (card == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             r.incrSeq()
-            log.info("${r}弃掉了${target}的$card")
+            logger.info("${r}弃掉了${target}的$card")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jing_meng_b_toc.newBuilder()
@@ -161,7 +160,6 @@ class JingMeng : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeJingMengB::class.java)
         }
     }
 

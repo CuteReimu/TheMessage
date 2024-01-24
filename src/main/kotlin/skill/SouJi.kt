@@ -8,7 +8,7 @@ import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -24,29 +24,29 @@ class SouJi : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
-            log.error("现在不是发动[搜辑]的时机")
+            logger.error("现在不是发动[搜辑]的时机")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[搜辑]的时机")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[搜辑]")
+            logger.error("你现在正面朝上，不能发动[搜辑]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[搜辑]")
             return
         }
         val pb = message as skill_sou_ji_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
-            log.error("目标错误")
+            logger.error("目标错误")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
@@ -60,7 +60,7 @@ class SouJi : ActiveSkill {
     private data class executeSouJi(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            log.info("${r}对${target}发动了[搜辑]")
+            logger.info("${r}对${target}发动了[搜辑]")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_sou_ji_a_toc.newBuilder()
@@ -103,43 +103,43 @@ class SouJi : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_sou_ji_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             val cards = Array(message.cardIdsCount) {
                 val card = target.findCard(message.getCardIds(it))
                 if (card == null) {
-                    log.error("没有这张牌")
+                    logger.error("没有这张牌")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
                 if (!card.colors.contains(Black)) {
-                    log.error("这张牌不是黑色的")
+                    logger.error("这张牌不是黑色的")
                     (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色的")
                     return null
                 }
                 card
             }
             if (message.messageCard && !fsm.messageCard.colors.contains(Black)) {
-                log.error("待收情报不是黑色的")
+                logger.error("待收情报不是黑色的")
                 (player as? HumanPlayer)?.sendErrorMessage("待收情报不是黑色的")
                 return null
             }
             r.incrSeq()
             if (cards.isNotEmpty()) {
-                log.info("${r}将${target}的${cards.contentToString()}收归手牌")
+                logger.info("${r}将${target}的${cards.contentToString()}收归手牌")
                 target.cards.removeAll(cards.toSet())
                 r.cards.addAll(cards)
                 g.addEvent(GiveCardEvent(fsm.whoseTurn, target, r))
@@ -155,7 +155,7 @@ class SouJi : ActiveSkill {
                 }
             }
             if (message.messageCard) {
-                log.info("${r}将待收情报${fsm.messageCard}收归手牌，回合结束")
+                logger.info("${r}将待收情报${fsm.messageCard}收归手牌，回合结束")
                 r.cards.add(fsm.messageCard)
                 return ResolveResult(NextTurn(fsm.whoseTurn), true)
             }
@@ -163,12 +163,10 @@ class SouJi : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeSouJi::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(SouJi::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false

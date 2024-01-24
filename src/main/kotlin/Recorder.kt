@@ -9,7 +9,7 @@ import com.fengsheng.skill.RoleCache
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.io.*
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -57,15 +57,15 @@ class Recorder {
         val recordFile = builder.build()
         saveLoadPool.trySend {
             val file = File("records/")
-            if (!file.exists() && !file.isDirectory && !file.mkdir()) log.error("make dir failed: ${file.name}")
+            if (!file.exists() && !file.isDirectory && !file.mkdir()) logger.error("make dir failed: ${file.name}")
             try {
                 DataOutputStream(FileOutputStream("records/$fileName")).use { os ->
                     os.write(recordFile.toByteArray())
                     if (notify) p.send(save_record_success_toc.newBuilder().setRecordId(recordId).build())
-                    log.info("save record success: $recordId")
+                    logger.info("save record success: $recordId")
                 }
             } catch (e: IOException) {
-                log.error("save record failed", e)
+                logger.error("save record failed", e)
             }
         }
     }
@@ -95,14 +95,14 @@ class Recorder {
                     }
                     list = pb.linesList
                     currentIndex = 0
-                    log.info("load record success: $recordId")
+                    logger.info("load record success: $recordId")
                     if (player.needWaitLoad)
                         player.send(game_start_toc.getDefaultInstance())
                     else
                         displayNext(player)
                 }
             } catch (e: IOException) {
-                log.error("load record failed", e)
+                logger.error("load record failed", e)
                 player.sendErrorMessage("播放录像失败")
                 loading = false
             }
@@ -169,7 +169,6 @@ class Recorder {
     }
 
     companion object {
-        private val log = Logger.getLogger(Recorder::class.java)
         private val saveLoadPool = Channel<() -> Unit>(Channel.UNLIMITED)
         private val ignoredProtoNames = listOf(
             "reconnect_toc",

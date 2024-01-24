@@ -3,18 +3,18 @@ package com.fengsheng.handler
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Role
 import com.fengsheng.skill.SkillId
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 class skill_ji_ban_b_tos : AbstractProtoHandler<Role.skill_ji_ban_b_tos>() {
     override fun handle0(r: HumanPlayer, pb: Role.skill_ji_ban_b_tos) {
         val skill = r.findSkill(SkillId.JI_BAN)
         if (skill == null) {
-            log.error("你没有这个技能")
+            logger.error("你没有这个技能")
             r.sendErrorMessage("你没有这个技能")
             return
         }
         if (HashSet(pb.cardIdsList).size != pb.cardIdsCount) {
-            log.error("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
+            logger.error("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
             r.sendErrorMessage("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
             return
         }
@@ -22,6 +22,5 @@ class skill_ji_ban_b_tos : AbstractProtoHandler<Role.skill_ji_ban_b_tos>() {
     }
 
     companion object {
-        private val log = Logger.getLogger(skill_ji_ban_b_tos::class.java)
     }
 }

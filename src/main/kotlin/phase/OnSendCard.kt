@@ -6,7 +6,7 @@ import com.fengsheng.ResolveResult
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.send_message_card_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 选择了要传递哪张情报时
@@ -34,7 +34,7 @@ data class OnSendCard(
     override fun resolve(): ResolveResult {
         var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
         if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.contentToString()}"
-        log.info(s)
+        logger.info(s)
         if (needRemoveCard)
             sender.deleteCard(messageCard.id)
         if (needNotify) {
@@ -71,6 +71,5 @@ data class OnSendCard(
     }
 
     companion object {
-        private val log = Logger.getLogger(OnSendCard::class.java)
     }
 }

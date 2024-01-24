@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.skill_zhen_li_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 李书云技能【真理】：每当你传出的真情报被其他玩家接收时，你可以摸两张牌，将此角色翻回背面。
@@ -21,7 +21,7 @@ class ZhenLi : TriggeredSkill {
             askWhom.roleFaceUp || return@findEvent false
             Red in event.messageCard.colors || Blue in event.messageCard.colors
         } ?: return null
-        log.info("${askWhom}发动了[真理]")
+        logger.info("${askWhom}发动了[真理]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_zhen_li_toc.newBuilder()
@@ -35,6 +35,5 @@ class ZhenLi : TriggeredSkill {
     }
 
     companion object {
-        private val log = Logger.getLogger(ZhenLi::class.java)
     }
 }

@@ -6,7 +6,7 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.color.Has_No_Identity
 import com.fengsheng.protos.Common.secret_task
 import com.fengsheng.protos.Common.secret_task.*
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.Logging
 import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
 import kotlin.math.round
 
-object ScoreFactory {
+object ScoreFactory : Logging {
     private val rankString = listOf("I", "II", "III", "IV", "V")
 
     fun getRankNameByScore(score: Int): String {
@@ -190,12 +190,11 @@ object ScoreFactory {
                 val winCount = playerCountWinCount[count]?.get(it) ?: 0
                 val gameCount = playerCountAppearCount[count]?.get(it) ?: 0
                 PlayerGameCount(winCount, gameCount).apply {
-                    log.info("${count}人局${it.parseSecretTask()}场次${gameCount}胜率${"%.2f".format(rate)}%")
+                    logger.info("${count}人局${it.parseSecretTask()}场次${gameCount}胜率${"%.2f".format(rate)}%")
                 }
             }
         }
     }
 
     private val playerCountCount = ConcurrentHashMap<Int, Array<PlayerGameCount>>()
-    private val log = Logger.getLogger(ScoreFactory::class.java)
 }

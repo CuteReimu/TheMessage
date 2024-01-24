@@ -7,7 +7,7 @@ import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -23,29 +23,29 @@ class HouLaiRen : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? WaitForChengQing
         if (fsm == null || r !== fsm.askWhom || r !== fsm.whoDie) {
-            log.error("还没有结算到你濒死")
+            logger.error("还没有结算到你濒死")
             (r as? HumanPlayer)?.sendErrorMessage("还没有结算到你濒死")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[后来人]")
+            logger.error("你现在正面朝上，不能发动[后来人]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[后来人]")
             return
         }
         val pb = message as skill_hou_lai_ren_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         val card = r.findMessageCard(message.remainCardId)
         if (card == null) {
-            log.error("没有这张情报")
+            logger.error("没有这张情报")
             (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
             return
         }
         if (card.isPureBlack()) {
-            log.error("你必须选择一张红色情报或蓝色情报")
+            logger.error("你必须选择一张红色情报或蓝色情报")
             (r as? HumanPlayer)?.sendErrorMessage("你必须选择一张红色情报或蓝色情报")
             return
         }
@@ -54,11 +54,11 @@ class HouLaiRen : ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         val roles = RoleCache.getRandomRoles(3, g.players.map { it!!.role }.toSet())
         val discardCards = r.messageCards.filter { it.id != message.remainCardId }.toTypedArray()
-        log.info("${r}发动了[后来人]，弃掉了${discardCards.contentToString()}")
+        logger.info("${r}发动了[后来人]，弃掉了${discardCards.contentToString()}")
         r.messageCards.clear()
         r.messageCards.add(card)
         g.deck.discard(*discardCards)
-        log.info("${r}抽取了三张角色牌：${roles.map { it.name }.toTypedArray().contentToString()}")
+        logger.info("${r}抽取了三张角色牌：${roles.map { it.name }.toTypedArray().contentToString()}")
         g.resolve(executeHouLaiRen(fsm, r, message.remainCardId, roles))
     }
 
@@ -104,29 +104,29 @@ class HouLaiRen : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_hou_lai_ren_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             val roleSkillsData = roles.find { it.role == message.role }
             if (roleSkillsData == null) {
-                log.error("你没有这个角色")
+                logger.error("你没有这个角色")
                 (r as? HumanPlayer)?.sendErrorMessage("你没有这个角色")
                 return null
             }
             r.incrSeq()
-            log.info("${r}变成了${roleSkillsData.name}")
+            logger.info("${r}变成了${roleSkillsData.name}")
             r.roleSkillsData = roleSkillsData
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -160,12 +160,10 @@ class HouLaiRen : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeHouLaiRen::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(HouLaiRen::class.java)
         fun ai(e: WaitForChengQing, skill: ActiveSkill): Boolean {
             val player = e.askWhom
             if (player !== e.whoDie) return false

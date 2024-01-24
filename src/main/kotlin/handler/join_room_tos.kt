@@ -5,13 +5,13 @@ import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.protos.Fengsheng
 import com.google.protobuf.GeneratedMessageV3
 import kotlinx.coroutines.runBlocking
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.nio.charset.StandardCharsets
 
 class join_room_tos : ProtoHandler {
     override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
         if (player.game != null || player.isLoadingRecord) {
-            log.error("player is already in a room")
+            logger.error("player is already in a room")
             player.sendErrorMessage("你已经在房间里了")
             return
         }
@@ -45,7 +45,7 @@ class join_room_tos : ProtoHandler {
             val continueLogin = runBlocking {
                 GameExecutor.call(game) {
                     if (game !== oldPlayer.game) {
-                        log.info("${oldPlayer}登录异常")
+                        logger.info("${oldPlayer}登录异常")
                         oldPlayer.sendErrorMessage("登录异常，请稍后重试")
                         false
                     } else if (game.isStarted && !game.isEnd) { // 断线重连
@@ -58,7 +58,7 @@ class join_room_tos : ProtoHandler {
                         } else {
                             oldPlayer.reconnect()
                         }
-                        log.info("${oldPlayer}断线重连成功")
+                        logger.info("${oldPlayer}断线重连成功")
                         false
                     } else true
                 }
@@ -72,7 +72,7 @@ class join_room_tos : ProtoHandler {
         val newGame = Game.newGame
         GameExecutor.post(newGame) {
             if (player.game !== null) {
-                log.warn("${player}登录异常")
+                logger.warn("${player}登录异常")
                 player.sendErrorMessage("登录异常，请稍后重试")
                 return@post
             }
@@ -89,12 +89,12 @@ class join_room_tos : ProtoHandler {
                 }
             }
             if (failed) {
-                log.warn("${player}登录异常")
+                logger.warn("${player}登录异常")
                 player.sendErrorMessage("登录异常，请稍后重试")
                 return@post
             }
             oldPlayer2?.apply {// 顶号
-                log.info("${playerName}离开了房间")
+                logger.info("${playerName}离开了房间")
                 newGame.players[location] = null
                 newGame.cancelStartTimer()
                 this.game = null
@@ -147,13 +147,11 @@ class join_room_tos : ProtoHandler {
     }
 
     companion object {
-        private val log = Logger.getLogger(join_room_tos::class.java)
-
         private fun Game.removeAllRobot() {
             for ((index, robotPlayer) in players.withIndex()) {
                 if (robotPlayer is RobotPlayer) {
                     players[index] = null
-                    log.info("${robotPlayer.playerName}离开了房间")
+                    logger.info("${robotPlayer.playerName}离开了房间")
                     val builder = Fengsheng.leave_room_toc.newBuilder()
                     builder.position = robotPlayer.location
                     val reply = builder.build()

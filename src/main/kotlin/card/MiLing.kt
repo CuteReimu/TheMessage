@@ -13,7 +13,7 @@ import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.canSendCard
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 class MiLing : Card {
@@ -32,28 +32,28 @@ class MiLing : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用密令")
+            logger.error("你被禁止使用密令")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用密令")
             return false
         }
         if (r !== (g.fsm as? SendPhaseStart)?.whoseTurn) {
-            log.error("密令的使用时机不对")
+            logger.error("密令的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("密令的使用时机不对")
             return false
         }
         val target = args[0] as Player
         if (r === target) {
-            log.error("密令不能对自己使用")
+            logger.error("密令不能对自己使用")
             (r as? HumanPlayer)?.sendErrorMessage("密令不能对自己使用")
             return false
         }
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return false
         }
         if (target.cards.isEmpty()) {
-            log.error("目标没有手牌")
+            logger.error("目标没有手牌")
             (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
             return false
         }
@@ -64,7 +64,7 @@ class MiLing : Card {
         val fsm = g.fsm as SendPhaseStart
         val target = args[0] as Player
         val secret = args[1] as Int
-        log.info("${r}对${target}使用了$this")
+        logger.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val color = this.secret[secret]
         val hasColor = target.cards.any { color in it.colors }
@@ -127,18 +127,18 @@ class MiLing : Card {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is mi_ling_choose_card_tos) {
-                log.error("现在正在结算密令")
+                logger.error("现在正在结算密令")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算密令")
                 return null
             }
             if (player !== this.player) {
-                log.error("没有轮到你操作")
+                logger.error("没有轮到你操作")
                 (player as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
                 return null
             }
             val card = target.findCard(message.cardId)
             if (card == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
@@ -212,12 +212,12 @@ class MiLing : Card {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             val pb = message as? send_message_card_tos
             if (pb == null) {
-                log.error("现在正在结算密令")
+                logger.error("现在正在结算密令")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算密令")
                 return null
             }
             if (player !== target) {
-                log.error("没有轮到你传情报")
+                logger.error("没有轮到你传情报")
                 (player as? HumanPlayer)?.sendErrorMessage("没有轮到你传情报")
                 return null
             }
@@ -226,19 +226,19 @@ class MiLing : Card {
                 else player.cards.filter(this.card.secret[secret])
             val messageCard = target.findCard(message.cardId)
             if (messageCard == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             if (pb.targetPlayerId <= 0 || pb.targetPlayerId >= target.game!!.players.size) {
-                log.error("目标错误: ${pb.targetPlayerId}")
+                logger.error("目标错误: ${pb.targetPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
                 return null
             }
             val messageTarget = target.game!!.players[target.getAbstractLocation(pb.targetPlayerId)]!!
             val lockPlayers = pb.lockPlayerIdList.map {
                 if (it <= 0 || it >= target.game!!.players.size) {
-                    log.error("锁定目标错误: $it")
+                    logger.error("锁定目标错误: $it")
                     (player as? HumanPlayer)?.sendErrorMessage("锁定目标错误: $it")
                     return null
                 }
@@ -253,7 +253,7 @@ class MiLing : Card {
                 lockPlayers
             )
             if (sendCardError != null) {
-                log.error(sendCardError)
+                logger.error(sendCardError)
                 (player as? HumanPlayer)?.sendErrorMessage(sendCardError)
                 return null
             }
@@ -279,7 +279,6 @@ class MiLing : Card {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeMiLing::class.java)
         }
     }
 
@@ -299,7 +298,6 @@ class MiLing : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(MiLing::class.java)
         fun ai(e: SendPhaseStart, card: Card): Boolean {
             card as MiLing
             val player = e.whoseTurn

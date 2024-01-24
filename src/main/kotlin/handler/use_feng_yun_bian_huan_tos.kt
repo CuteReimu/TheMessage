@@ -3,23 +3,23 @@ package com.fengsheng.handler
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Fengsheng
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 class use_feng_yun_bian_huan_tos : AbstractProtoHandler<Fengsheng.use_feng_yun_bian_huan_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.use_feng_yun_bian_huan_tos) {
         if (!r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
-            log.error("没有这张牌")
+            logger.error("没有这张牌")
             r.sendErrorMessage("没有这张牌")
             return
         }
         if (card.type != Common.card_type.Feng_Yun_Bian_Huan) {
-            log.error("这张牌不是风云变幻，而是$card")
+            logger.error("这张牌不是风云变幻，而是$card")
             r.sendErrorMessage("这张牌不是风云变幻，而是$card")
             return
         }
@@ -30,6 +30,5 @@ class use_feng_yun_bian_huan_tos : AbstractProtoHandler<Fengsheng.use_feng_yun_b
     }
 
     companion object {
-        private val log = Logger.getLogger(use_feng_yun_bian_huan_tos::class.java)
     }
 }

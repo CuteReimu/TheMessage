@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.card_type.Po_Yi
 import com.fengsheng.protos.Role.skill_huan_ri_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 鄭文先技能【换日】：你使用【调包】或【破译】后，可以将你的角色牌翻至面朝下。
@@ -21,7 +21,7 @@ class HuanRi : TriggeredSkill {
             event.cardType == Diao_Bao || event.cardType == Po_Yi || return@findEvent false
             event.player.roleFaceUp
         } ?: return null
-        log.info("${askWhom}发动了[换日]")
+        logger.info("${askWhom}发动了[换日]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_huan_ri_toc.newBuilder()
@@ -34,6 +34,5 @@ class HuanRi : TriggeredSkill {
     }
 
     companion object {
-        private val log = Logger.getLogger(HuanRi::class.java)
     }
 }

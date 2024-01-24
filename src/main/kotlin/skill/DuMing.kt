@@ -8,7 +8,7 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -72,17 +72,17 @@ class DuMing : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ming_a_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -91,14 +91,14 @@ class DuMing : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message.color !== Red && message.color !== Blue && message.color !== Black) {
-                log.error("不存在的颜色")
+                logger.error("不存在的颜色")
                 (player as? HumanPlayer)?.sendErrorMessage("不存在的颜色")
                 return null
             }
             if (event is FinishResolveCardEvent) {
                 val fightPhase = event.nextFsm as? FightPhaseIdle
                 if (fightPhase == null) {
-                    log.error("状态错误：${event.nextFsm}")
+                    logger.error("状态错误：${event.nextFsm}")
                     (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
                     return null
                 }
@@ -108,13 +108,12 @@ class DuMing : TriggeredSkill {
                 r.incrSeq()
                 return ResolveResult(executeDuMing(fsm, event, r, message.color, event.messageCard), true)
             }
-            log.error("状态错误：$fsm")
+            logger.error("状态错误：$fsm")
             (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
             return null
         }
 
         companion object {
-            private val log = Logger.getLogger(waitForDuMing::class.java)
         }
     }
 
@@ -128,7 +127,7 @@ class DuMing : TriggeredSkill {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             r.addSkillUseCount(SkillId.DU_MING)
-            log.info("${r}发动了赌命，声明了$c")
+            logger.info("${r}发动了赌命，声明了$c")
             r.draw(1)
             val needPutBlack = c !in card.colors && r.cards.any { it.isPureBlack() }
             for (p in g.players) {
@@ -169,33 +168,33 @@ class DuMing : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ming_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             val card = r.findCard(message.cardId)
             if (card == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!card.isPureBlack()) {
-                log.error("这张牌不是纯黑色")
+                logger.error("这张牌不是纯黑色")
                 (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色")
                 return null
             }
             r.incrSeq()
-            log.info("${r}将${card}置入情报区")
+            logger.info("${r}将${card}置入情报区")
             r.deleteCard(card.id)
             r.messageCards.add(card)
             for (p in r.game!!.players) {
@@ -211,7 +210,6 @@ class DuMing : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeDuMing::class.java)
         }
     }
 }

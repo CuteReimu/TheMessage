@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.skill_jiang_ji_jiu_ji_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 成年韩梅技能【将计就计】：你使用【误导】或者你面前的情报被【误导】后，可以将此角色牌翻回背面，摸一张牌。
@@ -34,7 +34,7 @@ class JiangJiJiuJi : TriggeredSkill {
             g.findEvent<FinishResolveCardEvent>(this) {
                 askWhom.alive
             } ?: return null
-            log.info("${askWhom}发动了[将计就计]")
+            logger.info("${askWhom}发动了[将计就计]")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jiang_ji_jiu_ji_toc.newBuilder()
@@ -49,7 +49,6 @@ class JiangJiJiuJi : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(JiangJiJiuJi2::class.java)
         }
     }
 }

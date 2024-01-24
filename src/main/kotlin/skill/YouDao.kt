@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Role.skill_you_dao_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * SP李宁玉技能【诱导】：你使用【误导】后，摸一张牌。
@@ -18,7 +18,7 @@ class YouDao : TriggeredSkill {
             askWhom === event.player || return@findEvent false
             event.cardType == card_type.Wu_Dao
         } ?: return null
-        log.info("${askWhom}发动了[诱导]")
+        logger.info("${askWhom}发动了[诱导]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_you_dao_toc.newBuilder()
@@ -31,6 +31,5 @@ class YouDao : TriggeredSkill {
     }
 
     companion object {
-        private val log = Logger.getLogger(YouDao::class.java)
     }
 }

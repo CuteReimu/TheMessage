@@ -5,7 +5,7 @@ import com.fengsheng.phase.StartWaitForChengQing
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.changeGameResult
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.*
 
 /**
@@ -92,7 +92,7 @@ abstract class ProcessFsm : Fsm {
         val winners = winner.values.toMutableList()
         whoseTurn.game!!.changeGameResult(whoseTurn, declareWinners, winners)
         if (declareWinner.isNotEmpty()) {
-            log.info(
+            logger.info(
                 "${declareWinners.toTypedArray().contentToString()}宣告胜利，" +
                         "胜利者有${winners.toTypedArray().contentToString()}"
             )
@@ -118,6 +118,5 @@ abstract class ProcessFsm : Fsm {
 
 
     companion object {
-        private val log = Logger.getLogger(ProcessFsm::class.java)
     }
 }

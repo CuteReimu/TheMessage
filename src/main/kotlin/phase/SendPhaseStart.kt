@@ -2,7 +2,7 @@ package com.fengsheng.phase
 
 import com.fengsheng.*
 import com.fengsheng.skill.SkillId.LENG_XUE_XUN_LIAN
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 情报传递阶段开始时，选择传递一张情报
@@ -18,7 +18,7 @@ data class SendPhaseStart(override val whoseTurn: Player) : ProcessFsm() {
     override fun resolve0(): ResolveResult? {
         val game = whoseTurn.game!!
         if (whoseTurn.alive && whoseTurn.cards.isEmpty() && whoseTurn.findSkill(LENG_XUE_XUN_LIAN) == null) {
-            log.info("${whoseTurn}没有情报可传，输掉了游戏")
+            logger.info("${whoseTurn}没有情报可传，输掉了游戏")
             val messageCards = whoseTurn.messageCards.toTypedArray()
             whoseTurn.messageCards.clear()
             game.deck.discard(*messageCards)
@@ -39,6 +39,5 @@ data class SendPhaseStart(override val whoseTurn: Player) : ProcessFsm() {
     }
 
     companion object {
-        private val log = Logger.getLogger(SendPhaseStart::class.java)
     }
 }

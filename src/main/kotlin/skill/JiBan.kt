@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -17,18 +17,18 @@ class JiBan : MainPhaseSkill() {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("现在不是出牌阶段空闲时点")
+            logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
-            log.error("[羁绊]一回合只能发动一次")
+            logger.error("[羁绊]一回合只能发动一次")
             (r as? HumanPlayer)?.sendErrorMessage("[羁绊]一回合只能发动一次")
             return
         }
         val pb = message as skill_ji_ban_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
@@ -40,7 +40,7 @@ class JiBan : MainPhaseSkill() {
     private data class executeJiBan(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            log.info("${r}发动了[羁绊]")
+            logger.info("${r}发动了[羁绊]")
             r.draw(2)
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -66,53 +66,53 @@ class JiBan : MainPhaseSkill() {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_ji_ban_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.cardIdsCount == 0) {
-                log.error("至少需要选择一张卡牌")
+                logger.error("至少需要选择一张卡牌")
                 (player as? HumanPlayer)?.sendErrorMessage("至少需要选择一张卡牌")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-                log.error("目标错误")
+                logger.error("目标错误")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             if (message.targetPlayerId == 0) {
-                log.error("不能以自己为目标")
+                logger.error("不能以自己为目标")
                 (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             val cards = Array(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
-                    log.error("没有这张卡")
+                    logger.error("没有这张卡")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card
             }
             r.incrSeq()
-            log.info("${r}将${cards.contentToString()}交给$target")
+            logger.info("${r}将${cards.contentToString()}交给$target")
             r.cards.removeAll(cards.toSet())
             target.cards.addAll(cards)
             for (p in g.players) {
@@ -145,12 +145,10 @@ class JiBan : MainPhaseSkill() {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeJiBan::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(JiBan::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.whoseTurn.getSkillUseCount(SkillId.JI_BAN) > 0) return false
             GameExecutor.post(e.whoseTurn.game!!, {

@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -67,18 +67,18 @@ class CunBuBuRang : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cun_bu_bu_rang_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -91,7 +91,7 @@ class CunBuBuRang : TriggeredSkill {
             }
             val card = target.cards.random()
             r.incrSeq()
-            log.info("${r}对${target}发动了[寸步不让]，抽取了$card")
+            logger.info("${r}对${target}发动了[寸步不让]，抽取了$card")
             target.deleteCard(card.id)
             r.cards.add(card)
             for (p in g.players) {
@@ -109,11 +109,9 @@ class CunBuBuRang : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeCunBuBuRang::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(CunBuBuRang::class.java)
     }
 }

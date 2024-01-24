@@ -5,7 +5,7 @@ import com.fengsheng.GameExecutor
 import com.fengsheng.card.*
 import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Common.card_type
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.function.Function
 
 class addcard : Function<Map<String, String>, Any> {
@@ -47,7 +47,7 @@ class addcard : Function<Map<String, String>, Any> {
                         val p = g.players[playerId]!!
                         val cards = cardList.toTypedArray()
                         p.cards.addAll(cards)
-                        log.info("由于GM命令，${p}摸了${cards.contentToString()}，现在有${p.cards.size}张手牌")
+                        logger.info("由于GM命令，${p}摸了${cards.contentToString()}，现在有${p.cards.size}张手牌")
                         for (player in g.players) {
                             if (player!!.location == playerId)
                                 player.notifyAddHandCard(playerId, 0, *cards)
@@ -66,6 +66,5 @@ class addcard : Function<Map<String, String>, Any> {
     }
 
     companion object {
-        private val log = Logger.getLogger(addcard::class.java)
     }
 }

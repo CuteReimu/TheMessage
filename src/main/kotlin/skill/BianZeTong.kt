@@ -9,7 +9,7 @@ import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -31,7 +31,7 @@ class BianZeTong : TriggeredSkill {
 
     private data class executeBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            log.info("${r}发动了[变则通]")
+            logger.info("${r}发动了[变则通]")
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_wait_for_bian_ze_tong_toc.newBuilder()
@@ -68,17 +68,17 @@ class BianZeTong : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_bian_ze_tong_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -95,17 +95,17 @@ class BianZeTong : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message.cardTypeA == message.cardTypeB) {
-                log.error("A和B不能相同")
+                logger.error("A和B不能相同")
                 (player as? HumanPlayer)?.sendErrorMessage("A和B不能相同")
                 return null
             }
             if (message.cardTypeA !in validCardTypes || message.cardTypeB !in validCardTypes) {
-                log.error("A和B只能是【破译】【调包】【误导】【截获】")
+                logger.error("A和B只能是【破译】【调包】【误导】【截获】")
                 (player as? HumanPlayer)?.sendErrorMessage("A和B只能是【破译】【调包】【误导】【截获】")
                 return null
             }
             r.incrSeq()
-            log.info("${r}宣言了${message.cardTypeA}和${message.cardTypeB}")
+            logger.info("${r}宣言了${message.cardTypeA}和${message.cardTypeB}")
             r.game!!.players.forEach { it!!.skills += BianZeTong2(message.cardTypeA, message.cardTypeB) }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -121,7 +121,6 @@ class BianZeTong : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeBianZeTong::class.java)
         }
     }
 

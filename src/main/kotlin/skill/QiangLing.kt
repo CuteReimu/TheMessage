@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -79,17 +79,17 @@ class QiangLing : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_qiang_ling_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -98,20 +98,20 @@ class QiangLing : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message.typesCount == 0) {
-                log.error("enable为true时types不能为空")
+                logger.error("enable为true时types不能为空")
                 (player as? HumanPlayer)?.sendErrorMessage("[强令]的卡牌类型不能为空")
                 return null
             }
             val typesList = message.typesList.toList()
             for (t in typesList) {
                 if (t == UNRECOGNIZED || t == null) {
-                    log.error("未知的卡牌类型$t")
+                    logger.error("未知的卡牌类型$t")
                     (player as? HumanPlayer)?.sendErrorMessage("未知的卡牌类型$t")
                     return null
                 }
             }
             r.incrSeq()
-            log.info("${r}发动了[强令]，禁止了${typesList.toTypedArray().contentToString()}")
+            logger.info("${r}发动了[强令]，禁止了${typesList.toTypedArray().contentToString()}")
             r.game!!.players.forEach { it!!.skills += CannotPlayCard(cardType = typesList) }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -125,7 +125,6 @@ class QiangLing : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeQiangLing::class.java)
         }
     }
 }

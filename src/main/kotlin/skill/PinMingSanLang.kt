@@ -7,7 +7,7 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_pin_ming_san_lang_toc
 import com.fengsheng.protos.Role.skill_pin_ming_san_lang_tos
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -23,35 +23,35 @@ class PinMingSanLang : MainPhaseSkill() {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("现在不是出牌阶段空闲时点")
+            logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
-            log.error("[拼命三郎]一回合只能发动一次")
+            logger.error("[拼命三郎]一回合只能发动一次")
             (r as? HumanPlayer)?.sendErrorMessage("[拼命三郎]一回合只能发动一次")
             return
         }
         val pb = message as skill_pin_ming_san_lang_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
-            log.error("没有这张卡")
+            logger.error("没有这张卡")
             (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
             return
         }
         if (!card.isPureBlack()) {
-            log.error("这张牌不是纯黑色")
+            logger.error("这张牌不是纯黑色")
             (r as? HumanPlayer)?.sendErrorMessage("这张牌不是纯黑色")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info("${r}发动了[拼命三郎]，将手牌中的${card}置入自己的情报区")
+        logger.info("${r}发动了[拼命三郎]，将手牌中的${card}置入自己的情报区")
         r.deleteCard(card.id)
         r.messageCards.add(card)
         for (p in g.players) {
@@ -68,7 +68,6 @@ class PinMingSanLang : MainPhaseSkill() {
     }
 
     companion object {
-        private val log = Logger.getLogger(PinMingSanLang::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.whoseTurn.getSkillUseCount(SkillId.PIN_MING_SAN_LANG) == 0 || return false
             e.whoseTurn.messageCards.count(Black) < 2 || return false

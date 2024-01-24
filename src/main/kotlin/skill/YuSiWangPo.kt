@@ -6,7 +6,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -22,40 +22,40 @@ class YuSiWangPo : MainPhaseSkill() {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("现在不是出牌阶段空闲时点")
+            logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
-            log.error("[鱼死网破]一回合只能发动一次")
+            logger.error("[鱼死网破]一回合只能发动一次")
             (r as? HumanPlayer)?.sendErrorMessage("[鱼死网破]一回合只能发动一次")
             return
         }
         val pb = message as skill_yu_si_wang_po_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
-            log.error("目标错误")
+            logger.error("目标错误")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
-            log.error("不能以自己为目标")
+            logger.error("不能以自己为目标")
             (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
-            log.error("没有这张卡")
+            logger.error("没有这张卡")
             (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
             return
         }
@@ -63,7 +63,7 @@ class YuSiWangPo : MainPhaseSkill() {
         val discardAll = discardCount >= target.cards.size
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info("${r}对${target}发动了[鱼死网破]")
+        logger.info("${r}对${target}发动了[鱼死网破]")
         val timeout = Config.WaitSecond
         for (p in g.players) {
             if (p is HumanPlayer) {
@@ -127,29 +127,29 @@ class YuSiWangPo : MainPhaseSkill() {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== target) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yu_si_wang_po_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (target is HumanPlayer && !target.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${target.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${target.seq}, actual Seq: ${message.seq}")
                 target.sendErrorMessage("操作太晚了")
                 return null
             }
             if (cardCount != message.cardIdsCount) {
-                log.error("选择的卡牌数量不对")
+                logger.error("选择的卡牌数量不对")
                 (player as? HumanPlayer)?.sendErrorMessage("你需要选择${cardCount}张牌")
                 return null
             }
             val cards = message.cardIdsList.map {
                 val card = target.findCard(it)
                 if (card == null) {
-                    log.error("没有这张卡")
+                    logger.error("没有这张卡")
                     (target as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
@@ -169,12 +169,10 @@ class YuSiWangPo : MainPhaseSkill() {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeYuSiWangPo::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(YuSiWangPo::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.whoseTurn.getSkillUseCount(SkillId.YU_SI_WANG_PO) == 0 || return false
             val card = e.whoseTurn.cards.randomOrNull() ?: return false

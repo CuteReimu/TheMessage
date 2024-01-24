@@ -11,7 +11,7 @@ import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Role.skill_gui_zha_toc
 import com.fengsheng.protos.Role.skill_gui_zha_tos
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -24,29 +24,29 @@ class GuiZha : MainPhaseSkill() {
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("现在不是出牌阶段空闲时点")
+            logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
-            log.error("[诡诈]一回合只能发动一次")
+            logger.error("[诡诈]一回合只能发动一次")
             (r as? HumanPlayer)?.sendErrorMessage("[诡诈]一回合只能发动一次")
             return
         }
         val pb = message as skill_gui_zha_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
-            log.error("目标错误")
+            logger.error("目标错误")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
@@ -55,13 +55,13 @@ class GuiZha : MainPhaseSkill() {
         } else if (pb.cardType == card_type.Li_You) {
             if (!LiYou.canUse(g, r, target)) return
         } else {
-            log.error("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
+            logger.error("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
             (r as? HumanPlayer)?.sendErrorMessage("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info("${r}对${target}发动了[诡诈]")
+        logger.info("${r}对${target}发动了[诡诈]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_gui_zha_toc.newBuilder()
@@ -76,7 +76,6 @@ class GuiZha : MainPhaseSkill() {
     }
 
     companion object {
-        private val log = Logger.getLogger(GuiZha::class.java)
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
             if (player.getSkillUseCount(SkillId.GUI_ZHA) > 0) return false

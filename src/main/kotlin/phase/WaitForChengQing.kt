@@ -1,7 +1,7 @@
 package com.fengsheng.phase
 
 import com.fengsheng.*
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.*
 
 /**
@@ -23,9 +23,9 @@ data class WaitForChengQing(
     val afterDieResolve: Fsm
 ) : ProcessFsm() {
     override val needCheckWinAndDying = false
-    
+
     override fun resolve0(): ResolveResult? {
-        log.info("正在询问${askWhom}是否使用澄清")
+        logger.info("正在询问${askWhom}是否使用澄清")
         for (p in askWhom.game!!.players) {
             p!!.notifyAskForChengQing(whoDie, askWhom, Config.WaitSecond)
         }
@@ -37,6 +37,5 @@ data class WaitForChengQing(
     }
 
     companion object {
-        private val log = Logger.getLogger(WaitForChengQing::class.java)
     }
 }

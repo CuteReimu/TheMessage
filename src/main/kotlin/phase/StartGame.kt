@@ -1,7 +1,7 @@
 package com.fengsheng.phase
 
 import com.fengsheng.*
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -11,7 +11,7 @@ import kotlin.random.Random
 data class StartGame(val game: Game, val whoseTurn: Int) : Fsm {
     override fun resolve(): ResolveResult? {
         val players = game.players
-        log.info("游戏开始了，场上的角色依次是：${players.contentToString()}")
+        logger.info("游戏开始了，场上的角色依次是：${players.contentToString()}")
         game.deck.init(players.size)
         for (i in players.indices) players[(whoseTurn + i) % players.size]!!.init()
         for (i in players.indices) {
@@ -36,6 +36,5 @@ data class StartGame(val game: Game, val whoseTurn: Int) : Fsm {
     }
 
     companion object {
-        private val log = Logger.getLogger(StartGame::class.java)
     }
 }

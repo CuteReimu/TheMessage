@@ -6,7 +6,7 @@ import com.fengsheng.card.filter
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -38,7 +38,7 @@ class CangShenJiaoTang : TriggeredSkill {
             }
         }
         if (isHiddenRole) {
-            log.info("${askWhom}发动了[藏身教堂]")
+            logger.info("${askWhom}发动了[藏身教堂]")
             askWhom.draw(1)
         }
         if (isHiddenRole && target.roleFaceUp)
@@ -77,17 +77,17 @@ class CangShenJiaoTang : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.sender) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cang_shen_jiao_tang_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                 player.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -107,7 +107,6 @@ class CangShenJiaoTang : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeCangShenJiaoTangB::class.java)
         }
     }
 
@@ -141,17 +140,17 @@ class CangShenJiaoTang : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.sender) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cang_shen_jiao_tang_c_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                 player.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -159,26 +158,26 @@ class CangShenJiaoTang : TriggeredSkill {
             if (message.enable) {
                 val card = target.findMessageCard(message.cardId)
                 if (card == null) {
-                    log.error("没有这张情报")
+                    logger.error("没有这张情报")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张情报")
                     return null
                 }
                 if (!card.isBlack()) {
-                    log.error("目标情报不是黑色的")
+                    logger.error("目标情报不是黑色的")
                     (player as? HumanPlayer)?.sendErrorMessage("目标情报不是黑色的")
                     return null
                 }
                 if (message.asMessageCard) {
                     if (target === player) {
-                        log.error("你不能把情报从自己面前移到自己面前")
+                        logger.error("你不能把情报从自己面前移到自己面前")
                         (player as? HumanPlayer)?.sendErrorMessage("你不能把情报从自己面前移到自己面前")
                         return null
                     }
-                    log.info("${player}发动了[藏身教堂]，将${target}面前的${card}移到自己面前")
+                    logger.info("${player}发动了[藏身教堂]，将${target}面前的${card}移到自己面前")
                     target.deleteMessageCard(message.cardId)
                     player.messageCards.add(card)
                 } else {
-                    log.info("${player}发动了[藏身教堂]，将${target}面前的${card}加入了手牌")
+                    logger.info("${player}发动了[藏身教堂]，将${target}面前的${card}加入了手牌")
                     target.deleteMessageCard(message.cardId)
                     player.cards.add(card)
                 }
@@ -200,11 +199,9 @@ class CangShenJiaoTang : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeCangShenJiaoTangC::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(CangShenJiaoTang::class.java)
     }
 }

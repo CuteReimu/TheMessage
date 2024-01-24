@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -20,29 +20,29 @@ class YiHuaJieMu : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
-            log.error("[移花接木]的使用时机不对")
+            logger.error("[移花接木]的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("[移花接木]的使用时机不对")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[移花接木]")
+            logger.error("你现在正面朝上，不能发动[移花接木]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[移花接木]")
             return
         }
         if (g.players.all { !it!!.alive || it.messageCards.isEmpty() }) {
-            log.error("场上没有情报，不能发动[移花接木]")
+            logger.error("场上没有情报，不能发动[移花接木]")
             (r as? HumanPlayer)?.sendErrorMessage("场上没有情报，不能发动[移花接木]")
             return
         }
         if (g.players.count { it!!.alive } < 2) {
-            log.error("场上没有两名存活的角色，不能发动[移花接木]")
+            logger.error("场上没有两名存活的角色，不能发动[移花接木]")
             (r as? HumanPlayer)?.sendErrorMessage("场上没有两名存活的角色，不能发动[移花接木]")
             return
         }
         r.incrSeq()
         g.playerSetRoleFaceUp(r, true)
         r.addSkillUseCount(skillId)
-        log.info("${r}发动了[移花接木]")
+        logger.info("${r}发动了[移花接木]")
         g.resolve(executeYiHuaJieMu(fsm, r))
     }
 
@@ -88,50 +88,50 @@ class YiHuaJieMu : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (r !== player) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yi_hua_jie_mu_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                 player.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.fromPlayerId < 0 || message.fromPlayerId >= player.game!!.players.size) {
-                log.error("目标错误")
+                logger.error("目标错误")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val fromPlayer = player.game!!.players[player.getAbstractLocation(message.fromPlayerId)]!!
             if (!fromPlayer.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.toPlayerId < 0 || message.toPlayerId >= player.game!!.players.size) {
-                log.error("目标错误")
+                logger.error("目标错误")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val toPlayer = player.game!!.players[player.getAbstractLocation(message.toPlayerId)]!!
             if (!toPlayer.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.fromPlayerId == message.toPlayerId) {
-                log.error("选择的两个目标不能相同")
+                logger.error("选择的两个目标不能相同")
                 (player as? HumanPlayer)?.sendErrorMessage("选择的两个目标不能相同")
                 return null
             }
             val card = fromPlayer.findMessageCard(message.cardId)
             if (card == null) {
-                log.error("没有这张卡")
+                logger.error("没有这张卡")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
@@ -140,11 +140,11 @@ class YiHuaJieMu : ActiveSkill {
             val joinIntoHand = toPlayer.checkThreeSameMessageCard(card)
             if (joinIntoHand) {
                 player.cards.add(card)
-                log.info("${fromPlayer}面前的${card}加入了${player}的手牌")
+                logger.info("${fromPlayer}面前的${card}加入了${player}的手牌")
             } else {
                 toPlayer.messageCards.add(card)
                 player.game!!.addEvent(AddMessageCardEvent(fsm.whoseTurn))
-                log.info("${fromPlayer}面前的${card}加入了${toPlayer}的情报区")
+                logger.info("${fromPlayer}面前的${card}加入了${toPlayer}的情报区")
             }
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
@@ -161,12 +161,10 @@ class YiHuaJieMu : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeYiHuaJieMu::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(YiHuaJieMu::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val p = e.whoseFightTurn
             if (p.roleFaceUp) return false

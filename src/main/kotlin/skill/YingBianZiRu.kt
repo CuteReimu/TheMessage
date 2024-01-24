@@ -9,7 +9,7 @@ import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -28,27 +28,27 @@ class YingBianZiRu : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
-            log.error("现在不是发动[应变自如]的时机")
+            logger.error("现在不是发动[应变自如]的时机")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[应变自如]的时机")
             return
         }
         if (fsm.isMessageCardFaceUp) {
-            log.error("情报面朝上，不能发动[应变自如]")
+            logger.error("情报面朝上，不能发动[应变自如]")
             (r as? HumanPlayer)?.sendErrorMessage("情报面朝上，不能发动[应变自如]")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[应变自如]")
+            logger.error("你现在正面朝上，不能发动[应变自如]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[应变自如]")
             return
         }
         val pb = message as skill_ying_bian_zi_ru_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
-        log.info("${r}发动了[应变自如]，翻开了${fsm.messageCard}")
+        logger.info("${r}发动了[应变自如]，翻开了${fsm.messageCard}")
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
@@ -119,51 +119,49 @@ class YingBianZiRu : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_ying_bian_zi_ru_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-                log.error("目标错误")
+                logger.error("目标错误")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target !== fsm.inFrontOfWhom.getNextLeftAlivePlayer() && target !== fsm.inFrontOfWhom.getNextRightAlivePlayer()) {
-                log.error("只能误导给左右两边的玩家")
+                logger.error("只能误导给左右两边的玩家")
                 (player as? HumanPlayer)?.sendErrorMessage("只能误导给左右两边的玩家")
                 return null
             }
             r.incrSeq()
-            log.info("${r}视为对${target}使用了误导")
+            logger.info("${r}视为对${target}使用了误导")
             r.draw(2)
             g.fsm = fsm
             return ResolveResult(WuDao.onUseCard(null, g, r, target), true)
         }
 
         companion object {
-            private val log = Logger.getLogger(executeYingBianZiRu::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(YingBianZiRu::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false

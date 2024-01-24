@@ -9,7 +9,7 @@ import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 class WeiBi : Card {
@@ -27,7 +27,7 @@ class WeiBi : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用威逼")
+            logger.error("你被禁止使用威逼")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用威逼")
             return false
         }
@@ -39,7 +39,7 @@ class WeiBi : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
         val wantType = args[1] as card_type
-        log.info("${r}对${target}使用了$this")
+        logger.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         execute(this, g, r, target, wantType)
     }
@@ -83,24 +83,24 @@ class WeiBi : Card {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is wei_bi_give_card_tos) {
-                log.error("现在正在结算威逼")
+                logger.error("现在正在结算威逼")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算威逼")
                 return null
             }
             if (target !== player) {
-                log.error("你不是威逼的目标")
+                logger.error("你不是威逼的目标")
                 (player as? HumanPlayer)?.sendErrorMessage("你不是威逼的目标")
                 return null
             }
             val cardId: Int = message.cardId
             val c = target.findCard(cardId)
             if (c == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             target.incrSeq()
-            log.info("${target}给了${r}一张$c")
+            logger.info("${target}给了${r}一张$c")
             target.deleteCard(cardId)
             r.cards.add(c)
             for (p in r.game!!.players) {
@@ -127,7 +127,6 @@ class WeiBi : Card {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeWeiBi::class.java)
         }
     }
 
@@ -136,25 +135,24 @@ class WeiBi : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(WeiBi::class.java)
         fun canUse(g: Game, r: Player, target: Player, wantType: card_type): Boolean {
             if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-                log.error("威逼的使用时机不对")
+                logger.error("威逼的使用时机不对")
                 (r as? HumanPlayer)?.sendErrorMessage("威逼的使用时机不对")
                 return false
             }
             if (r === target) {
-                log.error("威逼不能对自己使用")
+                logger.error("威逼不能对自己使用")
                 (r as? HumanPlayer)?.sendErrorMessage("威逼不能对自己使用")
                 return false
             }
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return false
             }
             if (!availableCardType.contains(wantType)) {
-                log.error("威逼选择的卡牌类型错误：$wantType")
+                logger.error("威逼选择的卡牌类型错误：$wantType")
                 (r as? HumanPlayer)?.sendErrorMessage("威逼选择的卡牌类型错误：$wantType")
                 return false
             }
@@ -174,7 +172,7 @@ class WeiBi : Card {
                 } else if (hasCard(target, wantType)) {
                     executeWeiBi(fsm, r, target, card, wantType)
                 } else {
-                    log.info("${target}向${r}展示了所有手牌")
+                    logger.info("${target}向${r}展示了所有手牌")
                     for (p in g.players) {
                         if (p is HumanPlayer) {
                             val builder = wei_bi_show_hand_card_toc.newBuilder()

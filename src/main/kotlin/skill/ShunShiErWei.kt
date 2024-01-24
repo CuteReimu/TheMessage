@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Role.skill_shun_shi_er_wei_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 成年小九技能【顺势而为】：你使用【截获】或者你面前的情报被【截获】后，可以将此角色牌翻回背面，摸一张牌。
@@ -34,7 +34,7 @@ class ShunShiErWei : TriggeredSkill {
             g.findEvent<FinishResolveCardEvent>(this) {
                 askWhom.alive
             } ?: return null
-            log.info("${askWhom}发动了[顺势而为]")
+            logger.info("${askWhom}发动了[顺势而为]")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_shun_shi_er_wei_toc.newBuilder()
@@ -49,7 +49,6 @@ class ShunShiErWei : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(ShunShiErWei2::class.java)
         }
     }
 }

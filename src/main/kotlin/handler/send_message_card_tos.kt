@@ -5,12 +5,12 @@ import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.canSendCard
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.send_message_card_tos) {
         if (!r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
@@ -21,19 +21,19 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
-            log.error("没有这张牌")
+            logger.error("没有这张牌")
             r.sendErrorMessage("没有这张牌")
             return
         }
         if (pb.targetPlayerId <= 0 || pb.targetPlayerId >= r.game!!.players.size) {
-            log.error("目标错误: ${pb.targetPlayerId}")
+            logger.error("目标错误: ${pb.targetPlayerId}")
             r.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
             return
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         val lockPlayers = pb.lockPlayerIdList.map {
             if (it < 0 || it >= r.game!!.players.size) {
-                log.error("锁定目标错误: $it")
+                logger.error("锁定目标错误: $it")
                 r.sendErrorMessage("锁定目标错误: $it")
                 return
             }
@@ -41,7 +41,7 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
         }
         val sendCardError = r.canSendCard(fsm.whoseTurn, card, r.cards, pb.cardDir, target, lockPlayers)
         if (sendCardError != null) {
-            log.error(sendCardError)
+            logger.error(sendCardError)
             r.sendErrorMessage(sendCardError)
             return
         }
@@ -50,6 +50,5 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
     }
 
     companion object {
-        private val log = Logger.getLogger(send_message_card_tos::class.java)
     }
 }

@@ -5,7 +5,7 @@ import com.fengsheng.protos.Common.role
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -46,12 +46,12 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
 
     override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
         if (message !is select_role_tos) {
-            log.error("正在等待选择角色")
+            logger.error("正在等待选择角色")
             (player as? HumanPlayer)?.sendErrorMessage("正在等待选择角色")
             return null
         }
         if (selected[player.location] != null) {
-            log.error("你已经选了角色")
+            logger.error("你已经选了角色")
             (player as? HumanPlayer)?.sendErrorMessage("你已经选了角色")
             return null
         }
@@ -59,7 +59,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             if (message.role == role.unknown && options[player.location].isEmpty()) RoleSkillsData()
             else options[player.location].find { o -> o.role == message.role }
         if (roleSkillsData == null) {
-            log.error("你没有这个角色")
+            logger.error("你没有这个角色")
             (player as? HumanPlayer)?.sendErrorMessage("你没有这个角色")
             return null
         }
@@ -87,8 +87,6 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
     }
 
     companion object {
-        private val log = Logger.getLogger(WaitForSelectRole::class.java)
-
         private fun HumanPlayer.notifyIdentity() {
             GameExecutor.post(game!!, {
                 sendErrorMessage(

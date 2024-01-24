@@ -20,7 +20,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
@@ -63,7 +63,7 @@ class Game private constructor(totalPlayerCount: Int) {
             } catch (_: ClosedReceiveChannelException) {
                 break
             } catch (e: Exception) {
-                log.error("catch throwable", e)
+                logger.error("catch throwable", e)
             }
         }
     }
@@ -107,10 +107,10 @@ class Game private constructor(totalPlayerCount: Int) {
         val msg = builder.build()
         players.forEach { if (it !== player && it is HumanPlayer) it.send(msg) }
         if (unready == 0) {
-            log.info("${player.playerName}加入了。已加入${players.size}个人，游戏将在5秒内开始。。。")
+            logger.info("${player.playerName}加入了。已加入${players.size}个人，游戏将在5秒内开始。。。")
             setStartTimer()
         } else {
-            log.info("${player.playerName}加入了。已加入${players.size - unready}个人，等待${unready}人加入。。。")
+            logger.info("${player.playerName}加入了。已加入${players.size - unready}个人，等待${unready}人加入。。。")
         }
         return true
     }
@@ -219,7 +219,7 @@ class Game private constructor(totalPlayerCount: Int) {
                             score,
                             i == humanPlayers.size - 1
                         )
-                        log.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
+                        logger.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
                         addScoreMap[p.playerName] = deltaScore
                         newScoreMap[p.playerName] = newScore
                     }
@@ -262,7 +262,7 @@ class Game private constructor(totalPlayerCount: Int) {
     fun playerDiscardCard(player: Player, vararg cards: Card) {
         if (cards.isEmpty()) return
         player.cards.removeAll(cards.toSet())
-        log.info("${player}弃掉了${cards.contentToString()}，剩余手牌${player.cards.size}张")
+        logger.info("${player}弃掉了${cards.contentToString()}，剩余手牌${player.cards.size}张")
         deck.discard(*cards)
         for (p in players) {
             if (p is HumanPlayer) {
@@ -276,13 +276,13 @@ class Game private constructor(totalPlayerCount: Int) {
 
     fun playerSetRoleFaceUp(player: Player?, faceUp: Boolean) {
         if (faceUp) {
-            if (player!!.roleFaceUp) log.error("${player}本来就是正面朝上的")
-            else log.info("${player}将角色翻至正面朝上")
+            if (player!!.roleFaceUp) logger.error("${player}本来就是正面朝上的")
+            else logger.info("${player}将角色翻至正面朝上")
             player.roleFaceUp = true
             player.hasEverFaceUp = true
         } else {
-            if (!player!!.roleFaceUp) log.error("${player}本来就是背面朝上的")
-            else log.info("${player}将角色翻至背面朝上")
+            if (!player!!.roleFaceUp) logger.error("${player}本来就是背面朝上的")
+            else logger.info("${player}将角色翻至背面朝上")
             player.roleFaceUp = false
         }
         for (p in players) {
@@ -340,7 +340,7 @@ class Game private constructor(totalPlayerCount: Int) {
     fun tryContinueResolveProtocol(player: Player, pb: GeneratedMessageV3) {
         GameExecutor.post(this) {
             if (fsm !is WaitingFsm) {
-                log.error(
+                logger.error(
                     "时机错误，当前时点为：$fsm，收到: ${pb.javaClass.simpleName} | " +
                             printer.printToString(pb).replace("\n *".toRegex(), " ")
                 )
@@ -420,14 +420,13 @@ class Game private constructor(totalPlayerCount: Int) {
         val declaredWinners = ArrayList<Player>()
         changeGameResult(whoseTurn, declaredWinners, winner)
         val winners = winner.toTypedArray()
-        log.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
+        logger.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
         allPlayerSetRoleFaceUp()
         end(declaredWinners, winner)
         return true
     }
 
     companion object {
-        private val log = Logger.getLogger(Game::class.java)
         val playerCache = ConcurrentHashMap<String, HumanPlayer>()
         val GameCache = ConcurrentHashMap<Int, Game>()
         val playerNameCache = ConcurrentHashMap<String, HumanPlayer>()
@@ -439,7 +438,7 @@ class Game private constructor(totalPlayerCount: Int) {
             oldPlayer.channel = newPlayer.channel
             oldPlayer.needWaitLoad = newPlayer.needWaitLoad
             if (playerCache.put(newPlayer.channel.id().asLongText(), oldPlayer) == null) {
-                log.error("channel [id: ${newPlayer.channel.id().asLongText()}] not exists")
+                logger.error("channel [id: ${newPlayer.channel.id().asLongText()}] not exists")
             }
         }
 

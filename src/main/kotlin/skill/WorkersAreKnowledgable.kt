@@ -8,7 +8,7 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction.Up
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -75,17 +75,17 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_workers_are_knowledgable_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -94,32 +94,32 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message.targetPlayerIdCount == 0) {
-                log.error("enable为true时至少要选择一个目标")
+                logger.error("enable为true时至少要选择一个目标")
                 (player as? HumanPlayer)?.sendErrorMessage("enable为true时至少要选择一个目标")
                 return null
             }
             val maxCount = r.messageCards.count(Black)
             if (message.targetPlayerIdCount > maxCount) {
-                log.error("最多选择${maxCount}个目标")
+                logger.error("最多选择${maxCount}个目标")
                 (player as? HumanPlayer)?.sendErrorMessage("最多选择${maxCount}个目标")
                 return null
             }
             val targets = message.targetPlayerIdList.map {
                 if (it < 0 || it >= r.game!!.players.size) {
-                    log.error("目标错误")
+                    logger.error("目标错误")
                     (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                     return null
                 }
                 val target = r.game!!.players[r.getAbstractLocation(it)]!!
                 if (!target.alive) {
-                    log.error("目标已死亡")
+                    logger.error("目标已死亡")
                     (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                     return null
                 }
                 target
             }
             r.incrSeq()
-            log.info("${r}发动了[咱们工人有知识]，令${targets.toTypedArray().contentToString()}本回合不能接收情报")
+            logger.info("${r}发动了[咱们工人有知识]，令${targets.toTypedArray().contentToString()}本回合不能接收情报")
             targets.forEach { it.skills += WorkersAreKnowledgable2() }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
@@ -133,7 +133,6 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeWorkersAreKnowledgable::class.java)
         }
     }
 

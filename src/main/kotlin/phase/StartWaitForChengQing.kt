@@ -5,7 +5,7 @@ import com.fengsheng.Player
 import com.fengsheng.PlayerDieEvent
 import com.fengsheng.ResolveResult
 import com.fengsheng.skill.cannotPlayCardAndSkillForChengQing
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.*
 
 /**
@@ -39,13 +39,12 @@ data class StartWaitForChengQing(
             return ResolveResult(CheckKillerWin(whoseTurn, diedQueue, afterDieResolve), true)
         }
         val whoDie = dyingQueue.poll()
-        log.info("${whoDie}濒死")
+        logger.info("${whoDie}濒死")
         val next = WaitForChengQing(whoseTurn, whoDie, whoDie, dyingQueue, diedQueue, afterDieResolve)
         val askWhomAlive = next.askWhom.alive && !next.askWhom.cannotPlayCardAndSkillForChengQing()
         return ResolveResult(if (askWhomAlive) next else WaitNextForChengQing(next), true)
     }
 
     companion object {
-        private val log = Logger.getLogger(StartWaitForChengQing::class.java)
     }
 }

@@ -15,7 +15,7 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.lang.reflect.InvocationTargetException
 import java.net.SocketException
 
@@ -26,7 +26,7 @@ import java.net.SocketException
 class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
     override fun channelActive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
-        log.info(
+        logger.info(
             "session connected: ${channel.id().asShortText()} ${channel.remoteAddress()}"
         )
         val player = HumanPlayer(channel) { protoName: String, buf: ByteArray ->
@@ -36,18 +36,18 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
             byteBuf.writeBytes(buf)
         }
         if (Game.playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
-            log.error("already assigned channel id: ${channel.id().asLongText()}")
+            logger.error("already assigned channel id: ${channel.id().asLongText()}")
         }
     }
 
     override fun channelInactive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
-        log.info(
+        logger.info(
             "session closed: " + channel.id().asShortText() + " " + channel.remoteAddress()
         )
         val player = Game.playerCache.remove(channel.id().asLongText())
         if (player == null) {
-            log.error("already unassigned channel id: " + channel.id().asLongText())
+            logger.error("already unassigned channel id: " + channel.id().asLongText())
             return
         }
         val game = player.game ?: return
@@ -59,7 +59,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                 else
                     player.notifyPlayerUpdateStatus()
             } else {
-                log.info("${player.playerName}离开了房间")
+                logger.info("${player.playerName}离开了房间")
                 game.players[player.location] = null
                 player.game = null
                 Game.playerNameCache.remove(player.playerName, player)
@@ -74,14 +74,14 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
     public override fun channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) {
         val msgLen = msg.readableBytes()
         if (msgLen < 2) {
-            log.error("incorrect msgLen: " + msg.readableBytes())
+            logger.error("incorrect msgLen: " + msg.readableBytes())
             ctx.close()
             return
         }
         val id = msg.readShortLE()
         val protoInfo = ProtoInfoMap[id]
         if (protoInfo == null) {
-            log.error("incorrect msg id: $id")
+            logger.error("incorrect msg id: $id")
             ctx.close()
             return
         }
@@ -89,14 +89,14 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         msg.readBytes(buf)
         val message = protoInfo.parser.parseFrom(buf) as GeneratedMessageV3
         if (id != heartMsgId && id != autoPlayMsgId) {
-            log.debug(
+            logger.debug(
                 "recv@${ctx.channel().id().asShortText()} len: ${msgLen - 2} ${protoInfo.name} | " +
                         printer.printToString(message).replace("\n *".toRegex(), " ")
             )
         }
         val player = Game.playerCache[ctx.channel().id().asLongText()]!!
         if (!player.limiter.allow()) {
-            log.error("recv msg too fast: ${ctx.channel().id().asShortText()}")
+            logger.error("recv msg too fast: ${ctx.channel().id().asShortText()}")
             ctx.close()
             return
         }
@@ -115,7 +115,6 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
 
     companion object {
         @Suppress("DEPRECATION")
-        private val log = Logger.getLogger(ProtoServerChannelHandler::class.java)
         private val printer = TextFormat.printer().escapingNonAscii(false)
         private val ProtoInfoMap = HashMap<Short, ProtoInfo>()
         private val heartMsgId: Short = stringHash("heart_tos")

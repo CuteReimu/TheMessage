@@ -17,7 +17,7 @@ import io.netty.channel.Channel
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelFutureListener
 import io.netty.util.Timeout
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 class HumanPlayer(
@@ -69,7 +69,7 @@ class HumanPlayer(
         recorder.add(name, buf)
         if (isActive && !isReconnecting) send(name, buf, true)
         if (message is notify_player_update_toc) return
-        log.debug(
+        logger.debug(
             "send@${channel.id().asShortText()} len: ${buf.size} $name | " +
                     printer.printToString(message).replace(Regex("\n *"), " ")
         )
@@ -80,7 +80,7 @@ class HumanPlayer(
         val f = if (flush) channel.writeAndFlush(v) else channel.write(v)
         f.addListener(ChannelFutureListener { future: ChannelFuture ->
             if (!future.isSuccess)
-                log.error("send@${channel.id().asShortText()} failed, proto name: $protoName, len: ${buf.size}")
+                logger.error("send@${channel.id().asShortText()} failed, proto name: $protoName, len: ${buf.size}")
         })
     }
 
@@ -118,7 +118,7 @@ class HumanPlayer(
 
     fun setAutoPlay(autoPlay: Boolean) {
         if (this.autoPlay == autoPlay) return
-        log.debug("${this}托管状态：$autoPlay")
+        logger.debug("${this}托管状态：$autoPlay")
         timeoutCount = 0
         this.autoPlay = autoPlay
         if (autoPlay) {
@@ -126,7 +126,7 @@ class HumanPlayer(
                 try {
                     timeout!!.task().run(timeout)
                 } catch (e: Exception) {
-                    log.error("time task exception", e)
+                    logger.error("time task exception", e)
                 }
             }
         } else {
@@ -483,7 +483,6 @@ class HumanPlayer(
     }
 
     companion object {
-        private val log = Logger.getLogger(HumanPlayer::class.java)
         private val printer = TextFormat.printer().escapingNonAscii(false)
 
         /**

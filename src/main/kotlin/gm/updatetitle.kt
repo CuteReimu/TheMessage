@@ -10,12 +10,16 @@ class updatetitle : Function<Map<String, String>, Any> {
             val name = form["name"]!!
             val title = form.getOrDefault("title", "")
             if (title.length > 12) return "{\"error\": \"称号太长\"}"
-            if (name.contains(",") || name.contains("·")) return "{\"error\": \"称号中含有非法字符\"}"
+            if (invalidString.any { it in name }) return "{\"error\": \"称号中含有非法字符\"}"
             val result = Statistics.updateTitle(name, title)
             if (result) Game.playerNameCache[name]?.playerTitle = title
             "{\"result\": $result}"
         } catch (e: NullPointerException) {
             "{\"error\": \"参数错误\"}"
         }
+    }
+
+    companion object {
+        private val invalidString = listOf(",", "·", "{", "$", "}")
     }
 }

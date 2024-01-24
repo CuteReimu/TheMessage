@@ -7,7 +7,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_toc
 import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_tos
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -28,57 +28,57 @@ class HouZiQieXin : MainPhaseSkill() {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? MainPhaseIdle
         if (r !== fsm?.whoseTurn) {
-            log.error("现在不是出牌阶段空闲时点")
+            logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
-            log.error("[猴子窃信]一回合只能发动一次")
+            logger.error("[猴子窃信]一回合只能发动一次")
             (r as? HumanPlayer)?.sendErrorMessage("[猴子窃信]一回合只能发动一次")
             return
         }
         val pb = message as skill_hou_zi_qie_xin_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-            log.error("目标错误")
+            logger.error("目标错误")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         val handCard = r.findCard(message.handCardId)
         if (handCard == null) {
-            log.error("没有这张牌")
+            logger.error("没有这张牌")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         if (message.targetPlayerId == 0) {
-            log.error("不能以自己为目标")
+            logger.error("不能以自己为目标")
             (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         val messageCard = target.findMessageCard(message.messageCardId)
         if (messageCard == null) {
-            log.error("没有这张情报")
+            logger.error("没有这张情报")
             (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
             return
         }
         if (!handCard.colorExactlyTheSame(messageCard)) {
-            log.error("选择的两张牌不是完全同色")
+            logger.error("选择的两张牌不是完全同色")
             (r as? HumanPlayer)?.sendErrorMessage("选择的两张牌不是完全同色")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info("${r}发动了[猴子窃信]，将手牌的${handCard}和${target}情报区的${messageCard}交换")
+        logger.info("${r}发动了[猴子窃信]，将手牌的${handCard}和${target}情报区的${messageCard}交换")
         r.deleteCard(handCard.id)
         target.deleteMessageCard(messageCard.id)
         r.cards.add(messageCard)
@@ -98,8 +98,6 @@ class HouZiQieXin : MainPhaseSkill() {
     }
 
     companion object {
-        private val log = Logger.getLogger(HouZiQieXin::class.java)
-
         private fun Card.colorExactlyTheSame(card: Card): Boolean {
             if (colors.size != card.colors.size) return false
             val c1 = colors.sortedBy { it.number }

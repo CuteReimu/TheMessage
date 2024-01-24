@@ -10,7 +10,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
 import com.fengsheng.skill.*
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 class DiaoHuLiShan : Card {
@@ -28,18 +28,18 @@ class DiaoHuLiShan : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用调虎离山")
+            logger.error("你被禁止使用调虎离山")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用调虎离山")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("调虎离山的使用时机不对")
+            logger.error("调虎离山的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("调虎离山的使用时机不对")
             return false
         }
         val target = args[0] as Player
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return false
         }
@@ -50,7 +50,7 @@ class DiaoHuLiShan : Card {
         val target = args[0] as Player
         val isSkill = args[1] as Boolean
         val fsm = g.fsm as MainPhaseIdle
-        log.info("${r}对${target}使用了$this，禁用" + if (isSkill) "技能" else "出牌")
+        logger.info("${r}对${target}使用了$this，禁用" + if (isSkill) "技能" else "出牌")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
             for (player in g.players) {
@@ -75,7 +75,6 @@ class DiaoHuLiShan : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(DiaoHuLiShan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Diao_Hu_Li_Shan) || return false

@@ -6,7 +6,7 @@ import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_lian_min_toc
 import com.fengsheng.protos.Role.skill_lian_min_tos
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -35,13 +35,13 @@ class LianMin : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.sender) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                    log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                     player.sendErrorMessage("操作太晚了")
                     return null
                 }
@@ -49,45 +49,45 @@ class LianMin : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message !is skill_lian_min_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= r.game!!.players.size) {
-                log.error("目标错误")
+                logger.error("目标错误")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val target = r.game!!.players[r.getAbstractLocation(message.targetPlayerId)]
             if (target !== r && target !== event.inFrontOfWhom) {
-                log.error("只能以自己或者情报接收者为目标")
+                logger.error("只能以自己或者情报接收者为目标")
                 (player as? HumanPlayer)?.sendErrorMessage("只能以自己或者情报接收者为目标")
                 return null
             }
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.cardId)
             if (card == null) {
-                log.error("没有这张卡")
+                logger.error("没有这张卡")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
             if (!card.colors.contains(color.Black)) {
-                log.error("你选择的不是黑色情报")
+                logger.error("你选择的不是黑色情报")
                 (player as? HumanPlayer)?.sendErrorMessage("你选择的不是黑色情报")
                 return null
             }
             r.incrSeq()
-            log.info("${r}发动了[怜悯]，将${target}面前的${card}加入了手牌")
+            logger.info("${r}发动了[怜悯]，将${target}面前的${card}加入了手牌")
             target.deleteMessageCard(card.id)
             r.cards.add(card)
             for (p in r.game!!.players) {
@@ -103,7 +103,6 @@ class LianMin : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeLianMin::class.java)
         }
     }
 

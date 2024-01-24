@@ -5,7 +5,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_toc
 import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_tos
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -22,35 +22,35 @@ class ZuoYouFengYuan : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || fsm.whoseFightTurn !== r) {
-            log.error("没有轮到你操作")
+            logger.error("没有轮到你操作")
             (r as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[左右逢源]")
+            logger.error("你现在正面朝上，不能发动[左右逢源]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[左右逢源]")
             return
         }
         val pb = message as skill_zuo_you_feng_yuan_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerIdsCount != 2) {
-            log.error("必须选择两个目标")
+            logger.error("必须选择两个目标")
             (r as? HumanPlayer)?.sendErrorMessage("必须选择两个目标")
             return
         }
         val targets = pb.targetPlayerIdsList.map {
             if (it < 0 || it >= g.players.size) {
-                log.error("目标错误：$it")
+                logger.error("目标错误：$it")
                 (r as? HumanPlayer)?.sendErrorMessage("目标错误：$it")
                 return
             }
             val target = g.players[r.getAbstractLocation(it)]!!
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return
             }
@@ -58,7 +58,7 @@ class ZuoYouFengYuan : ActiveSkill {
         }
         r.incrSeq()
         g.playerSetRoleFaceUp(r, true)
-        log.info("${r}对${targets.toTypedArray().contentToString()}发动了[左右逢源]")
+        logger.info("${r}对${targets.toTypedArray().contentToString()}发动了[左右逢源]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_zuo_you_feng_yuan_toc.newBuilder()
@@ -76,7 +76,6 @@ class ZuoYouFengYuan : ActiveSkill {
     }
 
     companion object {
-        private val log = Logger.getLogger(ZuoYouFengYuan::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
             if (r.roleFaceUp) return false

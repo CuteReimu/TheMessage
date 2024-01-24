@@ -6,7 +6,7 @@ import com.fengsheng.ResolveResult
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.notify_phase_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 情报传递阶段，情报移到下一个人
@@ -17,7 +17,7 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
     override fun resolve(): ResolveResult {
         if (sendPhase.dir == direction.Up) {
             return if (sendPhase.sender.alive) {
-                log.info("情报到达${sendPhase.sender}面前")
+                logger.info("情报到达${sendPhase.sender}面前")
                 ResolveResult(sendPhase.copy(inFrontOfWhom = sendPhase.sender), true)
             } else {
                 nextTurn()
@@ -30,7 +30,7 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
                     if (sendPhase.dir == direction.Left) (inFrontOfWhom + players.size - 1) % players.size
                     else (inFrontOfWhom + 1) % players.size
                 if (players[inFrontOfWhom]!!.alive) {
-                    log.info("情报到达${players[inFrontOfWhom]}面前")
+                    logger.info("情报到达${players[inFrontOfWhom]}面前")
                     return ResolveResult(sendPhase.copy(inFrontOfWhom = players[inFrontOfWhom]!!), true)
                 } else if (sendPhase.sender === players[inFrontOfWhom]) {
                     return nextTurn()
@@ -61,6 +61,5 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
     }
 
     companion object {
-        private val log = Logger.getLogger(MessageMoveNext::class.java)
     }
 }

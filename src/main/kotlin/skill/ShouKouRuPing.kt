@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.Shi_Tan
 import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Role.skill_shou_kou_ru_ping_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 哑炮技能【守口如瓶】：你对其他角色使用、其他角色对你使用【试探】和【威逼】时，这张牌无效。如果这是本回合首次触发此技能，双方各摸一张牌，否则你摸一张牌。
@@ -23,7 +23,7 @@ class ShouKouRuPing : TriggeredSkill {
             (askWhom === event.player || askWhom === targetPlayer) && event.player !== targetPlayer
         } ?: return null
         askWhom.addSkillUseCount(skillId)
-        log.info("${askWhom}发动了[守口如瓶]")
+        logger.info("${askWhom}发动了[守口如瓶]")
         for (p in askWhom.game!!.players) {
             if (p is HumanPlayer) {
                 val builder = skill_shou_kou_ru_ping_toc.newBuilder()
@@ -49,6 +49,5 @@ class ShouKouRuPing : TriggeredSkill {
     }
 
     companion object {
-        private val log = Logger.getLogger(ShouKouRuPing::class.java)
     }
 }

@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -66,12 +66,12 @@ class CongRongYingDui : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is skill_cong_rong_ying_dui_tos) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                 player.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -80,20 +80,20 @@ class CongRongYingDui : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (!message.drawCard && target.cards.isEmpty()) {
-                log.error("对方没有手牌")
+                logger.error("对方没有手牌")
                 (player as? HumanPlayer)?.sendErrorMessage("对方没有手牌")
                 return null
             }
             player.incrSeq()
             val card = if (!message.drawCard) {
                 target.cards.random().also { c ->
-                    log.info("${r}发动了[从容应对]，抽取了${target}的$c")
+                    logger.info("${r}发动了[从容应对]，抽取了${target}的$c")
                     target.deleteCard(c.id)
                     player.cards.add(c)
                     r.game!!.addEvent(GiveCardEvent(event.whoseTurn, target, r))
                 }
             } else {
-                log.info("${r}发动了[从容应对]，选择了双方各摸一张牌")
+                logger.info("${r}发动了[从容应对]，选择了双方各摸一张牌")
                 null
             }
             for (p in r.game!!.players) {
@@ -113,7 +113,6 @@ class CongRongYingDui : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeCongRongYingDui::class.java)
         }
     }
 }

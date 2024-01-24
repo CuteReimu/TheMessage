@@ -2,12 +2,12 @@ package com.fengsheng.handler
 
 import com.fengsheng.*
 import com.fengsheng.protos.Fengsheng
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.add_robot_tos) {
         if (r.game!!.isStarted) {
-            log.error("the game has already started")
+            logger.error("the game has already started")
             r.sendErrorMessage("游戏已经开始了")
             return
         }
@@ -36,6 +36,5 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
     }
 
     companion object {
-        private val log = Logger.getLogger(add_robot_tos::class.java)
     }
 }

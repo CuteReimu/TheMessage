@@ -7,7 +7,7 @@ import com.fengsheng.protos.Common.secret_task.Disturber
 import com.fengsheng.skill.InvalidSkill
 import com.fengsheng.skill.OneTurnSkill
 import com.fengsheng.skill.changeGameResult
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 即将跳转到下一回合时
@@ -46,13 +46,12 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
         game.changeGameResult(whoseTurn, declaredWinner, winner)
         val declaredWinners = declaredWinner.toTypedArray()
         val winners = winner.toTypedArray()
-        log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
+        logger.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
         game.allPlayerSetRoleFaceUp()
         game.end(declaredWinner, winner)
         return true
     }
 
     companion object {
-        private val log = Logger.getLogger(NextTurn::class.java)
     }
 }

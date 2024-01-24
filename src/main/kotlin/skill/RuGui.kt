@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -69,18 +69,18 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_ru_gui_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -93,21 +93,21 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
             }
             val card = r.findMessageCard(message.cardId)
             if (card == null) {
-                log.error("没有这张卡")
+                logger.error("没有这张卡")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
             val target = event.whoseTurn
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()
-            log.info("${r}发动了[如归]")
+            logger.info("${r}发动了[如归]")
             r.deleteMessageCard(card.id)
             target.messageCards.add(card)
-            log.info("${r}面前的${card}移到了${target}面前")
+            logger.info("${r}面前的${card}移到了${target}面前")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_ru_gui_toc.newBuilder()
@@ -122,7 +122,6 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeRuGui::class.java)
         }
     }
 }

@@ -14,7 +14,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketFrame
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.lang.reflect.InvocationTargetException
 import java.net.SocketException
 
@@ -22,13 +22,13 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
     @Throws(Exception::class)
     public override fun channelRead0(ctx: ChannelHandlerContext, webSocketFrame: WebSocketFrame) {
         if (webSocketFrame !is BinaryWebSocketFrame) {
-            log.debug("仅支持二进制消息，不支持文本消息")
+            logger.debug("仅支持二进制消息，不支持文本消息")
             throw UnsupportedOperationException("${webSocketFrame.javaClass.name} frame types not supported")
         }
         val msg = webSocketFrame.content()
         val protoNameLen = msg.readShortLE()
         if (msg.readableBytes() < protoNameLen) {
-            log.error("incorrect proto name length: $protoNameLen")
+            logger.error("incorrect proto name length: $protoNameLen")
             ctx.close()
             return
         }
@@ -37,7 +37,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         val protoName = String(protoNameBuf)
         val protoInfo = ProtoInfoMap[protoName]
         if (protoInfo == null) {
-            log.error("incorrect msg, proto name: $protoName")
+            logger.error("incorrect msg, proto name: $protoName")
             ctx.close()
             return
         }
@@ -45,7 +45,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         msg.readBytes(buf)
         val message = protoInfo.parser.parseFrom(buf) as GeneratedMessageV3
         if ("heart_tos" != protoName && "auto_play_tos" != protoName) {
-            log.debug(
+            logger.debug(
                 "recv@%s len: %d %s | %s".format(
                     ctx.channel().id().asShortText(), buf.size, protoName,
                     printer.printToString(message).replace("\n *".toRegex(), " ")
@@ -54,7 +54,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         }
         val player = Game.playerCache[ctx.channel().id().asLongText()]
         if (!player!!.limiter.allow()) {
-            log.error("recv msg too fast: ${ctx.channel().id().asShortText()}")
+            logger.error("recv msg too fast: ${ctx.channel().id().asShortText()}")
             ctx.close()
             return
         }
@@ -63,7 +63,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
 
     override fun channelActive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
-        log.info("session connected: ${channel.id().asShortText()} ${channel.remoteAddress()}")
+        logger.info("session connected: ${channel.id().asShortText()} ${channel.remoteAddress()}")
         val player = HumanPlayer(channel, true) { protoName: String, buf: ByteArray ->
             val protoNameBuf = protoName.toByteArray()
             val totalLen = 2 + protoNameBuf.size + buf.size
@@ -74,16 +74,16 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
             BinaryWebSocketFrame(byteBuf)
         }
         if (Game.playerCache.putIfAbsent(channel.id().asLongText(), player) != null) {
-            log.error("already assigned channel id: ${channel.id().asLongText()}")
+            logger.error("already assigned channel id: ${channel.id().asLongText()}")
         }
     }
 
     override fun channelInactive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
-        log.info("session closed: ${channel.id().asShortText()} ${channel.remoteAddress()}")
+        logger.info("session closed: ${channel.id().asShortText()} ${channel.remoteAddress()}")
         val player = Game.playerCache.remove(channel.id().asLongText())
         if (player == null) {
-            log.error("already unassigned channel id: ${channel.id().asLongText()}")
+            logger.error("already unassigned channel id: ${channel.id().asLongText()}")
             return
         }
         val game = player.game ?: return
@@ -95,7 +95,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
                 else
                     player.notifyPlayerUpdateStatus()
             } else {
-                log.info("${player.playerName}离开了房间")
+                logger.info("${player.playerName}离开了房间")
                 game.players[player.location] = null
                 player.game = null
                 Game.playerNameCache.remove(player.playerName, player)
@@ -116,7 +116,6 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
     private data class ProtoInfo(val name: String, val parser: Parser<*>, val handler: ProtoHandler)
 
     companion object {
-        private val log = Logger.getLogger(WebSocketServerChannelHandler::class.java)
         private val printer = TextFormat.printer().escapingNonAscii(false)
         private val ProtoInfoMap = HashMap<String, ProtoInfo>()
 

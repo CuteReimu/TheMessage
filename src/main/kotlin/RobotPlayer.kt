@@ -6,7 +6,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.notify_die_give_card_toc
 import com.fengsheng.skill.*
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import java.util.function.BiPredicate
 import java.util.function.Predicate
@@ -188,7 +188,7 @@ class RobotPlayer : Player() {
                         cards.removeAll(giveCards.toSet())
                         target.cards.addAll(giveCards)
                         game!!.addEvent(GiveCardEvent(fsm.whoseTurn, this, target))
-                        log.info("${this}给了${target}${giveCards.toTypedArray().contentToString()}")
+                        logger.info("${this}给了${target}${giveCards.toTypedArray().contentToString()}")
                         for (p in game!!.players) {
                             if (p is HumanPlayer) {
                                 val builder = notify_die_give_card_toc.newBuilder()
@@ -210,8 +210,6 @@ class RobotPlayer : Player() {
     }
 
     companion object {
-        private val log = Logger.getLogger(RobotPlayer::class.java)
-
         /**
          * 随机选择一张牌作为情报传出
          */

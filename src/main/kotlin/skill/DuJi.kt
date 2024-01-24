@@ -6,7 +6,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -25,47 +25,47 @@ class DuJi : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
-            log.error("现在不是发动[毒计]的时机")
+            logger.error("现在不是发动[毒计]的时机")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[毒计]的时机")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[毒计]")
+            logger.error("你现在正面朝上，不能发动[毒计]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[毒计]")
             return
         }
         val pb = message as skill_du_ji_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerIdsCount != 2) {
-            log.error("[毒计]必须选择两名角色为目标")
+            logger.error("[毒计]必须选择两名角色为目标")
             (r as? HumanPlayer)?.sendErrorMessage("[毒计]必须选择两名角色为目标")
             return
         }
         val idx1 = pb.getTargetPlayerIds(0)
         val idx2 = pb.getTargetPlayerIds(1)
         if (idx1 < 0 || idx1 >= g.players.size || idx2 < 0 || idx2 >= g.players.size) {
-            log.error("目标错误")
+            logger.error("目标错误")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         if (idx1 == 0 || idx2 == 0) {
-            log.error("不能以自己为目标")
+            logger.error("不能以自己为目标")
             (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
             return
         }
         val target1 = g.players[r.getAbstractLocation(idx1)]!!
         val target2 = g.players[r.getAbstractLocation(idx2)]!!
         if (!target1.alive || !target2.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         if (target1.cards.isEmpty() || target2.cards.isEmpty()) {
-            log.error("目标没有手牌")
+            logger.error("目标没有手牌")
             (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
             return
         }
@@ -76,7 +76,7 @@ class DuJi : ActiveSkill {
         val cards2 = target2.cards.toTypedArray()
         val card1 = cards1.random()
         val card2 = cards2.random()
-        log.info("${r}发动了[毒计]，抽取了${target1}的${card1}和${target2}的$card2")
+        logger.info("${r}发动了[毒计]，抽取了${target1}的${card1}和${target2}的$card2")
         target1.deleteCard(card1.id)
         target2.deleteCard(card2.id)
         r.cards.add(card1)
@@ -160,18 +160,18 @@ class DuJi : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ji_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -192,7 +192,7 @@ class DuJi : ActiveSkill {
             }
             val index = playerAndCards.indexOfFirst { it.card.id == message.cardId }
             if (index < 0) {
-                log.error("目标卡牌不存在")
+                logger.error("目标卡牌不存在")
                 (player as? HumanPlayer)?.sendErrorMessage("目标卡牌不存在")
                 return null
             }
@@ -202,13 +202,12 @@ class DuJi : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeDuJiA::class.java)
         }
     }
 
     private data class executeDuJiB(val fsm: executeDuJiA, val selection: TwoPlayersAndCard) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            log.info("等待${selection.waitingPlayer}对${selection.card}进行选择")
+            logger.info("等待${selection.waitingPlayer}对${selection.card}进行选择")
             val g = selection.waitingPlayer.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -248,25 +247,25 @@ class DuJi : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             val r = selection.waitingPlayer
             if (player !== r) {
-                log.error("当前没有轮到你结算[毒计]")
+                logger.error("当前没有轮到你结算[毒计]")
                 (player as? HumanPlayer)?.sendErrorMessage("当前没有轮到你结算[毒计]")
                 return null
             }
             if (message !is skill_du_ji_c_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             r.incrSeq()
             val target = if (message.inFrontOfMe) selection.waitingPlayer else selection.fromPlayer
             val card = selection.card
-            log.info("${r}选择将${card}放在${target}面前")
+            logger.info("${r}选择将${card}放在${target}面前")
             fsm.r.deleteCard(card.id)
             target.messageCards.add(card)
             for (p in g.players) {
@@ -283,14 +282,12 @@ class DuJi : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeDuJiB::class.java)
         }
     }
 
     private data class TwoPlayersAndCard(val fromPlayer: Player, val waitingPlayer: Player, val card: Card)
 
     companion object {
-        private val log = Logger.getLogger(DuJi::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false

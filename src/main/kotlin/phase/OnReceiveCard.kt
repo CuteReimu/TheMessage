@@ -4,7 +4,7 @@ import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.card.Card
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 接收阶段（确定接收后，即将发动接收时的技能）
@@ -24,7 +24,7 @@ data class OnReceiveCard(
         val player = inFrontOfWhom
         if (player.alive) {
             player.messageCards.add(messageCard)
-            log.info("${player}成功接收情报")
+            logger.info("${player}成功接收情报")
             for (p in player.game!!.players) p!!.notifyReceivePhase()
             val next = ReceivePhaseIdle(whoseTurn, sender, messageCard, inFrontOfWhom)
             return ResolveResult(next, true)
@@ -35,6 +35,5 @@ data class OnReceiveCard(
     }
 
     companion object {
-        private val log = Logger.getLogger(OnReceiveCard::class.java)
     }
 }

@@ -10,7 +10,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.cannotPlayCard
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -29,7 +29,7 @@ class JieHuo : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用截获")
+            logger.error("你被禁止使用截获")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用截获")
             return false
         }
@@ -37,7 +37,7 @@ class JieHuo : Card {
     }
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
-        log.info("${r}使用了$this")
+        logger.info("${r}使用了$this")
         r.deleteCard(id)
         execute(this, g, r)
     }
@@ -47,11 +47,10 @@ class JieHuo : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(JieHuo::class.java)
         fun canUse(g: Game, r: Player): Boolean {
             val fsm = g.fsm as? FightPhaseIdle
             if (r !== fsm?.whoseFightTurn) {
-                log.error("截获的使用时机不对")
+                logger.error("截获的使用时机不对")
                 (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机不对")
                 return false
             }

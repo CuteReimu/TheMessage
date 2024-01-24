@@ -5,7 +5,7 @@ import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.card.Card
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 选择接收情报时
@@ -24,7 +24,7 @@ data class OnChooseReceiveCard(
     val isMessageCardFaceUp: Boolean
 ) : Fsm {
     override fun resolve(): ResolveResult {
-        log.info("${inFrontOfWhom}选择接收情报")
+        logger.info("${inFrontOfWhom}选择接收情报")
         whoseTurn.game!!.addEvent(ChooseReceiveCardEvent(whoseTurn, inFrontOfWhom))
         for (p in whoseTurn.game!!.players) p!!.notifyChooseReceiveCard(inFrontOfWhom)
         return ResolveResult(
@@ -34,6 +34,5 @@ data class OnChooseReceiveCard(
     }
 
     companion object {
-        private val log = Logger.getLogger(OnChooseReceiveCard::class.java)
     }
 }

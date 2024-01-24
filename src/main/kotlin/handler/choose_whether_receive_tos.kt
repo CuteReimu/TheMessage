@@ -7,25 +7,25 @@ import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.cannotReceiveMessage
 import com.fengsheng.skill.mustReceiveMessage
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether_receive_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.choose_whether_receive_tos) {
         if (!r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         val fsm = r.game!!.fsm as? SendPhaseIdle
         if (r !== fsm?.inFrontOfWhom) {
-            log.error("不是选择是否接收情报的时机")
+            logger.error("不是选择是否接收情报的时机")
             r.sendErrorMessage("不是选择是否接收情报的时机")
             return
         }
         val mustReceive = fsm.mustReceiveMessage()
         if (pb.receive) {
             if (!mustReceive && fsm.cannotReceiveMessage()) {
-                log.error("不能选择接收情报")
+                logger.error("不能选择接收情报")
                 r.sendErrorMessage("不能选择接收情报")
                 return
             }
@@ -41,7 +41,7 @@ class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether
             )
         } else {
             if (mustReceive) {
-                log.error("必须选择接收情报")
+                logger.error("必须选择接收情报")
                 r.sendErrorMessage("必须选择接收情报")
                 return
             }
@@ -51,6 +51,5 @@ class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether
     }
 
     companion object {
-        private val log = Logger.getLogger(choose_whether_receive_tos::class.java)
     }
 }

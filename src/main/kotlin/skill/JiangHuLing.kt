@@ -7,7 +7,7 @@ import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -69,17 +69,17 @@ class JiangHuLing : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jiang_hu_ling_a_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -88,13 +88,13 @@ class JiangHuLing : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message.color != Black && message.color != Red && message.color != Blue) {
-                log.error("未知的颜色类型")
+                logger.error("未知的颜色类型")
                 (player as? HumanPlayer)?.sendErrorMessage("未知的颜色类型")
                 return null
             }
             r.incrSeq()
             r.skills += JiangHuLing2(message.color)
-            log.info("${r}发动了[江湖令]，宣言了${message.color}")
+            logger.info("${r}发动了[江湖令]，宣言了${message.color}")
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jiang_hu_ling_a_toc.newBuilder()
@@ -107,7 +107,6 @@ class JiangHuLing : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeJiangHuLingA::class.java)
         }
     }
 
@@ -188,13 +187,13 @@ class JiangHuLing : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.sender) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                    log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                     player.sendErrorMessage("操作太晚了")
                     return null
                 }
@@ -210,34 +209,34 @@ class JiangHuLing : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message !is skill_jiang_hu_ling_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 return null
             }
             val r = event.sender
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             val target = event.inFrontOfWhom
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.cardId)
             if (card == null) {
-                log.error("没有这张卡")
+                logger.error("没有这张卡")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
             if (color !in card.colors) {
-                log.error("你选择的情报不是宣言的颜色")
+                logger.error("你选择的情报不是宣言的颜色")
                 (player as? HumanPlayer)?.sendErrorMessage("你选择的情报不是宣言的颜色")
                 return null
             }
             r.incrSeq()
-            log.info("${r}发动了[江湖令]，弃掉了${target}面前的$card")
+            logger.info("${r}发动了[江湖令]，弃掉了${target}面前的$card")
             target.deleteMessageCard(card.id)
             r.game!!.deck.discard(card)
             for (p in r.game!!.players) {
@@ -254,7 +253,6 @@ class JiangHuLing : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeJiangHuLingB::class.java)
         }
     }
 }

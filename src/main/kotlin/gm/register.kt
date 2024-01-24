@@ -8,12 +8,16 @@ class register : Function<Map<String, String>, Any> {
         return try {
             val name = form["name"]!!
             if (name.length > 12) return "{\"error\": \"名字太长\"}"
-            if (name.contains(",") || name.contains("·")) return "{\"error\": \"名字中含有非法字符\"}"
+            if (invalidString.any { it in name }) return "{\"error\": \"名字中含有非法字符\"}"
             val result = Statistics.register(name)
             Statistics.setTrialStartTime(name, System.currentTimeMillis())
             "{\"result\": $result}"
         } catch (e: NullPointerException) {
             "{\"error\": \"参数错误\"}"
         }
+    }
+
+    companion object {
+        private val invalidString = listOf(",", "·", "{", "$", "}")
     }
 }

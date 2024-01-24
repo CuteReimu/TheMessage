@@ -4,7 +4,7 @@ import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.skill.getDrawCardCountEachTurn
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 摸牌阶段
@@ -14,7 +14,7 @@ data class DrawPhase(val player: Player) : Fsm {
         if (!player.alive) {
             return ResolveResult(NextTurn(player), true)
         }
-        log.info("${player}的回合开始了")
+        logger.info("${player}的回合开始了")
         for (p in player.game!!.players) {
             p!!.notifyDrawPhase()
         }
@@ -27,6 +27,5 @@ data class DrawPhase(val player: Player) : Fsm {
     }
 
     companion object {
-        private val log = Logger.getLogger(DrawPhase::class.java)
     }
 }

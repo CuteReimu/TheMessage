@@ -7,7 +7,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -23,25 +23,25 @@ class GuangFaBao : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
-            log.error("现在不是发动[广发报]的时机")
+            logger.error("现在不是发动[广发报]的时机")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[广发报]的时机")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[广发报]")
+            logger.error("你现在正面朝上，不能发动[广发报]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[广发报]")
             return
         }
         val pb = message as skill_guang_fa_bao_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        log.info("${r}发动了[广发报]")
+        logger.info("${r}发动了[广发报]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_guang_fa_bao_a_toc.newBuilder()
@@ -108,18 +108,18 @@ class GuangFaBao : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_guang_fa_bao_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -138,37 +138,37 @@ class GuangFaBao : ActiveSkill {
                 return ResolveResult(newFsm, true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-                log.error("目标错误")
+                logger.error("目标错误")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.cardIdsCount == 0) {
-                log.error("enable为true时至少要发一张牌")
+                logger.error("enable为true时至少要发一张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("至少要发一张牌")
                 return null
             }
             val cards = Array(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
-                    log.error("没有这张卡")
+                    logger.error("没有这张卡")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card
             }
             if (target.checkThreeSameMessageCard(*cards)) {
-                log.error("你不能通过此技能让任何角色收集三张或更多的同色情报")
+                logger.error("你不能通过此技能让任何角色收集三张或更多的同色情报")
                 (player as? HumanPlayer)?.sendErrorMessage("你不能通过此技能让任何角色收集三张或更多的同色情报")
                 return null
             }
             r.incrSeq()
-            log.info("${r}将${cards.contentToString()}置于${target}的情报区")
+            logger.info("${r}将${cards.contentToString()}置于${target}的情报区")
             r.cards.removeAll(cards.toSet())
             target.messageCards.addAll(cards)
             for (p in g.players) {
@@ -189,12 +189,10 @@ class GuangFaBao : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeGuangFaBao::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(GuangFaBao::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp || player !== e.whoseTurn) return false

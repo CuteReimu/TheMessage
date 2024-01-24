@@ -5,7 +5,7 @@ import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -61,24 +61,24 @@ class BiFeng : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             val pb = message as? skill_bi_feng_tos
             if (pb == null) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             if (player != r) {
-                log.error("没有轮到你操作")
+                logger.error("没有轮到你操作")
                 (player as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(pb.seq)) {
-                log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${pb.seq}")
+                logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${pb.seq}")
                 player.sendErrorMessage("操作太晚了")
                 return null
             }
             player.incrSeq()
             if (!pb.enable)
                 return ResolveResult(fsm, true)
-            log.info("${r}发动了[避风]")
+            logger.info("${r}发动了[避风]")
             r.addSkillUseCount(SkillId.BI_FENG)
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
@@ -95,7 +95,6 @@ class BiFeng : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(excuteBiFeng::class.java)
         }
     }
 }

@@ -7,7 +7,7 @@ import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -23,40 +23,40 @@ class RuBiZhiShi : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm
         if ((fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) && (fsm !is WaitForChengQing || r !== fsm.askWhom)) {
-            log.error("现在不是发动[如臂指使]的时机")
+            logger.error("现在不是发动[如臂指使]的时机")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[如臂指使]的时机")
             return
         }
         if (r.roleFaceUp) {
-            log.error("角色面朝上时不能发动[如臂指使]")
+            logger.error("角色面朝上时不能发动[如臂指使]")
             (r as? HumanPlayer)?.sendErrorMessage("角色面朝上时不能发动[如臂指使]")
             return
         }
         val pb = message as skill_ru_bi_zhi_shi_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
-            log.error("目标错误")
+            logger.error("目标错误")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         if (target.cards.isEmpty()) {
-            log.error("目标没有手牌")
+            logger.error("目标没有手牌")
             (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        log.info("${r}发动了[如臂指使]，查看了${target}的手牌")
+        logger.info("${r}发动了[如臂指使]，查看了${target}的手牌")
         g.playerSetRoleFaceUp(r, true)
         g.resolve(excuteRuBiZhiShi(fsm as ProcessFsm, r, target))
     }
@@ -100,13 +100,13 @@ class RuBiZhiShi : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is skill_ru_bi_zhi_shi_b_tos) {
                 if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                    log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                    logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                     r.sendErrorMessage("操作太晚了")
                     return null
                 }
@@ -119,11 +119,11 @@ class RuBiZhiShi : ActiveSkill {
                 }
                 val card = target.findCard(message.cardId)
                 if (card == null) {
-                    log.error("没有这张牌")
+                    logger.error("没有这张牌")
                     (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
-                log.info("${r}选择弃掉${target}的$card")
+                logger.info("${r}选择弃掉${target}的$card")
                 r.incrSeq()
                 notifyUseSkill(enable = true, useCard = false)
                 r.game!!.playerDiscardCard(target, card)
@@ -135,29 +135,29 @@ class RuBiZhiShi : ActiveSkill {
             when (message) {
                 is use_jie_huo_tos -> {
                     if (fsm !is FightPhaseIdle) {
-                        log.error("截获的使用时机错误")
+                        logger.error("截获的使用时机错误")
                         (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机错误")
                         return null
                     }
                     if (target.cannotPlayCard(Jie_Huo)) {
-                        log.error("对方被禁止使用截获")
+                        logger.error("对方被禁止使用截获")
                         (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用截获")
                         return null
                     }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
-                        log.error("没有这张牌")
+                        logger.error("没有这张牌")
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
                     val (ok, convertCardSkill) = target.canUseCardTypes(Jie_Huo, card, true)
                     if (!ok) {
-                        log.error("这张${card}不能当作截获使用")
+                        logger.error("这张${card}不能当作截获使用")
                         (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作截获使用")
                         return null
                     }
                     r.incrSeq()
-                    log.info("${r}让${target}使用了$card")
+                    logger.info("${r}让${target}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
                     convertCardSkill?.onConvert(target)
@@ -167,47 +167,47 @@ class RuBiZhiShi : ActiveSkill {
 
                 is use_wu_dao_tos -> {
                     if (fsm !is FightPhaseIdle) {
-                        log.error("误导的使用时机错误")
+                        logger.error("误导的使用时机错误")
                         (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机错误")
                         return null
                     }
                     if (target.cannotPlayCard(Wu_Dao)) {
-                        log.error("对方被禁止使用误导")
+                        logger.error("对方被禁止使用误导")
                         (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用误导")
                         return null
                     }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
-                        log.error("没有这张牌")
+                        logger.error("没有这张牌")
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
                     val (ok, convertCardSkill) = target.canUseCardTypes(Wu_Dao, card, true)
                     if (!ok) {
-                        log.error("这张${card}不能当作误导使用")
+                        logger.error("这张${card}不能当作误导使用")
                         (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作误导使用")
                         return null
                     }
                     if (message.targetPlayerId < 0 || message.targetPlayerId >= r.game!!.players.size) {
-                        log.error("目标错误")
+                        logger.error("目标错误")
                         (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                         return null
                     }
                     val target2 = r.game!!.players[r.getAbstractLocation(message.targetPlayerId)]!!
                     if (!target2.alive) {
-                        log.error("目标已死亡")
+                        logger.error("目标已死亡")
                         (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                         return null
                     }
                     val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
                     val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
                     if (target2 === fsm.inFrontOfWhom || target2 !== left && target2 !== right) {
-                        log.error("误导只能选择情报当前人左右两边的人作为目标")
+                        logger.error("误导只能选择情报当前人左右两边的人作为目标")
                         (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
                         return null
                     }
                     r.incrSeq()
-                    log.info("${r}让${target}对${target2}使用了$card")
+                    logger.info("${r}让${target}对${target2}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
                     convertCardSkill?.onConvert(target)
@@ -217,29 +217,29 @@ class RuBiZhiShi : ActiveSkill {
 
                 is use_diao_bao_tos -> {
                     if (fsm !is FightPhaseIdle) {
-                        log.error("调包的使用时机错误")
+                        logger.error("调包的使用时机错误")
                         (r as? HumanPlayer)?.sendErrorMessage("调包的使用时机错误")
                         return null
                     }
                     if (target.cannotPlayCard(Diao_Bao)) {
-                        log.error("对方被禁止使用调包")
+                        logger.error("对方被禁止使用调包")
                         (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用调包")
                         return null
                     }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
-                        log.error("没有这张牌")
+                        logger.error("没有这张牌")
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
                     val (ok, convertCardSkill) = target.canUseCardTypes(Diao_Bao, card, true)
                     if (!ok) {
-                        log.error("这张${card}不能当作调包使用")
+                        logger.error("这张${card}不能当作调包使用")
                         (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作调包使用")
                         return null
                     }
                     r.incrSeq()
-                    log.info("${r}让${target}使用了$card")
+                    logger.info("${r}让${target}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm.copy(whoseFightTurn = target)
                     convertCardSkill?.onConvert(target)
@@ -249,45 +249,45 @@ class RuBiZhiShi : ActiveSkill {
 
                 is cheng_qing_save_die_tos -> {
                     if (fsm !is WaitForChengQing) {
-                        log.error("澄清的使用时机错误")
+                        logger.error("澄清的使用时机错误")
                         (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机错误")
                         return null
                     }
                     if (!message.use) {
-                        log.error("参数错误")
+                        logger.error("参数错误")
                         (r as? HumanPlayer)?.sendErrorMessage("参数错误")
                         return null
                     }
                     if (target.cannotPlayCard(Cheng_Qing)) {
-                        log.error("对方被禁止使用澄清")
+                        logger.error("对方被禁止使用澄清")
                         (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用澄清")
                         return null
                     }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
-                        log.error("没有这张牌")
+                        logger.error("没有这张牌")
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
                     if (card.type != Cheng_Qing) {
-                        log.error("这张牌不是澄清")
+                        logger.error("这张牌不是澄清")
                         (r as? HumanPlayer)?.sendErrorMessage("这张牌不是澄清")
                         return null
                     }
                     val target2 = fsm.whoDie
                     val card2 = target2.messageCards.find { c -> c.id == message.targetCardId }
                     if (card2 == null) {
-                        log.error("没有这张情报")
+                        logger.error("没有这张情报")
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
                         return null
                     }
                     if (!card2.isBlack()) {
-                        log.error("澄清只能对黑情报使用")
+                        logger.error("澄清只能对黑情报使用")
                         (r as? HumanPlayer)?.sendErrorMessage("澄清只能对黑情报使用")
                         return null
                     }
                     r.incrSeq()
-                    log.info("${r}让${target}对${target2}面前的${card2}使用了$card")
+                    logger.info("${r}让${target}对${target2}面前的${card2}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm
                     card.execute(r.game!!, target, target2, card2.id)
@@ -295,7 +295,7 @@ class RuBiZhiShi : ActiveSkill {
                 }
 
                 else -> {
-                    log.error("错误的协议")
+                    logger.error("错误的协议")
                     (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                     return null
                 }
@@ -316,12 +316,10 @@ class RuBiZhiShi : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(excuteRuBiZhiShi::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(RuBiZhiShi::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
             if (r.roleFaceUp) return false

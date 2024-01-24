@@ -5,7 +5,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -191,13 +191,12 @@ object RoleCache {
         return roleSkillsData?.name
     }
 
-    private val log = Logger.getLogger(RoleCache::class.java)
     private fun writeForbiddenRolesFile(buf: ByteArray) {
         pool.trySend {
             try {
                 FileOutputStream("forbiddenRoles.txt").use { fileOutputStream -> fileOutputStream.write(buf) }
             } catch (e: IOException) {
-                log.error("write file failed", e)
+                logger.error("write file failed", e)
             }
         }
     }

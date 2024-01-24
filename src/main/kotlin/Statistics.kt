@@ -5,7 +5,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.get_record_list_toc
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.awt.image.BufferedImage
 import java.io.*
 import java.nio.charset.StandardCharsets
@@ -63,7 +63,7 @@ object Statistics {
                 }
                 writeFile("stat.csv", sb.toString().toByteArray(), true)
             } catch (e: Exception) {
-                log.error("execute task failed", e)
+                logger.error("execute task failed", e)
             }
         }
     }
@@ -92,7 +92,7 @@ object Statistics {
                 if (updateTrial) saveTrials()
             }
         } catch (e: Exception) {
-            log.error("add player game count failed: ", e)
+            logger.error("add player game count failed: ", e)
         }
     }
 
@@ -106,7 +106,7 @@ object Statistics {
         val password = try {
             if (pwd.isNullOrEmpty()) "" else md5(name + pwd)
         } catch (e: NoSuchAlgorithmException) {
-            log.error("md5加密失败", e)
+            logger.error("md5加密失败", e)
             throw Exception("内部错误，登录失败")
         }
         var changed = false
@@ -290,7 +290,7 @@ object Statistics {
                 trialStartTime[playerName] = time
                 saveTrials()
             } catch (e: Exception) {
-                log.error("execute task failed", e)
+                logger.error("execute task failed", e)
             }
         }
     }
@@ -349,13 +349,11 @@ object Statistics {
         val lastTime: Long,
     )
 
-    private val log = Logger.getLogger(Statistics::class.java)
-
     private fun writeFile(fileName: String, buf: ByteArray, append: Boolean = false) {
         try {
             FileOutputStream(fileName, append).use { fileOutputStream -> fileOutputStream.write(buf) }
         } catch (e: IOException) {
-            log.error("write file failed", e)
+            logger.error("write file failed", e)
         }
     }
 
@@ -380,7 +378,7 @@ object Statistics {
             }
             return String(str)
         } catch (e: NoSuchAlgorithmException) {
-            log.warn("calculate md5 failed: ", e)
+            logger.warn("calculate md5 failed: ", e)
             return s
         }
     }

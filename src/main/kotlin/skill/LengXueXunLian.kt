@@ -14,7 +14,7 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -30,7 +30,7 @@ class LengXueXunLian : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         message as skill_leng_xue_xun_lian_a_tos
         if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
@@ -50,7 +50,7 @@ class LengXueXunLian : ActiveSkill {
                 )
             )
         } else {
-            log.error("现在不能发动[冷血训练]")
+            logger.error("现在不能发动[冷血训练]")
             (r as? HumanPlayer)?.sendErrorMessage("现在不能发动[冷血训练]")
         }
     }
@@ -63,7 +63,7 @@ class LengXueXunLian : ActiveSkill {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             r.incrSeq()
-            log.info("${r}发动了[冷血训练]，展示了牌堆顶的${cards.contentToString()}")
+            logger.info("${r}发动了[冷血训练]，展示了牌堆顶的${cards.contentToString()}")
             r.skills += MustLockOne()
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -147,54 +147,54 @@ class LengXueXunLian : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             val pb = message as? skill_leng_xue_xun_lian_b_tos
             if (pb == null) {
-                log.error("现在正在结算[冷血训练]")
+                logger.error("现在正在结算[冷血训练]")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算[冷血训练]")
                 return null
             }
             if (player !== r) {
-                log.error("没有轮到你传情报")
+                logger.error("没有轮到你传情报")
                 (player as? HumanPlayer)?.sendErrorMessage("没有轮到你传情报")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                 player.sendErrorMessage("操作太晚了")
                 return null
             }
             val card = cards.find { it.id == pb.sendCardId }
             if (card == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!card.isBlack() && cards.any { card.isBlack() }) {
-                log.error("你必须选择黑色牌")
+                logger.error("你必须选择黑色牌")
                 (player as? HumanPlayer)?.sendErrorMessage("你必须选择黑色牌")
                 return null
             }
             val anotherCard = cards.first { it.id != pb.sendCardId }
             if (pb.targetPlayerId <= 0 || pb.targetPlayerId >= player.game!!.players.size) {
-                log.error("目标错误: ${pb.targetPlayerId}")
+                logger.error("目标错误: ${pb.targetPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误: ${pb.targetPlayerId}")
                 return null
             }
             val target = player.game!!.players[player.getAbstractLocation(pb.targetPlayerId)]!!
             if (pb.lockPlayerId < 0 || pb.lockPlayerId >= player.game!!.players.size) {
-                log.error("锁定目标错误: ${pb.lockPlayerId}")
+                logger.error("锁定目标错误: ${pb.lockPlayerId}")
                 (player as? HumanPlayer)?.sendErrorMessage("锁定目标错误: ${pb.lockPlayerId}")
                 return null
             }
             val lockPlayer = player.game!!.players[player.getAbstractLocation(pb.lockPlayerId)]!!
             val sendCardError = player.canSendCard(player, card, null, card.direction, target, listOf(lockPlayer))
             if (sendCardError != null) {
-                log.error(sendCardError)
+                logger.error(sendCardError)
                 (player as? HumanPlayer)?.sendErrorMessage(sendCardError)
                 return null
             }
             player.incrSeq()
-            log.info("${player}传出了${card}，方向是${card.direction}，传给了${target}，并锁定了[${lockPlayer}]")
-            log.info("[调包]的被禁止使用了")
-            log.info("${player}将${anotherCard}加入了手牌")
+            logger.info("${player}传出了${card}，方向是${card.direction}，传给了${target}，并锁定了[${lockPlayer}]")
+            logger.info("[调包]的被禁止使用了")
+            logger.info("${player}将${anotherCard}加入了手牌")
             player.game!!.players.forEach { it!!.skills += CannotPlayCard(cardType = listOf(Diao_Bao)) }
             player.cards.add(anotherCard)
             for (p in player.game!!.players) {
@@ -237,7 +237,6 @@ class LengXueXunLian : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeLengXueXunLian::class.java)
         }
     }
 
@@ -252,7 +251,6 @@ class LengXueXunLian : ActiveSkill {
     }
 
     companion object {
-        private val log = Logger.getLogger(LengXueXunLian::class.java)
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
             GameExecutor.post(e.whoseTurn.game!!, {
                 skill.executeProtocol(

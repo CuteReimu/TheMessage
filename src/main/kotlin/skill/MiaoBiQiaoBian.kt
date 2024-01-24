@@ -8,7 +8,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -25,35 +25,35 @@ class MiaoBiQiaoBian : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
-            log.error("现在不是发动[妙笔巧辩]的时机")
+            logger.error("现在不是发动[妙笔巧辩]的时机")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[妙笔巧辩]的时机")
             return
         }
         if (r.roleFaceUp) {
-            log.error("你现在正面朝上，不能发动[妙笔巧辩]")
+            logger.error("你现在正面朝上，不能发动[妙笔巧辩]")
             (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[妙笔巧辩]")
             return
         }
         val pb = message as skill_miao_bi_qiao_bian_a_tos
         if (r is HumanPlayer && !r.checkSeq(pb.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${pb.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
-            log.error("目标错误")
+            logger.error("目标错误")
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
         val card = target.findMessageCard(pb.cardId)
         if (card == null) {
-            log.error("没有这张牌")
+            logger.error("没有这张牌")
             (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
             return
         }
@@ -73,7 +73,7 @@ class MiaoBiQiaoBian : ActiveSkill {
             val g = r.game!!
             target1.deleteMessageCard(card1.id)
             r.cards.add(card1)
-            log.info("${r}发动了[妙笔巧辩]，拿走了${target1}面前的${card1}")
+            logger.info("${r}发动了[妙笔巧辩]，拿走了${target1}面前的${card1}")
             val canTakeAnother = g.players.any {
                 it!!.alive && it.messageCards.any { c -> !c.hasSameColor(card1) }
             }
@@ -141,18 +141,18 @@ class MiaoBiQiaoBian : ActiveSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== r) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_miao_bi_qiao_bian_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
@@ -169,29 +169,29 @@ class MiaoBiQiaoBian : ActiveSkill {
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
-                log.error("目标错误")
+                logger.error("目标错误")
                 (player as? HumanPlayer)?.sendErrorMessage("目标错误")
                 return null
             }
             val target2 = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target2.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
             val card2 = target2.findMessageCard(message.cardId)
             if (card2 == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             if (card2.hasSameColor(card1)) {
-                log.error("两张牌含有相同颜色")
+                logger.error("两张牌含有相同颜色")
                 (player as? HumanPlayer)?.sendErrorMessage("两张牌含有相同颜色")
                 return null
             }
             r.incrSeq()
-            log.info("${r}拿走了${target2}面前的$card2")
+            logger.info("${r}拿走了${target2}面前的$card2")
             target2.deleteMessageCard(card2.id)
             r.cards.add(card2)
             for (p in g.players) {
@@ -208,12 +208,10 @@ class MiaoBiQiaoBian : ActiveSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeMiaoBiQiaoBian::class.java)
         }
     }
 
     companion object {
-        private val log = Logger.getLogger(MiaoBiQiaoBian::class.java)
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             if (player.roleFaceUp) return false

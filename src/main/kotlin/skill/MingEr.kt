@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.skill_ming_er_toc
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 老鳖技能【明饵】：你传出的红色或蓝色情报被接收后，你和接收者各摸一张牌。
@@ -21,7 +21,7 @@ class MingEr : TriggeredSkill {
             val colors = event.messageCard.colors
             Red in colors || Blue in colors
         } ?: return null
-        log.info("${event.sender}发动了[明饵]")
+        logger.info("${event.sender}发动了[明饵]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_ming_er_toc.newBuilder()
@@ -37,6 +37,5 @@ class MingEr : TriggeredSkill {
     }
 
     companion object {
-        private val log = Logger.getLogger(MingEr::class.java)
     }
 }

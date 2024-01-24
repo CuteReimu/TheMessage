@@ -10,7 +10,7 @@ import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 class ShiTan : Card {
@@ -29,23 +29,23 @@ class ShiTan : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用试探")
+            logger.error("你被禁止使用试探")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用试探")
             return false
         }
         val target = args[0] as Player
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-            log.error("试探的使用时机不对")
+            logger.error("试探的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("试探的使用时机不对")
             return false
         }
         if (r === target) {
-            log.error("试探不能对自己使用")
+            logger.error("试探不能对自己使用")
             (r as? HumanPlayer)?.sendErrorMessage("试探不能对自己使用")
             return false
         }
         if (!target.alive) {
-            log.error("目标已死亡")
+            logger.error("目标已死亡")
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return false
         }
@@ -55,7 +55,7 @@ class ShiTan : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
         val fsm = g.fsm as MainPhaseIdle
-        log.info("${r}对${target}使用了$this")
+        logger.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { valid: Boolean ->
             if (valid) {
@@ -132,42 +132,42 @@ class ShiTan : Card {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (message !is execute_shi_tan_tos) {
-                log.error("现在正在结算试探：$card")
+                logger.error("现在正在结算试探：$card")
                 (target as? HumanPlayer)?.sendErrorMessage("现在正在结算试探：$card")
                 return null
             }
             if (target !== player) {
-                log.error("你不是试探的目标：$card")
+                logger.error("你不是试探的目标：$card")
                 (target as? HumanPlayer)?.sendErrorMessage("你不是试探的目标：$card")
                 return null
             }
             var discardCard: Card? = null
             if (card.checkDrawCard(target) || target.cards.isEmpty()) {
                 if (message.cardIdCount != 0) {
-                    log.error("${target}被使用${card}时不应该弃牌")
+                    logger.error("${target}被使用${card}时不应该弃牌")
                     (target as? HumanPlayer)?.sendErrorMessage("${target}被使用${card}时不应该弃牌")
                     return null
                 }
             } else {
                 if (message.cardIdCount != 1) {
-                    log.error("${target}被使用${card}时应该弃一张牌")
+                    logger.error("${target}被使用${card}时应该弃一张牌")
                     (target as? HumanPlayer)?.sendErrorMessage("${target}被使用${card}时应该弃一张牌")
                     return null
                 }
                 discardCard = target.findCard(message.getCardId(0))
                 if (discardCard == null) {
-                    log.error("没有这张牌")
+                    logger.error("没有这张牌")
                     (target as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                     return null
                 }
             }
             player.incrSeq()
             if (card.checkDrawCard(target)) {
-                log.info("${target}选择了[摸一张牌]")
+                logger.info("${target}选择了[摸一张牌]")
                 card.notifyResult(target, true)
                 target.draw(1)
             } else {
-                log.info("${target}选择了[弃一张牌]")
+                logger.info("${target}选择了[弃一张牌]")
                 card.notifyResult(target, false)
                 if (discardCard != null) {
                     target.game!!.playerDiscardCard(target, discardCard)
@@ -191,7 +191,6 @@ class ShiTan : Card {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeShiTan::class.java)
         }
     }
 
@@ -216,7 +215,6 @@ class ShiTan : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(ShiTan::class.java)
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(card_type.Shi_Tan) || return false

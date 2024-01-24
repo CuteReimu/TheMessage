@@ -3,7 +3,7 @@ package com.fengsheng.handler
 import com.fengsheng.HumanPlayer
 import com.fengsheng.phase.WaitForSelectRole
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 class game_init_finish_tos : ProtoHandler {
     override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
@@ -14,7 +14,7 @@ class game_init_finish_tos : ProtoHandler {
         } else {
             val game = player.game
             if (game == null) {
-                log.error("can not find game")
+                logger.error("can not find game")
                 player.sendErrorMessage("找不到房间")
                 return
             }
@@ -24,6 +24,5 @@ class game_init_finish_tos : ProtoHandler {
     }
 
     companion object {
-        private val log = Logger.getLogger(game_init_finish_tos::class.java)
     }
 }

@@ -8,7 +8,7 @@ import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.changeGameResult
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 /**
  * 判断镇压者获胜条件
@@ -49,13 +49,13 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             whoseTurn.game!!.changeGameResult(whoseTurn, declaredWinner, winner)
             val declaredWinners = declaredWinner.toTypedArray()
             val winners = winner.toTypedArray()
-            log.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
+            logger.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
             whoseTurn.game!!.allPlayerSetRoleFaceUp()
             whoseTurn.game!!.end(declaredWinner, winner)
             return ResolveResult(null, false)
         }
         if (players.all { !it.alive }) {
-            log.info("全部死亡，游戏结束")
+            logger.info("全部死亡，游戏结束")
             whoseTurn.game!!.allPlayerSetRoleFaceUp()
             whoseTurn.game!!.end(emptyList(), emptyList())
             return ResolveResult(null, false)
@@ -66,6 +66,5 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
     }
 
     companion object {
-        private val log = Logger.getLogger(CheckKillerWin::class.java)
     }
 }

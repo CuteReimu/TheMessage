@@ -13,7 +13,7 @@ import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_toc
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -30,31 +30,31 @@ class YouDiShenRu : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         message as skill_you_di_shen_ru_tos
         if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-            log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+            logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
             r.sendErrorMessage("操作太晚了")
             return
         }
         val fsm = g.fsm as? SendPhaseStart
         if (fsm == null) {
-            log.error("[诱敌深入]的使用时机不对")
+            logger.error("[诱敌深入]的使用时机不对")
             (r as? HumanPlayer)?.sendErrorMessage("[诱敌深入]的使用时机不对")
             return
         }
         val card = r.findCard(message.cardId)
         if (card == null) {
-            log.error("没有这张牌")
+            logger.error("没有这张牌")
             (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
             return
         }
         if (message.targetPlayerId <= 0 || message.targetPlayerId >= r.game!!.players.size) {
-            log.error("目标错误: ${message.targetPlayerId}")
+            logger.error("目标错误: ${message.targetPlayerId}")
             (r as? HumanPlayer)?.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
             return
         }
         val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
         val lockPlayers = message.lockPlayerIdList.map {
             if (it < 0 || it >= g.players.size) {
-                log.error("锁定目标错误: $it")
+                logger.error("锁定目标错误: $it")
                 (r as? HumanPlayer)?.sendErrorMessage("锁定目标错误: $it")
                 return
             }
@@ -62,14 +62,14 @@ class YouDiShenRu : ActiveSkill {
         }
         val sendCardError = r.canSendCard(r, card, r.cards, message.cardDir, target, lockPlayers)
         if (sendCardError != null) {
-            log.error(sendCardError)
+            logger.error(sendCardError)
             (r as? HumanPlayer)?.sendErrorMessage(sendCardError)
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         r.skills = r.skills.filterNot { it === this }
-        log.info("${r}发动了[诱敌深入]")
+        logger.info("${r}发动了[诱敌深入]")
         r.deleteCard(card.id)
         g.players.forEach { it!!.skills += YouDiShenRu2() }
         for (p in g.players) {
@@ -102,8 +102,6 @@ class YouDiShenRu : ActiveSkill {
     }
 
     companion object {
-        private val log = Logger.getLogger(YouDiShenRu::class.java)
-
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
             val game = player.game!!

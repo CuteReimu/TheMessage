@@ -7,7 +7,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
 import com.fengsheng.skill.cannotPlayCard
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 class LiYou : Card {
@@ -25,7 +25,7 @@ class LiYou : Card {
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
-            log.error("你被禁止使用利诱")
+            logger.error("你被禁止使用利诱")
             (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用利诱")
             return false
         }
@@ -35,7 +35,7 @@ class LiYou : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
-        log.info("${r}对${target}使用了$this")
+        logger.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         execute(this, g, r, target)
     }
@@ -45,15 +45,14 @@ class LiYou : Card {
     }
 
     companion object {
-        private val log = Logger.getLogger(LiYou::class.java)
         fun canUse(g: Game, r: Player, target: Player): Boolean {
             if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
-                log.error("利诱的使用时机不对")
+                logger.error("利诱的使用时机不对")
                 (r as? HumanPlayer)?.sendErrorMessage("利诱的使用时机不对")
                 return false
             }
             if (!target.alive) {
-                log.error("目标已死亡")
+                logger.error("目标已死亡")
                 (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return false
             }
@@ -74,10 +73,10 @@ class LiYou : Card {
                     if (target.checkThreeSameMessageCard(deckCards[0])) {
                         joinIntoHand = true
                         r.cards.addAll(deckCards)
-                        log.info("${deckCards.contentToString()}加入了${r}的手牌")
+                        logger.info("${deckCards.contentToString()}加入了${r}的手牌")
                     } else {
                         target.messageCards.addAll(deckCards)
-                        log.info("${deckCards.contentToString()}加入了${target}的的情报区")
+                        logger.info("${deckCards.contentToString()}加入了${target}的的情报区")
                     }
                 }
                 for (player in g.players) {

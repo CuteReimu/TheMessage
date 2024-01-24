@@ -6,7 +6,7 @@ import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -44,13 +44,13 @@ class LianXin : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
                 if (player is HumanPlayer && !player.checkSeq(message.seq)) {
-                    log.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
+                    logger.error("操作太晚了, required Seq: ${player.seq}, actual Seq: ${message.seq}")
                     player.sendErrorMessage("操作太晚了")
                     return null
                 }
@@ -58,21 +58,21 @@ class LianXin : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             if (message !is skill_lian_xin_a_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             r.incrSeq()
             g.playerSetRoleFaceUp(r, true)
             val target = event.sender
-            log.info("${r}发动了[联信]")
+            logger.info("${r}发动了[联信]")
             r.draw(2)
             val hasNext = target.alive && r.cards.any(checkCard)
             for (p in g.players) {
@@ -94,7 +94,6 @@ class LianXin : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeLianXinA::class.java)
         }
     }
 
@@ -125,36 +124,36 @@ class LianXin : TriggeredSkill {
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
-                log.error("不是你发技能的时机")
+                logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_lian_xin_b_tos) {
-                log.error("错误的协议")
+                logger.error("错误的协议")
                 (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
-                log.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
+                logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             val card = r.findCard(message.cardId)
             if (card == null) {
-                log.error("没有这张牌")
+                logger.error("没有这张牌")
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!checkCard(card)) {
-                log.error("选择的牌不含有不同颜色")
+                logger.error("选择的牌不含有不同颜色")
                 (player as? HumanPlayer)?.sendErrorMessage("选择的牌不含有不同颜色")
                 return null
             }
             r.incrSeq()
             val target = event.sender
-            log.info("${r}将${card}置入${target}的情报区")
+            logger.info("${r}将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
             for (p in g.players) {
@@ -171,7 +170,6 @@ class LianXin : TriggeredSkill {
         }
 
         companion object {
-            private val log = Logger.getLogger(executeLianXinB::class.java)
         }
     }
 

@@ -4,13 +4,13 @@ import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Role
 import com.fengsheng.skill.ActiveSkill
 import com.fengsheng.skill.SkillId
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.kotlin.logger
 
 class skill_tou_tian_tos : AbstractProtoHandler<Role.skill_tou_tian_tos>() {
     override fun handle0(r: HumanPlayer, pb: Role.skill_tou_tian_tos) {
         val skill = r.findSkill(SkillId.TOU_TIAN) as? ActiveSkill
         if (skill == null) {
-            log.error("你没有这个技能")
+            logger.error("你没有这个技能")
             r.sendErrorMessage("你没有这个技能")
             return
         }
@@ -18,6 +18,5 @@ class skill_tou_tian_tos : AbstractProtoHandler<Role.skill_tou_tian_tos>() {
     }
 
     companion object {
-        private val log = Logger.getLogger(skill_tou_tian_tos::class.java)
     }
 }
