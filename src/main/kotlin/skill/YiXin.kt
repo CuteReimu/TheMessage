@@ -34,7 +34,7 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
                     if (player == r) {
                         val seq2 = player.seq
                         builder.seq = seq2
-                        GameExecutor.post(
+                        player.timeout = GameExecutor.post(
                             r.game!!,
                             {
                                 val builder2 = skill_yi_xin_tos.newBuilder()

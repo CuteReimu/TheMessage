@@ -69,7 +69,7 @@ class JinBi : MainPhaseSkill() {
                     if (p === target) {
                         val seq = p.seq
                         builder.seq = seq
-                        GameExecutor.post(p.game!!, {
+                        p.timeout = GameExecutor.post(p.game!!, {
                             if (p.checkSeq(seq)) {
                                 val builder2 = skill_jin_bi_b_tos.newBuilder()
                                 builder2.seq = seq

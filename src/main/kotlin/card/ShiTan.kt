@@ -111,11 +111,11 @@ class ShiTan : Card {
                     if (p === target) {
                         val seq2 = p.seq
                         builder.setSeq(seq2).card = card.toPbCard()
-                        p.timeout = (GameExecutor.post(r.game!!, {
+                        p.timeout = GameExecutor.post(r.game!!, {
                             if (p.checkSeq(seq2)) {
                                 autoSelect()
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS))
+                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     } else if (p === r) {
                         builder.card = card.toPbCard()
                     }

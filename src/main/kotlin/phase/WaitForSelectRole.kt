@@ -23,14 +23,13 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                     player.send(game_start_toc.getDefaultInstance())
                 else
                     notifySelectRole(player)
-                player.timeout =
-                    GameExecutor.post(game, {
-                        val autoSelect = options[player.location].firstOrNull()?.role ?: role.unknown
-                        game.tryContinueResolveProtocol(
-                            player,
-                            select_role_tos.newBuilder().setRole(autoSelect).build()
-                        )
-                    }, player.getWaitSeconds(Config.WaitSecond * 2 + 2).toLong(), TimeUnit.SECONDS)
+                player.timeout = GameExecutor.post(game, {
+                    val autoSelect = options[player.location].firstOrNull()?.role ?: role.unknown
+                    game.tryContinueResolveProtocol(
+                        player,
+                        select_role_tos.newBuilder().setRole(autoSelect).build()
+                    )
+                }, player.getWaitSeconds(Config.WaitSecond * 2 + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 selected[player!!.location] = options[player.location].run {
                     if (Config.IsGmEnable) return@run firstOrNull()

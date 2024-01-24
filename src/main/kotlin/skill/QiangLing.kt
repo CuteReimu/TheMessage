@@ -40,7 +40,7 @@ class QiangLing : TriggeredSkill {
                     if (player === r) {
                         val seq2 = player.seq
                         builder.seq = seq2
-                        GameExecutor.post(
+                        player.timeout = GameExecutor.post(
                             player.game!!,
                             {
                                 if (player.checkSeq(seq2)) {

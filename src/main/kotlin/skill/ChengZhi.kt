@@ -59,18 +59,17 @@ class ChengZhi : TriggeredSkill {
                         builder.secretTask = whoDie.secretTask
                         val seq2: Int = player.seq
                         builder.seq = seq2
-                        player.timeout =
-                            GameExecutor.post(
-                                r.game!!,
-                                {
-                                    val builder2 = skill_cheng_zhi_tos.newBuilder()
-                                    builder2.enable = false
-                                    builder2.seq = seq2
-                                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                                },
-                                player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                                TimeUnit.SECONDS
-                            )
+                        player.timeout = GameExecutor.post(
+                            r.game!!,
+                            {
+                                val builder2 = skill_cheng_zhi_tos.newBuilder()
+                                builder2.enable = false
+                                builder2.seq = seq2
+                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                            },
+                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
+                            TimeUnit.SECONDS
+                        )
                     }
                     player.send(builder.build())
                 }

@@ -35,7 +35,7 @@ class JiangHuLing : TriggeredSkill {
                     if (player === r) {
                         val seq = player.seq
                         builder.seq = seq
-                        GameExecutor.post(
+                        player.timeout = GameExecutor.post(
                             player.game!!,
                             {
                                 if (player.checkSeq(seq)) {
