@@ -24,6 +24,7 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
                     DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED, byteBuf)
                 response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
                 response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+                response.headers().add(HttpHeaderNames.CONNECTION, "close")
                 ctx.writeAndFlush(response)
             } else {
                 try {
@@ -62,6 +63,7 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
                     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf)
                     response.headers().add(HttpHeaderNames.CONTENT_TYPE, contentType)
                     response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
                     ctx.writeAndFlush(response)
                 } catch (e: URISyntaxException) {
                     val byteBuf = Unpooled.copiedBuffer("{\"error\": \"parse form failed\"}", CharsetUtil.UTF_8)
@@ -69,36 +71,42 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
                         DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST, byteBuf)
                     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
                     response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
                     ctx.writeAndFlush(response)
                 } catch (e: ClassNotFoundException) {
                     val byteBuf = Unpooled.copiedBuffer("{\"error\": \"404 not found\"}", CharsetUtil.UTF_8)
                     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
                     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
                     response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
                     ctx.writeAndFlush(response)
                 } catch (e: InvocationTargetException) {
                     val byteBuf = Unpooled.copiedBuffer("{\"error\": \"404 not found\"}", CharsetUtil.UTF_8)
                     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
                     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
                     response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
                     ctx.writeAndFlush(response)
                 } catch (e: InstantiationException) {
                     val byteBuf = Unpooled.copiedBuffer("{\"error\": \"404 not found\"}", CharsetUtil.UTF_8)
                     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
                     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
                     response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
                     ctx.writeAndFlush(response)
                 } catch (e: IllegalAccessException) {
                     val byteBuf = Unpooled.copiedBuffer("{\"error\": \"404 not found\"}", CharsetUtil.UTF_8)
                     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
                     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
                     response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
                     ctx.writeAndFlush(response)
                 } catch (e: NoSuchMethodException) {
                     val byteBuf = Unpooled.copiedBuffer("{\"error\": \"404 not found\"}", CharsetUtil.UTF_8)
                     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
                     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
                     response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
                     ctx.writeAndFlush(response)
                 }
             }
