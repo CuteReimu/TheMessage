@@ -85,9 +85,6 @@ class JinShen : TriggeredSkill {
             event.messageCard = card
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

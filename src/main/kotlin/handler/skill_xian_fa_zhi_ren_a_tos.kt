@@ -20,7 +20,4 @@ class skill_xian_fa_zhi_ren_a_tos : AbstractProtoHandler<Role.skill_xian_fa_zhi_
         else
             skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

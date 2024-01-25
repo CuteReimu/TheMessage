@@ -64,7 +64,4 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             return ResolveResult(null, false)
         return ResolveResult(WaitForDieGiveCard(whoseTurn, diedQueue, afterDieResolve), true)
     }
-
-    companion object {
-    }
 }

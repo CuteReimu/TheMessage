@@ -21,7 +21,4 @@ class skill_qiang_ling_tos : AbstractProtoHandler<Role.skill_qiang_ling_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

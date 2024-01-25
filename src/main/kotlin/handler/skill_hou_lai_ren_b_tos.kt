@@ -15,7 +15,4 @@ class skill_hou_lai_ren_b_tos : AbstractProtoHandler<Role.skill_hou_lai_ren_b_to
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

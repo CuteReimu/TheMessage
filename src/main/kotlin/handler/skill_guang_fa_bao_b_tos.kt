@@ -20,7 +20,4 @@ class skill_guang_fa_bao_b_tos : AbstractProtoHandler<Role.skill_guang_fa_bao_b_
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

@@ -28,7 +28,4 @@ class use_feng_yun_bian_huan_tos : AbstractProtoHandler<Fengsheng.use_feng_yun_b
             card.execute(r.game!!, r)
         }
     }
-
-    companion object {
-    }
 }

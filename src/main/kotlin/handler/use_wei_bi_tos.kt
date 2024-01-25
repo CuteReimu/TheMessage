@@ -34,7 +34,4 @@ class use_wei_bi_tos : AbstractProtoHandler<Fengsheng.use_wei_bi_tos>() {
             card.execute(r.game!!, r, target, pb.wantType)
         }
     }
-
-    companion object {
-    }
 }

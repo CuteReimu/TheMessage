@@ -123,8 +123,5 @@ class QiangLing : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 }

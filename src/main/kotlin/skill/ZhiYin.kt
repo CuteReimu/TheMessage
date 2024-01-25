@@ -38,7 +38,4 @@ class ZhiYin : TriggeredSkill {
         }
         return null
     }
-
-    companion object {
-    }
 }

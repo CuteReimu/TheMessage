@@ -105,9 +105,6 @@ class YiYaHuanYa : TriggeredSkill {
             g.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

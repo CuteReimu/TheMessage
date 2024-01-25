@@ -105,9 +105,6 @@ class JiangHuLing : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     private class JiangHuLing2(val color: color) : TriggeredSkill, OneTurnSkill {
@@ -250,9 +247,6 @@ class JiangHuLing : TriggeredSkill {
             }
             if (card.colors.contains(Common.color.Black)) r.draw(1)
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 }

@@ -69,7 +69,4 @@ data class OnSendCard(
         result = 31 * result + lockedPlayers.contentHashCode()
         return result
     }
-
-    companion object {
-    }
 }

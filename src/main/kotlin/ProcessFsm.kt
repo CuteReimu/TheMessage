@@ -115,8 +115,4 @@ abstract class ProcessFsm : Fsm {
     }
 
     abstract fun resolve0(): ResolveResult?
-
-
-    companion object {
-    }
 }

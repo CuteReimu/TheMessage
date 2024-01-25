@@ -21,7 +21,4 @@ class skill_zuo_you_feng_yuan_tos : AbstractProtoHandler<Role.skill_zuo_you_feng
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

@@ -112,7 +112,4 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
             }
         }
     }
-
-    companion object {
-    }
 }

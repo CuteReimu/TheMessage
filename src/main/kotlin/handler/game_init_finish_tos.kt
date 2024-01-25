@@ -22,7 +22,4 @@ class game_init_finish_tos : ProtoHandler {
             fsm.notifySelectRole(player)
         }
     }
-
-    companion object {
-    }
 }

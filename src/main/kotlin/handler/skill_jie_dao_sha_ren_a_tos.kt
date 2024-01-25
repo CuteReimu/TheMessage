@@ -16,7 +16,4 @@ class skill_jie_dao_sha_ren_a_tos : AbstractProtoHandler<Role.skill_jie_dao_sha_
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

@@ -16,7 +16,4 @@ class skill_yi_hua_jie_mu_a_tos : AbstractProtoHandler<Role.skill_yi_hua_jie_mu_
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

@@ -16,7 +16,4 @@ class skill_leng_xue_xun_lian_a_tos : AbstractProtoHandler<Role.skill_leng_xue_x
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

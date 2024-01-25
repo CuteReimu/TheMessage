@@ -16,7 +16,4 @@ class skill_yu_si_wang_po_a_tos : AbstractProtoHandler<Role.skill_yu_si_wang_po_
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

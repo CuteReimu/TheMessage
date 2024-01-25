@@ -198,9 +198,6 @@ class TaoQu : MainPhaseSkill() {
             g.addEvent(DiscardCardEvent(fsm.whoseTurn, player))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

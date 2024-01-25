@@ -189,9 +189,6 @@ class TanQiuZhenLi : MainPhaseSkill() {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

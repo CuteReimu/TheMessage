@@ -107,11 +107,5 @@ class CunBuBuRang : TriggeredSkill {
             g.addEvent(GiveCardEvent(whoseTurn, target, r))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
-    }
-
-    companion object {
     }
 }

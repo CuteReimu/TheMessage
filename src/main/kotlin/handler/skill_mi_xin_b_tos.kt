@@ -15,7 +15,4 @@ class skill_mi_xin_b_tos : AbstractProtoHandler<Role.skill_mi_xin_b_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

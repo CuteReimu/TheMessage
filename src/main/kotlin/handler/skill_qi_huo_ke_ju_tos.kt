@@ -15,7 +15,4 @@ class skill_qi_huo_ke_ju_tos : AbstractProtoHandler<Role.skill_qi_huo_ke_ju_tos>
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

@@ -120,8 +120,5 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
             g.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 }

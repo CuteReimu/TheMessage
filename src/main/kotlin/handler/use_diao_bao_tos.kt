@@ -38,7 +38,4 @@ class use_diao_bao_tos : AbstractProtoHandler<Fengsheng.use_diao_bao_tos>() {
             card.execute(r.game!!, r)
         }
     }
-
-    companion object {
-    }
 }

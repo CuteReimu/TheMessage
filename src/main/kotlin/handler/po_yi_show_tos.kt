@@ -14,7 +14,4 @@ class po_yi_show_tos : AbstractProtoHandler<Fengsheng.po_yi_show_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

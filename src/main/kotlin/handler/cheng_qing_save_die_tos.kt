@@ -47,7 +47,4 @@ class cheng_qing_save_die_tos : AbstractProtoHandler<Fengsheng.cheng_qing_save_d
             card.execute(r.game!!, r, target, pb.targetCardId)
         }
     }
-
-    companion object {
-    }
 }

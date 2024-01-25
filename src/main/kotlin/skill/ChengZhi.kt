@@ -129,8 +129,5 @@ class ChengZhi : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 }

@@ -16,7 +16,4 @@ class skill_miao_shou_a_tos : AbstractProtoHandler<Role.skill_miao_shou_a_tos>()
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

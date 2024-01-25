@@ -79,9 +79,6 @@ class QiHuoKeJu : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

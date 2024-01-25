@@ -34,7 +34,4 @@ class use_ping_heng_tos : AbstractProtoHandler<Fengsheng.use_ping_heng_tos>() {
             card.execute(r.game!!, r, target)
         }
     }
-
-    companion object {
-    }
 }

@@ -92,9 +92,6 @@ class LianXin : TriggeredSkill {
                 return ResolveResult(fsm, true)
             return ResolveResult(executeLianXinB(fsm, event, checkCard), true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeLianXinB(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
@@ -167,9 +164,6 @@ class LianXin : TriggeredSkill {
             }
             g.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 

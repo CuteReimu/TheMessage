@@ -15,7 +15,4 @@ class skill_leng_xue_xun_lian_b_tos : AbstractProtoHandler<Role.skill_leng_xue_x
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

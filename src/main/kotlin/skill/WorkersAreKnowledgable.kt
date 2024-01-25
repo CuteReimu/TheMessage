@@ -131,9 +131,6 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     /**

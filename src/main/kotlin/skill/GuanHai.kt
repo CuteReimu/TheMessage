@@ -32,7 +32,4 @@ class GuanHai : TriggeredSkill {
         }
         return null
     }
-
-    companion object {
-    }
 }

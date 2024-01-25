@@ -180,9 +180,6 @@ class MiaoShou : ActiveSkill {
                 ), true
             )
         }
-
-        companion object {
-        }
     }
 
     companion object {

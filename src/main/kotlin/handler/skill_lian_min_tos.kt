@@ -15,7 +15,4 @@ class skill_lian_min_tos : AbstractProtoHandler<Role.skill_lian_min_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

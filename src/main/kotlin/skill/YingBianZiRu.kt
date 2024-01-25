@@ -156,9 +156,6 @@ class YingBianZiRu : ActiveSkill {
             g.fsm = fsm
             return ResolveResult(WuDao.onUseCard(null, g, r, target), true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

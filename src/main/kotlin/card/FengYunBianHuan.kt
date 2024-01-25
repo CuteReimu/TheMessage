@@ -228,9 +228,6 @@ class FengYunBianHuan : Card {
             }
             r.game!!.tryContinueResolveProtocol(r, builder.build())
         }
-
-        companion object {
-        }
     }
 
     override fun toString(): String {

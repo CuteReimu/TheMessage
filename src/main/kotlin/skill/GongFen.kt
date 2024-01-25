@@ -88,9 +88,6 @@ class GongFen : ActiveSkill {
             }, 1, TimeUnit.SECONDS)
             return null
         }
-
-        companion object {
-        }
     }
 
     companion object {

@@ -143,9 +143,6 @@ class JiBan : MainPhaseSkill() {
             builder.targetPlayerId = r.getAlternativeLocation(player.location)
             r.game!!.tryContinueResolveProtocol(r, builder.build())
         }
-
-        companion object {
-        }
     }
 
     companion object {

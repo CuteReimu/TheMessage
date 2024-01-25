@@ -28,7 +28,4 @@ class end_main_phase_tos : AbstractProtoHandler<Fengsheng.end_main_phase_tos>() 
         r.incrSeq()
         r.game!!.resolve(SendPhaseStart(fsm.whoseTurn))
     }
-
-    companion object {
-    }
 }

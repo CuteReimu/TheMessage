@@ -18,7 +18,4 @@ class HeartBeatServerHandler(private val name: String) : ChannelInboundHandlerAd
             }
         }
     }
-
-    companion object {
-    }
 }

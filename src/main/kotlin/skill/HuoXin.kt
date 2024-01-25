@@ -152,9 +152,6 @@ class HuoXin : MainPhaseSkill() {
             r.game!!.addEvent(DiscardCardEvent(r, target))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

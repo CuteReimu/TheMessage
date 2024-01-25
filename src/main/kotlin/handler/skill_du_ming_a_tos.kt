@@ -15,7 +15,4 @@ class skill_du_ming_a_tos : AbstractProtoHandler<Role.skill_du_ming_a_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

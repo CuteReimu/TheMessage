@@ -97,9 +97,6 @@ class JiuJi : TriggeredSkill {
             event.card?.let { r.skills += JiuJi2() }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     private class JiuJi2 : TriggeredSkill {
@@ -127,9 +124,6 @@ class JiuJi : TriggeredSkill {
             }
             event.discardAfterResolve = false
             return null
-        }
-
-        companion object {
         }
     }
 

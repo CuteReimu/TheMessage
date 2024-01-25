@@ -40,7 +40,4 @@ class ChengFu : TriggeredSkill {
         event.valid = false
         return null
     }
-
-    companion object {
-    }
 }

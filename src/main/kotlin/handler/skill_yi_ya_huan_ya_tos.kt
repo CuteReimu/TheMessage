@@ -15,7 +15,4 @@ class skill_yi_ya_huan_ya_tos : AbstractProtoHandler<Role.skill_yi_ya_huan_ya_to
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

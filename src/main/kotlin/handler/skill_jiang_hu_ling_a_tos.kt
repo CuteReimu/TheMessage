@@ -15,7 +15,4 @@ class skill_jiang_hu_ling_a_tos : AbstractProtoHandler<Role.skill_jiang_hu_ling_
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

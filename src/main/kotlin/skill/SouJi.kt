@@ -161,9 +161,6 @@ class SouJi : ActiveSkill {
             }
             return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

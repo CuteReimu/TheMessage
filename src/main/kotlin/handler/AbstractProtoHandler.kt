@@ -21,7 +21,4 @@ abstract class AbstractProtoHandler<T : GeneratedMessageV3> : ProtoHandler {
             }
         }
     }
-
-    companion object {
-    }
 }

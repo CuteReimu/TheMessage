@@ -13,7 +13,4 @@ class wei_bi_give_card_tos : AbstractProtoHandler<Fengsheng.wei_bi_give_card_tos
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

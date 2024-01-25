@@ -66,9 +66,6 @@ class ChiZiZhiXin : TriggeredSkill {
             player.incrSeq()
             return ResolveResult(executeChiZiZhiXinB(fsm, event), true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeChiZiZhiXinB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
@@ -155,9 +152,6 @@ class ChiZiZhiXin : TriggeredSkill {
             }
             if (message.drawCard) r.draw(2)
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 

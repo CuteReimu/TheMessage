@@ -47,7 +47,4 @@ class ShouKouRuPing : TriggeredSkill {
         event.valid = false
         return null
     }
-
-    companion object {
-    }
 }

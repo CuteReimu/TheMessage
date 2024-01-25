@@ -22,7 +22,4 @@ class get_record_list_tos : ProtoHandler {
         }
         Statistics.displayRecordList(player)
     }
-
-    companion object {
-    }
 }

@@ -39,7 +39,4 @@ class use_diao_hu_li_shan_tos : AbstractProtoHandler<Fengsheng.use_diao_hu_li_sh
             card.execute(r.game!!, r, target, pb.isSkill)
         }
     }
-
-    companion object {
-    }
 }

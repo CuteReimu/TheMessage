@@ -16,7 +16,4 @@ class skill_you_di_shen_ru_tos : AbstractProtoHandler<Role.skill_you_di_shen_ru_
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

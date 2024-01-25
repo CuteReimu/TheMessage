@@ -34,7 +34,4 @@ class use_cheng_qing_tos : AbstractProtoHandler<Fengsheng.use_cheng_qing_tos>() 
             card.execute(r.game!!, r, target, pb.targetCardId)
         }
     }
-
-    companion object {
-    }
 }

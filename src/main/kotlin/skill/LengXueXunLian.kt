@@ -235,9 +235,6 @@ class LengXueXunLian : ActiveSkill {
             result = 31 * result + cards.contentHashCode()
             return result
         }
-
-        companion object {
-        }
     }
 
     private class MustLockOne : SendMessageCanLockSkill, OneTurnSkill {

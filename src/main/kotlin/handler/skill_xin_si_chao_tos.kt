@@ -16,7 +16,4 @@ class skill_xin_si_chao_tos : AbstractProtoHandler<Role.skill_xin_si_chao_tos>()
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

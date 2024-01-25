@@ -15,7 +15,4 @@ class skill_xin_ge_lian_luo_tos : AbstractProtoHandler<Role.skill_xin_ge_lian_lu
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

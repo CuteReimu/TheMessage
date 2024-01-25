@@ -70,9 +70,6 @@ class JianRen : TriggeredSkill {
             logger.info("${r}发动了[坚韧]，展示了${cards[0]}")
             return ResolveResult(executeJianRenB(fsm, event, cards), true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeJianRenB(val fsm: Fsm, val event: ReceiveCardEvent, val cards: List<Card>) : WaitingFsm {
@@ -176,9 +173,6 @@ class JianRen : TriggeredSkill {
                 }
             }
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 

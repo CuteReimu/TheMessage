@@ -13,7 +13,4 @@ class mi_ling_choose_card_tos : AbstractProtoHandler<Fengsheng.mi_ling_choose_ca
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

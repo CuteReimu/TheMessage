@@ -187,9 +187,6 @@ class GuangFaBao : ActiveSkill {
             val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
             return ResolveResult(newFsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

@@ -16,7 +16,4 @@ class skill_ru_bi_zhi_shi_a_tos : AbstractProtoHandler<Role.skill_ru_bi_zhi_shi_
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

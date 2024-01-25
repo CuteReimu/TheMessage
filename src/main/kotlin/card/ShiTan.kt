@@ -189,9 +189,6 @@ class ShiTan : Card {
                 builder.addCardId(target.cards.random().id)
             target.game!!.tryContinueResolveProtocol(target, builder.build())
         }
-
-        companion object {
-        }
     }
 
     override fun toPbCard(): card {

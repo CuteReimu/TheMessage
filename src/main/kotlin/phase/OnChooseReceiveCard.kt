@@ -32,7 +32,4 @@ data class OnChooseReceiveCard(
             true
         )
     }
-
-    companion object {
-    }
 }

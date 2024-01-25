@@ -35,7 +35,4 @@ class MingEr : TriggeredSkill {
             g.sortedFrom(listOf(event.sender, event.inFrontOfWhom), event.whoseTurn.location).forEach { it.draw(1) }
         return null
     }
-
-    companion object {
-    }
 }

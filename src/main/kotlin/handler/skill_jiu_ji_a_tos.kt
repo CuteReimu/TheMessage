@@ -15,7 +15,4 @@ class skill_jiu_ji_a_tos : AbstractProtoHandler<Role.skill_jiu_ji_a_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

@@ -138,9 +138,6 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             }
             return ResolveResult(executeXianFaZhiRenB(fsm, player, target, timeout), true)
         }
-
-        companion object {
-        }
     }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
@@ -277,9 +274,6 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             if (fsm is FightPhaseIdle)
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 

@@ -125,9 +125,6 @@ class WeiBi : Card {
             if (target is HumanPlayer) builder.seq = target.seq
             target.game!!.tryContinueResolveProtocol(target, builder.build())
         }
-
-        companion object {
-        }
     }
 
     override fun toString(): String {

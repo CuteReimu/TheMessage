@@ -29,7 +29,4 @@ class ShiSi : TriggeredSkill {
         event.inFrontOfWhom.draw(2)
         return null
     }
-
-    companion object {
-    }
 }

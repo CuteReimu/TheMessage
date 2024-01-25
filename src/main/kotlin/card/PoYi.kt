@@ -129,9 +129,6 @@ class PoYi : Card {
                 }
             }
         }
-
-        companion object {
-        }
     }
 
     override fun toString(): String {

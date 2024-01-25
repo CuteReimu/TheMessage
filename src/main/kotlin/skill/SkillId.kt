@@ -22,7 +22,6 @@ enum class SkillId(private val cName: String) {
     JIAN_DI_FENG_XING("歼敌风行"), XIANG_JIN_SI_SUO("详尽思索"), QIANG_YING_XIA_LING("强硬下令"), JIE_CHE_YUN_HUO("借车运货"),
     WORKERS_ARE_KNOWLEDGABLE("咱们工人有知识");
 
-
     override fun toString(): String {
         return cName
     }

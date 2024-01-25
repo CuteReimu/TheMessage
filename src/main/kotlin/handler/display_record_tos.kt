@@ -15,7 +15,4 @@ class display_record_tos : ProtoHandler {
         val pb = message as Fengsheng.display_record_tos
         player.loadRecord(pb.version, pb.recordId)
     }
-
-    companion object {
-    }
 }

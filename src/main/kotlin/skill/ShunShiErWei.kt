@@ -47,8 +47,5 @@ class ShunShiErWei : TriggeredSkill {
             askWhom.skills = askWhom.skills.filterNot { it === this }
             return null
         }
-
-        companion object {
-        }
     }
 }

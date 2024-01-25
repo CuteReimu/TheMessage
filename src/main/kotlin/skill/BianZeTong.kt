@@ -119,9 +119,6 @@ class BianZeTong : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     /**
@@ -131,7 +128,6 @@ class BianZeTong : TriggeredSkill {
         ConvertCardSkill(cardTypeA, listOf(cardTypeB), true) {
         override val isInitialSkill = false
     }
-
 
     companion object {
         private val validCardTypes = listOf(Po_Yi, Diao_Bao, Wu_Dao, Jie_Huo)

@@ -16,7 +16,4 @@ class skill_jin_kou_yi_kai_a_tos : AbstractProtoHandler<Role.skill_jin_kou_yi_ka
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

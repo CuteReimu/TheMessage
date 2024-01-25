@@ -32,7 +32,4 @@ data class WaitNextForChengQing(val waitForChengQing: WaitForChengQing) : Fsm {
             }
         }
     }
-
-    companion object {
-    }
 }

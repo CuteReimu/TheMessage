@@ -20,7 +20,4 @@ class skill_jiao_ji_b_tos : AbstractProtoHandler<Role.skill_jiao_ji_b_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

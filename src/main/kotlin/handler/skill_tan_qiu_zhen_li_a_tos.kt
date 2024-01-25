@@ -16,7 +16,4 @@ class skill_tan_qiu_zhen_li_a_tos : AbstractProtoHandler<Role.skill_tan_qiu_zhen
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

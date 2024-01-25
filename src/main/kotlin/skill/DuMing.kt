@@ -112,9 +112,6 @@ class DuMing : TriggeredSkill {
             (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
             return null
         }
-
-        companion object {
-        }
     }
 
     private data class executeDuMing(
@@ -207,9 +204,6 @@ class DuMing : TriggeredSkill {
             }
             r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 }

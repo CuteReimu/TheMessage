@@ -179,9 +179,6 @@ class JieDaoShaRen : ActiveSkill {
             g.addEvent(AddMessageCardEvent(fsm.whoseTurn))
             return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

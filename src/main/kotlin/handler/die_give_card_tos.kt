@@ -77,7 +77,4 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
         r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, r, target))
         r.game!!.resolve(AfterDieGiveCard(fsm))
     }
-
-    companion object {
-    }
 }

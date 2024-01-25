@@ -44,7 +44,4 @@ data class StartWaitForChengQing(
         val askWhomAlive = next.askWhom.alive && !next.askWhom.cannotPlayCardAndSkillForChengQing()
         return ResolveResult(if (askWhomAlive) next else WaitNextForChengQing(next), true)
     }
-
-    companion object {
-    }
 }

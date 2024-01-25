@@ -158,9 +158,6 @@ class HouLaiRen : ActiveSkill {
             result = 31 * result + roles.contentHashCode()
             return result
         }
-
-        companion object {
-        }
     }
 
     companion object {

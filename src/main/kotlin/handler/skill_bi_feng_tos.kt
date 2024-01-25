@@ -15,7 +15,4 @@ class skill_bi_feng_tos : AbstractProtoHandler<Role.skill_bi_feng_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

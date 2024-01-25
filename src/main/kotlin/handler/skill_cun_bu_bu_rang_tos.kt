@@ -15,7 +15,4 @@ class skill_cun_bu_bu_rang_tos : AbstractProtoHandler<Role.skill_cun_bu_bu_rang_
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

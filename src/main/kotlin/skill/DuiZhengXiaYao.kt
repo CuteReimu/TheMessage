@@ -156,9 +156,6 @@ class DuiZhengXiaYao : ActiveSkill {
             r.incrSeq()
             return ResolveResult(executeDuiZhengXiaYaoB(fsm, r, cards, colors, playerAndCard), true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeDuiZhengXiaYaoB(
@@ -287,9 +284,6 @@ class DuiZhengXiaYao : ActiveSkill {
             result = 31 * result + colors.hashCode()
             result = 31 * result + defaultSelection.hashCode()
             return result
-        }
-
-        companion object {
         }
     }
 

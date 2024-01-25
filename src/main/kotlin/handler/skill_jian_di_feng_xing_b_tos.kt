@@ -15,7 +15,4 @@ class skill_jian_di_feng_xing_b_tos : AbstractProtoHandler<Role.skill_jian_di_fe
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

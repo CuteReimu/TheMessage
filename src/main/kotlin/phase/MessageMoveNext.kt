@@ -59,7 +59,4 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
         }
         return ResolveResult(NextTurn(sendPhase.whoseTurn), true)
     }
-
-    companion object {
-    }
 }

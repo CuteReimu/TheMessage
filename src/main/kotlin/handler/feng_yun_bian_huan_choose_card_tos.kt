@@ -13,7 +13,4 @@ class feng_yun_bian_huan_choose_card_tos : AbstractProtoHandler<Fengsheng.feng_y
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

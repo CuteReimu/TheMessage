@@ -24,7 +24,4 @@ class remove_robot_tos : AbstractProtoHandler<Fengsheng.remove_robot_tos>() {
             r.game!!.cancelStartTimer()
         }
     }
-
-    companion object {
-    }
 }

@@ -15,7 +15,4 @@ class skill_miao_bi_qiao_bian_b_tos : AbstractProtoHandler<Role.skill_miao_bi_qi
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

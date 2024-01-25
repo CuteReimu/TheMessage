@@ -15,7 +15,4 @@ class skill_yi_xin_tos : AbstractProtoHandler<Role.skill_yi_xin_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

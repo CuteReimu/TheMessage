@@ -34,7 +34,4 @@ class use_li_you_tos : AbstractProtoHandler<Fengsheng.use_li_you_tos>() {
             card.execute(r.game!!, r, target)
         }
     }
-
-    companion object {
-    }
 }

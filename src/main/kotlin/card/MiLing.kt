@@ -277,9 +277,6 @@ class MiLing : Card {
                 true
             )
         }
-
-        companion object {
-        }
     }
 
     override fun toPbCard(): card {

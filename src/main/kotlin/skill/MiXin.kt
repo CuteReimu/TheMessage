@@ -95,9 +95,6 @@ class MiXin : TriggeredSkill {
                 return ResolveResult(fsm, true)
             return ResolveResult(executeMiXinB(fsm, event, checkCard), true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeMiXinB(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
@@ -170,9 +167,6 @@ class MiXin : TriggeredSkill {
             }
             g.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 

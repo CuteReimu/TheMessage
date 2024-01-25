@@ -33,7 +33,4 @@ class ZhenLi : TriggeredSkill {
         g.playerSetRoleFaceUp(askWhom, false)
         return null
     }
-
-    companion object {
-    }
 }

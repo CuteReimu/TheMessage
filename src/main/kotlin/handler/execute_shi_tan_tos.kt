@@ -13,7 +13,4 @@ class execute_shi_tan_tos : AbstractProtoHandler<Fengsheng.execute_shi_tan_tos>(
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

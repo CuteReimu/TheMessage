@@ -200,9 +200,6 @@ class DuJi : ActiveSkill {
             r.incrSeq()
             return ResolveResult(executeDuJiB(copy(asMessage = true), selection), true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeDuJiB(val fsm: executeDuJiA, val selection: TwoPlayersAndCard) : WaitingFsm {
@@ -279,9 +276,6 @@ class DuJi : ActiveSkill {
                 }
             }
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 

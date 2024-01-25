@@ -35,7 +35,4 @@ data class WaitForChengQing(
     override fun toString(): String {
         return "${whoseTurn}的回合，${whoDie}濒死，向${askWhom}求澄清"
     }
-
-    companion object {
-    }
 }

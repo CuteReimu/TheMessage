@@ -16,7 +16,4 @@ class skill_ying_bian_zi_ru_a_tos : AbstractProtoHandler<Role.skill_ying_bian_zi
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

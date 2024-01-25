@@ -15,7 +15,4 @@ class skill_cong_rong_ying_dui_tos : AbstractProtoHandler<Role.skill_cong_rong_y
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

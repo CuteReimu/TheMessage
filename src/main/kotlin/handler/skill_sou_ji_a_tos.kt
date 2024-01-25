@@ -16,7 +16,4 @@ class skill_sou_ji_a_tos : AbstractProtoHandler<Role.skill_sou_ji_a_tos>() {
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

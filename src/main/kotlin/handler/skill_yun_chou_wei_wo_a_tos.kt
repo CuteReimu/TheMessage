@@ -16,7 +16,4 @@ class skill_yun_chou_wei_wo_a_tos : AbstractProtoHandler<Role.skill_yun_chou_wei
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

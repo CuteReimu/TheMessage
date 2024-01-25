@@ -160,9 +160,6 @@ class TanXuBianShi : MainPhaseSkill() {
             r.game!!.addEvent(GiveCardEvent(r, target, r))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

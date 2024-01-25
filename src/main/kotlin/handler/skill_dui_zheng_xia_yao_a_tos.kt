@@ -16,7 +16,4 @@ class skill_dui_zheng_xia_yao_a_tos : AbstractProtoHandler<Role.skill_dui_zheng_
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

@@ -34,7 +34,4 @@ data class StartGame(val game: Game, val whoseTurn: Int) : Fsm {
         GameExecutor.post(game, { game.resolve(DrawPhase(players[whoseTurn]!!)) }, 1, TimeUnit.SECONDS)
         return null
     }
-
-    companion object {
-    }
 }

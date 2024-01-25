@@ -16,7 +16,4 @@ class skill_zi_zheng_qing_bai_tos : AbstractProtoHandler<Role.skill_zi_zheng_qin
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

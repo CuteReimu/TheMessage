@@ -15,7 +15,4 @@ class skill_chi_zi_zhi_xin_a_tos : AbstractProtoHandler<Role.skill_chi_zi_zhi_xi
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

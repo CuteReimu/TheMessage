@@ -16,7 +16,4 @@ class skill_ding_lun_tos : AbstractProtoHandler<Role.skill_ding_lun_tos>() {
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

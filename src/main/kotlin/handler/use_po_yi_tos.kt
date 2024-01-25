@@ -33,7 +33,4 @@ class use_po_yi_tos : AbstractProtoHandler<Fengsheng.use_po_yi_tos>() {
             card.execute(r.game!!, r)
         }
     }
-
-    companion object {
-    }
 }

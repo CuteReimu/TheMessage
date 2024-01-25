@@ -93,8 +93,5 @@ class BiFeng : TriggeredSkill {
             event.valid = false
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 }

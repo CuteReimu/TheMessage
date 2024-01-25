@@ -29,7 +29,4 @@ class YouDao : TriggeredSkill {
         askWhom.draw(1)
         return null
     }
-
-    companion object {
-    }
 }

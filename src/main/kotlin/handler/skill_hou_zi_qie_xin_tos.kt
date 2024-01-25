@@ -16,7 +16,4 @@ class skill_hou_zi_qie_xin_tos : AbstractProtoHandler<Role.skill_hou_zi_qie_xin_
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

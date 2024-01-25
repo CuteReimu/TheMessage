@@ -78,9 +78,6 @@ class JingMeng : TriggeredSkill {
             logger.info("${r}发动了[惊梦]，查看了${target}的手牌")
             return ResolveResult(executeJingMengB(fsm, event, target), true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeJingMengB(val fsm: Fsm, val event: ReceiveCardEvent, val target: Player) : WaitingFsm {
@@ -157,9 +154,6 @@ class JingMeng : TriggeredSkill {
             g.playerDiscardCard(target, card)
             g.addEvent(DiscardCardEvent(event.whoseTurn, target))
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 

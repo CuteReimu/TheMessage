@@ -15,7 +15,4 @@ class skill_xian_fa_zhi_ren_b_tos : AbstractProtoHandler<Role.skill_xian_fa_zhi_
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

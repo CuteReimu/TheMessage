@@ -22,7 +22,4 @@ class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos
             (p as? HumanPlayer)?.send(Fengsheng.add_one_position_toc.getDefaultInstance())
         r.game!!.cancelStartTimer()
     }
-
-    companion object {
-    }
 }

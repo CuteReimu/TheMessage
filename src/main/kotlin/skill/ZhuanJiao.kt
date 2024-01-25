@@ -161,8 +161,5 @@ class ZhuanJiao : TriggeredSkill {
             g.addEvent(AddMessageCardEvent(whoseTurn))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 }

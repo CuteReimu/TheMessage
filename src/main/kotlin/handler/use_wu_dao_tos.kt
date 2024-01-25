@@ -44,7 +44,4 @@ class use_wu_dao_tos : AbstractProtoHandler<Fengsheng.use_wu_dao_tos>() {
             card.execute(r.game!!, r, target)
         }
     }
-
-    companion object {
-    }
 }

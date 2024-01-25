@@ -147,9 +147,6 @@ class BoAi : MainPhaseSkill() {
             g.addEvent(GiveCardEvent(r, r, target))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

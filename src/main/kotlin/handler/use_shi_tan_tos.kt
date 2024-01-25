@@ -34,7 +34,4 @@ class use_shi_tan_tos : AbstractProtoHandler<Fengsheng.use_shi_tan_tos>() {
             card.execute(r.game!!, r, target)
         }
     }
-
-    companion object {
-    }
 }

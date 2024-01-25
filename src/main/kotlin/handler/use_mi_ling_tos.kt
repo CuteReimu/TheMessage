@@ -39,7 +39,4 @@ class use_mi_ling_tos : AbstractProtoHandler<Fengsheng.use_mi_ling_tos>() {
             card.execute(r.game!!, r, target, pb.secret)
         }
     }
-
-    companion object {
-    }
 }

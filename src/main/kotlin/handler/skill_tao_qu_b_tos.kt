@@ -15,7 +15,4 @@ class skill_tao_qu_b_tos : AbstractProtoHandler<Role.skill_tao_qu_b_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

@@ -38,7 +38,4 @@ class use_jie_huo_tos : AbstractProtoHandler<Fengsheng.use_jie_huo_tos>() {
             card.execute(r.game!!, r)
         }
     }
-
-    companion object {
-    }
 }

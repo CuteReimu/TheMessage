@@ -15,7 +15,4 @@ class skill_cang_shen_jiao_tang_b_tos : AbstractProtoHandler<Role.skill_cang_she
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

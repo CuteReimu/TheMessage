@@ -157,9 +157,6 @@ class YunChouWeiWo : ActiveSkill {
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

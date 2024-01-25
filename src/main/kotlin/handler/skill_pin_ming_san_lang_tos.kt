@@ -16,7 +16,4 @@ class skill_pin_ming_san_lang_tos : AbstractProtoHandler<Role.skill_pin_ming_san
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

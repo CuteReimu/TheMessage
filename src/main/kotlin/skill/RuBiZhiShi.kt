@@ -314,9 +314,6 @@ class RuBiZhiShi : ActiveSkill {
                 }
             }
         }
-
-        companion object {
-        }
     }
 
     companion object {

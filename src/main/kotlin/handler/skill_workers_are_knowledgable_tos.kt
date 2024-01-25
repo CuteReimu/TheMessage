@@ -20,7 +20,4 @@ class skill_workers_are_knowledgable_tos : AbstractProtoHandler<Role.skill_worke
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

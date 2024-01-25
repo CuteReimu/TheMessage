@@ -15,7 +15,4 @@ class skill_cheng_zhi_tos : AbstractProtoHandler<Role.skill_cheng_zhi_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

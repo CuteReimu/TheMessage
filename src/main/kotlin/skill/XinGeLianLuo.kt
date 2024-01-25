@@ -107,9 +107,6 @@ class XinGeLianLuo : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     /**

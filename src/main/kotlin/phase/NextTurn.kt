@@ -51,7 +51,4 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
         game.end(declaredWinner, winner)
         return true
     }
-
-    companion object {
-    }
 }

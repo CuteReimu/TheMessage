@@ -15,7 +15,4 @@ class skill_jin_kou_yi_kai_b_tos : AbstractProtoHandler<Role.skill_jin_kou_yi_ka
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

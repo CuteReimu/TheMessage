@@ -111,8 +111,5 @@ class CongRongYingDui : TriggeredSkill {
                 r.game!!.sortedFrom(listOf(r, target), event.whoseTurn.location).forEach { it.draw(1) }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 }

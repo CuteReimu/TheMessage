@@ -21,7 +21,4 @@ class skill_tao_qu_a_tos : AbstractProtoHandler<Role.skill_tao_qu_a_tos>() {
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

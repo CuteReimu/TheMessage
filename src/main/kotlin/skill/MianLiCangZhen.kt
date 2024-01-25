@@ -93,9 +93,6 @@ class MianLiCangZhen : TriggeredSkill {
             r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

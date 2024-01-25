@@ -49,7 +49,4 @@ class choose_whether_receive_tos : AbstractProtoHandler<Fengsheng.choose_whether
             r.game!!.resolve(MessageMoveNext(fsm))
         }
     }
-
-    companion object {
-    }
 }

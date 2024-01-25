@@ -34,7 +34,4 @@ class add_robot_tos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
         robotPlayer.game = r.game
         robotPlayer.game!!.onPlayerJoinRoom(robotPlayer, Statistics.totalPlayerGameCount.random())
     }
-
-    companion object {
-    }
 }

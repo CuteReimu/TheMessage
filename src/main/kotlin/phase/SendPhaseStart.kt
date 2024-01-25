@@ -37,7 +37,4 @@ data class SendPhaseStart(override val whoseTurn: Player) : ProcessFsm() {
     override fun toString(): String {
         return "${whoseTurn}的情报传递阶段开始时"
     }
-
-    companion object {
-    }
 }

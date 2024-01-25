@@ -25,7 +25,4 @@ data class DrawPhase(val player: Player) : Fsm {
     override fun toString(): String {
         return player.toString() + "的摸牌阶段"
     }
-
-    companion object {
-    }
 }

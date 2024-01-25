@@ -15,7 +15,4 @@ class skill_ru_gui_tos : AbstractProtoHandler<Role.skill_ru_gui_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

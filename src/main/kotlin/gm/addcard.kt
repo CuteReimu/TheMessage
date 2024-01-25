@@ -64,7 +64,4 @@ class addcard : Function<Map<String, String>, Any> {
             "{\"error\": \"参数错误\"}"
         }
     }
-
-    companion object {
-    }
 }

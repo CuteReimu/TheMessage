@@ -20,7 +20,4 @@ class skill_ji_ban_b_tos : AbstractProtoHandler<Role.skill_ji_ban_b_tos>() {
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

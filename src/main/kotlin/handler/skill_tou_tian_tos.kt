@@ -16,7 +16,4 @@ class skill_tou_tian_tos : AbstractProtoHandler<Role.skill_tou_tian_tos>() {
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

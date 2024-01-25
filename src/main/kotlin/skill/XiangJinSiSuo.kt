@@ -114,9 +114,6 @@ class XiangJinSiSuo : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     private class XiangJinSiSuo2(val target: Player) : TriggeredSkill, OneTurnSkill {
@@ -140,9 +137,6 @@ class XiangJinSiSuo : TriggeredSkill {
             }
             askWhom.draw(1)
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 }

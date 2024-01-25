@@ -48,7 +48,4 @@ class send_message_card_tos : AbstractProtoHandler<Fengsheng.send_message_card_t
         r.incrSeq()
         r.game!!.resolve(OnSendCard(fsm.whoseTurn, fsm.whoseTurn, card, pb.cardDir, target, lockPlayers.toTypedArray()))
     }
-
-    companion object {
-    }
 }

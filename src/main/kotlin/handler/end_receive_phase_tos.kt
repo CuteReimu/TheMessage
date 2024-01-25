@@ -13,7 +13,4 @@ class end_receive_phase_tos : AbstractProtoHandler<Fengsheng.end_receive_phase_t
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }

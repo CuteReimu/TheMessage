@@ -105,9 +105,6 @@ class CangShenJiaoTang : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeCangShenJiaoTangC(
@@ -197,11 +194,5 @@ class CangShenJiaoTang : TriggeredSkill {
             player.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
-    }
-
-    companion object {
     }
 }

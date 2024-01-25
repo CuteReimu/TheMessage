@@ -21,7 +21,4 @@ class skill_ji_song_tos : AbstractProtoHandler<Role.skill_ji_song_tos>() {
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

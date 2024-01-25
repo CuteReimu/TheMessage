@@ -157,9 +157,6 @@ class JinBi : MainPhaseSkill() {
                 }
             }
         }
-
-        companion object {
-        }
     }
 
     companion object {

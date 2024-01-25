@@ -67,7 +67,4 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
             card.execute(r.game!!, r, messageCard, pb.cardDir, target, lockPlayers)
         }
     }
-
-    companion object {
-    }
 }

@@ -22,7 +22,4 @@ class end_fight_phase_tos : AbstractProtoHandler<Fengsheng.end_fight_phase_tos>(
         r.incrSeq()
         r.game!!.resolve(FightPhaseNext(fsm))
     }
-
-    companion object {
-    }
 }

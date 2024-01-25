@@ -36,7 +36,4 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
         logger.info("已满${players.size}个人，游戏将在5秒内开始。。。")
         r.game!!.setStartTimer()
     }
-
-    companion object {
-    }
 }

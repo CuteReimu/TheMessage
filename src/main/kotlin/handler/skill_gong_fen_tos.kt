@@ -16,7 +16,4 @@ class skill_gong_fen_tos : AbstractProtoHandler<Role.skill_gong_fen_tos>() {
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

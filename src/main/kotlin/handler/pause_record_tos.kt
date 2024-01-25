@@ -21,7 +21,4 @@ class pause_record_tos : ProtoHandler {
         player.pauseRecord(pb.pause)
         player.send(Fengsheng.pause_record_toc.newBuilder().setPause(pb.pause).build())
     }
-
-    companion object {
-    }
 }

@@ -33,7 +33,4 @@ data class OnReceiveCard(
         for (p in player.game!!.players) p!!.notifyReceivePhase()
         return ResolveResult(NextTurn(whoseTurn), true)
     }
-
-    companion object {
-    }
 }

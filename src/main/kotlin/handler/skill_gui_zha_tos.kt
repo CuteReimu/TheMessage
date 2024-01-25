@@ -16,7 +16,4 @@ class skill_gui_zha_tos : AbstractProtoHandler<Role.skill_gui_zha_tos>() {
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

@@ -167,9 +167,6 @@ class YuSiWangPo : MainPhaseSkill() {
             target.game!!.playerDiscardCard(target, *cards.toTypedArray())
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

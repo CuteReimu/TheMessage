@@ -16,7 +16,4 @@ class skill_tan_xu_bian_shi_a_tos : AbstractProtoHandler<Role.skill_tan_xu_bian_
         }
         skill.executeProtocol(r.game!!, r, pb)
     }
-
-    companion object {
-    }
 }

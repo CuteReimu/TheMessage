@@ -61,9 +61,6 @@ class JianDiFengXing : TriggeredSkill {
             player.draw(2)
             return ResolveResult(executeJianDiFengXingB(fsm, event), true)
         }
-
-        companion object {
-        }
     }
 
     private data class executeJianDiFengXingB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
@@ -137,9 +134,6 @@ class JianDiFengXing : TriggeredSkill {
             player.messageCards.add(card)
             player.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(executeJianDiFengXingC(fsm, event, card), true)
-        }
-
-        companion object {
         }
     }
 
@@ -243,9 +237,6 @@ class JianDiFengXing : TriggeredSkill {
             }
             event.messageCard = card
             return ResolveResult(fsm, true)
-        }
-
-        companion object {
         }
     }
 

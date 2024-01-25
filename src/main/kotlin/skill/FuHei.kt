@@ -28,7 +28,4 @@ class FuHei : TriggeredSkill {
         event.sender.draw(1)
         return null
     }
-
-    companion object {
-    }
 }

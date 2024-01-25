@@ -34,7 +34,4 @@ class HanHouLaoShi : TriggeredSkill {
         }
         return null
     }
-
-    companion object {
-    }
 }

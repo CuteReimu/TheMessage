@@ -101,9 +101,6 @@ class LianMin : TriggeredSkill {
             }
             return ResolveResult(fsm, true)
         }
-
-        companion object {
-        }
     }
 
     companion object {

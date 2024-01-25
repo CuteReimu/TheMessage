@@ -15,7 +15,4 @@ class skill_jing_meng_a_tos : AbstractProtoHandler<Role.skill_jing_meng_a_tos>()
         }
         r.game!!.tryContinueResolveProtocol(r, pb)
     }
-
-    companion object {
-    }
 }
