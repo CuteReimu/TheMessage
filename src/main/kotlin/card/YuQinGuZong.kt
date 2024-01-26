@@ -18,7 +18,6 @@ import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class YuQinGuZong : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -139,13 +138,8 @@ class YuQinGuZong : Card {
                 Right -> player.getNextRightAlivePlayer().let { if (it !== player) it else null }
                 else -> null
             } ?: return false
-            val lockPlayer =
-                if (!(card.canLock() || player.findSkill(SkillId.QIANG_YING_XIA_LING) != null) || Random.nextBoolean()) null
-                else if (direction == Up) target
-                else players.filter { it!!.alive && it !== player }.randomOrNull()
-            val lockPlayers = lockPlayer?.let { listOf(lockPlayer) } ?: emptyList()
             GameExecutor.post(game, {
-                card.execute(game, player, messageCard, direction, target, lockPlayers)
+                card.execute(game, player, messageCard, direction, target, emptyList<Player>())
             }, 2, TimeUnit.SECONDS)
             return true
         }
