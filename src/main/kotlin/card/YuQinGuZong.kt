@@ -12,6 +12,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Common.direction.*
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.use_yu_qin_gu_zong_toc
 import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.cannotPlayCard
@@ -99,8 +100,33 @@ class YuQinGuZong : Card {
             val game = player.game!!
             val players = game.players
             !player.cannotPlayCard(card_type.Yu_Qin_Gu_Zong) || return false
+            var canRed = true
+            var canBlue = true
+            when (player.identity) {
+                Red -> {
+                    if (player.messageCards.count(Red) == 2)
+                        canRed = false
+                    if (players.any { p -> p !== player && p!!.alive && p.messageCards.count(Blue) == 2 })
+                        canBlue = false
+                }
+
+                Blue -> {
+                    if (player.messageCards.count(Blue) == 2)
+                        canBlue = false
+                    if (players.any { p -> p !== player && p!!.alive && p.messageCards.count(Red) == 2 })
+                        canRed = false
+                }
+
+                else -> {
+                    if (player.secretTask in listOf(Killer, Collector, Pioneer)) {
+                        canRed = false
+                        canBlue = false
+                    }
+                }
+            }
+            canRed || canBlue || return false
             val messageCard = player.messageCards.filter {
-                Red in it.colors || Blue in it.colors
+                (Red in it.colors || Blue in it.colors) && (canRed || Red !in it.colors) && (canBlue || Blue !in it.colors)
             }.randomOrNull() ?: return false
             val direction =
                 if (player.findSkill(SkillId.LIAN_LUO) == null) messageCard.direction

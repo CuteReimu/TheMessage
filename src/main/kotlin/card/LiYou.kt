@@ -5,6 +5,8 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -101,16 +103,46 @@ class LiYou : Card {
             !player.cannotPlayCard(card_type.Li_You) || return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()
-            val players =
-                if (nextCard == null || nextCard.colors.size == 2) {
-                    game.players.filter { it!!.alive }
-                } else {
-                    val (partners, enemies) = game.players.filter { it!!.alive }
-                        .partition { player.isPartnerOrSelf(it!!) }
-                    if (nextCard.isBlack()) enemies else partners
-                }
-            val p = players.randomOrNull() ?: return false
-            GameExecutor.post(game, { card.execute(game, player, p) }, 2, TimeUnit.SECONDS)
+            if (player.identity == Black && player.secretTask == Disturber) {
+                val players =
+                    if (nextCard == null)
+                        emptyList()
+                    else
+                        game.players.filter { it!!.alive && it !== player && it.messageCards.countTrueCard() < 2 }.run {
+                            filter {
+                                for (c in nextCard.colors) {
+                                    when (c) {
+                                        Red -> if (it!!.identity == Red || it.identity == Black &&
+                                            it.secretTask in listOf(Collector, Mutator)
+                                        ) return@filter false
+
+                                        Blue -> if (it!!.identity == Blue || it.identity == Black &&
+                                            it.secretTask in listOf(Collector, Mutator)
+                                        ) return@filter false
+
+                                        else -> if (it!!.identity == Black &&
+                                            it.secretTask in listOf(Killer, Pioneer, Sweeper)
+                                        ) return@filter false
+                                    }
+                                }
+                                true
+                            }.ifEmpty { this }
+                        }
+                val p = players.ifEmpty { game.players.filter { it !== player && it!!.alive } }
+                    .randomOrNull() ?: return false
+                GameExecutor.post(game, { card.execute(game, player, p) }, 2, TimeUnit.SECONDS)
+            } else {
+                val players =
+                    if (nextCard == null || nextCard.colors.size == 2 && nextCard.isBlack()) {
+                        game.players.filter { it!!.alive }
+                    } else {
+                        val (partners, enemies) = game.players.filter { it!!.alive }
+                            .partition { player.isPartnerOrSelf(it!!) }
+                        if (nextCard.isBlack()) enemies else partners
+                    }
+                val p = players.randomOrNull() ?: return false
+                GameExecutor.post(game, { card.execute(game, player, p) }, 2, TimeUnit.SECONDS)
+            }
             return true
         }
     }

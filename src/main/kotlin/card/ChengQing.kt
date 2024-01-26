@@ -3,6 +3,8 @@ package com.fengsheng.card
 import com.fengsheng.*
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -108,6 +110,7 @@ class ChengQing : Card {
     companion object {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
+            !(player.identity == Black && player.secretTask in listOf(Killer, Pioneer, Sweeper)) || return false
             !player.cannotPlayCard(card_type.Cheng_Qing) || return false
             val p = player.game!!.players.filter { p -> p!!.alive && p.isPartnerOrSelf(player) }
                 .flatMap { p -> p!!.messageCards.filter(color.Black).map { c -> PlayerAndCard(p, c) } }

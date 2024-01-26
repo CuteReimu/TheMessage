@@ -123,9 +123,15 @@ class ShiTan : Card {
                 }
             }
             if (target is RobotPlayer) {
-                GameExecutor.post(target.game!!, {
-                    autoSelect()
-                }, 2, TimeUnit.SECONDS)
+                if (card.checkDrawCard(target) || target.cards.isEmpty()) {
+                    GameExecutor.post(target.game!!, {
+                        autoSelect()
+                    }, 100, TimeUnit.MILLISECONDS)
+                } else {
+                    GameExecutor.post(target.game!!, {
+                        autoSelect()
+                    }, 2, TimeUnit.SECONDS)
+                }
             }
             return null
         }
