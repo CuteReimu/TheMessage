@@ -131,11 +131,11 @@ class HumanPlayer(
             }
         } else {
             if (timeout != null && timeout!!.cancel()) {
-                var delay = 16
+                var delay = Config.WaitSecond + 1
                 if (game!!.fsm is MainPhaseIdle || game!!.fsm is WaitForDieGiveCard)
-                    delay = 21
+                    delay = Config.WaitSecond * 4 / 3 + 1
                 else if (game!!.fsm is WaitForSelectRole)
-                    delay = 31
+                    delay = Config.WaitSecond * 2 + 1
                 timeout =
                     GameExecutor.TimeWheel.newTimeout(timeout!!.task(), delay.toLong(), TimeUnit.SECONDS)
             }
