@@ -237,7 +237,7 @@ class MiLing : Card {
             }
             val messageTarget = target.game!!.players[target.getAbstractLocation(pb.targetPlayerId)]!!
             val lockPlayers = pb.lockPlayerIdList.map {
-                if (it <= 0 || it >= target.game!!.players.size) {
+                if (it < 0 || it >= target.game!!.players.size) {
                     logger.error("锁定目标错误: $it")
                     (player as? HumanPlayer)?.sendErrorMessage("锁定目标错误: $it")
                     return null
