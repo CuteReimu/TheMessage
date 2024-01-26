@@ -132,7 +132,9 @@ class YuQinGuZong : Card {
                 if (player.findSkill(SkillId.LIAN_LUO) == null) messageCard.direction
                 else arrayOf(Up, Left, Right).random()
             val target = when (direction) {
-                Up -> players.filter { it!!.alive && it !== player }.randomOrNull()
+                Up -> players.filter { it!!.alive && it !== player }
+                    .run { filter { it!!.isPartner(player) }.ifEmpty { this } }.randomOrNull()
+
                 Left -> player.getNextLeftAlivePlayer().let { if (it !== player) it else null }
                 Right -> player.getNextRightAlivePlayer().let { if (it !== player) it else null }
                 else -> null
