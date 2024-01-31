@@ -23,21 +23,23 @@ class ShouKouRuPing : TriggeredSkill {
             (askWhom === event.player || askWhom === targetPlayer) && event.player !== targetPlayer
         } ?: return null
         askWhom.addSkillUseCount(skillId)
-        logger.info("${askWhom}发动了[守口如瓶]")
-        for (p in askWhom.game!!.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_shou_kou_ru_ping_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(askWhom.location)
-                builder.cardPlayerId = p.getAlternativeLocation(event.player.location)
-                builder.cardTargetPlayerId = p.getAlternativeLocation(event.targetPlayer!!.location)
-                builder.cardType = event.cardType
-                event.card?.let { card ->
-                    if (event.cardType != Shi_Tan || p === event.player)
-                        builder.card = card.toPbCard()
-                    else
-                        builder.unknownCardCount = 1
+        logger.info("${askWhom}发动了[守口如瓶]，${event.cardType}无效")
+        if (event.valid) {
+            for (p in askWhom.game!!.players) {
+                if (p is HumanPlayer) {
+                    val builder = skill_shou_kou_ru_ping_toc.newBuilder()
+                    builder.playerId = p.getAlternativeLocation(askWhom.location)
+                    builder.cardPlayerId = p.getAlternativeLocation(event.player.location)
+                    builder.cardTargetPlayerId = p.getAlternativeLocation(event.targetPlayer!!.location)
+                    builder.cardType = event.cardType
+                    event.card?.let { card ->
+                        if (event.cardType != Shi_Tan || p === event.player)
+                            builder.card = card.toPbCard()
+                        else
+                            builder.unknownCardCount = 1
+                    }
+                    p.send(builder.build())
                 }
-                p.send(builder.build())
             }
         }
         if (askWhom.getSkillUseCount(skillId) == 1)
