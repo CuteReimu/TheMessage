@@ -219,6 +219,7 @@ object Statistics {
             playerInfoMap.computeIfPresent(it) { _, v -> v.copy(winCount = 0, gameCount = 0, score = v.score / 2) }
         }
         pool.trySend(::savePlayerInfo)
+        calculateRankList()
     }
 
     val totalPlayerGameCount: PlayerGameCount
