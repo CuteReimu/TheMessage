@@ -88,6 +88,7 @@ push.push_qq_groups=12345678
 | /releaseplayer    | name=aaa                | 解封，其中name是用户名                                                       |
 | /winrate          | 无                       | 返回一张胜率统计的png图片                                                      |
 | /updatetitle      | name=aaa&title=bbb      | 更新玩家的称号，其中name是用户名，title是称号，title为空就是删除称号                           |
+| /resetseason      | 无                       | 重置赛季，重置前请手动备份PlayerInfo.csv                                         |
 
 ## 开发相关
 

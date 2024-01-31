@@ -177,6 +177,8 @@ object Statistics {
         val l1 = playerInfoMap.filter { (_, v) -> v.score > 0 }.map { (_, v) -> v }.sortedWith { a, b ->
             if (a.score > b.score) -1
             else if (a.score < b.score) 1
+            else if (a.lastTime > b.lastTime) -1
+            else if (a.lastTime < b.lastTime) 1
             else if (a.gameCount > b.gameCount) -1
             else if (a.gameCount < b.gameCount) 1
             else b.winCount.compareTo(a.winCount)
@@ -207,6 +209,16 @@ object Statistics {
     fun getPlayerGameCount(name: String): PlayerGameCount {
         val playerInfo = playerInfoMap[name] ?: return PlayerGameCount(0, 0)
         return PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
+    }
+
+    /**
+     * 重置赛季
+     */
+    fun resetSeason() {
+        playerInfoMap.keys.forEach {
+            playerInfoMap.computeIfPresent(it) { _, v -> v.copy(winCount = 0, gameCount = 0, score = v.score / 2) }
+        }
+        pool.trySend(::savePlayerInfo)
     }
 
     val totalPlayerGameCount: PlayerGameCount
