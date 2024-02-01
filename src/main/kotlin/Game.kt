@@ -218,19 +218,20 @@ class Game private constructor(totalPlayerCount: Int) {
             if (players.size == humanPlayers.size) {
                 val records = ArrayList<Statistics.Record>(players.size)
                 for (p in players) {
-                    val win = p!! in winners
                     records.add(
                         Statistics.Record(
-                            p.originRole,
-                            win,
+                            p!!.originRole,
+                            winners.any { it === p },
                             p.originIdentity,
                             p.originSecretTask,
                             players.size
                         )
                     )
-                    if (p is HumanPlayer) playerGameResultList.add(PlayerGameResult(p.playerName, win))
                 }
                 Statistics.add(records)
+            }
+            for (p in humanPlayers) {
+                playerGameResultList.add(PlayerGameResult(p.playerName, winners.any { it === p }))
             }
             Statistics.addPlayerGameCount(playerGameResultList)
             Statistics.calculateRankList()
