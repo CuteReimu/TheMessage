@@ -3,6 +3,7 @@ package com.fengsheng
 import com.fengsheng.card.*
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.notify_die_give_card_toc
 import com.fengsheng.skill.*
@@ -116,10 +117,13 @@ class RobotPlayer : Player() {
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
         for (card in cards) {
-            var cardType: card_type? = card.type
-            if (findSkill(SkillId.YING_BIAN) != null && cardType == card_type.Jie_Huo) cardType = card_type.Wu_Dao
-            val ai = aiFightPhase[cardType]
-            if (ai != null && ai.test(fsm, card)) return
+            for (cardType in listOf(Jie_Huo, Wu_Dao, Diao_Bao)) {
+                val (ok, _) = canUseCardTypes(cardType, card)
+                if (ok) {
+                    val ai = aiFightPhase[cardType]
+                    if (ai != null && ai.test(fsm, card)) return
+                }
+            }
         }
         GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 2, TimeUnit.SECONDS)
     }
@@ -334,25 +338,25 @@ class RobotPlayer : Player() {
             SkillId.HOU_LAI_REN to BiPredicate { e, skill -> HouLaiRen.ai(e, skill) },
         )
         private val aiMainPhase = hashMapOf<card_type, BiPredicate<MainPhaseIdle, Card>>(
-            card_type.Cheng_Qing to BiPredicate { e, card -> ChengQing.ai(e, card) },
-            card_type.Li_You to BiPredicate { e, card -> LiYou.ai(e, card) },
-            card_type.Ping_Heng to BiPredicate { e, card -> PingHeng.ai(e, card) },
-            card_type.Shi_Tan to BiPredicate { e, card -> ShiTan.ai(e, card) },
-            card_type.Wei_Bi to BiPredicate { e, card -> WeiBi.ai(e, card) },
-            card_type.Feng_Yun_Bian_Huan to BiPredicate { e, card -> FengYunBianHuan.ai(e, card) },
-            card_type.Diao_Hu_Li_Shan to BiPredicate { e, card -> DiaoHuLiShan.ai(e, card) },
+            Cheng_Qing to BiPredicate { e, card -> ChengQing.ai(e, card) },
+            Li_You to BiPredicate { e, card -> LiYou.ai(e, card) },
+            Ping_Heng to BiPredicate { e, card -> PingHeng.ai(e, card) },
+            Shi_Tan to BiPredicate { e, card -> ShiTan.ai(e, card) },
+            Wei_Bi to BiPredicate { e, card -> WeiBi.ai(e, card) },
+            Feng_Yun_Bian_Huan to BiPredicate { e, card -> FengYunBianHuan.ai(e, card) },
+            Diao_Hu_Li_Shan to BiPredicate { e, card -> DiaoHuLiShan.ai(e, card) },
         )
         private val aiSendPhaseStart = hashMapOf<card_type, BiPredicate<SendPhaseStart, Card>>(
-            card_type.Mi_Ling to BiPredicate { e, card -> MiLing.ai(e, card) },
-            card_type.Yu_Qin_Gu_Zong to BiPredicate { e, card -> YuQinGuZong.ai(e, card) },
+            Mi_Ling to BiPredicate { e, card -> MiLing.ai(e, card) },
+            Yu_Qin_Gu_Zong to BiPredicate { e, card -> YuQinGuZong.ai(e, card) },
         )
         private val aiSendPhase = hashMapOf<card_type, BiPredicate<SendPhaseIdle, Card>>(
-            card_type.Po_Yi to BiPredicate { e, card -> PoYi.ai(e, card) },
+            Po_Yi to BiPredicate { e, card -> PoYi.ai(e, card) },
         )
         private val aiFightPhase = hashMapOf<card_type, BiPredicate<FightPhaseIdle, Card>>(
-            card_type.Diao_Bao to BiPredicate { e, card -> DiaoBao.ai(e, card) },
-            card_type.Jie_Huo to BiPredicate { e, card -> JieHuo.ai(e, card) },
-            card_type.Wu_Dao to BiPredicate { e, card -> WuDao.ai(e, card) },
+            Diao_Bao to BiPredicate { e, card -> DiaoBao.ai(e, card) },
+            Jie_Huo to BiPredicate { e, card -> JieHuo.ai(e, card) },
+            Wu_Dao to BiPredicate { e, card -> WuDao.ai(e, card) },
         )
     }
 }

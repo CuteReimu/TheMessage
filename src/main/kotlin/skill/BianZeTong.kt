@@ -54,11 +54,10 @@ class BianZeTong : TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val types = validCardTypes.shuffled()
                     val builder2 = skill_bian_ze_tong_tos.newBuilder()
                     builder2.enable = true
-                    builder2.cardTypeA = types[0]
-                    builder2.cardTypeB = types[1]
+                    builder2.cardTypeA = listOf(Diao_Bao, Wu_Dao, Jie_Huo).random()
+                    builder2.cardTypeB = Po_Yi
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }
