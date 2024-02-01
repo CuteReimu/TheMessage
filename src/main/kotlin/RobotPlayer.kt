@@ -195,7 +195,7 @@ class RobotPlayer : Player() {
         if (whoDie !== this) return
         GameExecutor.post(game!!, {
             if (identity != color.Black) {
-                val target = game!!.players.find { it !== this && it!!.identity == identity }
+                val target = game!!.players.find { it !== this && it!!.alive && it.identity == identity }
                 if (target != null) {
                     val giveCards = cards.take(3)
                     if (giveCards.isNotEmpty()) {
