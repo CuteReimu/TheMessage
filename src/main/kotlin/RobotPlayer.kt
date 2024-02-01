@@ -4,6 +4,8 @@ import com.fengsheng.card.*
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
+import com.fengsheng.protos.Common.direction.Left
+import com.fengsheng.protos.Common.direction.Right
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.notify_die_give_card_toc
 import com.fengsheng.skill.*
@@ -11,7 +13,6 @@ import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import java.util.function.BiPredicate
 import java.util.function.Predicate
-import kotlin.random.Random
 
 class RobotPlayer : Player() {
     override fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card) {
@@ -79,17 +80,26 @@ class RobotPlayer : Player() {
         GameExecutor.post(game!!, {
             val receive = fsm.mustReceiveMessage() || // 如果必须接收，则接收
                     !fsm.cannotReceiveMessage() && // 如果不能接收，则不接收
-                    (identity == color.Black && secretTask == secret_task.Pioneer || // 如果是先行则一定接
-                            !fsm.messageCard.isBlack() || // 如果是非黑则必接
-                            fsm.messageCard.colors.size == 2 && // 必须非纯黑才可能接，纯黑则不接
-                            if (identity != color.Black) { // 不是神秘人
-                                if (identity in fsm.messageCard.colors) // 是自己身份颜色的
-                                    messageCards.count(identity) >= messageCards.count(color.Black) // 自己颜色情报数量不少于黑情报数量才接
-                                else // 不是自己身份颜色的
-                                    messageCards.count(color.Black) == 0 || Random.nextBoolean() // 0黑则必接，否则有一半几率接
-                            } else { // 是神秘人
-                                Random.nextBoolean() // 有一半几率接
-                            })
+                    run {
+                        val oldValue = calculateMessageCardValue(fsm.whoseTurn, this, fsm.messageCard)
+                        val newValue =
+                            when (fsm.dir) {
+                                Left -> {
+                                    val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
+                                    calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard)
+                                }
+
+                                Right -> {
+                                    val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
+                                    calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard)
+                                }
+
+                                else -> {
+                                    calculateMessageCardValue(fsm.whoseTurn, fsm.sender, fsm.messageCard)
+                                }
+                            }
+                        newValue <= oldValue
+                    }
             game!!.resolve(
                 if (receive)
                     OnChooseReceiveCard(

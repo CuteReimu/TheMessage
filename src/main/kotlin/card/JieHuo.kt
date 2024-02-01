@@ -1,9 +1,6 @@
 package com.fengsheng.card
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -12,7 +9,6 @@ import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class JieHuo : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -102,8 +98,9 @@ class JieHuo : Card {
             val player = e.whoseFightTurn
             !player.cannotPlayCard(card_type.Jie_Huo) || return false
             e.inFrontOfWhom !== player || return false
-            !e.messageCard.isPureBlack() || player.identity == color.Black && player.secretTask == secret_task.Pioneer || return false
-            Random.nextBoolean() || return false
+            val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            val newValue = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard)
+            newValue > oldValue || return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true
         }

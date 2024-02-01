@@ -1,9 +1,6 @@
 package com.fengsheng.card
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -100,15 +97,11 @@ class DiaoBao : Card {
             } else if (player.identity == Blue) {
                 if (Red in card.colors) return false
             }
-            if (player.isPartnerOrSelf(e.inFrontOfWhom)) {
-                if (card.getColorScore() <= e.messageCard.getColorScore()) return false
-            } else {
-                if (card.getColorScore() >= e.messageCard.getColorScore()) return false
-            }
+            val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            val newValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card)
+            newValue > oldValue || return false
             GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true
         }
-
-        private fun Card.getColorScore() = colors.fold(0) { acc, it -> (if (it == color.Black) acc - 1 else acc + 2) }
     }
 }
