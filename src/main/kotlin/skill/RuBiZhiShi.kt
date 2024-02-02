@@ -319,9 +319,9 @@ class RuBiZhiShi : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
-            if (r.roleFaceUp) return false
+            !r.roleFaceUp || return false
             val target = r.game!!.players.filter {
-                it !== r && it!!.alive && it.cards.isNotEmpty() && it.isEnemy(r)
+                it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             GameExecutor.post(r.game!!, {
                 val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
