@@ -198,8 +198,14 @@ class Game private constructor(totalPlayerCount: Int) {
         val newScoreMap = HashMap<String, Int>()
         if (declaredWinners != null && winners != null) {
             if (winners.isNotEmpty() && winners.size < players.size) {
-                val totalWinners = winners.sumOf { (Statistics.getScore(it.playerName))?.coerceIn(180..1900) ?: -120 }
-                val totalPlayers = players.sumOf { (Statistics.getScore(it!!.playerName))?.coerceIn(180..1900) ?: -120 }
+                val totalWinners = winners.sumOf {
+                    if (it !is HumanPlayer) -120
+                    else (Statistics.getScore(it.playerName) ?: 0).coerceIn(180..1900)
+                }
+                val totalPlayers = players.sumOf {
+                    if (it !is HumanPlayer) -120
+                    else (Statistics.getScore(it.playerName) ?: 0).coerceIn(180..1900)
+                }
                 val totalLoser = totalPlayers - totalWinners
                 val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
                 for ((i, p) in humanPlayers.withIndex()) {
