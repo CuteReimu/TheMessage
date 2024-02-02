@@ -1,8 +1,7 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.card.Card
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
 import com.fengsheng.skill.canUseCardTypes
@@ -25,13 +24,13 @@ class use_jie_huo_tos : AbstractProtoHandler<Fengsheng.use_jie_huo_tos>() {
             r.sendErrorMessage("没有这张牌")
             return
         }
-        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Jie_Huo, card)
+        val (ok, convertCardSkill) = r.canUseCardTypes(Jie_Huo, card)
         if (!ok) {
             logger.error("这张${card}不能当作截获使用")
             r.sendErrorMessage("这张${card}不能当作截获使用")
             return
         }
-        if (card.type != card_type.Jie_Huo) card = Card.falseCard(card_type.Jie_Huo, card)
+        if (card.type != Jie_Huo) card = card.asCard(Jie_Huo)
         if (card.canUse(r.game!!, r)) {
             r.incrSeq()
             convertCardSkill?.onConvert(r)

@@ -4,7 +4,9 @@ import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
-import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Ping_Heng
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.use_ping_heng_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -21,7 +23,7 @@ class PingHeng : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Ping_Heng
+    override val type = Ping_Heng
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -69,9 +71,9 @@ class PingHeng : Card {
             g.playerDiscardCard(target, *target.cards.toTypedArray())
             r.draw(3)
             target.draw(3)
-            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, fsm)
+            OnFinishResolveCard(r, r, target, getOriginCard(), Ping_Heng, fsm)
         }
-        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Ping_Heng, resolveFunc, fsm))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), Ping_Heng, resolveFunc, fsm))
     }
 
     override fun toString(): String {
@@ -81,7 +83,7 @@ class PingHeng : Card {
     companion object {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
-            !player.cannotPlayCard(card_type.Ping_Heng) || return false
+            !player.cannotPlayCard(Ping_Heng) || return false
             player.cards.size <= 3 || return false
             val identity = player.identity
             val p = player.game!!.players.filter {
@@ -89,7 +91,12 @@ class PingHeng : Card {
                 else if (identity != color.Black && identity == it.identity) it.cards.size <= 3
                 else it.cards.size >= 3
             }.randomOrNull() ?: return false
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(
+                player.game!!,
+                { card.asCard(Ping_Heng).execute(player.game!!, player, p) },
+                2,
+                TimeUnit.SECONDS
+            )
             return true
         }
     }

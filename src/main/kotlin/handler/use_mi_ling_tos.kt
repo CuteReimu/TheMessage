@@ -1,7 +1,7 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.Mi_Ling
 import com.fengsheng.protos.Fengsheng
 import org.apache.logging.log4j.kotlin.logger
 
@@ -12,13 +12,13 @@ class use_mi_ling_tos : AbstractProtoHandler<Fengsheng.use_mi_ling_tos>() {
             r.sendErrorMessage("操作太晚了")
             return
         }
-        val card = r.findCard(pb.cardId)
+        var card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张牌")
             r.sendErrorMessage("没有这张牌")
             return
         }
-        if (card.type != card_type.Mi_Ling) {
+        if (card.type != Mi_Ling) {
             logger.error("这张牌不是密令，而是$card")
             r.sendErrorMessage("这张牌不是密令，而是$card")
             return
@@ -34,6 +34,7 @@ class use_mi_ling_tos : AbstractProtoHandler<Fengsheng.use_mi_ling_tos>() {
             return
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
+        if (card.type != Mi_Ling) card = card.asCard(Mi_Ling)
         if (card.canUse(r.game!!, r, target, pb.secret)) {
             r.incrSeq()
             card.execute(r.game!!, r, target, pb.secret)

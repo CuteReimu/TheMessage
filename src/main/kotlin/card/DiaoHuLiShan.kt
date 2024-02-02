@@ -7,7 +7,9 @@ import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
-import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Diao_Hu_Li_Shan
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
 import com.fengsheng.skill.*
 import org.apache.logging.log4j.kotlin.logger
@@ -24,7 +26,7 @@ class DiaoHuLiShan : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Diao_Hu_Li_Shan
+    override val type = Diao_Hu_Li_Shan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -65,9 +67,9 @@ class DiaoHuLiShan : Card {
             }
             if (isSkill) InvalidSkill.deal(target)
             else target.skills += CannotPlayCard(forbidAllCard = true)
-            OnFinishResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, fsm)
+            OnFinishResolveCard(r, r, target, getOriginCard(), Diao_Hu_Li_Shan, fsm)
         }
-        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Diao_Hu_Li_Shan, resolveFunc, fsm))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), Diao_Hu_Li_Shan, resolveFunc, fsm))
     }
 
     override fun toString(): String {
@@ -77,7 +79,7 @@ class DiaoHuLiShan : Card {
     companion object {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
-            !player.cannotPlayCard(card_type.Diao_Hu_Li_Shan) || return false
+            !player.cannotPlayCard(Diao_Hu_Li_Shan) || return false
             val p = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player)
             }.randomOrNull() ?: return false
@@ -85,7 +87,9 @@ class DiaoHuLiShan : Card {
             if (p.cards.isNotEmpty() && !p.skills.any { it is CannotPlayCard }) isSkills.add(false)
             if (p.skills.any { it is ActiveSkill && it !is MainPhaseSkill }) isSkills.add(true)
             val isSkill = isSkills.randomOrNull() ?: return false
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p, isSkill) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(player.game!!, {
+                card.asCard(Diao_Hu_Li_Shan).execute(player.game!!, player, p, isSkill)
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

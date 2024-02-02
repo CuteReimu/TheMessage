@@ -5,6 +5,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Shi_Tan
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
@@ -230,12 +231,12 @@ class ShiTan : Card {
                         ?: filter { it !== player && it!!.alive }.randomOrNull()
                 } ?: return false
                 GameExecutor.post(player.game!!, {
-                    card.execute(player.game!!, player, p)
+                    card.asCard(Shi_Tan).execute(player.game!!, player, p)
                 }, 2, TimeUnit.SECONDS)
                 return true
             } else if (yaPao != null && player.isPartner(yaPao)) {
                 GameExecutor.post(player.game!!, {
-                    card.execute(player.game!!, player, yaPao)
+                    card.asCard(Shi_Tan).execute(player.game!!, player, yaPao)
                 }, 2, TimeUnit.SECONDS)
                 return true
             }
@@ -243,7 +244,12 @@ class ShiTan : Card {
                 it !== player && it!!.alive && (!it.roleFaceUp ||
                         (it.findSkill(SkillId.CHENG_FU) == null && it.findSkill(SkillId.SHOU_KOU_RU_PING) == null))
             }.randomOrNull() ?: return false
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(
+                player.game!!,
+                { card.asCard(Shi_Tan).execute(player.game!!, player, p) },
+                2,
+                TimeUnit.SECONDS
+            )
             return true
         }
     }

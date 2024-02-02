@@ -5,6 +5,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -21,7 +22,7 @@ class JieHuo : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Jie_Huo
+    override val type = Jie_Huo
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -83,25 +84,27 @@ class JieHuo : Card {
                             p.send(builder.build())
                         }
                     }
-                    OnFinishResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), card_type.Jie_Huo, newFsm)
+                    OnFinishResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), Jie_Huo, newFsm)
                 } else {
                     val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-                    OnFinishResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), card_type.Jie_Huo, newFsm)
+                    OnFinishResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), Jie_Huo, newFsm)
                 }
             }
             g.resolve(
-                ResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), card_type.Jie_Huo, resolveFunc, fsm)
+                ResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), Jie_Huo, resolveFunc, fsm)
             )
         }
 
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
-            !player.cannotPlayCard(card_type.Jie_Huo) || return false
+            !player.cannotPlayCard(Jie_Huo) || return false
             e.inFrontOfWhom !== player || return false
             val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             val newValue = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard)
             newValue > oldValue || return false
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(player.game!!, {
+                card.asCard(Jie_Huo).execute(player.game!!, player)
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

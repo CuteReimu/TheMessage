@@ -1,8 +1,7 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.card.Card
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.Yu_Qin_Gu_Zong
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Fengsheng
@@ -23,7 +22,7 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
             r.sendErrorMessage("没有这张牌")
             return
         }
-        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Yu_Qin_Gu_Zong, card)
+        val (ok, convertCardSkill) = r.canUseCardTypes(Yu_Qin_Gu_Zong, card)
         if (!ok) {
             logger.error("这张${card}不能当作欲擒故纵使用")
             r.sendErrorMessage("这张${card}不能当作欲擒故纵使用")
@@ -60,7 +59,7 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
             (r as? HumanPlayer)?.sendErrorMessage(sendCardError)
             return
         }
-        if (card.type != card_type.Yu_Qin_Gu_Zong) card = Card.falseCard(card_type.Yu_Qin_Gu_Zong, card)
+        if (card.type != Yu_Qin_Gu_Zong) card = card.asCard(Yu_Qin_Gu_Zong)
         if (card.canUse(r.game!!, r, messageCard, pb.cardDir, target, lockPlayers)) {
             r.incrSeq()
             convertCardSkill?.onConvert(r)

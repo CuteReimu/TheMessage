@@ -2,8 +2,10 @@ package com.fengsheng.card
 
 import com.fengsheng.*
 import com.fengsheng.phase.*
-import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Cheng_Qing
+import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
 import com.fengsheng.skill.cannotPlayCard
@@ -21,7 +23,7 @@ class ChengQing : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Cheng_Qing
+    override val type = Cheng_Qing
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -94,13 +96,13 @@ class ChengQing : Card {
                 }
             }
             if (fsm is MainPhaseIdle) {
-                OnFinishResolveCard(fsm.whoseTurn, r, target, getOriginCard(), card_type.Cheng_Qing, fsm)
+                OnFinishResolveCard(fsm.whoseTurn, r, target, getOriginCard(), Cheng_Qing, fsm)
             } else {
                 val newFsm = UseChengQingOnDying(fsm as WaitForChengQing)
-                OnFinishResolveCard(fsm.whoseTurn, r, target, getOriginCard(), card_type.Cheng_Qing, newFsm)
+                OnFinishResolveCard(fsm.whoseTurn, r, target, getOriginCard(), Cheng_Qing, newFsm)
             }
         }
-        g.resolve(ResolveCard(fsm.whoseTurn, r, target, getOriginCard(), card_type.Cheng_Qing, resolveFunc, fsm))
+        g.resolve(ResolveCard(fsm.whoseTurn, r, target, getOriginCard(), Cheng_Qing, resolveFunc, fsm))
     }
 
     override fun toString(): String {
@@ -111,7 +113,7 @@ class ChengQing : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
             !(player.identity == Black && player.secretTask in listOf(Killer, Pioneer, Sweeper)) || return false
-            !player.cannotPlayCard(card_type.Cheng_Qing) || return false
+            !player.cannotPlayCard(Cheng_Qing) || return false
             val p1 = player.game!!.players.filter { p -> p!!.alive && p.isPartnerOrSelf(player) } // 伙伴或自己
                 .flatMap { p -> p!!.messageCards.filter(Black).map { c -> PlayerAndCard(p, c) } }.run { // 黑情报
                     if (player.identity == Black) this else filterNot { player.identity in it.card.colors } // 非神秘人排除自己身份颜色的情报
@@ -124,7 +126,7 @@ class ChengQing : Card {
             val p = (p1 + p2).randomOrNull() ?: return false
             GameExecutor.post(
                 player.game!!,
-                { card.execute(player.game!!, player, p.player, p.card.id) },
+                { card.asCard(Cheng_Qing).execute(player.game!!, player, p.player, p.card.id) },
                 2,
                 TimeUnit.SECONDS
             )

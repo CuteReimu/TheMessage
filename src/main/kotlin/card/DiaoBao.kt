@@ -5,6 +5,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Fengsheng.notify_phase_toc
@@ -24,7 +25,7 @@ class DiaoBao : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Diao_Bao
+    override val type = Diao_Bao
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -76,12 +77,12 @@ class DiaoBao : Card {
                 r,
                 null,
                 getOriginCard(),
-                card_type.Diao_Bao,
+                Diao_Bao,
                 newFsm,
                 discardAfterResolve = false
             )
         }
-        g.resolve(ResolveCard(fsm.whoseTurn, r, null, getOriginCard(), card_type.Diao_Bao, resolveFunc, fsm))
+        g.resolve(ResolveCard(fsm.whoseTurn, r, null, getOriginCard(), Diao_Bao, resolveFunc, fsm))
     }
 
     override fun toString(): String {
@@ -91,7 +92,7 @@ class DiaoBao : Card {
     companion object {
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
-            !player.cannotPlayCard(card_type.Diao_Bao) || return false
+            !player.cannotPlayCard(Diao_Bao) || return false
             if (player.identity == Red) {
                 if (Blue in card.colors) return false
             } else if (player.identity == Blue) {
@@ -100,7 +101,9 @@ class DiaoBao : Card {
             val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             val newValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card)
             newValue > oldValue || return false
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(player.game!!, {
+                card.asCard(Diao_Bao).execute(player.game!!, player)
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

@@ -1,8 +1,7 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.card.Card
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
 import com.fengsheng.skill.canUseCardTypes
@@ -25,13 +24,13 @@ class use_diao_bao_tos : AbstractProtoHandler<Fengsheng.use_diao_bao_tos>() {
             r.sendErrorMessage("没有这张牌")
             return
         }
-        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Diao_Bao, card)
+        val (ok, convertCardSkill) = r.canUseCardTypes(Diao_Bao, card)
         if (!ok) {
             logger.error("这张${card}不能当作调包使用")
             r.sendErrorMessage("这张${card}不能当作调包使用")
             return
         }
-        if (card.type != card_type.Diao_Bao) card = Card.falseCard(card_type.Diao_Bao, card)
+        if (card.type != Diao_Bao) card = card.asCard(Diao_Bao)
         if (card.canUse(r.game!!, r)) {
             r.incrSeq()
             convertCardSkill?.onConvert(r)

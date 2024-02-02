@@ -4,8 +4,10 @@ import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
-import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Li_You
+import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
 import com.fengsheng.skill.cannotPlayCard
@@ -23,7 +25,7 @@ class LiYou : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Li_You
+    override val type = Li_You
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -93,14 +95,14 @@ class LiYou : Card {
                     }
                 }
                 if (!joinIntoHand) r.game!!.addEvent(AddMessageCardEvent(r, false))
-                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Li_You, fsm)
+                OnFinishResolveCard(r, r, target, card?.getOriginCard(), Li_You, fsm)
             }
-            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), card_type.Li_You, resolveFunc, fsm))
+            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), Li_You, resolveFunc, fsm))
         }
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
-            !player.cannotPlayCard(card_type.Li_You) || return false
+            !player.cannotPlayCard(Li_You) || return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()
             if (player.identity == Black && player.secretTask == Disturber) {
@@ -130,7 +132,7 @@ class LiYou : Card {
                         }
                 val p = players.ifEmpty { game.players.filter { it !== player && it!!.alive } }
                     .randomOrNull() ?: return false
-                GameExecutor.post(game, { card.execute(game, player, p) }, 2, TimeUnit.SECONDS)
+                GameExecutor.post(game, { card.asCard(Li_You).execute(game, player, p) }, 2, TimeUnit.SECONDS)
             } else {
                 val players =
                     if (nextCard == null || nextCard.colors.size == 2 && nextCard.isBlack()) {
@@ -141,7 +143,7 @@ class LiYou : Card {
                         if (nextCard.isBlack()) enemies else partners
                     }
                 val p = players.randomOrNull() ?: return false
-                GameExecutor.post(game, { card.execute(game, player, p) }, 2, TimeUnit.SECONDS)
+                GameExecutor.post(game, { card.asCard(Li_You).execute(game, player, p) }, 2, TimeUnit.SECONDS)
             }
             return true
         }

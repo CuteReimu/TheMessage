@@ -9,6 +9,7 @@ import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Yu_Qin_Gu_Zong
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Common.direction.*
@@ -30,7 +31,7 @@ class YuQinGuZong : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Yu_Qin_Gu_Zong
+    override val type = Yu_Qin_Gu_Zong
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -76,7 +77,7 @@ class YuQinGuZong : Card {
                 )
             )
         }
-        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Yu_Qin_Gu_Zong, resolveFunc, fsm))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), Yu_Qin_Gu_Zong, resolveFunc, fsm))
     }
 
     override fun toPbCard(): card {
@@ -98,7 +99,7 @@ class YuQinGuZong : Card {
             val player = e.whoseTurn
             val game = player.game!!
             val players = game.players
-            !player.cannotPlayCard(card_type.Yu_Qin_Gu_Zong) || return false
+            !player.cannotPlayCard(Yu_Qin_Gu_Zong) || return false
             var canRed = true
             var canBlue = true
             when (player.identity) {
@@ -139,7 +140,7 @@ class YuQinGuZong : Card {
                 else -> null
             } ?: return false
             GameExecutor.post(game, {
-                card.execute(game, player, messageCard, direction, target, emptyList<Player>())
+                card.asCard(Yu_Qin_Gu_Zong).execute(game, player, messageCard, direction, target, emptyList<Player>())
             }, 2, TimeUnit.SECONDS)
             return true
         }

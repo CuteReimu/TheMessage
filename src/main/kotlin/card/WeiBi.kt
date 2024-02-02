@@ -5,6 +5,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.cannotPlayCard
@@ -23,7 +24,7 @@ class WeiBi : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Wei_Bi
+    override val type = Wei_Bi
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -114,7 +115,7 @@ class WeiBi : Card {
             }
             r.game!!.addEvent(GiveCardEvent(r, target, r))
             return ResolveResult(
-                OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm), true
+                OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm), true
             )
         }
 
@@ -165,7 +166,7 @@ class WeiBi : Card {
             val fsm = g.fsm as MainPhaseIdle
             val resolveFunc = { valid: Boolean ->
                 if (!valid) {
-                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm)
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm)
                 } else if (hasCard(target, wantType)) {
                     executeWeiBi(fsm, r, target, card, wantType)
                 } else {
@@ -183,10 +184,10 @@ class WeiBi : Card {
                             p.send(builder.build())
                         }
                     }
-                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, fsm)
+                    OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm)
                 }
             }
-            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), card_type.Wei_Bi, resolveFunc, fsm))
+            g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, resolveFunc, fsm))
         }
 
         private fun hasCard(player: Player, cardType: card_type): Boolean {
@@ -199,7 +200,7 @@ class WeiBi : Card {
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
-            !player.cannotPlayCard(card_type.Wei_Bi) || return false
+            !player.cannotPlayCard(Wei_Bi) || return false
             val yaPao = player.game!!.players.find {
                 it!!.alive && it.findSkill(SkillId.SHOU_KOU_RU_PING) != null
             }
@@ -210,13 +211,13 @@ class WeiBi : Card {
                 } ?: return false
                 val cardType = availableCardType.random()
                 GameExecutor.post(player.game!!, {
-                    card.execute(player.game!!, player, p, cardType)
+                    card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType)
                 }, 2, TimeUnit.SECONDS)
                 return true
             } else if (yaPao != null && player.isPartner(yaPao)) {
                 val cardType = availableCardType.random()
                 GameExecutor.post(player.game!!, {
-                    card.execute(player.game!!, player, yaPao, cardType)
+                    card.asCard(Wei_Bi).execute(player.game!!, player, yaPao, cardType)
                 }, 2, TimeUnit.SECONDS)
                 return true
             }
@@ -228,7 +229,12 @@ class WeiBi : Card {
                         it.cards.any { card -> availableCardType.contains(card.type) }
             }.randomOrNull() ?: return false
             val cardType = availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.random()
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player, p, cardType) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(
+                player.game!!,
+                { card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType) },
+                2,
+                TimeUnit.SECONDS
+            )
             return true
         }
     }

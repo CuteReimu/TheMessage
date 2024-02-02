@@ -1,8 +1,7 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.card.Card
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.Po_Yi
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.canUseCardTypes
 import org.apache.logging.log4j.kotlin.logger
@@ -20,13 +19,13 @@ class use_po_yi_tos : AbstractProtoHandler<Fengsheng.use_po_yi_tos>() {
             r.sendErrorMessage("没有这张牌")
             return
         }
-        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Po_Yi, card)
+        val (ok, convertCardSkill) = r.canUseCardTypes(Po_Yi, card)
         if (!ok) {
             logger.error("这张${card}不能当作破译使用")
             r.sendErrorMessage("这张${card}不能当作破译使用")
             return
         }
-        if (card.type != card_type.Po_Yi) card = Card.falseCard(card_type.Po_Yi, card)
+        if (card.type != Po_Yi) card = card.asCard(Po_Yi)
         if (card.canUse(r.game!!, r)) {
             r.incrSeq()
             convertCardSkill?.onConvert(r)

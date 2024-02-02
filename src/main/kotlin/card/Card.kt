@@ -137,22 +137,27 @@ abstract class Card {
             }
             return sb.toString()
         }
+    }
 
-        fun falseCard(falseType: card_type, originCard: Card): Card {
-            return when (falseType) {
-                Cheng_Qing -> ChengQing(originCard)
-                Wei_Bi -> WeiBi(originCard)
-                Li_You -> LiYou(originCard)
-                Ping_Heng -> PingHeng(originCard)
-                Po_Yi -> PoYi(originCard)
-                Jie_Huo -> JieHuo(originCard)
-                Diao_Bao -> DiaoBao(originCard)
-                Wu_Dao -> WuDao(originCard)
-                Feng_Yun_Bian_Huan -> FengYunBianHuan(originCard)
-                Diao_Hu_Li_Shan -> DiaoHuLiShan(originCard)
-                Yu_Qin_Gu_Zong -> YuQinGuZong(originCard)
-                else -> throw IllegalStateException("Unexpected value: $falseType")
-            }
+    /**
+     * 将卡牌转为指定的卡牌类型。如果卡牌类型相同，则返回自己。
+     */
+    fun asCard(falseType: card_type): Card {
+        val card = getOriginCard()
+        return when (falseType) {
+            card.type -> card
+            Cheng_Qing -> ChengQing(card)
+            Wei_Bi -> WeiBi(card)
+            Li_You -> LiYou(card)
+            Ping_Heng -> PingHeng(card)
+            Po_Yi -> PoYi(card)
+            Jie_Huo -> JieHuo(card)
+            Diao_Bao -> DiaoBao(card)
+            Wu_Dao -> WuDao(card)
+            Feng_Yun_Bian_Huan -> FengYunBianHuan(card)
+            Diao_Hu_Li_Shan -> DiaoHuLiShan(card)
+            Yu_Qin_Gu_Zong -> YuQinGuZong(card)
+            else -> throw IllegalStateException("Unexpected value: $falseType")
         }
     }
 }

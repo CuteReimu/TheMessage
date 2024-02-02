@@ -1,8 +1,7 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.card.Card
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.Diao_Hu_Li_Shan
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.canUseCardTypes
 import org.apache.logging.log4j.kotlin.logger
@@ -20,7 +19,7 @@ class use_diao_hu_li_shan_tos : AbstractProtoHandler<Fengsheng.use_diao_hu_li_sh
             r.sendErrorMessage("没有这张牌")
             return
         }
-        val (ok, convertCardSkill) = r.canUseCardTypes(card_type.Diao_Hu_Li_Shan, card)
+        val (ok, convertCardSkill) = r.canUseCardTypes(Diao_Hu_Li_Shan, card)
         if (!ok) {
             logger.error("这张${card}不能当作调虎离山使用")
             r.sendErrorMessage("这张${card}不能当作调虎离山使用")
@@ -32,7 +31,7 @@ class use_diao_hu_li_shan_tos : AbstractProtoHandler<Fengsheng.use_diao_hu_li_sh
             return
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
-        if (card.type != card_type.Diao_Hu_Li_Shan) card = Card.falseCard(card_type.Diao_Hu_Li_Shan, card)
+        if (card.type != Diao_Hu_Li_Shan) card = card.asCard(Diao_Hu_Li_Shan)
         if (card.canUse(r.game!!, r, target, pb.isSkill)) {
             r.incrSeq()
             convertCardSkill?.onConvert(r)

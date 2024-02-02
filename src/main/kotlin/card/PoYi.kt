@@ -4,7 +4,9 @@ import com.fengsheng.*
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseIdle
-import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Po_Yi
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.po_yi_show_toc
 import com.fengsheng.protos.Fengsheng.use_po_yi_toc
@@ -24,7 +26,7 @@ class PoYi : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Po_Yi
+    override val type = Po_Yi
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -48,7 +50,7 @@ class PoYi : Card {
         val resolveFunc = { _: Boolean ->
             executePoYi(this@PoYi, fsm)
         }
-        g.resolve(ResolveCard(fsm.whoseTurn, r, null, getOriginCard(), card_type.Po_Yi, resolveFunc, fsm))
+        g.resolve(ResolveCard(fsm.whoseTurn, r, null, getOriginCard(), Po_Yi, resolveFunc, fsm))
     }
 
     private data class executePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {
@@ -108,7 +110,7 @@ class PoYi : Card {
             showAndDrawCard(message.show)
             val newFsm = sendPhase.copy(isMessageCardFaceUp = message.show)
             return ResolveResult(
-                OnFinishResolveCard(sendPhase.whoseTurn, player, null, card.getOriginCard(), card_type.Po_Yi, newFsm),
+                OnFinishResolveCard(sendPhase.whoseTurn, player, null, card.getOriginCard(), Po_Yi, newFsm),
                 true
             )
         }
@@ -138,9 +140,9 @@ class PoYi : Card {
     companion object {
         fun ai(e: SendPhaseIdle, card: Card): Boolean {
             val player = e.inFrontOfWhom
-            !player.cannotPlayCard(card_type.Po_Yi) || return false
+            !player.cannotPlayCard(Po_Yi) || return false
             !e.isMessageCardFaceUp && e.messageCard.isBlack() || return false
-            GameExecutor.post(player.game!!, { card.execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(player.game!!, { card.asCard(Po_Yi).execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
             return true
         }
     }

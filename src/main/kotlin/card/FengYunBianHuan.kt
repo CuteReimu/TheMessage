@@ -250,7 +250,7 @@ class FengYunBianHuan : Card {
             !player.cannotPlayCard(Feng_Yun_Bian_Huan) || return false
             GameExecutor.post(
                 player.game!!,
-                { card.execute(player.game!!, player) },
+                { card.asCard(Feng_Yun_Bian_Huan).execute(player.game!!, player) },
                 2,
                 TimeUnit.SECONDS
             )

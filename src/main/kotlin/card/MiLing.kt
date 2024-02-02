@@ -6,6 +6,7 @@ import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Mi_Ling
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role
 import com.fengsheng.skill.LengXueXunLian
@@ -28,7 +29,7 @@ class MiLing : Card {
         this.secret = card.secret
     }
 
-    override val type = card_type.Mi_Ling
+    override val type = Mi_Ling
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -92,7 +93,7 @@ class MiLing : Card {
             else
                 miLingChooseCard(this@MiLing, r, target, secret, fsm, timeout)
         }
-        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Mi_Ling, resolveFunc, fsm))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), Mi_Ling, resolveFunc, fsm))
     }
 
     private data class miLingChooseCard(
@@ -271,7 +272,7 @@ class MiLing : Card {
                 )
             return ResolveResult(
                 OnFinishResolveCard(
-                    sendPhase.whoseTurn, sendPhase.whoseTurn, target, card.getOriginCard(), card_type.Mi_Ling, newFsm,
+                    sendPhase.whoseTurn, sendPhase.whoseTurn, target, card.getOriginCard(), Mi_Ling, newFsm,
                     discardAfterResolve = false
                 ),
                 true
@@ -298,7 +299,7 @@ class MiLing : Card {
         fun ai(e: SendPhaseStart, card: Card): Boolean {
             card as MiLing
             val player = e.whoseTurn
-            !player.cannotPlayCard(card_type.Mi_Ling) || return false
+            !player.cannotPlayCard(Mi_Ling) || return false
             val target = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
@@ -307,7 +308,7 @@ class MiLing : Card {
                 else (0..2).first { card.secret[it] == player.identity }
             GameExecutor.post(
                 player.game!!,
-                { card.execute(player.game!!, player, target, secret) },
+                { card.asCard(Mi_Ling).execute(player.game!!, player, target, secret) },
                 2,
                 TimeUnit.SECONDS
             )

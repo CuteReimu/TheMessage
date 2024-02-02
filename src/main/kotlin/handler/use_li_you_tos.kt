@@ -1,7 +1,7 @@
 package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Fengsheng
 import org.apache.logging.log4j.kotlin.logger
 
@@ -12,13 +12,13 @@ class use_li_you_tos : AbstractProtoHandler<Fengsheng.use_li_you_tos>() {
             r.sendErrorMessage("操作太晚了")
             return
         }
-        val card = r.findCard(pb.cardId)
+        var card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张牌")
             r.sendErrorMessage("没有这张牌")
             return
         }
-        if (card.type != card_type.Li_You) {
+        if (card.type != Li_You) {
             logger.error("这张牌不是利诱，而是$card")
             r.sendErrorMessage("这张牌不是利诱，而是$card")
             return
@@ -29,6 +29,7 @@ class use_li_you_tos : AbstractProtoHandler<Fengsheng.use_li_you_tos>() {
             return
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.playerId)]!!
+        if (card.type != Li_You) card = card.asCard(Li_You)
         if (card.canUse(r.game!!, r, target)) {
             r.incrSeq()
             card.execute(r.game!!, r, target)

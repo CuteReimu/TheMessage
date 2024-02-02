@@ -5,6 +5,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
 import com.fengsheng.skill.cannotPlayCard
@@ -22,7 +23,7 @@ class WuDao : Card {
      */
     internal constructor(originCard: Card) : super(originCard)
 
-    override val type = card_type.Wu_Dao
+    override val type = Wu_Dao
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -93,40 +94,37 @@ class WuDao : Card {
                             p.send(builder.build())
                         }
                     }
-                    OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
+                    OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), Wu_Dao, newFsm)
                 } else {
                     val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
-                    OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, newFsm)
+                    OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), Wu_Dao, newFsm)
                 }
             }
             return ResolveCard(
-                fsm.whoseTurn, r, target, card?.getOriginCard(), card_type.Wu_Dao, resolveFunc, fsm,
+                fsm.whoseTurn, r, target, card?.getOriginCard(), Wu_Dao, resolveFunc, fsm,
                 valid = target !== fsm.inFrontOfWhom
             )
         }
 
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
-            !player.cannotPlayCard(card_type.Wu_Dao) || return false
+            !player.cannotPlayCard(Wu_Dao) || return false
             if (player === e.inFrontOfWhom && player.identity == color.Black && player.secretTask == secret_task.Pioneer)
                 return false
             var target: Player? = null
-            run {
-                val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
-                val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-                val newValue = player.calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
-                if (newValue > oldValue) target = left
+            var oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
+            val newValueLeft = player.calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
+            if (newValueLeft > oldValue) {
+                target = left
+                oldValue = newValueLeft
             }
-            if (target == null) {
-                val right = e.inFrontOfWhom.getNextRightAlivePlayer()
-                val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-                val newValue = player.calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
-                if (newValue > oldValue) target = right
-            }
+            val right = e.inFrontOfWhom.getNextRightAlivePlayer()
+            val newValueRight = player.calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
+            if (newValueRight > oldValue) target = right
             target ?: return false
             GameExecutor.post(player.game!!, {
-                val card0 = if (card.type == card_type.Wu_Dao) card else falseCard(card_type.Wu_Dao, card)
-                card0.execute(player.game!!, player, target!!)
+                card.asCard(Wu_Dao).execute(player.game!!, player, target)
             }, 2, TimeUnit.SECONDS)
             return true
         }
