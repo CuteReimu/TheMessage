@@ -9,6 +9,7 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.phase.Main_Phase
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.cannotPlayCard
@@ -85,7 +86,16 @@ class FengYunBianHuan : Card {
             val p = mainPhaseIdle.whoseTurn
             val r = players.firstOrNull()
             if (r == null) {
-                mainPhaseIdle.whoseTurn.game!!.deck.discard(*drawCards.toTypedArray())
+                p.game!!.deck.discard(*drawCards.toTypedArray())
+                // 向客户端发送notify_phase_toc，客户端关闭风云变幻的弹窗
+                for (player in p.game!!.players) {
+                    if (player is HumanPlayer) {
+                        val builder = notify_phase_toc.newBuilder()
+                        builder.currentPlayerId = player.getAlternativeLocation(p.location)
+                        builder.currentPhase = Main_Phase
+                        player.send(builder.build())
+                    }
+                }
                 if (asMessageCard) p.game!!.addEvent(AddMessageCardEvent(p, false))
                 val newFsm = OnFinishResolveCard(p, p, null, card.getOriginCard(), Feng_Yun_Bian_Huan, mainPhaseIdle)
                 return ResolveResult(newFsm, true)
