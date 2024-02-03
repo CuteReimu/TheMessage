@@ -1,9 +1,16 @@
 package com.fengsheng
 
+import com.fengsheng.ScoreFactory.logger
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.skill.LengXueXunLian.MustLockOne
+import com.fengsheng.skill.LianLuo
+import com.fengsheng.skill.QiangYingXiaLing
+import com.fengsheng.skill.SkillId.QIANG_YING_XIA_LING
 
 /**
  * 判断玩家是否能赢
@@ -94,6 +101,14 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
                     else -> 111
                 }
             }
+        } else {
+            if (Black in card.colors) {
+                value += when (inFrontOfWhom.messageCards.count(Black)) {
+                    0 -> 1
+                    1 -> 11
+                    else -> 111
+                }
+            }
         }
     } else {
         val myColor = identity
@@ -131,4 +146,102 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
         }
     }
     return value.coerceIn(-600..600)
+}
+
+/**
+ * 计算应该选择哪张情报传出的结果
+ *
+ * @param card 传出的牌
+ * @param target 传出的目标
+ * @param dir 传递方向
+ * @param lockedPlayers 被锁定的玩家
+ */
+class SendMessageCardResult(
+    val card: Card,
+    val target: Player,
+    val dir: direction,
+    var lockedPlayers: Array<Player>
+)
+
+/**
+ * 计算应该选择哪张情报传出
+ *
+ * @param availableCards 可以选择的牌，默认为r的所有手牌
+ */
+fun Player.calSendMessageCard(
+    whoseTurn: Player = this,
+    availableCards: List<Card> = cards,
+): SendMessageCardResult {
+    if (availableCards.isEmpty()) {
+        logger.error("没有可用的情报牌，玩家手牌：${cards.toTypedArray().contentToString()}")
+        throw IllegalArgumentException("没有可用的情报牌")
+    }
+    var value = Double.NEGATIVE_INFINITY
+    // 先随便填一个，反正后面要替换
+    var result = SendMessageCardResult(availableCards[0], game!!.players[0]!!, Up, emptyArray())
+
+    fun calAveValue(
+        card: Card,
+        attenuation: Double,
+        nextPlayerFunc: Player.() -> Player
+    ): Double {
+        var sum = 0.0
+        var n = 0.0
+        var currentPlayer = nextPlayerFunc()
+        var currentPercent = 1.0
+        val canLock = card.canLock() || skills.any { it is MustLockOne || it is QiangYingXiaLing }
+        while (true) {
+            var m = currentPercent
+            if (canLock) m *= m
+            else if (isPartnerOrSelf(currentPlayer)) m *= 1.2
+            sum += calculateMessageCardValue(whoseTurn, currentPlayer, card) * m
+            n += m
+            if (currentPlayer === this) break
+            currentPlayer = currentPlayer.nextPlayerFunc()
+            currentPercent *= attenuation
+        }
+        return sum / n
+    }
+
+    for (card in availableCards) {
+        if (card.direction == Up || skills.any { it is LianLuo }) {
+            for (target in game!!.players) {
+                if (target === this || !target!!.alive) continue
+                val tmpValue = calAveValue(card, 0.7) { if (this === target) this@calSendMessageCard else target }
+                if (tmpValue > value) {
+                    value = tmpValue
+                    result = SendMessageCardResult(card, target, Up, emptyArray())
+                }
+            }
+        } else if (card.direction == Left) {
+            val tmpValue = calAveValue(card, 0.7, Player::getNextLeftAlivePlayer)
+            if (tmpValue > value) {
+                value = tmpValue
+                result = SendMessageCardResult(card, getNextLeftAlivePlayer(), Left, emptyArray())
+            }
+        } else if (card.direction == Right) {
+            val tmpValue = calAveValue(card, 0.7, Player::getNextRightAlivePlayer)
+            if (tmpValue > value) {
+                value = tmpValue
+                result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyArray())
+            }
+        }
+    }
+    if (result.card.canLock() || findSkill(QIANG_YING_XIA_LING) != null) {
+        var maxValue = Int.MIN_VALUE
+        var lockTarget: Player? = null
+        val targets =
+            if (result.dir == Up) listOf(this, result.target)
+            else game!!.players.filter { it!!.alive }
+        for (player in targets) {
+            val v = calculateMessageCardValue(whoseTurn, player!!, result.card)
+            if (v > maxValue) {
+                maxValue = v
+                lockTarget = player
+            }
+        }
+        lockTarget?.let { result.lockedPlayers = arrayOf(it) }
+    }
+    logger.debug("计算结果：${result.card}(cardId:${result.card.id})传递给${result.target}，方向是${result.dir}")
+    return result
 }

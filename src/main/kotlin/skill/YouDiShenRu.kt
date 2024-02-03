@@ -1,15 +1,11 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
-import com.fengsheng.protos.Common.color.*
-import com.fengsheng.protos.Common.direction.*
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_toc
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -105,21 +101,13 @@ class YouDiShenRu : ActiveSkill {
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
             val game = player.game!!
-            val messageCard = player.cards.filter {
-                it.direction != Up && (player.identity == Black ||
-                        player.identity in it.colors && !(Red in it.colors && Blue in it.colors))
-            }.randomOrNull() ?: return false
-            val direction = messageCard.direction
-            val target = when (direction) {
-                Left -> player.getNextLeftAlivePlayer().let { if (it !== player) it else null }
-                Right -> player.getNextRightAlivePlayer().let { if (it !== player) it else null }
-                else -> null
-            } ?: return false
+            val result = player.calSendMessageCard()
             GameExecutor.post(game, {
                 val builder = skill_you_di_shen_ru_tos.newBuilder()
-                builder.cardId = messageCard.id
-                builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                builder.cardDir = direction
+                builder.cardId = result.card.id
+                builder.targetPlayerId = player.getAlternativeLocation(result.target.location)
+                builder.cardDir = result.dir
+                builder.addAllLockPlayerId(result.lockedPlayers.map { player.getAlternativeLocation(it.location) })
                 skill.executeProtocol(game, player, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true

@@ -1,21 +1,13 @@
 package com.fengsheng.card
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Yu_Qin_Gu_Zong
-import com.fengsheng.protos.Common.color.Blue
-import com.fengsheng.protos.Common.color.Red
-import com.fengsheng.protos.Common.direction.*
-import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.use_yu_qin_gu_zong_toc
-import com.fengsheng.skill.SkillId
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -98,49 +90,12 @@ class YuQinGuZong : Card {
         fun ai(e: SendPhaseStart, card: Card): Boolean {
             val player = e.whoseTurn
             val game = player.game!!
-            val players = game.players
             !player.cannotPlayCard(Yu_Qin_Gu_Zong) || return false
-            var canRed = true
-            var canBlue = true
-            when (player.identity) {
-                Red -> {
-                    if (player.messageCards.count(Red) == 2)
-                        canRed = false
-                    if (players.any { p -> p !== player && p!!.alive && p.messageCards.count(Blue) == 2 })
-                        canBlue = false
-                }
-
-                Blue -> {
-                    if (player.messageCards.count(Blue) == 2)
-                        canBlue = false
-                    if (players.any { p -> p !== player && p!!.alive && p.messageCards.count(Red) == 2 })
-                        canRed = false
-                }
-
-                else -> {
-                    if (player.secretTask in listOf(Killer, Collector, Pioneer)) {
-                        canRed = false
-                        canBlue = false
-                    }
-                }
-            }
-            canRed || canBlue || return false
-            val messageCard = player.messageCards.filter {
-                (Red in it.colors || Blue in it.colors) && (canRed || Red !in it.colors) && (canBlue || Blue !in it.colors)
-            }.randomOrNull() ?: return false
-            val direction =
-                if (player.findSkill(SkillId.LIAN_LUO) == null) messageCard.direction
-                else arrayOf(Up, Left, Right).random()
-            val target = when (direction) {
-                Up -> players.filter { it!!.alive && it !== player }
-                    .run { filter { it!!.isPartner(player) }.ifEmpty { this } }.randomOrNull()
-
-                Left -> player.getNextLeftAlivePlayer().let { if (it !== player) it else null }
-                Right -> player.getNextRightAlivePlayer().let { if (it !== player) it else null }
-                else -> null
-            } ?: return false
+            val availableCards = player.messageCards.filter { !it.isPureBlack() }.ifEmpty { return false }
+            val result = player.calSendMessageCard(availableCards = availableCards)
             GameExecutor.post(game, {
-                card.asCard(Yu_Qin_Gu_Zong).execute(game, player, messageCard, direction, target, emptyList<Player>())
+                card.asCard(Yu_Qin_Gu_Zong)
+                    .execute(game, player, result.card, result.dir, result.target, result.lockedPlayers.toList())
             }, 2, TimeUnit.SECONDS)
             return true
         }

@@ -65,9 +65,9 @@ class MiLing : Card {
         val fsm = g.fsm as SendPhaseStart
         val target = args[0] as Player
         val secret = args[1] as Int
-        logger.info("${r}对${target}使用了$this")
-        r.deleteCard(id)
         val color = this.secret[secret]
+        logger.info("${r}对${target}使用了$this，并宣言了$color")
+        r.deleteCard(id)
         val hasColor = target.cards.any { color in it.colors }
         val timeout = Config.WaitSecond
         val resolveFunc = { _: Boolean ->
@@ -171,16 +171,16 @@ class MiLing : Card {
         val timeout: Int
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val card = messageCard ?: target.cards.find { this.card.secret[secret] in it.colors }!!
-            val messageTarget = when (card.direction) {
-                direction.Left -> target.getNextLeftAlivePlayer()
-                direction.Right -> target.getNextRightAlivePlayer()
-                else -> target.game!!.players.filter { target !== it && it!!.alive }.random()!!
-            }
             if (target is HumanPlayer) {
                 val seq2 = target.seq
                 target.timeout = GameExecutor.post(target.game!!, {
                     if (target.checkSeq(seq2)) {
+                        val card = messageCard ?: target.cards.find { this.card.secret[secret] in it.colors }!!
+                        val messageTarget = when (card.direction) {
+                            direction.Left -> target.getNextLeftAlivePlayer()
+                            direction.Right -> target.getNextRightAlivePlayer()
+                            else -> target.game!!.players.filter { target !== it && it!!.alive }.random()!!
+                        }
                         val builder = send_message_card_tos.newBuilder()
                         builder.cardId = card.id
                         builder.targetPlayerId = target.getAlternativeLocation(messageTarget.location)
@@ -199,10 +199,15 @@ class MiLing : Card {
                             Role.skill_leng_xue_xun_lian_a_tos.getDefaultInstance()
                         )
                     } else {
+                        val availableCards =
+                            if (messageCard != null) listOf(messageCard)
+                            else target.cards.filter(this.card.secret[secret])
+                        val result = target.calSendMessageCard(sendPhase.whoseTurn, availableCards)
                         val builder = send_message_card_tos.newBuilder()
-                        builder.cardId = card.id
-                        builder.targetPlayerId = target.getAlternativeLocation(messageTarget.location)
-                        builder.cardDir = card.direction
+                        builder.cardId = result.card.id
+                        builder.targetPlayerId = target.getAlternativeLocation(result.target.location)
+                        builder.cardDir = result.dir
+                        builder.addAllLockPlayerId(result.lockedPlayers.map { target.getAlternativeLocation(it.location) })
                         target.game!!.tryContinueResolveProtocol(target, builder.build())
                     }
                 }, 2, TimeUnit.SECONDS)
