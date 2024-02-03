@@ -225,7 +225,7 @@ class HumanPlayer(
             }
         }
         send(builder.build())
-        if (player.cards.isEmpty() && waitSecond > 0) {
+        if (this === player && player.cards.isEmpty() && waitSecond > 0) {
             val skill = player.findSkill(SkillId.LENG_XUE_XUN_LIAN) as ActiveSkill
             val builder2 = skill_leng_xue_xun_lian_a_tos.newBuilder()
             builder2.seq = seq
