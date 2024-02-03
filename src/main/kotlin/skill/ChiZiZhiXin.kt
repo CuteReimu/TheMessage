@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -96,6 +97,14 @@ class ChiZiZhiXin : TriggeredSkill {
                 GameExecutor.post(r.game!!, {
                     val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
                     builder2.drawCard = true
+                    if (r.identity != Black && r.identity in event.messageCard.colors) {
+                        val card = r.cards.find { r.identity in it.colors && !it.isBlack() }
+                            ?: r.cards.find { r.identity in it.colors }
+                        if (card != null) {
+                            builder2.cardId = card.id
+                            builder2.drawCard = false
+                        }
+                    }
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }

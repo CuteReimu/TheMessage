@@ -57,7 +57,8 @@ class CongRongYingDui : TriggeredSkill {
                 GameExecutor.post(r.game!!, {
                     val builder2 = skill_cong_rong_ying_dui_tos.newBuilder()
                     builder2.enable = true
-                    builder2.drawCard = true
+                    if (target.cards.isEmpty() || target.isPartnerOrSelf(r))
+                        builder2.drawCard = true
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }
