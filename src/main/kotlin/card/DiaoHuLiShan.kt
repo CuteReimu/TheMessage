@@ -85,7 +85,9 @@ class DiaoHuLiShan : Card {
             }.randomOrNull() ?: return false
             val isSkills = ArrayList<Boolean>()
             if (p.cards.isNotEmpty() && !p.skills.any { it is CannotPlayCard }) isSkills.add(false)
-            if (p.skills.any { it is ActiveSkill && it !is MainPhaseSkill }) isSkills.add(true)
+            if ((!p.roleFaceUp || p.isPublicRole) &&
+                p.skills.any { it is ActiveSkill && it !is MainPhaseSkill }
+            ) isSkills.add(true)
             val isSkill = isSkills.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 card.asCard(Diao_Hu_Li_Shan).execute(player.game!!, player, p, isSkill)

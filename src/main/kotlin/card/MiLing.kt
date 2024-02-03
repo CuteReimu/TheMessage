@@ -308,7 +308,7 @@ class MiLing : Card {
                 else (0..2).first { card.secret[it] == player.identity }
             GameExecutor.post(
                 player.game!!,
-                { card.asCard(Mi_Ling).execute(player.game!!, player, target, secret) },
+                { card.execute(player.game!!, player, target, secret) },
                 2,
                 TimeUnit.SECONDS
             )

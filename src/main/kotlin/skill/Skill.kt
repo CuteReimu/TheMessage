@@ -65,6 +65,9 @@ abstract class MainPhaseSkill : ActiveSkill {
 interface ActiveSkill : Skill {
     /**
      * 争夺阶段是否可以使用
+     *
+     * @param fightPhase 争夺阶段，但是不要使用其中的whoseFightTurn字段
+     * @param r 使用技能的玩家
      */
     fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean
 

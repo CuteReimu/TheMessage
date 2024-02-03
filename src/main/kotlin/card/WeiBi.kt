@@ -7,7 +7,8 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.SkillId.CHENG_FU
+import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -202,7 +203,7 @@ class WeiBi : Card {
             val player = e.whoseTurn
             !player.cannotPlayCard(Wei_Bi) || return false
             val yaPao = player.game!!.players.find {
-                it!!.alive && it.findSkill(SkillId.SHOU_KOU_RU_PING) != null
+                it!!.alive && it.findSkill(SHOU_KOU_RU_PING) != null
             }
             if (yaPao === player) {
                 val p = player.game!!.players.run {
@@ -214,7 +215,7 @@ class WeiBi : Card {
                     card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType)
                 }, 2, TimeUnit.SECONDS)
                 return true
-            } else if (yaPao != null && player.isPartner(yaPao)) {
+            } else if (yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0) {
                 val cardType = availableCardType.random()
                 GameExecutor.post(player.game!!, {
                     card.asCard(Wei_Bi).execute(player.game!!, player, yaPao, cardType)
@@ -224,7 +225,7 @@ class WeiBi : Card {
             val identity = player.identity
             val p = player.game!!.players.filter {
                 it !== player && it!!.alive &&
-                        (!it.roleFaceUp || (it.findSkill(SkillId.CHENG_FU) == null && it.findSkill(SkillId.SHOU_KOU_RU_PING) == null)) &&
+                        (!it.roleFaceUp || (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
                         (identity == color.Black || identity != it.identity) &&
                         it.cards.any { card -> availableCardType.contains(card.type) }
             }.randomOrNull() ?: return false

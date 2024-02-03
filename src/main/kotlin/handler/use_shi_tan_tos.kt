@@ -12,7 +12,7 @@ class use_shi_tan_tos : AbstractProtoHandler<Fengsheng.use_shi_tan_tos>() {
             r.sendErrorMessage("操作太晚了")
             return
         }
-        var card = r.findCard(pb.cardId)
+        val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张牌")
             r.sendErrorMessage("没有这张牌")
@@ -29,7 +29,6 @@ class use_shi_tan_tos : AbstractProtoHandler<Fengsheng.use_shi_tan_tos>() {
             return
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.playerId)]!!
-        if (card.type != Shi_Tan) card = card.asCard(Shi_Tan)
         if (card.canUse(r.game!!, r, target)) {
             r.incrSeq()
             card.execute(r.game!!, r, target)

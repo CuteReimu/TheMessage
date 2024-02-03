@@ -8,7 +8,8 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Shi_Tan
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.SkillId.CHENG_FU
+import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -26,7 +27,7 @@ class ShiTan : Card {
         whoDrawCard = card.whoDrawCard
     }
 
-    override val type = card_type.Shi_Tan
+    override val type = Shi_Tan
 
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
@@ -72,12 +73,12 @@ class ShiTan : Card {
                 executeShiTan(fsm, r, target, this@ShiTan)
             } else {
                 OnFinishResolveCard(
-                    r, r, target, getOriginCard(), card_type.Shi_Tan, fsm,
+                    r, r, target, getOriginCard(), Shi_Tan, fsm,
                     discardAfterResolve = false
                 )
             }
         }
-        g.resolve(ResolveCard(r, r, target, getOriginCard(), card_type.Shi_Tan, resolveFunc, fsm))
+        g.resolve(ResolveCard(r, r, target, getOriginCard(), Shi_Tan, resolveFunc, fsm))
     }
 
     private fun checkDrawCard(target: Player): Boolean {
@@ -183,7 +184,7 @@ class ShiTan : Card {
             }
             return ResolveResult(
                 OnFinishResolveCard(
-                    r, r, target, card.getOriginCard(), card_type.Shi_Tan, fsm,
+                    r, r, target, card.getOriginCard(), Shi_Tan, fsm,
                     discardAfterResolve = false
                 ),
                 true
@@ -221,9 +222,9 @@ class ShiTan : Card {
     companion object {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
-            !player.cannotPlayCard(card_type.Shi_Tan) || return false
+            !player.cannotPlayCard(Shi_Tan) || return false
             val yaPao = player.game!!.players.find {
-                it!!.alive && it.findSkill(SkillId.SHOU_KOU_RU_PING) != null
+                it!!.alive && it.findSkill(SHOU_KOU_RU_PING) != null
             }
             if (yaPao === player) {
                 val p = player.game!!.players.run {
@@ -234,7 +235,7 @@ class ShiTan : Card {
                     card.asCard(Shi_Tan).execute(player.game!!, player, p)
                 }, 2, TimeUnit.SECONDS)
                 return true
-            } else if (yaPao != null && player.isPartner(yaPao)) {
+            } else if (yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0) {
                 GameExecutor.post(player.game!!, {
                     card.asCard(Shi_Tan).execute(player.game!!, player, yaPao)
                 }, 2, TimeUnit.SECONDS)
@@ -242,11 +243,12 @@ class ShiTan : Card {
             }
             val p = player.game!!.players.filter {
                 it !== player && it!!.alive && (!it.roleFaceUp ||
-                        (it.findSkill(SkillId.CHENG_FU) == null && it.findSkill(SkillId.SHOU_KOU_RU_PING) == null))
+                        (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
+                        it.isEnemy(player) != it.identity in (card as ShiTan).whoDrawCard // 敌人弃牌，队友摸牌
             }.randomOrNull() ?: return false
             GameExecutor.post(
                 player.game!!,
-                { card.asCard(Shi_Tan).execute(player.game!!, player, p) },
+                { card.execute(player.game!!, player, p) },
                 2,
                 TimeUnit.SECONDS
             )

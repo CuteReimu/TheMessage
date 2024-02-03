@@ -12,7 +12,7 @@ class use_mi_ling_tos : AbstractProtoHandler<Fengsheng.use_mi_ling_tos>() {
             r.sendErrorMessage("操作太晚了")
             return
         }
-        var card = r.findCard(pb.cardId)
+        val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张牌")
             r.sendErrorMessage("没有这张牌")
@@ -34,7 +34,6 @@ class use_mi_ling_tos : AbstractProtoHandler<Fengsheng.use_mi_ling_tos>() {
             return
         }
         val target = r.game!!.players[r.getAbstractLocation(pb.targetPlayerId)]!!
-        if (card.type != Mi_Ling) card = card.asCard(Mi_Ling)
         if (card.canUse(r.game!!, r, target, pb.secret)) {
             r.incrSeq()
             card.execute(r.game!!, r, target, pb.secret)
