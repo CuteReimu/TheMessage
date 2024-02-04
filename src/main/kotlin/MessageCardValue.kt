@@ -77,16 +77,16 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
     if (game!!.players.any { isEnemy(it!!) && willWin(whoseTurn, inFrontOfWhom, card) }) return -600
     var value = 0
     if (identity == Black) {
-        if (secretTask == Collector) {
+        if (secretTask == Collector && this === inFrontOfWhom) {
             if (Red in card.colors) {
-                value += when (inFrontOfWhom.messageCards.count(Red)) {
+                value += when (messageCards.count(Red)) {
                     0 -> 10
                     1 -> 100
                     else -> 1000
                 }
             }
             if (Blue in card.colors) {
-                value += when (inFrontOfWhom.messageCards.count(Blue)) {
+                value += when (messageCards.count(Blue)) {
                     0 -> 10
                     1 -> 100
                     else -> 1000
@@ -94,7 +94,7 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
             }
         }
         if (secretTask !in listOf(Killer, Pioneer, Sweeper)) {
-            if (Black in card.colors) {
+            if (this === inFrontOfWhom && Black in card.colors) {
                 value -= when (inFrontOfWhom.messageCards.count(Black)) {
                     0 -> 1
                     1 -> 11
@@ -102,11 +102,18 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
                 }
             }
         } else {
-            if (Black in card.colors) {
+            if (card.isBlack()) {
                 value += when (inFrontOfWhom.messageCards.count(Black)) {
                     0 -> 1
                     1 -> 11
                     else -> 111
+                }
+                if (secretTask == Pioneer && this === inFrontOfWhom) {
+                    value += when (inFrontOfWhom.messageCards.count(Black)) {
+                        0 -> 1
+                        1 -> 11
+                        else -> 111
+                    }
                 }
             }
         }
