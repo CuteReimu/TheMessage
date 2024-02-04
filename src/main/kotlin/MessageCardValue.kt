@@ -161,12 +161,14 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
  * @param target 传出的目标
  * @param dir 传递方向
  * @param lockedPlayers 被锁定的玩家
+ * @param value 价值
  */
 class SendMessageCardResult(
     val card: Card,
     val target: Player,
     val dir: direction,
-    var lockedPlayers: List<Player>
+    var lockedPlayers: List<Player>,
+    val value: Double
 )
 
 /**
@@ -184,7 +186,7 @@ fun Player.calSendMessageCard(
     }
     var value = Double.NEGATIVE_INFINITY
     // 先随便填一个，反正后面要替换
-    var result = SendMessageCardResult(availableCards[0], game!!.players[0]!!, Up, emptyList())
+    var result = SendMessageCardResult(availableCards[0], game!!.players[0]!!, Up, emptyList(), 0.0)
 
     fun calAveValue(
         card: Card,
@@ -216,20 +218,20 @@ fun Player.calSendMessageCard(
                 val tmpValue = calAveValue(card, 0.7) { if (this === target) this@calSendMessageCard else target }
                 if (tmpValue > value) {
                     value = tmpValue
-                    result = SendMessageCardResult(card, target, Up, emptyList())
+                    result = SendMessageCardResult(card, target, Up, emptyList(), value)
                 }
             }
         } else if (card.direction == Left) {
             val tmpValue = calAveValue(card, 0.7, Player::getNextLeftAlivePlayer)
             if (tmpValue > value) {
                 value = tmpValue
-                result = SendMessageCardResult(card, getNextLeftAlivePlayer(), Left, emptyList())
+                result = SendMessageCardResult(card, getNextLeftAlivePlayer(), Left, emptyList(), value)
             }
         } else if (card.direction == Right) {
             val tmpValue = calAveValue(card, 0.7, Player::getNextRightAlivePlayer)
             if (tmpValue > value) {
                 value = tmpValue
-                result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyList())
+                result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyList(), value)
             }
         }
     }

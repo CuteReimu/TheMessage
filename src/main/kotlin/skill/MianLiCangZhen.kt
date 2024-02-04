@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.count
+import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_mian_li_cang_zhen_toc
@@ -101,14 +101,17 @@ class MianLiCangZhen : TriggeredSkill {
             val p = fsm.event.sender
             val target = fsm.event.inFrontOfWhom
             if (!target.alive) return false
-            val cards = p.cards.filter { it.isBlack() }.ifEmpty { return false }
-            val c1 = target.identity
-            val card =
-                if (p.isPartnerOrSelf(target)) {
-                    if (c1 == color.Black || p.messageCards.count(color.Black) >= 2) null
-                    else cards.find { c1 in it.colors }
-                } else cards.find { c1 == color.Black || c1 !in it.colors }
-            if (card == null) return false
+            var value = 0
+            var card: Card? = null
+            for (c in p.cards) {
+                c.isBlack() || continue
+                val v = p.calculateMessageCardValue(fsm.event.whoseTurn, target, c)
+                if (v >= value) {
+                    value = v
+                    card = c
+                }
+            }
+            card ?: return false
             GameExecutor.post(
                 p.game!!,
                 {

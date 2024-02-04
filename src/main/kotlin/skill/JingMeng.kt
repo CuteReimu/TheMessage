@@ -8,7 +8,7 @@ import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 程小蝶技能【惊梦】：你接收黑色情报后，可以查看一名角色的手牌。
+ * 程小蝶技能【惊梦】：你接收黑色情报后，可以查看一名角色的手牌。然后弃置其中一张牌，然后从中选择一张弃置。
  */
 class JingMeng : TriggeredSkill {
     override val skillId = SkillId.JING_MENG

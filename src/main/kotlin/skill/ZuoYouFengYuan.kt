@@ -7,7 +7,6 @@ import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 秦圆圆技能【左右逢源】：争夺阶段，你可以翻开此角色牌，然后指定两名角色，他们弃置所有手牌，然后摸三张牌（由你指定的角色先摸）。
@@ -78,11 +77,11 @@ class ZuoYouFengYuan : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
-            if (r.roleFaceUp) return false
+            !r.roleFaceUp || return false
             val players = r.game!!.players.toMutableList()
             players.removeIf { !it!!.alive }
-            if (players.size < 2) return false
-            if (Random.nextInt(players.size) != 0) return false
+            players.removeIf { if (it!!.isEnemy(r)) it.cards.size <= 3 else it.cards.size >= 3 }
+            players.size >= 2 || return false
             players.shuffle()
             GameExecutor.post(r.game!!, {
                 val builder = skill_zuo_you_feng_yuan_tos.newBuilder()

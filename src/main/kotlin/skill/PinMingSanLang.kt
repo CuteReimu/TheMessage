@@ -2,8 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.count
+import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.skill_pin_ming_san_lang_toc
 import com.fengsheng.protos.Role.skill_pin_ming_san_lang_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -69,14 +71,23 @@ class PinMingSanLang : MainPhaseSkill() {
 
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            e.whoseTurn.getSkillUseCount(SkillId.PIN_MING_SAN_LANG) == 0 || return false
-            e.whoseTurn.messageCards.count(Black) < 2 || return false
-            val card = e.whoseTurn.cards.filter { it.isPureBlack() }.randomOrNull() ?: return false
-            val cardId = card.id
-            GameExecutor.post(e.whoseTurn.game!!, {
+            val p = e.whoseTurn
+            p.getSkillUseCount(SkillId.PIN_MING_SAN_LANG) == 0 || return false
+            if (p.messageCards.count(Black) == 2) {
+                if (p.identity == Black) {
+                    when (p.secretTask) {
+                        Killer -> if (p.messageCards.countTrueCard() < 2) return false
+                        Pioneer -> if (p.messageCards.countTrueCard() < 1) return false
+                        Sweeper -> if (p.messageCards.run { count(Red) > 1 || count(Blue) > 1 }) return false
+                        else -> return false
+                    }
+                } else return false
+            }
+            val card = p.cards.filter { it.isPureBlack() }.randomOrNull() ?: return false
+            GameExecutor.post(p.game!!, {
                 val builder = skill_pin_ming_san_lang_tos.newBuilder()
-                builder.cardId = cardId
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                builder.cardId = card.id
+                skill.executeProtocol(p.game!!, p, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true
         }

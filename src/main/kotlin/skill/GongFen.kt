@@ -93,8 +93,14 @@ class GongFen : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.roleFaceUp) return false
-            if (player.game!!.players.all { it!!.messageCards.count(Black) < 2 }) return false
+            !player.roleFaceUp || return false
+            var blackCount = 0
+            for (p in player.game!!.players) {
+                p!!.alive || continue
+                blackCount += p.messageCards.count(Black)
+                if (blackCount >= 2) break
+            }
+            blackCount >= 2 || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_gong_fen_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)

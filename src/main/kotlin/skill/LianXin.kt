@@ -98,8 +98,8 @@ class LianXin : TriggeredSkill {
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = event.inFrontOfWhom
-            val card = r.cards.filter(checkCard).random()
             if (r is HumanPlayer) {
+                val card = r.cards.filter(checkCard).random()
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
@@ -110,6 +110,16 @@ class LianXin : TriggeredSkill {
                     }
                 }, r.getWaitSeconds(Config.WaitSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
+                var value = Int.MIN_VALUE
+                var card = r.cards.first(checkCard)
+                for (c in r.cards) {
+                    checkCard(c) || continue
+                    val v = r.calculateMessageCardValue(event.whoseTurn, event.sender, c)
+                    if (v > value) {
+                        value = v
+                        card = c
+                    }
+                }
                 GameExecutor.post(r.game!!, {
                     val builder = skill_lian_xin_b_tos.newBuilder()
                     builder.cardId = card.id

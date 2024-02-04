@@ -1,7 +1,7 @@
 package com.fengsheng.phase
 
 import com.fengsheng.*
-import com.fengsheng.protos.Common.role
+import com.fengsheng.protos.Common.role.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessageV3
@@ -24,7 +24,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                 else
                     notifySelectRole(player)
                 player.timeout = GameExecutor.post(game, {
-                    val autoSelect = options[player.location].firstOrNull()?.role ?: role.unknown
+                    val autoSelect = options[player.location].firstOrNull()?.role ?: unknown
                     game.tryContinueResolveProtocol(
                         player,
                         select_role_tos.newBuilder().setRole(autoSelect).build()
@@ -33,9 +33,8 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             } else {
                 selected[player!!.location] = options[player.location].run {
                     if (Config.IsGmEnable) return@run firstOrNull()
-                    find { it.role == role.shang_yu }
-                        ?: (if (Random.nextBoolean()) find { it.role == role.ya_pao } else null)
-                        ?: maxByOrNull { it.role.number % 1000 + it.role.number / 1000 * 30 }
+                    find { it.role == shang_yu }
+                        ?: run { filter { it.role in aiPreferRole }.ifEmpty { this } }.randomOrNull()
                 } ?: RoleSkillsData()
                 player.roleSkillsData = selected[player.location]!!
                 player.originRole = selected[player.location]!!.role
@@ -57,7 +56,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             return null
         }
         val roleSkillsData =
-            if (message.role == role.unknown && options[player.location].isEmpty()) RoleSkillsData()
+            if (message.role == unknown && options[player.location].isEmpty()) RoleSkillsData()
             else options[player.location].find { o -> o.role == message.role }
         if (roleSkillsData == null) {
             logger.error("你没有这个角色")
@@ -78,7 +77,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         builder.playerCount = game.players.size
         builder.identity = player.identity
         builder.secretTask = player.secretTask
-        builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(role.unknown) })
+        builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(unknown) })
         builder.waitingSecond = Config.WaitSecond * 2
         builder.addAllPossibleSecretTask(game.possibleSecretTasks)
         builder.position = player.getAbstractLocation(whoseTurn) + 1
@@ -99,5 +98,49 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                 )
             }, 1, TimeUnit.SECONDS)
         }
+
+        private val aiPreferRole = listOf(
+            duan_mu_jing,
+            lao_bie,
+            shao_xiu,
+            fei_yuan_long_chuan,
+            wang_kui,
+            zheng_wen_xian,
+            lao_han,
+            gu_xiao_meng,
+            li_ning_yu,
+            cheng_xiao_die,
+            shang_yu,
+            pei_ling,
+            gui_jiao,
+            wang_tian_xiang,
+            xuan_qing_zi,
+            bai_cang_lang,
+            xiao_jiu,
+            zhang_yi_ting,
+            wang_fu_gui,
+            sp_gu_xiao_meng,
+            sp_li_ning_yu,
+            sp_han_mei,
+            chi_jing_hai,
+            qin_yuan_yuan,
+            sp_cheng_xiao_die,
+            gao_qiao_zhi_zi,
+            jian_xian_sheng,
+            sp_xiao_jiu,
+            sheng_lao_ban,
+            lao_hu,
+            chen_an_na,
+            ya_pao,
+            adult_xiao_jiu,
+            adult_han_mei,
+            qin_wu_ming,
+            li_shu_yun,
+            ling_su_qiu,
+            xiao_ling_dang,
+            chen_da_er,
+            sun_shou_mo,
+            huo_che_si_ji
+        )
     }
 }

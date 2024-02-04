@@ -7,7 +7,6 @@ import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 玄青子技能【金口一开】：你的回合的争夺阶段限一次，你可以查看牌堆顶的一张牌，然后选择一项：
@@ -79,7 +78,9 @@ class JinKouYiKai : ActiveSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder = skill_jin_kou_yi_kai_b_tos.newBuilder()
-                    builder.exchange = Random.nextBoolean()
+                    val oldValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
+                    val newValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, cards.first())
+                    builder.exchange = newValue > oldValue
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }

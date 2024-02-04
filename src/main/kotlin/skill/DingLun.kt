@@ -1,9 +1,6 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.phase.OnReceiveCard
@@ -12,7 +9,6 @@ import com.fengsheng.protos.Role.skill_ding_lun_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 李书云技能【定论】：争夺阶段，若情报在你面前，可以翻开此角色，直接成功接收，但若因此达成同色三张，则改为入手。
@@ -74,8 +70,8 @@ class DingLun : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             player === e.inFrontOfWhom || return false
-            !e.messageCard.isPureBlack() || return false
-            Random.nextBoolean() || return false
+            player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard) >= 0 || return false
+            !player.checkThreeSameMessageCard(e.messageCard) || return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
                 skill.executeProtocol(
                     e.whoseFightTurn.game!!, e.whoseFightTurn, skill_ding_lun_tos.getDefaultInstance()

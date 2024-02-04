@@ -104,18 +104,20 @@ class JieDaoShaRen : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val players = g.players.filter { it !== r && it!!.alive && r.isEnemy(it) }
-                    if (players.isEmpty()) {
-                        val builder = skill_jie_dao_sha_ren_b_tos.newBuilder()
-                        builder.enable = false
-                        g.tryContinueResolveProtocol(r, builder.build())
-                    } else {
-                        val target2 = players.random()!!
-                        val builder = skill_jie_dao_sha_ren_b_tos.newBuilder()
-                        builder.enable = true
-                        builder.targetPlayerId = r.getAlternativeLocation(target2.location)
-                        g.tryContinueResolveProtocol(r, builder.build())
+                    var value = Int.MIN_VALUE
+                    var target2 = r
+                    for (p in g.players) {
+                        p!!.alive || continue
+                        val result = r.calculateMessageCardValue(fsm.whoseTurn, p, card)
+                        if (result > value) {
+                            value = result
+                            target2 = p
+                        }
                     }
+                    val builder = skill_jie_dao_sha_ren_b_tos.newBuilder()
+                    builder.enable = true
+                    builder.targetPlayerId = r.getAlternativeLocation(target2.location)
+                    g.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }
             return null
@@ -185,7 +187,7 @@ class JieDaoShaRen : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
-            player.getSkillUseCount(SkillId.JIE_DAO_SHA_REN) == 0 || Random.nextBoolean() || return false
+            player.getSkillUseCount(SkillId.JIE_DAO_SHA_REN) == 0 || Random.nextInt(3) == 0 || return false
             val target = player.game!!.players.filter {
                 it !== player && it!!.alive && it.cards.isNotEmpty() &&
                         it.cards.all { card -> card.colors.contains(color.Black) }

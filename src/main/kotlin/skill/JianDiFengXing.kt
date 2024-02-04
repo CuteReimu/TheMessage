@@ -168,9 +168,11 @@ class JianDiFengXing : TriggeredSkill {
             if (messageExists && r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     val builder2 = skill_jian_di_feng_xing_c_tos.newBuilder()
-                    r.cards.filter { it.isBlack() }.randomOrNull()?.let { card ->
-                        builder2.enable = true
-                        builder2.cardId = card.id
+                    if (r.isEnemy(event.inFrontOfWhom) && !event.messageCard.isBlack()) {
+                        r.cards.filter { it.isBlack() }.randomOrNull()?.let { card ->
+                            builder2.enable = true
+                            builder2.cardId = card.id
+                        }
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)

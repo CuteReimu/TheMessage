@@ -1,9 +1,6 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.card.LiYou
 import com.fengsheng.card.WeiBi
 import com.fengsheng.phase.MainPhaseIdle
@@ -78,22 +75,24 @@ class GuiZha : MainPhaseSkill() {
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
-            if (player.getSkillUseCount(SkillId.GUI_ZHA) > 0) return false
+            player.getSkillUseCount(SkillId.GUI_ZHA) == 0 || return false
             val game = player.game!!
-            val nextCard = game.deck.peek(1).firstOrNull()
-            val players =
-                if (nextCard == null || nextCard.colors.size == 2) {
-                    game.players.filter { it!!.alive }
-                } else {
-                    val (partners, enemies) = game.players.filter { it!!.alive }
-                        .partition { player.isPartnerOrSelf(it!!) }
-                    if (nextCard.isBlack()) enemies else partners
+            val nextCard = game.deck.peek(1).firstOrNull() ?: return false
+            var value = 0
+            var target: Player? = null
+            for (p in game.players) {
+                p!!.alive || continue
+                val result = player.calculateMessageCardValue(player, p, nextCard)
+                if (result > value) {
+                    value = result
+                    target = p
                 }
-            val p = players.randomOrNull() ?: return false
+            }
+            target ?: return false
             GameExecutor.post(game, {
                 val builder = skill_gui_zha_tos.newBuilder()
                 builder.cardType = card_type.Li_You
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(p.location)
+                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
                 skill.executeProtocol(game, e.whoseTurn, builder.build())
             }, 2, TimeUnit.SECONDS)
             return true

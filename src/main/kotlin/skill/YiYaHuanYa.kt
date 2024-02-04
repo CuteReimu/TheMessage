@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_yi_ya_huan_ya_toc
@@ -8,7 +9,6 @@ import com.fengsheng.protos.Role.skill_yi_ya_huan_ya_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 王魁技能【以牙还牙】：你接收黑色情报后，可以将一张黑色手牌置入情报传出者或其相邻角色的情报区，然后摸一张牌。
@@ -108,27 +108,30 @@ class YiYaHuanYa : TriggeredSkill {
     }
 
     companion object {
-        fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeYiYaHuanYa) return false
-            val p = fsm0.event.inFrontOfWhom
-            var target = fsm0.event.sender
-            if (p === target) {
-                target = if (Random.nextBoolean()) target.getNextLeftAlivePlayer() else target.getNextRightAlivePlayer()
-                if (p === target) return false
-            }
-            val finalTarget = target
-            for (card in p.cards) {
-                if (card.colors.contains(color.Black)) {
-                    GameExecutor.post(p.game!!, {
-                        val builder = skill_yi_ya_huan_ya_tos.newBuilder()
-                        builder.cardId = card.id
-                        builder.targetPlayerId = p.getAlternativeLocation(finalTarget.location)
-                        p.game!!.tryContinueResolveProtocol(p, builder.build())
-                    }, 2, TimeUnit.SECONDS)
-                    return true
+        fun ai(fsm: Fsm): Boolean {
+            if (fsm !is executeYiYaHuanYa) return false
+            val player = fsm.event.inFrontOfWhom
+            val target = fsm.event.sender
+            var value = 0
+            var playerAndCard: PlayerAndCard? = null
+            for (c in player.cards) {
+                c.isBlack() || continue
+                for (p in listOf(target, target.getNextLeftAlivePlayer(), target.getNextRightAlivePlayer())) {
+                    val v = player.calculateMessageCardValue(fsm.event.whoseTurn, p, c)
+                    if (v >= value) {
+                        value = v
+                        playerAndCard = PlayerAndCard(p, c)
+                    }
                 }
             }
-            return false
+            playerAndCard ?: return false
+            GameExecutor.post(player.game!!, {
+                val builder = skill_yi_ya_huan_ya_tos.newBuilder()
+                builder.cardId = playerAndCard.card.id
+                builder.targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
+                player.game!!.tryContinueResolveProtocol(player, builder.build())
+            }, 2, TimeUnit.SECONDS)
+            return true
         }
     }
 }

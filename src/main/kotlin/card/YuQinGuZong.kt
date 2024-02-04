@@ -7,6 +7,10 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Yu_Qin_Gu_Zong
+import com.fengsheng.protos.Common.color.Blue
+import com.fengsheng.protos.Common.color.Red
+import com.fengsheng.protos.Common.secret_task.Collector
+import com.fengsheng.protos.Common.secret_task.Mutator
 import com.fengsheng.protos.Fengsheng.use_yu_qin_gu_zong_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -91,8 +95,22 @@ class YuQinGuZong : Card {
             val player = e.whoseTurn
             val game = player.game!!
             !player.cannotPlayCard(Yu_Qin_Gu_Zong) || return false
-            val availableCards = player.messageCards.filter { !it.isPureBlack() }.ifEmpty { return false }
+            var canRed = true
+            var canBlue = true
+            when (player.identity) {
+                Red -> if (player.messageCards.count(Red) >= 2) canRed = false
+                Blue -> if (player.messageCards.count(Blue) >= 2) canBlue = false
+                else -> if (player.secretTask in listOf(Collector, Mutator)) {
+                    if (player.messageCards.count(Red) >= 2) canRed = false
+                    if (player.messageCards.count(Blue) >= 2) canBlue = false
+                }
+            }
+            canRed || canBlue || return false
+            val availableCards = player.messageCards.filter {
+                !it.isPureBlack() && (canRed || Red !in it.colors) && (canBlue || Blue !in it.colors)
+            }.ifEmpty { return false }
             val result = player.calSendMessageCard(availableCards = availableCards)
+            result.value >= 0 || return false
             GameExecutor.post(game, {
                 card.asCard(Yu_Qin_Gu_Zong)
                     .execute(game, player, result.card, result.dir, result.target, result.lockedPlayers.toList())

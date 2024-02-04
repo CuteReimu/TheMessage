@@ -6,11 +6,8 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Common.color.Blue
-import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.phase.Main_Phase
-import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
@@ -181,58 +178,21 @@ class FengYunBianHuan : Card {
                 builder.asMessageCard = false
                 builder.seq = r.seq
             } else {
-                fun containsSame(chooseCard: Card) = r.messageCards.any { c -> c.hasSameColor(chooseCard) }
+                var value = 0
                 var card: Card? = null
-                when (r.identity) {
-                    Red -> {
-                        drawCards.filter { !it.isPureBlack() && !containsSame(it) }.run {
-                            find { Red in it.colors && !it.isBlack() }
-                                ?: find { Red in it.colors }
-                                ?: find { !it.isBlack() }
-                                ?: firstOrNull()
-                        }?.let { card = it }
-                    }
-
-                    Blue -> {
-                        drawCards.filter { !it.isPureBlack() && !containsSame(it) }.run {
-                            find { Blue in it.colors && !it.isBlack() }
-                                ?: find { Blue in it.colors }
-                                ?: find { !it.isBlack() }
-                                ?: firstOrNull()
-                        }?.let { card = it }
-                    }
-
-                    else -> {
-                        when (r.secretTask) {
-                            Sweeper -> {
-                                if (!r.messageCards.any { it.isBlack() }) {
-                                    drawCards.filter { it.isBlack() && !containsSame(it) }.run {
-                                        find { it.isPureBlack() } ?: firstOrNull()
-                                    }?.let { card = it }
-                                }
-                            }
-
-                            Killer, Pioneer -> {
-                                drawCards.filter { !containsSame(it) }.run {
-                                    find { it.isBlack() && !it.isPureBlack() }
-                                        ?: find { it.isPureBlack() }
-                                        ?: firstOrNull()
-                                }?.let { card = it }
-                            }
-
-                            else -> {
-                                drawCards.filter { !it.isPureBlack() && !containsSame(it) }.run {
-                                    find { !it.isBlack() } ?: firstOrNull()
-                                }?.let { card = it }
-                            }
-                        }
+                for (c in drawCards) {
+                    !r.messageCards.any { it.hasSameColor(c) } || continue
+                    val result = r.calculateMessageCardValue(mainPhaseIdle.whoseTurn, r, c)
+                    if (result > value) {
+                        value = result
+                        card = c
                     }
                 }
                 if (card != null) {
-                    builder.cardId = card!!.id
+                    builder.cardId = card.id
                     builder.asMessageCard = true
                 } else {
-                    builder.cardId = drawCards.first().id
+                    builder.cardId = drawCards.random().id
                     builder.asMessageCard = false
                 }
             }

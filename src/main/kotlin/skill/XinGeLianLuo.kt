@@ -53,7 +53,7 @@ class XinGeLianLuo : TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_xin_ge_lian_luo_tos.newBuilder()
-                    r.game!!.players.filter { it !== r && it!!.alive }.randomOrNull()?.let { target ->
+                    r.game!!.players.filter { it!!.alive && it.isEnemy(r) }.randomOrNull()?.let { target ->
                         builder.enable = true
                         builder.targetPlayerId = r.getAlternativeLocation(target.location)
                     }

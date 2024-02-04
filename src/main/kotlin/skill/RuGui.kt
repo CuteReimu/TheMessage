@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.Card
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -47,7 +48,15 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
                 }
             }
             if (r is RobotPlayer) {
-                val card = r.messageCards.find { it.isBlack() }
+                var value = 0
+                var card: Card? = null
+                for (c in r.messageCards) {
+                    val v = r.calculateMessageCardValue(event.whoseTurn, event.whoseTurn, c)
+                    if (v >= value) {
+                        value = v
+                        card = c
+                    }
+                }
                 GameExecutor.post(
                     r.game!!,
                     {

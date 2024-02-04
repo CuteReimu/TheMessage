@@ -110,20 +110,19 @@ class JiSong : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.getSkillUseCount(SkillId.JI_SONG) > 0) return false
-            if (player.cards.size < 2) return false
-            val colors = e.messageCard.colors
-            if (colors.size != 1) return false
-            if (colors.first() == color.Black) {
-                if (e.inFrontOfWhom !== player) return false
-            } else {
-                val identity = player.identity
-                val identity2 = e.inFrontOfWhom.identity
-                if (identity != color.Black && identity == identity2) return false
-                if (identity2 == color.Black || colors[0] != identity2) return false
+            player.getSkillUseCount(SkillId.JI_SONG) == 0 || return false
+            player.cards.size >= 2 || return false
+            var value = Int.MIN_VALUE
+            var target = e.inFrontOfWhom
+            for (p in player.game!!.players) {
+                p!!.alive || continue
+                val v = player.calculateMessageCardValue(e.whoseTurn, p, e.messageCard)
+                if (v > value) {
+                    value = v
+                    target = p
+                }
             }
-            val players = player.game!!.players.filter { it !== e.inFrontOfWhom && it!!.alive }
-            val target = players.randomOrNull() ?: return false
+            target !== e.inFrontOfWhom || return false
             val cards = List(2) { player.cards[it] }
             GameExecutor.post(player.game!!, {
                 val builder = skill_ji_song_tos.newBuilder()

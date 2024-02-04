@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -50,30 +51,28 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
                 }
             }
             if (r is RobotPlayer) {
-                if (r.cards.isNotEmpty()) {
-                    val card = r.cards.find { it.isBlack() } ?: r.cards.first()
-                    r.game!!.players.filter { it!!.alive && r !== it && card.isBlack() == r.isEnemy(it) }
-                        .randomOrNull()?.let { target ->
-                            GameExecutor.post(r.game!!, {
-                                val builder = skill_yi_xin_tos.newBuilder()
-                                builder.enable = true
-                                builder.cardId = card.id
-                                builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                                r.game!!.tryContinueResolveProtocol(r, builder.build())
-                            }, 2, TimeUnit.SECONDS)
-                            return null
+                var value = 0
+                var playerAndCard: PlayerAndCard? = null
+                for (c in r.cards) {
+                    for (p in r.game!!.players) {
+                        if (p!!.alive && r !== p) {
+                            val v = r.calculateMessageCardValue(event.whoseTurn, p, c)
+                            if (v >= value) {
+                                value = v
+                                playerAndCard = PlayerAndCard(p, c)
+                            }
                         }
+                    }
                 }
-                GameExecutor.post(
-                    r.game!!,
-                    {
-                        val builder = skill_yi_xin_tos.newBuilder()
-                        builder.enable = false
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
-                    },
-                    2,
-                    TimeUnit.SECONDS
-                )
+                GameExecutor.post(r.game!!, {
+                    val builder = skill_yi_xin_tos.newBuilder()
+                    if (playerAndCard != null) {
+                        builder.enable = true
+                        builder.cardId = playerAndCard.card.id
+                        builder.targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
+                    }
+                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                }, 2, TimeUnit.SECONDS)
             }
             return null
         }
