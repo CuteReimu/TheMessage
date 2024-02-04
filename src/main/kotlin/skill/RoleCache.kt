@@ -141,7 +141,7 @@ object RoleCache {
     fun getRandomRoles(n: Int): List<RoleSkillsData> = runBlocking {
         mu.withLock {
             val yaPaoIndex = cache.indexOfLast { it.role == role.ya_pao }
-            var indexList = cache.indices.shuffled().run { if (size > n) subList(0, n) else this }
+            var indexList = cache.indices.shuffled().take(n)
             if (yaPaoIndex >= 0 && indexList.isNotEmpty() && yaPaoIndex !in indexList) {
                 indexList = indexList.toMutableList().apply {
                     set(0, yaPaoIndex)

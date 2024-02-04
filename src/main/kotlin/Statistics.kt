@@ -185,7 +185,7 @@ object Statistics {
         }
 
         fun makeRankList(count: Int): String {
-            val l = if (l1.size > count) l1.subList(0, count) else l1
+            val l = l1.take(count)
             var i = 0
             return l.joinToString(separator = "\n") {
                 val name = it.name.replace("\"", "\\\"")
@@ -194,7 +194,7 @@ object Statistics {
             }
         }
 
-        rankListImage.set(Image.genRankListImage(if (l1.size > 50) l1.subList(0, 50) else l1))
+        rankListImage.set(Image.genRankListImage(l1.take(50)))
         rankList25.set(makeRankList(25))
     }
 

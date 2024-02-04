@@ -64,7 +64,7 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_workers_are_knowledgable_tos.newBuilder()
                     val targets = r.game!!.players.filter { it!!.alive && it.isEnemy(r) }.shuffled()
-                        .run { r.messageCards.count(Black).let { if (size <= it) this else subList(0, it) } }
+                        .take(r.messageCards.count(Black))
                     builder.enable = targets.isNotEmpty()
                     builder.addAllTargetPlayerId(targets.map { r.getAlternativeLocation(it!!.location) })
                     r.game!!.tryContinueResolveProtocol(r, builder.build())

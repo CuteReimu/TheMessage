@@ -209,7 +209,7 @@ class TaoQu : MainPhaseSkill() {
             val color = listOf(Red, Blue).filter {
                 player.cards.count(it) >= 2 && players.any { p -> p!!.messageCards.any { c -> it in c.colors } }
             }.randomOrNull() ?: return false
-            val cardIds = player.cards.filter { color in it.colors }.shuffled().subList(0, 2).map { it.id }
+            val cardIds = player.cards.filter { color in it.colors }.shuffled().take(2).map { it.id }
             GameExecutor.post(player.game!!, {
                 val builder = skill_tao_qu_a_tos.newBuilder()
                 builder.addAllCardIds(cardIds)

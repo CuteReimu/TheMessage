@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
@@ -111,7 +112,7 @@ class YuSiWangPo : MainPhaseSkill() {
                 target.timeout = GameExecutor.post(g, {
                     if (target.checkSeq(seq)) {
                         val builder2 = skill_yu_si_wang_po_b_tos.newBuilder()
-                        builder2.addAllCardIds(target.cards.subList(0, cardCount).map { it.id })
+                        builder2.addAllCardIds(target.cards.shuffled().take(cardCount).map { it.id })
                         builder2.seq = seq
                         g.tryContinueResolveProtocol(target, builder2.build())
                     }
@@ -119,7 +120,7 @@ class YuSiWangPo : MainPhaseSkill() {
             } else {
                 GameExecutor.post(g, {
                     val builder2 = skill_yu_si_wang_po_b_tos.newBuilder()
-                    builder2.addAllCardIds(target.cards.shuffled().subList(0, cardCount).map { it.id })
+                    builder2.addAllCardIds(target.cards.sortCards(target.identity, true).take(cardCount).map { it.id })
                     g.tryContinueResolveProtocol(target, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }

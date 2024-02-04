@@ -153,7 +153,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             5, 7, 8 -> tasks.size
             else -> players.size - 4
         }
-        possibleSecretTasks = tasks.subList(0, possibleSecretTaskCount.coerceAtMost(tasks.size)).shuffled()
+        possibleSecretTasks = tasks.take(possibleSecretTaskCount.coerceAtMost(tasks.size)).shuffled()
         val roleSkillsDataList = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
             players.size * 3,
             Config.DebugRoles
