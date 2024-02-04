@@ -54,8 +54,8 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
                 var value = 0
                 var playerAndCard: PlayerAndCard? = null
                 for (c in r.cards) {
-                    for (p in r.game!!.players) {
-                        if (p!!.alive && r !== p) {
+                    for (p in r.game!!.sortedFrom(r.game!!.players, r.location)) {
+                        if (p.alive && r !== p) {
                             val v = r.calculateMessageCardValue(event.whoseTurn, p, c)
                             if (v >= value) {
                                 value = v

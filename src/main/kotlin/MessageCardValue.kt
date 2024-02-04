@@ -213,8 +213,8 @@ fun Player.calSendMessageCard(
 
     for (card in availableCards) {
         if (card.direction == Up || skills.any { it is LianLuo }) {
-            for (target in game!!.players) {
-                if (target === this || !target!!.alive) continue
+            for (target in game!!.sortedFrom(game!!.players, location)) {
+                if (target === this || !target.alive) continue
                 val tmpValue = calAveValue(card, 0.7) { if (this === target) this@calSendMessageCard else target }
                 if (tmpValue > value) {
                     value = tmpValue
@@ -241,8 +241,8 @@ fun Player.calSendMessageCard(
         val targets =
             if (result.dir == Up) listOf(this, result.target)
             else game!!.players.filter { it!!.alive }
-        for (player in targets) {
-            val v = calculateMessageCardValue(whoseTurn, player!!, result.card)
+        for (player in game!!.sortedFrom(targets, location)) {
+            val v = calculateMessageCardValue(whoseTurn, player, result.card)
             if (v > maxValue) {
                 maxValue = v
                 lockTarget = player

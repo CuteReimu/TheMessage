@@ -114,8 +114,8 @@ class JiSong : ActiveSkill {
             player.cards.size >= 2 || return false
             var value = Int.MIN_VALUE
             var target = e.inFrontOfWhom
-            for (p in player.game!!.players) {
-                p!!.alive || continue
+            for (p in player.game!!.sortedFrom(player.game!!.players, player.location)) {
+                p.alive || continue
                 val v = player.calculateMessageCardValue(e.whoseTurn, p, e.messageCard)
                 if (v > value) {
                     value = v

@@ -105,8 +105,8 @@ class LiYou : Card {
             val nextCard = game.deck.peek(1).firstOrNull() ?: return false
             var value = 0
             var target: Player? = null
-            for (p in game.players) {
-                p!!.alive || continue
+            for (p in game.sortedFrom(game.players, player.location)) {
+                p.alive || continue
                 val result = player.calculateMessageCardValue(player, p, nextCard)
                 if (result > value) {
                     value = result

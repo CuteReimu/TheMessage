@@ -106,8 +106,8 @@ class JieDaoShaRen : ActiveSkill {
                 GameExecutor.post(g, {
                     var value = Int.MIN_VALUE
                     var target2 = r
-                    for (p in g.players) {
-                        p!!.alive || continue
+                    for (p in g.sortedFrom(g.players, r.location)) {
+                        p.alive || continue
                         val result = r.calculateMessageCardValue(fsm.whoseTurn, p, card)
                         if (result > value) {
                             value = result

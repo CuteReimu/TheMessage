@@ -285,7 +285,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     /**
      * 将players按照从fromIndex开始逆时针顺序排序，不是这个游戏中的玩家会被排除
      */
-    fun sortedFrom(players: Iterable<Player>, fromIndex: Int): List<Player> {
+    fun sortedFrom(players: Iterable<Player?>, fromIndex: Int): List<Player> {
         var i = fromIndex % this.players.size
         val newPlayers = ArrayList<Player>()
         do {
