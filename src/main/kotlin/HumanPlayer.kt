@@ -391,7 +391,7 @@ class HumanPlayer(
         send(builder.build())
     }
 
-    override fun notifyAskForChengQing(whoDie: Player, askWhom: Player, waitSecond: Int) {
+    override fun notifyAskForChengQing(whoseTurn: Player, whoDie: Player, askWhom: Player, waitSecond: Int) {
         val builder = wait_for_cheng_qing_toc.newBuilder()
         builder.diePlayerId = getAlternativeLocation(whoDie.location)
         builder.waitingPlayerId = getAlternativeLocation(askWhom.location)

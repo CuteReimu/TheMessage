@@ -4,10 +4,11 @@ import com.fengsheng.card.*
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Right
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.notify_die_give_card_toc
 import com.fengsheng.skill.*
@@ -180,7 +181,7 @@ class RobotPlayer : Player() {
         // Do nothing
     }
 
-    override fun notifyAskForChengQing(whoDie: Player, askWhom: Player, waitSecond: Int) {
+    override fun notifyAskForChengQing(whoseTurn: Player, whoDie: Player, askWhom: Player, waitSecond: Int) {
         val fsm = game!!.fsm as WaitForChengQing
         if (askWhom !== this) return
         for (skill in skills) {
@@ -188,9 +189,33 @@ class RobotPlayer : Player() {
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
         run {
-            if (identity == Black || identity != whoDie.identity) return@run
+            var save = isPartnerOrSelf(whoDie)
+            var notSave = false
+            val killer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Killer }
+            val pioneer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Pioneer }
+            val sweeper = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Sweeper }
+            if (killer === whoseTurn && whoDie.messageCards.countTrueCard() >= 2) {
+                if (killer === this) notSave = true
+                save = save || killer !== this
+            }
+            if (pioneer === whoDie && whoDie.messageCards.countTrueCard() >= 1) {
+                if (pioneer === this) notSave = true
+                save = save || pioneer !== this
+            }
+            if (sweeper != null && whoDie.messageCards.run { count(Red) <= 1 && count(Blue) <= 1 }) {
+                if (sweeper === this) notSave = true
+                save = save || sweeper !== this
+            }
+            !notSave && save || return@run
             val card = cards.find { it is ChengQing } ?: return@run
-            val black = whoDie.messageCards.filter { Black in it.colors }.run {
+            val black = whoDie.messageCards.filter { Black in it.colors }.run run1@{
+                if (whoDie.identity == Black) {
+                    when (whoDie.secretTask) {
+                        Killer, Pioneer -> return@run1 find { it.colors.size > 1 } ?: firstOrNull()
+                        Sweeper -> return@run1 find { it.colors.size == 1 } ?: firstOrNull()
+                        else -> {}
+                    }
+                }
                 find { it.colors.size == 1 } ?: find { identity !in it.colors } ?: firstOrNull()
             } ?: return@run
             GameExecutor.post(game!!, { card.execute(game!!, this, whoDie, black.id) }, 2, TimeUnit.SECONDS)

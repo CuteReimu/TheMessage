@@ -27,7 +27,7 @@ data class WaitForChengQing(
     override fun resolve0(): ResolveResult? {
         logger.info("正在询问${askWhom}是否使用澄清")
         for (p in askWhom.game!!.players) {
-            p!!.notifyAskForChengQing(whoDie, askWhom, Config.WaitSecond)
+            p!!.notifyAskForChengQing(whoseTurn, whoDie, askWhom, Config.WaitSecond)
         }
         return null
     }

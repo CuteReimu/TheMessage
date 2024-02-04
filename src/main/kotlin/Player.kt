@@ -173,7 +173,7 @@ abstract class Player protected constructor() {
         newScoreMap: HashMap<String, Int>
     )
 
-    abstract fun notifyAskForChengQing(whoDie: Player, askWhom: Player, waitSecond: Int)
+    abstract fun notifyAskForChengQing(whoseTurn: Player, whoDie: Player, askWhom: Player, waitSecond: Int)
     abstract fun waitForDieGiveCard(whoDie: Player, waitSecond: Int)
 
     var skills: List<Skill>
