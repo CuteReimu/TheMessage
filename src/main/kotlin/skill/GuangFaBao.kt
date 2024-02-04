@@ -153,7 +153,7 @@ class GuangFaBao : ActiveSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("至少要发一张牌")
                 return null
             }
-            val cards = Array(message.cardIdsCount) {
+            val cards = List(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张卡")
@@ -162,13 +162,13 @@ class GuangFaBao : ActiveSkill {
                 }
                 card
             }
-            if (target.checkThreeSameMessageCard(*cards)) {
+            if (target.checkThreeSameMessageCard(cards)) {
                 logger.error("你不能通过此技能让任何角色收集三张或更多的同色情报")
                 (player as? HumanPlayer)?.sendErrorMessage("你不能通过此技能让任何角色收集三张或更多的同色情报")
                 return null
             }
             r.incrSeq()
-            logger.info("${r}将${cards.contentToString()}置于${target}的情报区")
+            logger.info("${r}将${cards.joinToString()}置于${target}的情报区")
             r.cards.removeAll(cards.toSet())
             target.messageCards.addAll(cards)
             for (p in g.players) {

@@ -118,7 +118,7 @@ class SouJi : ActiveSkill {
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
-            val cards = Array(message.cardIdsCount) {
+            val cards = List(message.cardIdsCount) {
                 val card = target.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张牌")
@@ -139,7 +139,7 @@ class SouJi : ActiveSkill {
             }
             r.incrSeq()
             if (cards.isNotEmpty()) {
-                logger.info("${r}将${target}的${cards.contentToString()}收归手牌")
+                logger.info("${r}将${target}的${cards.joinToString()}收归手牌")
                 target.cards.removeAll(cards.toSet())
                 r.cards.addAll(cards)
                 g.addEvent(GiveCardEvent(fsm.whoseTurn, target, r))

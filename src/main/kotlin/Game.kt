@@ -42,7 +42,7 @@ class Game private constructor(totalPlayerCount: Int) {
     @Volatile
     var isEnd = false
         private set
-    var players: Array<Player?>
+    var players: List<Player?>
     var deck = Deck(this)
     var fsm: Fsm? = null
     var possibleSecretTasks: List<secret_task> = emptyList()
@@ -54,7 +54,7 @@ class Game private constructor(totalPlayerCount: Int) {
 
     init {
         // 调用构造函数时加锁了，所以increaseId无需加锁
-        players = arrayOfNulls(totalPlayerCount)
+        players = List(totalPlayerCount) { null }
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
             while (!isEnd) try {
@@ -85,13 +85,13 @@ class Game private constructor(totalPlayerCount: Int) {
         var index = players.indexOfFirst { it == null }
         if (index < 0) {
             if (players.size >= 9 || player is RobotPlayer) return false
-            players = arrayOf(*players, null)
+            players = players + null
             for (p in players)
                 (p as? HumanPlayer)?.send(add_one_position_toc.getDefaultInstance())
             index = players.size - 1
             cancelStartTimer()
         }
-        players[index] = player
+        players = players.toMutableList().apply { set(index, player) }
         player.location = index
         val unready = players.count { it == null }
         val builder = join_room_toc.newBuilder()
@@ -177,15 +177,15 @@ class Game private constructor(totalPlayerCount: Int) {
             else -> players.size - 4
         }
         possibleSecretTasks = tasks.subList(0, possibleSecretTaskCount.coerceAtMost(tasks.size)).shuffled()
-        val roleSkillsDataArray = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
+        val roleSkillsDataList = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
             players.size * 3,
             Config.DebugRoles
         ) else RoleCache.getRandomRoles(players.size * 3)
         resolve(WaitForSelectRole(this, players.indices.map {
-            arrayOf(
-                roleSkillsDataArray[it],
-                roleSkillsDataArray[it + players.size],
-                roleSkillsDataArray[it + players.size * 2]
+            listOf(
+                roleSkillsDataList[it],
+                roleSkillsDataList[it + players.size],
+                roleSkillsDataList[it + players.size * 2]
             ).filter { r -> r.role != role.unknown }
         }))
     }
@@ -255,11 +255,18 @@ class Game private constructor(totalPlayerCount: Int) {
     /**
      * 玩家弃牌
      */
-    fun playerDiscardCard(player: Player, vararg cards: Card) {
+    fun playerDiscardCard(player: Player, card: Card) {
+        playerDiscardCard(player, listOf(card))
+    }
+
+    /**
+     * 玩家弃牌
+     */
+    fun playerDiscardCard(player: Player, cards: List<Card>) {
         if (cards.isEmpty()) return
         player.cards.removeAll(cards.toSet())
-        logger.info("${player}弃掉了${cards.contentToString()}，剩余手牌${player.cards.size}张")
-        deck.discard(*cards)
+        logger.info("${player}弃掉了${cards.joinToString()}，剩余手牌${player.cards.size}张")
+        deck.discard(cards)
         for (p in players) {
             if (p is HumanPlayer) {
                 val builder = discard_card_toc.newBuilder()
@@ -415,8 +422,7 @@ class Game private constructor(totalPlayerCount: Int) {
             }
         val declaredWinners = ArrayList<Player>()
         changeGameResult(whoseTurn, declaredWinners, winner)
-        val winners = winner.toTypedArray()
-        logger.info("只剩下${alivePlayers.toTypedArray().contentToString()}存活，胜利者有${winners.contentToString()}")
+        logger.info("只剩下${alivePlayers.joinToString()}存活，胜利者有${winner.joinToString()}")
         allPlayerSetRoleFaceUp()
         end(declaredWinners, winner)
         return true

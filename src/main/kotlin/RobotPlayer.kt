@@ -18,7 +18,7 @@ import java.util.function.BiPredicate
 import java.util.function.Predicate
 
 class RobotPlayer : Player() {
-    override fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card) {
+    override fun notifyAddHandCard(location: Int, unknownCount: Int, cards: List<Card>) {
         // Do nothing
     }
 
@@ -64,7 +64,7 @@ class RobotPlayer : Player() {
         whoseTurn: Player,
         sender: Player,
         targetPlayer: Player,
-        lockedPlayers: Array<Player>,
+        lockedPlayers: List<Player>,
         messageCard: Card,
         dir: direction?
     ) {
@@ -104,7 +104,7 @@ class RobotPlayer : Player() {
                             }
                         newValue = (newValue * 10 + calculateMessageCardValue(
                             fsm.whoseTurn,
-                            fsm.lockedPlayers.ifEmpty { arrayOf(fsm.sender) }.first(),
+                            fsm.lockedPlayers.ifEmpty { listOf(fsm.sender) }.first(),
                             fsm.messageCard
                         )) / 11
                         newValue <= oldValue
@@ -211,7 +211,7 @@ class RobotPlayer : Player() {
                         cards.removeAll(giveCards.toSet())
                         target.cards.addAll(giveCards)
                         game!!.addEvent(GiveCardEvent(fsm.whoseTurn, this, target))
-                        logger.info("${this}给了${target}${giveCards.toTypedArray().contentToString()}")
+                        logger.info("${this}给了${target}${giveCards.joinToString()}")
                         for (p in game!!.players) {
                             if (p is HumanPlayer) {
                                 val builder = notify_die_give_card_toc.newBuilder()

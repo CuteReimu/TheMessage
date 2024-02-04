@@ -10,18 +10,17 @@ import com.fengsheng.ResolveResult
 data class AfterDieGiveCard(val dieGiveCard: WaitForDieGiveCard) : Fsm {
     override fun resolve(): ResolveResult {
         val player = dieGiveCard.diedQueue[dieGiveCard.diedIndex]
-        val cards = player.cards.toTypedArray()
-        player.game!!.playerDiscardCard(player, *cards)
-        val messageCards = player.messageCards.toTypedArray()
+        val cards = player.cards.toList()
+        player.game!!.playerDiscardCard(player, cards)
+        val messageCards = player.messageCards.toList()
         player.messageCards.clear()
-        player.game!!.deck.discard(*messageCards)
+        player.game!!.deck.discard(messageCards)
         for (p in player.game!!.players) {
             p!!.notifyDie(player.location)
         }
         dieGiveCard.diedIndex++
-        if (cards.isEmpty())
-            return ResolveResult(dieGiveCard, true)
-        player.game!!.addEvent(DiscardCardEvent(dieGiveCard.whoseTurn, player))
+        if (player.cards.isNotEmpty())
+            player.game!!.addEvent(DiscardCardEvent(dieGiveCard.whoseTurn, player))
         return ResolveResult(dieGiveCard, true)
     }
 }

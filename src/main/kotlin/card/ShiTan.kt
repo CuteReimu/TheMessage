@@ -216,7 +216,7 @@ class ShiTan : Card {
         listOf(Black, Red, Blue).find { it !in whoDrawCard }?.let {
             return color + Player.identityColorToString(it) + "-1试探"
         }
-        throw RuntimeException("impossible whoDrawCard: ${whoDrawCard.toTypedArray().contentToString()}")
+        throw RuntimeException("impossible whoDrawCard: ${whoDrawCard.joinToString()}")
     }
 
     companion object {

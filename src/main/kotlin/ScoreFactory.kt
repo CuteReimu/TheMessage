@@ -89,15 +89,15 @@ object ScoreFactory : Logging {
             score = Score(players.size.let { if (it <= 6) 7.0 * (it - 3) else 12.0 * (it - 5) })
             if (originIdentity == Black) {
                 val index = originSecretTask.number + 3
-                playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
+                playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, list ->
                     val rate =
-                        if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
-                            array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
-                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate > array[Mutator.number + 3].rate)
-                            array[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
-                        else array[index].rate
-                    if (array[index].gameCount > 0) score *= array[0].rate / rate.coerceIn(8.0..50.0) // 胜率有效范围在8%至50%
-                    array
+                        if (originSecretTask == Mutator && list[Mutator.number + 3].rate < list[Collector.number + 3].rate)
+                            list[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
+                        else if (originSecretTask == Sweeper && list[Sweeper.number + 3].rate > list[Mutator.number + 3].rate)
+                            list[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
+                        else list[index].rate
+                    if (list[index].gameCount > 0) score *= list[0].rate / rate.coerceIn(8.0..50.0) // 胜率有效范围在8%至50%
+                    list
                 }
             }
             if (identity == Has_No_Identity) score /= winners.count { it.identity == Has_No_Identity }.coerceAtLeast(1)
@@ -106,15 +106,15 @@ object ScoreFactory : Logging {
             score = Score(if (players.size <= 6) -7.0 else -12.0)
             if (originIdentity == Black) {
                 val index = originSecretTask.number + 3
-                playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, array ->
+                playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, list ->
                     val rate =
-                        if (originSecretTask == Mutator && array[Mutator.number + 3].rate < array[Collector.number + 3].rate)
-                            array[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
-                        else if (originSecretTask == Sweeper && array[Sweeper.number + 3].rate > array[Mutator.number + 3].rate)
-                            array[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
-                        else array[index].rate
-                    if (array[index].gameCount > 0) score *= (100.0 - array[0].rate) / (100.0 - rate.coerceIn(8.0..50.0)) // 胜率有效范围在8%至50%
-                    array
+                        if (originSecretTask == Mutator && list[Mutator.number + 3].rate < list[Collector.number + 3].rate)
+                            list[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
+                        else if (originSecretTask == Sweeper && list[Sweeper.number + 3].rate > list[Mutator.number + 3].rate)
+                            list[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
+                        else list[index].rate
+                    if (list[index].gameCount > 0) score *= (100.0 - list[0].rate) / (100.0 - rate.coerceIn(8.0..50.0)) // 胜率有效范围在8%至50%
+                    list
                 }
             }
             score *= 1 + delta / 100.0
@@ -123,7 +123,7 @@ object ScoreFactory : Logging {
     }
 
     fun addWinCount(records: List<Record>) {
-        fun Array<PlayerGameCount>.inc(index: Int? = null, isWinner: Boolean) {
+        fun MutableList<PlayerGameCount>.inc(index: Int? = null, isWinner: Boolean) {
             this[0] = this[0].inc(isWinner)
             if (index != null) {
                 this[2] = this[2].inc(isWinner)
@@ -133,12 +133,12 @@ object ScoreFactory : Logging {
             }
         }
 
-        playerCountCount.computeIfPresent(records.size) { _, array ->
+        playerCountCount.computeIfPresent(records.size) { _, list ->
             records.forEach {
                 val index = if (it.identity == Black) it.task.number + 3 else null
-                array.inc(index, it.isWinner)
+                list.inc(index, it.isWinner)
             }
-            array
+            list
         }
     }
 
@@ -162,7 +162,7 @@ object ScoreFactory : Logging {
                     while (true) {
                         line = reader.readLine()
                         if (line == null) break
-                        val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
+                        val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }
                         val playerCount = a[4].toInt()
                         val playerCountAppear = playerCountAppearCount.computeIfAbsent(playerCount) { IntArray(10) }
                         val playerCountWin = playerCountWinCount.computeIfAbsent(playerCount) { IntArray(10) }
@@ -186,7 +186,7 @@ object ScoreFactory : Logging {
         }
 
         (5..9).forEach { count ->
-            playerCountCount[count] = Array(10) {
+            playerCountCount[count] = MutableList(10) {
                 val winCount = playerCountWinCount[count]?.get(it) ?: 0
                 val gameCount = playerCountAppearCount[count]?.get(it) ?: 0
                 PlayerGameCount(winCount, gameCount).apply {
@@ -196,5 +196,5 @@ object ScoreFactory : Logging {
         }
     }
 
-    private val playerCountCount = ConcurrentHashMap<Int, Array<PlayerGameCount>>()
+    private val playerCountCount = ConcurrentHashMap<Int, MutableList<PlayerGameCount>>()
 }

@@ -82,7 +82,7 @@ class YouDiShenRu : ActiveSkill {
         g.resolve(
             OnSendCard(
                 fsm.whoseTurn, fsm.whoseTurn, card, message.cardDir, target,
-                lockPlayers.toTypedArray(), isMessageCardFaceUp = true, needRemoveCard = false, needNotify = false
+                lockPlayers, isMessageCardFaceUp = true, needRemoveCard = false, needNotify = false
             )
         )
     }

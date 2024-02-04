@@ -19,7 +19,7 @@ class BiFeng : TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<UseCardEvent>(this) { event ->
             event.player === askWhom || return@findEvent false
-            event.cardType in arrayOf(Jie_Huo, Wu_Dao) || return@findEvent false
+            event.cardType in listOf(Jie_Huo, Wu_Dao) || return@findEvent false
             askWhom.getSkillUseCount(skillId) == 0
         } ?: return null
         return ResolveResult(excuteBiFeng(g.fsm!!, event, askWhom), true)

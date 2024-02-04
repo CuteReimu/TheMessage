@@ -119,7 +119,7 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
                 target
             }
             r.incrSeq()
-            logger.info("${r}发动了[咱们工人有知识]，令${targets.toTypedArray().contentToString()}本回合不能接收情报")
+            logger.info("${r}发动了[咱们工人有知识]，令${targets.joinToString()}本回合不能接收情报")
             targets.forEach { it.skills += WorkersAreKnowledgable2() }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {

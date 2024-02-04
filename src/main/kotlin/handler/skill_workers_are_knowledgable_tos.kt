@@ -14,8 +14,8 @@ class skill_workers_are_knowledgable_tos : AbstractProtoHandler<Role.skill_worke
             return
         }
         if (HashSet(pb.targetPlayerIdList).size != pb.targetPlayerIdCount) {
-            logger.error("选择的目标重复${pb.targetPlayerIdList.toTypedArray().contentToString()}")
-            r.sendErrorMessage("卡牌重复${pb.targetPlayerIdList.toTypedArray().contentToString()}")
+            logger.error("选择的目标重复${pb.targetPlayerIdList.joinToString()}")
+            r.sendErrorMessage("选择的目标重复${pb.targetPlayerIdList.joinToString()}")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

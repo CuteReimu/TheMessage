@@ -107,7 +107,7 @@ class LianMin : TriggeredSkill {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeLianMin) return false
             val p = fsm0.event.sender
-            for (target in arrayOf(p, fsm0.event.inFrontOfWhom)) {
+            for (target in listOf(p, fsm0.event.inFrontOfWhom)) {
                 if (!target.alive || p.isEnemy(target)) continue
                 val card = target.messageCards.find { it.colors.contains(color.Black) } ?: continue
                 GameExecutor.post(p.game!!, {

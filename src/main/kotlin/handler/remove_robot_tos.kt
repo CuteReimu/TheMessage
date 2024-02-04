@@ -16,7 +16,7 @@ class remove_robot_tos : AbstractProtoHandler<Fengsheng.remove_robot_tos>() {
         val index = players.indexOfLast { it is RobotPlayer }
         if (index >= 0) {
             val robotPlayer = players[index]!!
-            players[index] = null
+            r.game!!.players = r.game!!.players.toMutableList().apply { set(index, null) }
             logger.info("${robotPlayer.playerName}离开了房间")
             val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(robotPlayer.location).build()
             for (p in players)

@@ -56,7 +56,7 @@ class JiSong : ActiveSkill {
             return
         }
         val messageCard: Card?
-        val cards: Array<Card>?
+        val cards: List<Card>?
         if (pb.cardIdsCount == 0 && pb.messageCard != 0) {
             messageCard = r.findMessageCard(pb.messageCard)
             if (messageCard == null) {
@@ -70,7 +70,7 @@ class JiSong : ActiveSkill {
             }
             cards = null
         } else if (pb.cardIdsCount == 2 && pb.messageCard == 0) {
-            cards = Array(2) {
+            cards = List(2) {
                 val card = r.findCard(pb.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张牌")
@@ -92,7 +92,7 @@ class JiSong : ActiveSkill {
             r.deleteMessageCard(messageCard.id)
         } else {
             logger.info("${r}发动了[急送]，选择弃掉两张手牌，将情报移至${target}面前")
-            g.playerDiscardCard(r, *cards!!)
+            g.playerDiscardCard(r, cards!!)
             g.addEvent(DiscardCardEvent(fsm.whoseTurn, r))
         }
         for (p in g.players) {
@@ -124,7 +124,7 @@ class JiSong : ActiveSkill {
             }
             val players = player.game!!.players.filter { it !== e.inFrontOfWhom && it!!.alive }
             val target = players.randomOrNull() ?: return false
-            val cards = Array(2) { player.cards[it] }
+            val cards = List(2) { player.cards[it] }
             GameExecutor.post(player.game!!, {
                 val builder = skill_ji_song_tos.newBuilder()
                 cards.forEach { card -> builder.addCardIds(card.id) }

@@ -19,9 +19,9 @@ data class SendPhaseStart(override val whoseTurn: Player) : ProcessFsm() {
         val game = whoseTurn.game!!
         if (whoseTurn.alive && whoseTurn.cards.isEmpty() && whoseTurn.findSkill(LENG_XUE_XUN_LIAN) == null) {
             logger.info("${whoseTurn}没有情报可传，输掉了游戏")
-            val messageCards = whoseTurn.messageCards.toTypedArray()
+            val messageCards = whoseTurn.messageCards.toList()
             whoseTurn.messageCards.clear()
-            game.deck.discard(*messageCards)
+            game.deck.discard(messageCards)
             whoseTurn.lose = true
             whoseTurn.alive = false
             for (p in game.players) p!!.notifyDying(whoseTurn.location, true)

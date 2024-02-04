@@ -31,8 +31,8 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
             return
         }
         if (HashSet(pb.cardIdList).size != pb.cardIdList.size) {
-            logger.error("卡牌重复${pb.cardIdList.toTypedArray().contentToString()}")
-            r.sendErrorMessage("卡牌重复${pb.cardIdList.toTypedArray().contentToString()}")
+            logger.error("卡牌重复${pb.cardIdList.joinToString()}")
+            r.sendErrorMessage("卡牌重复${pb.cardIdList.joinToString()}")
             return
         }
         if (pb.cardIdCount == 0) {
@@ -60,7 +60,7 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
             return
         }
         target.cards.addAll(cards)
-        logger.info("${r}给了${target}$${cards.toTypedArray().contentToString()}")
+        logger.info("${r}给了${target}$${cards.joinToString()}")
         for (p in r.game!!.players) {
             if (p is HumanPlayer) {
                 val builder = Fengsheng.notify_die_give_card_toc.newBuilder()

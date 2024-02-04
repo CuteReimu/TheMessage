@@ -58,7 +58,7 @@ class ZuoYouFengYuan : ActiveSkill {
         }
         r.incrSeq()
         g.playerSetRoleFaceUp(r, true)
-        logger.info("${r}对${targets.toTypedArray().contentToString()}发动了[左右逢源]")
+        logger.info("${r}对${targets.joinToString()}发动了[左右逢源]")
         for (p in g.players) {
             if (p is HumanPlayer) {
                 val builder = skill_zuo_you_feng_yuan_toc.newBuilder()
@@ -68,7 +68,7 @@ class ZuoYouFengYuan : ActiveSkill {
             }
         }
         targets.forEach {
-            g.playerDiscardCard(it, *it.cards.toTypedArray())
+            g.playerDiscardCard(it, it.cards.toList())
             g.addEvent(DiscardCardEvent(fsm.whoseTurn, it))
         }
         targets.forEach { it.draw(3) }

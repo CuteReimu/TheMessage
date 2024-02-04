@@ -164,7 +164,7 @@ class HumanPlayer(
         send(builder.build())
     }
 
-    override fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card) {
+    override fun notifyAddHandCard(location: Int, unknownCount: Int, cards: List<Card>) {
         val builder = add_card_toc.newBuilder()
         builder.playerId = getAlternativeLocation(location)
         builder.unknownCardCount = unknownCount
@@ -237,7 +237,7 @@ class HumanPlayer(
         whoseTurn: Player,
         sender: Player,
         targetPlayer: Player,
-        lockedPlayers: Array<Player>,
+        lockedPlayers: List<Player>,
         messageCard: Card,
         dir: direction?
     ) {
@@ -494,14 +494,14 @@ class HumanPlayer(
                 else r.cards.firstOrNull { !it.isPureBlack() } ?: r.cards.first()
             val dir =
                 if (r.findSkill(SkillId.LIAN_LUO) == null) card.direction
-                else arrayOf(direction.Up, direction.Left, direction.Right).random()
+                else listOf(direction.Up, direction.Left, direction.Right).random()
             val availableTargets = r.game!!.players.filter { it !== r && it!!.alive }
             val target = when (dir) {
                 direction.Up -> availableTargets.random()!!
                 direction.Left -> r.getNextLeftAlivePlayer()
                 else -> r.getNextRightAlivePlayer()
             }
-            r.game!!.resolve(OnSendCard(r, r, card, dir, target, arrayOf()))
+            r.game!!.resolve(OnSendCard(r, r, card, dir, target, emptyList()))
         }
     }
 }

@@ -22,7 +22,7 @@ class addcard : Function<Map<String, String>, Any> {
                 GameExecutor.post(g) {
                     if (!g.isStarted || g.fsm == null || g.fsm is WaitForSelectRole) return@post
                     if (playerId < g.players.size && playerId >= 0 && g.players[playerId]!!.alive) {
-                        val cardList: MutableList<Card> = ArrayList()
+                        val cardList = ArrayList<Card>()
                         for (i in 0..<finalCount) {
                             val c = availableCards.random()
                             cardList.add(
@@ -45,14 +45,13 @@ class addcard : Function<Map<String, String>, Any> {
                             )
                         }
                         val p = g.players[playerId]!!
-                        val cards = cardList.toTypedArray()
-                        p.cards.addAll(cards)
-                        logger.info("由于GM命令，${p}摸了${cards.contentToString()}，现在有${p.cards.size}张手牌")
+                        p.cards.addAll(cardList)
+                        logger.info("由于GM命令，${p}摸了${cardList.joinToString()}，现在有${p.cards.size}张手牌")
                         for (player in g.players) {
                             if (player!!.location == playerId)
-                                player.notifyAddHandCard(playerId, 0, *cards)
+                                player.notifyAddHandCard(playerId, 0, cardList)
                             else
-                                player.notifyAddHandCard(playerId, cards.size)
+                                player.notifyAddHandCard(playerId, cardList.size)
                         }
                     }
                 }

@@ -44,9 +44,7 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
         val declaredWinner = arrayListOf(whoseTurn)
         val winner = arrayListOf(whoseTurn)
         game.changeGameResult(whoseTurn, declaredWinner, winner)
-        val declaredWinners = declaredWinner.toTypedArray()
-        val winners = winner.toTypedArray()
-        logger.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
+        logger.info("${declaredWinner.joinToString()}宣告胜利，胜利者有${winner.joinToString()}")
         game.allPlayerSetRoleFaceUp()
         game.end(declaredWinner, winner)
         return true

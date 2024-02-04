@@ -93,7 +93,7 @@ class YingBianZiRu : ActiveSkill {
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
-                        val target = arrayOf(
+                        val target = listOf(
                             fsm.inFrontOfWhom.getNextLeftAlivePlayer(),
                             fsm.inFrontOfWhom.getNextRightAlivePlayer()
                         ).random()
@@ -105,7 +105,7 @@ class YingBianZiRu : ActiveSkill {
                 }, r.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
-                    val target = arrayOf(
+                    val target = listOf(
                         fsm.inFrontOfWhom.getNextLeftAlivePlayer(),
                         fsm.inFrontOfWhom.getNextRightAlivePlayer()
                     ).random()

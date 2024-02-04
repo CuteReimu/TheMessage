@@ -136,9 +136,9 @@ object RoleCache {
     }
 
     /**
-     * @return 长度为 `n` 的数组
+     * @return 长度为 `n` 的列表
      */
-    fun getRandomRoles(n: Int): Array<RoleSkillsData> = runBlocking {
+    fun getRandomRoles(n: Int): List<RoleSkillsData> = runBlocking {
         mu.withLock {
             val yaPaoIndex = cache.indexOfLast { it.role == role.ya_pao }
             var indexList = cache.indices.shuffled().run { if (size > n) subList(0, n) else this }
@@ -148,42 +148,42 @@ object RoleCache {
                     shuffle()
                 }
             }
-            Array(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
+            List(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
         }
     }
 
     /**
      * @param except 排除的角色
-     * @return 长度为 `n` 的数组
+     * @return 长度为 `n` 的列表
      */
-    fun getRandomRoles(n: Int, except: Set<role>): Array<RoleSkillsData> = runBlocking {
+    fun getRandomRoles(n: Int, except: Set<role>): List<RoleSkillsData> = runBlocking {
         mu.withLock {
             val cache = this@RoleCache.cache.filterNot { it.role in except }
             val indexList = cache.indices.shuffled()
-            Array(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
+            List(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
         }
     }
 
     /**
      * @param roles 返回数组的前几个角色强行指定
-     * @return 长度为 `n` 的数组
+     * @return 长度为 `n` 的列表
      */
-    fun getRandomRolesWithSpecific(n: Int, roles: List<role>): Array<RoleSkillsData> {
-        val roleSkillsDataArray = getRandomRoles(n)
+    fun getRandomRolesWithSpecific(n: Int, roles: List<role>): List<RoleSkillsData> {
+        val roleSkillsDataList = getRandomRoles(n).toMutableList()
         var roleIndex = 0
         while (roleIndex < roles.size && roleIndex < n) {
-            val index = roleSkillsDataArray.indexOfFirst { it.role == roles[roleIndex] }
+            val index = roleSkillsDataList.indexOfFirst { it.role == roles[roleIndex] }
             if (index < 0) {
                 val data = mapCache[roles[roleIndex]]
-                roleSkillsDataArray[roleIndex] = data ?: RoleSkillsData()
+                roleSkillsDataList[roleIndex] = data ?: RoleSkillsData()
             } else {
-                val temp = roleSkillsDataArray[index]
-                roleSkillsDataArray[index] = roleSkillsDataArray[roleIndex]
-                roleSkillsDataArray[roleIndex] = temp
+                val temp = roleSkillsDataList[index]
+                roleSkillsDataList[index] = roleSkillsDataList[roleIndex]
+                roleSkillsDataList[roleIndex] = temp
             }
             roleIndex++
         }
-        return roleSkillsDataArray
+        return roleSkillsDataList
     }
 
     fun getRoleName(role: role): String? {

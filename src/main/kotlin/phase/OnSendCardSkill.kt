@@ -24,7 +24,7 @@ data class OnSendCardSkill(
     val messageCard: Card,
     val dir: direction,
     val targetPlayer: Player,
-    val lockedPlayers: Array<Player>,
+    val lockedPlayers: List<Player>,
     val isMessageCardFaceUp: Boolean,
 ) : ProcessFsm() {
     override fun onSwitch() {
@@ -35,29 +35,5 @@ data class OnSendCardSkill(
         return ResolveResult(
             SendPhaseIdle(whoseTurn, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp, sender), true
         )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as OnSendCardSkill
-
-        if (whoseTurn != other.whoseTurn) return false
-        if (messageCard != other.messageCard) return false
-        if (dir != other.dir) return false
-        if (targetPlayer != other.targetPlayer) return false
-        if (!lockedPlayers.contentEquals(other.lockedPlayers)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = whoseTurn.hashCode()
-        result = 31 * result + messageCard.hashCode()
-        result = 31 * result + dir.hashCode()
-        result = 31 * result + targetPlayer.hashCode()
-        result = 31 * result + lockedPlayers.contentHashCode()
-        return result
     }
 }

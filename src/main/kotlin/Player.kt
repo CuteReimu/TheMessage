@@ -78,7 +78,7 @@ abstract class Player protected constructor() {
         whoseTurn: Player,
         sender: Player,
         targetPlayer: Player,
-        lockedPlayers: Array<Player>,
+        lockedPlayers: List<Player>,
         messageCard: Card,
         dir: direction?
     )
@@ -118,18 +118,22 @@ abstract class Player protected constructor() {
     fun draw(n: Int) {
         val cards = game!!.deck.draw(n)
         this.cards.addAll(cards)
-        logger.info("${this}摸了${cards.contentToString()}，现在有${this.cards.size}张手牌")
+        logger.info("${this}摸了${cards.joinToString()}，现在有${this.cards.size}张手牌")
         for (player in game!!.players) {
             if (player === this)
-                player.notifyAddHandCard(location, 0, *cards)
+                player.notifyAddHandCard(location, 0, cards)
             else
                 player!!.notifyAddHandCard(location, cards.size)
         }
     }
 
-    abstract fun notifyAddHandCard(location: Int, unknownCount: Int, vararg cards: Card)
+    abstract fun notifyAddHandCard(location: Int, unknownCount: Int, cards: List<Card> = emptyList())
 
-    fun checkThreeSameMessageCard(vararg cards: Card): Boolean {
+    fun checkThreeSameMessageCard(card: Card): Boolean {
+        return checkThreeSameMessageCard(listOf(card))
+    }
+
+    fun checkThreeSameMessageCard(cards: Collection<Card>): Boolean {
         var red = 0
         var blue = 0
         var black = 0

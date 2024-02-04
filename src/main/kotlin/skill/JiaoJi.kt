@@ -62,14 +62,14 @@ class JiaoJi : MainPhaseSkill() {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        val cards: Array<Card>
+        val cards: List<Card>
         if (target.cards.size <= 2) {
-            cards = target.cards.toTypedArray()
+            cards = target.cards.toList()
             target.cards.clear()
         } else {
-            cards = Array(2) { target.deleteCard(target.cards.random().id)!! }
+            cards = List(2) { target.deleteCard(target.cards.random().id)!! }
         }
-        logger.info("${r}对${target}发动了[交际]，抽取了${cards.contentToString()}")
+        logger.info("${r}对${target}发动了[交际]，抽取了${cards.joinToString()}")
         r.cards.addAll(cards)
         val black = r.messageCards.count(color.Black)
         val needReturnCount = (cards.size - black).coerceAtLeast(0)..cards.size
@@ -144,7 +144,7 @@ class JiaoJi : MainPhaseSkill() {
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
-            val cards = Array(message.cardIdsCount) {
+            val cards = List(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张卡")
@@ -154,7 +154,7 @@ class JiaoJi : MainPhaseSkill() {
                 card
             }
             r.incrSeq()
-            logger.info("${r}将${cards.contentToString()}还给$target")
+            logger.info("${r}将${cards.joinToString()}还给$target")
             r.cards.removeAll(cards.toSet())
             target.cards.addAll(cards)
             for (p in g.players) {

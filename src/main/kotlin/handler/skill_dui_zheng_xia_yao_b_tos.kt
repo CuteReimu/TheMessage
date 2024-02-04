@@ -14,8 +14,8 @@ class skill_dui_zheng_xia_yao_b_tos : AbstractProtoHandler<Role.skill_dui_zheng_
             return
         }
         if (HashSet(pb.cardIdsList).size != pb.cardIdsCount) {
-            logger.error("卡牌重复${pb.cardIdsList.toTypedArray()}")
-            r.sendErrorMessage("卡牌重复${pb.cardIdsList.toTypedArray()}")
+            logger.error("卡牌重复${pb.cardIdsList}")
+            r.sendErrorMessage("卡牌重复${pb.cardIdsList}")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

@@ -102,7 +102,7 @@ class JiBan : MainPhaseSkill() {
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
-            val cards = Array(message.cardIdsCount) {
+            val cards = List(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张卡")
@@ -112,7 +112,7 @@ class JiBan : MainPhaseSkill() {
                 card
             }
             r.incrSeq()
-            logger.info("${r}将${cards.contentToString()}交给$target")
+            logger.info("${r}将${cards.joinToString()}交给$target")
             r.cards.removeAll(cards.toSet())
             target.cards.addAll(cards)
             for (p in g.players) {

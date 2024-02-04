@@ -33,8 +33,8 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
                     val form = HashMap<String, String>()
                     val query = uri.rawQuery
                     if (query != null) {
-                        for (s in query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
-                            val arr = s.split("=".toRegex(), limit = 2).toTypedArray()
+                        for (s in query.split("&".toRegex()).dropLastWhile { it.isEmpty() }) {
+                            val arr = s.split("=".toRegex(), limit = 2)
                             val value = if (arr.size >= 2) URLDecoder.decode(arr[1], Charsets.UTF_8) else ""
                             form.putIfAbsent(arr[0], value)
                         }

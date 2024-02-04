@@ -26,7 +26,7 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
             r.sendErrorMessage("至少5人局")
             return
         }
-        val players = oldPlayers.filterIndexed { i, _ -> i != index }.toTypedArray()
+        val players = oldPlayers.filterIndexed { i, _ -> i != index }
         r.game!!.players = players
         players.forEachIndexed { i, p ->
             p?.location = i

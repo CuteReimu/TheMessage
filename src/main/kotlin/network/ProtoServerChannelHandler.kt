@@ -57,7 +57,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                 player.notifyPlayerUpdateStatus()
             } else {
                 logger.info("${player.playerName}离开了房间")
-                game.players[player.location] = null
+                game.players = game.players.toMutableList().apply { set(player.location, null) }
                 player.game = null
                 Game.playerNameCache.remove(player.playerName, player)
                 val reply = leave_room_toc.newBuilder().setPosition(player.location).build()

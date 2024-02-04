@@ -92,10 +92,7 @@ abstract class ProcessFsm : Fsm {
         val winners = winner.values.toMutableList()
         whoseTurn.game!!.changeGameResult(whoseTurn, declareWinners, winners)
         if (declareWinner.isNotEmpty()) {
-            logger.info(
-                "${declareWinners.toTypedArray().contentToString()}宣告胜利，" +
-                        "胜利者有${winners.toTypedArray().contentToString()}"
-            )
+            logger.info("${declareWinners.joinToString()}宣告胜利，胜利者有${winners.joinToString()}")
             game.allPlayerSetRoleFaceUp()
             whoseTurn.game!!.end(declareWinners, winners)
             return ResolveResult(null, false)

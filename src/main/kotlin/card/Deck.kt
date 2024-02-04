@@ -25,11 +25,11 @@ class Deck(private val game: Game) {
     /**
      * 摸牌
      */
-    fun draw(n: Int): Array<Card> {
+    fun draw(n: Int): List<Card> {
         if (n > cards.size) shuffle()
         val from = if (n > cards.size) 0 else cards.size - n
         val subList = cards.subList(from, cards.size)
-        val result = subList.toTypedArray()
+        val result = subList.toList()
         subList.clear()
         notifyDeckCount(false)
         return result
@@ -52,16 +52,31 @@ class Deck(private val game: Game) {
      *
      * @param cards 排在数组后面的牌将会放在上面
      */
-    fun addFirst(vararg cards: Card) {
+    fun addFirst(cards: Collection<Card>) {
         this.cards.addAll(cards)
+        notifyDeckCount(false)
+    }
+
+    /**
+     * 往牌堆顶放牌
+     */
+    fun addFirst(card: Card) {
+        cards.add(card)
         notifyDeckCount(false)
     }
 
     /**
      * 弃牌
      */
-    fun discard(vararg cards: Card) {
+    fun discard(cards: List<Card>) {
         discardPile.addAll(cards)
+    }
+
+    /**
+     * 弃牌
+     */
+    fun discard(card: Card) {
+        discardPile.add(card)
     }
 
     /**
@@ -101,9 +116,9 @@ class Deck(private val game: Game) {
         if (count == 1)
             addFirst(ShiTan(getNextId(), DefaultDeck[shiTanIndex.random()] as ShiTan))
         else
-            addFirst(*shiTanIndex.shuffled().subList(0, count).map {
+            addFirst(shiTanIndex.shuffled().subList(0, count).map {
                 ShiTan(getNextId(), DefaultDeck[it] as ShiTan)
-            }.toTypedArray())
+            })
     }
 
     fun init(totalPlayerCount: Int) {

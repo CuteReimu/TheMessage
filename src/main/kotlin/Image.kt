@@ -18,7 +18,7 @@ object Image {
         timeZone = TimeZone.getTimeZone("GMT+8:00")
     }
 
-    private class Line(val roleName: String, val totalCount: Int, val winRates: DoubleArray)
+    private class Row(val roleName: String, val totalCount: Int, val winRates: DoubleArray)
 
     private class Gradient(
         values: Collection<Double>,
@@ -85,7 +85,7 @@ object Image {
                 while (true) {
                     line = reader.readLine()
                     if (line == null) break
-                    val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }.toTypedArray()
+                    val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }
                     val role = Common.role.valueOf(a[0])
                     val appear = appearCount.computeIfAbsent(role) { IntArray(10) }
                     val win = winCount.computeIfAbsent(role) { IntArray(10) }
@@ -97,9 +97,9 @@ object Image {
                 }
             }
         }
-        val lines = ArrayList<Line>()
+        val lines = ArrayList<Row>()
         for ((key, value) in appearCount) {
-            lines.add(Line(
+            lines.add(Row(
                 RoleCache.getRoleName(key) ?: "",
                 value[0],
                 DoubleArray(value.size) { i ->
@@ -147,7 +147,7 @@ object Image {
             }
         }
         val g2 = Gradient(lines.map { it.totalCount.toDouble() })
-        val gn = Array(columns.size - 2) {
+        val gn = List(columns.size - 2) {
             Gradient(lines.mapNotNull { line -> line.winRates[it].let { w -> if (w.isNaN()) null else w } })
         }
         lines.forEachIndexed { index, line ->

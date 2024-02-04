@@ -265,16 +265,15 @@ class MiLing : Card {
             }
             player.incrSeq()
             target.deleteCard(messageCard.id)
-            val newFsm =
-                OnSendCard(
-                    sendPhase.whoseTurn,
-                    target,
-                    messageCard,
-                    pb.cardDir,
-                    messageTarget,
-                    lockPlayers.toTypedArray(),
-                    needRemoveCard = false
-                )
+            val newFsm = OnSendCard(
+                sendPhase.whoseTurn,
+                target,
+                messageCard,
+                pb.cardDir,
+                messageTarget,
+                lockPlayers,
+                needRemoveCard = false
+            )
             return ResolveResult(
                 OnFinishResolveCard(
                     sendPhase.whoseTurn, sendPhase.whoseTurn, target, card.getOriginCard(), Mi_Ling, newFsm,

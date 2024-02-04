@@ -53,12 +53,12 @@ class HouLaiRen : ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         val roles = RoleCache.getRandomRoles(3, g.players.map { it!!.role }.toSet())
-        val discardCards = r.messageCards.filter { it.id != message.remainCardId }.toTypedArray()
-        logger.info("${r}发动了[后来人]，弃掉了${discardCards.contentToString()}")
+        val discardCards = r.messageCards.filter { it.id != message.remainCardId }
+        logger.info("${r}发动了[后来人]，弃掉了${discardCards.joinToString()}")
         r.messageCards.clear()
         r.messageCards.add(card)
-        g.deck.discard(*discardCards)
-        logger.info("${r}抽取了三张角色牌：${roles.map { it.name }.toTypedArray().contentToString()}")
+        g.deck.discard(discardCards)
+        logger.info("${r}抽取了三张角色牌：${roles.joinToString { it.name }}")
         g.resolve(executeHouLaiRen(fsm, r, message.remainCardId, roles))
     }
 
@@ -66,7 +66,7 @@ class HouLaiRen : ActiveSkill {
         val fsm: WaitForChengQing,
         val r: Player,
         val remainCardId: Int,
-        val roles: Array<RoleSkillsData>
+        val roles: List<RoleSkillsData>
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
@@ -137,26 +137,6 @@ class HouLaiRen : ActiveSkill {
                 }
             }
             return ResolveResult(UseChengQingOnDying(fsm), true)
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as executeHouLaiRen
-
-            if (fsm != other.fsm) return false
-            if (r != other.r) return false
-            if (!roles.contentEquals(other.roles)) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = fsm.hashCode()
-            result = 31 * result + r.hashCode()
-            result = 31 * result + roles.contentHashCode()
-            return result
         }
     }
 

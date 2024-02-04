@@ -113,7 +113,7 @@ class JinBi : MainPhaseSkill() {
                 (player as? HumanPlayer)?.sendErrorMessage("给的牌数量不对：${message.cardIdsCount}")
                 return null
             }
-            val cards = Array(2) {
+            val cards = List(2) {
                 val card = target.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张牌")
@@ -125,7 +125,7 @@ class JinBi : MainPhaseSkill() {
             target.incrSeq()
             target.cards.removeAll(cards.toSet())
             r.cards.addAll(cards)
-            logger.info("${target}给了${r}${cards.contentToString()}")
+            logger.info("${target}给了${r}${cards.joinToString()}")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_jin_bi_b_toc.newBuilder()

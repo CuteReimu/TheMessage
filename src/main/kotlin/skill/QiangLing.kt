@@ -59,7 +59,7 @@ class QiangLing : TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val result = arrayOf(Jie_Huo, Diao_Bao, Wu_Dao)
+                    val result = listOf(Jie_Huo, Diao_Bao, Wu_Dao)
                         .filterNot { r.cannotPlayCard(it) }.run {
                             when (size) {
                                 0 -> listOf(Po_Yi, Cheng_Qing).filterNot { r.cannotPlayCard(it) }
@@ -111,7 +111,7 @@ class QiangLing : TriggeredSkill {
                 }
             }
             r.incrSeq()
-            logger.info("${r}发动了[强令]，禁止了${typesList.toTypedArray().contentToString()}")
+            logger.info("${r}发动了[强令]，禁止了${typesList.joinToString()}")
             r.game!!.players.forEach { it!!.skills += CannotPlayCard(cardType = typesList) }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {

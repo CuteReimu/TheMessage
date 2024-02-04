@@ -132,7 +132,7 @@ class DuiZhengXiaYao : ActiveSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("不足两张牌")
                 return null
             }
-            val cards = Array(2) { i ->
+            val cards = List(2) { i ->
                 val card = r.findCard(message.getCardIds(i))
                 if (card == null) {
                     logger.error("没有这张卡")
@@ -161,12 +161,12 @@ class DuiZhengXiaYao : ActiveSkill {
     private data class executeDuiZhengXiaYaoB(
         val fsm: FightPhaseIdle,
         val r: Player,
-        val cards: Array<Card>,
+        val cards: List<Card>,
         val colors: List<color>,
         val defaultSelection: PlayerAndCard
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            logger.info("${r}展示了${cards.contentToString()}")
+            logger.info("${r}展示了${cards.joinToString()}")
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -261,36 +261,12 @@ class DuiZhengXiaYao : ActiveSkill {
             }
             return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
         }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as executeDuiZhengXiaYaoB
-
-            if (fsm != other.fsm) return false
-            if (r != other.r) return false
-            if (!cards.contentEquals(other.cards)) return false
-            if (colors != other.colors) return false
-            if (defaultSelection != other.defaultSelection) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = fsm.hashCode()
-            result = 31 * result + r.hashCode()
-            result = 31 * result + cards.contentHashCode()
-            result = 31 * result + colors.hashCode()
-            result = 31 * result + defaultSelection.hashCode()
-            return result
-        }
     }
 
     companion object {
         private fun getSameColors(card1: Card, card2: Card): List<color> {
             val colors = ArrayList<color>()
-            for (color in arrayOf(color.Black, color.Red, color.Blue)) {
+            for (color in listOf(color.Black, color.Red, color.Blue)) {
                 if (card1.colors.contains(color) && card2.colors.contains(color)) colors.add(color)
             }
             return colors

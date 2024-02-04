@@ -67,8 +67,8 @@ class PingHeng : Card {
             }
             if (r.cards.isNotEmpty()) r.game!!.addEvent(DiscardCardEvent(r, r))
             if (target.cards.isNotEmpty()) r.game!!.addEvent(DiscardCardEvent(r, target))
-            g.playerDiscardCard(r, *r.cards.toTypedArray())
-            g.playerDiscardCard(target, *target.cards.toTypedArray())
+            g.playerDiscardCard(r, r.cards.toList())
+            g.playerDiscardCard(target, target.cards.toList())
             r.draw(3)
             target.draw(3)
             OnFinishResolveCard(r, r, target, getOriginCard(), Ping_Heng, fsm)

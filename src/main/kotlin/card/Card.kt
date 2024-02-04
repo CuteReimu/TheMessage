@@ -127,13 +127,13 @@ abstract class Card {
                     Red -> sb.append("红")
                     Blue -> sb.append("蓝")
                     Black -> sb.append("黑")
-                    else -> throw RuntimeException("unknown color: " + colors.toTypedArray().contentToString())
+                    else -> throw RuntimeException("unknown color: " + colors.joinToString())
                 }
             }
             when (colors.size) {
                 1 -> sb.append("色")
                 2 -> sb.append("双色")
-                else -> throw RuntimeException("unknown color: " + colors.toTypedArray().contentToString())
+                else -> throw RuntimeException("unknown color: " + colors.joinToString())
             }
             return sb.toString()
         }

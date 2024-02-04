@@ -20,7 +20,7 @@ data class SendPhaseIdle(
     val messageCard: Card,
     val dir: direction,
     val inFrontOfWhom: Player,
-    val lockedPlayers: Array<Player>,
+    val lockedPlayers: List<Player>,
     val isMessageCardFaceUp: Boolean,
     val sender: Player,
 ) : ProcessFsm() {
@@ -48,33 +48,5 @@ data class SendPhaseIdle(
 
     override fun toString(): String {
         return "${whoseTurn}的回合的情报传递阶段，传出者是${sender}，情报在${inFrontOfWhom}面前"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as SendPhaseIdle
-
-        if (whoseTurn != other.whoseTurn) return false
-        if (messageCard != other.messageCard) return false
-        if (dir != other.dir) return false
-        if (inFrontOfWhom != other.inFrontOfWhom) return false
-        if (!lockedPlayers.contentEquals(other.lockedPlayers)) return false
-        if (isMessageCardFaceUp != other.isMessageCardFaceUp) return false
-        if (sender != other.sender) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = whoseTurn.hashCode()
-        result = 31 * result + messageCard.hashCode()
-        result = 31 * result + dir.hashCode()
-        result = 31 * result + inFrontOfWhom.hashCode()
-        result = 31 * result + lockedPlayers.contentHashCode()
-        result = 31 * result + isMessageCardFaceUp.hashCode()
-        result = 31 * result + sender.hashCode()
-        return result
     }
 }

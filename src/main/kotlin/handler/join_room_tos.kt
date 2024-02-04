@@ -95,7 +95,7 @@ class join_room_tos : ProtoHandler {
             }
             oldPlayer2?.apply {// 顶号
                 logger.info("${playerName}离开了房间")
-                newGame.players[location] = null
+                newGame.players = newGame.players.toMutableList().apply { set(location, null) }
                 newGame.cancelStartTimer()
                 this.game = null
                 send(Fengsheng.notify_kicked_toc.getDefaultInstance())
@@ -150,7 +150,7 @@ class join_room_tos : ProtoHandler {
         private fun Game.removeAllRobot() {
             for ((index, robotPlayer) in players.withIndex()) {
                 if (robotPlayer is RobotPlayer) {
-                    players[index] = null
+                    players = players.toMutableList().apply { set(index, null) }
                     logger.info("${robotPlayer.playerName}离开了房间")
                     val builder = Fengsheng.leave_room_toc.newBuilder()
                     builder.position = robotPlayer.location

@@ -15,8 +15,8 @@ class skill_ji_song_tos : AbstractProtoHandler<Role.skill_ji_song_tos>() {
             return
         }
         if (HashSet(pb.cardIdsList).size != pb.cardIdsCount) {
-            logger.error("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
-            r.sendErrorMessage("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
+            logger.error("卡牌重复${pb.cardIdsList.joinToString()}")
+            r.sendErrorMessage("卡牌重复${pb.cardIdsList.joinToString()}")
             return
         }
         skill.executeProtocol(r.game!!, r, pb)

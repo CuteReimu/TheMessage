@@ -26,14 +26,14 @@ data class OnSendCard(
     val messageCard: Card,
     val dir: direction,
     val targetPlayer: Player,
-    val lockedPlayers: Array<Player>,
+    val lockedPlayers: List<Player>,
     val isMessageCardFaceUp: Boolean = false,
     val needRemoveCard: Boolean = true,
     val needNotify: Boolean = true
 ) : Fsm {
     override fun resolve(): ResolveResult {
         var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
-        if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.contentToString()}"
+        if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.joinToString()}"
         logger.info(s)
         if (needRemoveCard)
             sender.deleteCard(messageCard.id)
@@ -44,29 +44,5 @@ data class OnSendCard(
         return ResolveResult(
             OnSendCardSkill(whoseTurn, sender, messageCard, dir, targetPlayer, lockedPlayers, isMessageCardFaceUp), true
         )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as OnSendCard
-
-        if (whoseTurn != other.whoseTurn) return false
-        if (messageCard != other.messageCard) return false
-        if (dir != other.dir) return false
-        if (targetPlayer != other.targetPlayer) return false
-        if (!lockedPlayers.contentEquals(other.lockedPlayers)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = whoseTurn.hashCode()
-        result = 31 * result + messageCard.hashCode()
-        result = 31 * result + dir.hashCode()
-        result = 31 * result + targetPlayer.hashCode()
-        result = 31 * result + lockedPlayers.contentHashCode()
-        return result
     }
 }

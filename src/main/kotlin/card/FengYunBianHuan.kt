@@ -53,11 +53,11 @@ class FengYunBianHuan : Card {
             val player = g.players[i % g.players.size]!!
             if (player.alive) players.add(player)
         }
-        val drawCards = arrayListOf(*(r.game!!.deck.draw(players.size)))
+        val drawCards = r.game!!.deck.draw(players.size).toMutableList()
         while (players.size > drawCards.size) {
             players.removeLast() // 兼容牌库抽完的情况
         }
-        logger.info("${r}使用了${this}，翻开了${drawCards.toTypedArray().contentToString()}")
+        logger.info("${r}使用了${this}，翻开了${drawCards.joinToString()}")
         for (player in r.game!!.players) {
             if (player is HumanPlayer) {
                 val builder = use_feng_yun_bian_huan_toc.newBuilder()
@@ -77,7 +77,7 @@ class FengYunBianHuan : Card {
 
     private data class executeFengYunBianHuan(
         val card: FengYunBianHuan,
-        val drawCards: ArrayList<Card>,
+        val drawCards: MutableList<Card>,
         val players: LinkedList<Player>,
         val mainPhaseIdle: MainPhaseIdle,
         val asMessageCard: Boolean = false
@@ -86,7 +86,7 @@ class FengYunBianHuan : Card {
             val p = mainPhaseIdle.whoseTurn
             val r = players.firstOrNull()
             if (r == null) {
-                p.game!!.deck.discard(*drawCards.toTypedArray())
+                p.game!!.deck.discard(drawCards)
                 // 向客户端发送notify_phase_toc，客户端关闭风云变幻的弹窗
                 for (player in p.game!!.players) {
                     if (player is HumanPlayer) {

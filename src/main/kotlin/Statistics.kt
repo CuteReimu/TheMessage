@@ -259,7 +259,7 @@ object Statistics {
                 while (true) {
                     line = reader.readLine()
                     if (line == null) break
-                    val a = line.split(",".toRegex(), limit = 8).toTypedArray()
+                    val a = line.split(",".toRegex(), limit = 8)
                     val pwd = a[4]
                     val score = if (a[3].length < 6) a[3].toInt() else 0 // 以前这个位置是deviceId
                     val name = a[2]
@@ -284,7 +284,7 @@ object Statistics {
                 while (true) {
                     line = reader.readLine()
                     if (line == null) break
-                    val a = line!!.split(",".toRegex(), limit = 2).toTypedArray()
+                    val a = line!!.split(",".toRegex(), limit = 2)
                     trialStartTime[a[1]] = a[0].toLong()
                 }
             }

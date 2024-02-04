@@ -56,12 +56,12 @@ class LengXueXunLian : ActiveSkill {
     private data class executeLengXueXunLian(
         val whoseTurn: Player,
         val r: Player,
-        val cards: Array<Card>
+        val cards: List<Card>
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             r.incrSeq()
-            logger.info("${r}发动了[冷血训练]，展示了牌堆顶的${cards.contentToString()}")
+            logger.info("${r}发动了[冷血训练]，展示了牌堆顶的${cards.joinToString()}")
             r.skills += MustLockOne()
             for (p in g.players) {
                 if (p is HumanPlayer) {
@@ -75,8 +75,7 @@ class LengXueXunLian : ActiveSkill {
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
                                 val builder2 = skill_leng_xue_xun_lian_b_tos.newBuilder()
-                                cards.sortBy { !it.isBlack() }
-                                val card = cards.first()
+                                val card = cards.minBy { !it.isBlack() }
                                 builder2.sendCardId = card.id
                                 when (card.direction) {
                                     Left -> builder2.targetPlayerId =
@@ -182,30 +181,10 @@ class LengXueXunLian : ActiveSkill {
             }
             return ResolveResult(
                 OnSendCard(
-                    whoseTurn, r, card, card.direction, target, arrayOf(lockPlayer),
+                    whoseTurn, r, card, card.direction, target, listOf(lockPlayer),
                     isMessageCardFaceUp = true, needRemoveCard = false, needNotify = false
                 ), true
             )
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as executeLengXueXunLian
-
-            if (whoseTurn != other.whoseTurn) return false
-            if (r != other.r) return false
-            if (!cards.contentEquals(other.cards)) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = whoseTurn.hashCode()
-            result = 31 * result + r.hashCode()
-            result = 31 * result + cards.contentHashCode()
-            return result
         }
     }
 

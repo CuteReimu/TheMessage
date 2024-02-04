@@ -89,7 +89,7 @@ class YuSiWangPo : MainPhaseSkill() {
                     p.send(builder.build())
                 }
             }
-            g.playerDiscardCard(target, *target.cards.toTypedArray())
+            g.playerDiscardCard(target, target.cards.toList())
             g.continueResolve()
         } else {
             g.resolve(executeYuSiWangPo(g.fsm!!, r, target, discardCount, timeout))
@@ -164,7 +164,7 @@ class YuSiWangPo : MainPhaseSkill() {
                     p.send(builder.build())
                 }
             }
-            target.game!!.playerDiscardCard(target, *cards.toTypedArray())
+            target.game!!.playerDiscardCard(target, cards.toList())
             return ResolveResult(fsm, true)
         }
     }

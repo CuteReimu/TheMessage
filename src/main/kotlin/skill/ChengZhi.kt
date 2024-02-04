@@ -37,11 +37,11 @@ class ChengZhi : TriggeredSkill {
     ) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val cards = whoDie.cards.toTypedArray()
+            val cards = whoDie.cards.toList()
             whoDie.cards.clear()
             r.cards.addAll(cards)
             if (hasCard) {
-                logger.info("${r}发动了[承志]，获得了${whoDie}的${cards.contentToString()}并查看身份牌")
+                logger.info("${r}发动了[承志]，获得了${whoDie}的${cards.joinToString()}并查看身份牌")
                 r.game!!.addEvent(GiveCardEvent(whoseTurn, whoDie, r))
             } else {
                 logger.info("${r}发动了[承志]，查看了${whoDie}的身份牌")

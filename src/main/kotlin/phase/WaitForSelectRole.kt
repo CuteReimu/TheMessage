@@ -13,7 +13,7 @@ import kotlin.random.Random
  * 等待玩家选择角色
  */
 data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsData>>) : WaitingFsm {
-    private val selected: Array<RoleSkillsData?> = arrayOfNulls(game.players.size)
+    private val selected = MutableList<RoleSkillsData?>(game.players.size) { null }
     private val whoseTurn = Random.nextInt(game.players.size)
 
     override fun resolve(): ResolveResult? {

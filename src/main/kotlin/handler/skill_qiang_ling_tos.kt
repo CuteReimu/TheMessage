@@ -15,8 +15,8 @@ class skill_qiang_ling_tos : AbstractProtoHandler<Role.skill_qiang_ling_tos>() {
             return
         }
         if (pb.typesCount != 0 && EnumSet.copyOf(pb.typesList).size != pb.typesCount) {
-            logger.error("宣言的卡牌类型重复${pb.typesValueList.toTypedArray().contentToString()}")
-            r.sendErrorMessage("宣言的卡牌类型重复${pb.typesValueList.toTypedArray().contentToString()}")
+            logger.error("宣言的卡牌类型重复${pb.typesValueList.joinToString()}")
+            r.sendErrorMessage("宣言的卡牌类型重复${pb.typesValueList.joinToString()}")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

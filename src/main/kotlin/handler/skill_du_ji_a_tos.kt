@@ -15,8 +15,8 @@ class skill_du_ji_a_tos : AbstractProtoHandler<Role.skill_du_ji_a_tos>() {
             return
         }
         if (HashSet(pb.targetPlayerIdsList).size != pb.targetPlayerIdsCount) {
-            logger.error("选择的角色重复${pb.targetPlayerIdsList.toTypedArray().contentToString()}")
-            r.sendErrorMessage("选择的角色重复${pb.targetPlayerIdsList.toTypedArray().contentToString()}")
+            logger.error("选择的角色重复${pb.targetPlayerIdsList.joinToString()}")
+            r.sendErrorMessage("选择的角色重复${pb.targetPlayerIdsList.joinToString()}")
             return
         }
         skill.executeProtocol(r.game!!, r, pb)

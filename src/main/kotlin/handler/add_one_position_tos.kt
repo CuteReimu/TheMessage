@@ -16,7 +16,7 @@ class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos
             r.sendErrorMessage("最多9人局")
             return
         }
-        val newPlayers = arrayOf(*players, null)
+        val newPlayers = players + null
         r.game!!.players = newPlayers
         for (p in players)
             (p as? HumanPlayer)?.send(Fengsheng.add_one_position_toc.getDefaultInstance())

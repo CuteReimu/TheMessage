@@ -138,12 +138,9 @@ class YunChouWeiWo : ActiveSkill {
             }
             val handCards = cards.filter { it.id != deckCards[0].id && it.id != deckCards[1].id }
             r.incrSeq()
-            logger.info(
-                "${r}将${handCards.toTypedArray().contentToString()}加入手牌，" +
-                        "将${deckCards.toTypedArray().contentToString()}放回牌堆顶"
-            )
+            logger.info("${r}将${handCards.joinToString()}加入手牌，将${deckCards.joinToString()}放回牌堆顶")
             g.deck.draw(5)
-            g.deck.addFirst(deckCards[1], deckCards[0])
+            g.deck.addFirst(listOf(deckCards[1], deckCards[0]))
             r.cards.addAll(handCards)
             for (p in g.players) {
                 if (p is HumanPlayer) {

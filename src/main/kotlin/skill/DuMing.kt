@@ -63,7 +63,7 @@ class DuMing : TriggeredSkill {
                 GameExecutor.post(g, {
                     val builder2 = skill_du_ming_a_tos.newBuilder()
                     builder2.enable = true
-                    builder2.color = arrayOf(Red, Blue, Black).random()
+                    builder2.color = listOf(Red, Blue, Black).random()
                     g.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }

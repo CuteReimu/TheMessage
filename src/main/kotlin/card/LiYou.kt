@@ -74,13 +74,13 @@ class LiYou : Card {
                 val deckCards = g.deck.draw(1)
                 var joinIntoHand = false
                 if (deckCards.isNotEmpty()) {
-                    if (target.checkThreeSameMessageCard(deckCards[0])) {
+                    if (target.checkThreeSameMessageCard(deckCards)) {
                         joinIntoHand = true
                         r.cards.addAll(deckCards)
-                        logger.info("${deckCards.contentToString()}加入了${r}的手牌")
+                        logger.info("${deckCards.joinToString()}加入了${r}的手牌")
                     } else {
                         target.messageCards.addAll(deckCards)
-                        logger.info("${deckCards.contentToString()}加入了${target}的的情报区")
+                        logger.info("${deckCards.joinToString()}加入了${target}的的情报区")
                     }
                 }
                 for (player in g.players) {

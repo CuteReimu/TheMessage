@@ -14,8 +14,8 @@ class skill_guang_fa_bao_b_tos : AbstractProtoHandler<Role.skill_guang_fa_bao_b_
             return
         }
         if (HashSet(pb.cardIdsList).size != pb.cardIdsCount) {
-            logger.error("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
-            r.sendErrorMessage("卡牌重复${pb.cardIdsList.toTypedArray().contentToString()}")
+            logger.error("卡牌重复${pb.cardIdsList.joinToString()}")
+            r.sendErrorMessage("卡牌重复${pb.cardIdsList.joinToString()}")
             return
         }
         r.game!!.tryContinueResolveProtocol(r, pb)

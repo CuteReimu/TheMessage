@@ -21,7 +21,7 @@ class TaoQu : MainPhaseSkill() {
     override val isInitialSkill = true
 
     override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && arrayOf(Black, Red, Blue).any {
+        super.mainPhaseNeedNotify(r) && listOf(Black, Red, Blue).any {
             r.cards.count(it) >= 2 && r.game!!.players.any { p ->
                 p !== r && p!!.alive && p.messageCards.any { c -> it in c.colors }
             }
@@ -76,7 +76,7 @@ class TaoQu : MainPhaseSkill() {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        logger.info("${r}发动了[套取]，展示了${cards.toTypedArray().contentToString()}")
+        logger.info("${r}发动了[套取]，展示了${cards.joinToString()}")
         g.resolve(executeTaoQu(fsm, r, cards, colors))
     }
 
@@ -206,7 +206,7 @@ class TaoQu : MainPhaseSkill() {
             player.getSkillUseCount(SkillId.TAO_QU) == 0 || return false
             val players =
                 player.game!!.players.filter { it!!.alive && it.isEnemy(player) && it.messageCards.isNotEmpty() }
-            val color = arrayOf(Red, Blue).filter {
+            val color = listOf(Red, Blue).filter {
                 player.cards.count(it) >= 2 && players.any { p -> p!!.messageCards.any { c -> it in c.colors } }
             }.randomOrNull() ?: return false
             val cardIds = player.cards.filter { color in it.colors }.shuffled().subList(0, 2).map { it.id }

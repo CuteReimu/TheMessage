@@ -160,7 +160,7 @@ class SendMessageCardResult(
     val card: Card,
     val target: Player,
     val dir: direction,
-    var lockedPlayers: Array<Player>
+    var lockedPlayers: List<Player>
 )
 
 /**
@@ -173,12 +173,12 @@ fun Player.calSendMessageCard(
     availableCards: List<Card> = cards,
 ): SendMessageCardResult {
     if (availableCards.isEmpty()) {
-        logger.error("没有可用的情报牌，玩家手牌：${cards.toTypedArray().contentToString()}")
+        logger.error("没有可用的情报牌，玩家手牌：${cards.joinToString()}")
         throw IllegalArgumentException("没有可用的情报牌")
     }
     var value = Double.NEGATIVE_INFINITY
     // 先随便填一个，反正后面要替换
-    var result = SendMessageCardResult(availableCards[0], game!!.players[0]!!, Up, emptyArray())
+    var result = SendMessageCardResult(availableCards[0], game!!.players[0]!!, Up, emptyList())
 
     fun calAveValue(
         card: Card,
@@ -210,20 +210,20 @@ fun Player.calSendMessageCard(
                 val tmpValue = calAveValue(card, 0.7) { if (this === target) this@calSendMessageCard else target }
                 if (tmpValue > value) {
                     value = tmpValue
-                    result = SendMessageCardResult(card, target, Up, emptyArray())
+                    result = SendMessageCardResult(card, target, Up, emptyList())
                 }
             }
         } else if (card.direction == Left) {
             val tmpValue = calAveValue(card, 0.7, Player::getNextLeftAlivePlayer)
             if (tmpValue > value) {
                 value = tmpValue
-                result = SendMessageCardResult(card, getNextLeftAlivePlayer(), Left, emptyArray())
+                result = SendMessageCardResult(card, getNextLeftAlivePlayer(), Left, emptyList())
             }
         } else if (card.direction == Right) {
             val tmpValue = calAveValue(card, 0.7, Player::getNextRightAlivePlayer)
             if (tmpValue > value) {
                 value = tmpValue
-                result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyArray())
+                result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyList())
             }
         }
     }
@@ -240,7 +240,7 @@ fun Player.calSendMessageCard(
                 lockTarget = player
             }
         }
-        lockTarget?.let { result.lockedPlayers = arrayOf(it) }
+        lockTarget?.let { result.lockedPlayers = listOf(it) }
     }
     logger.debug("计算结果：${result.card}(cardId:${result.card.id})传递给${result.target}，方向是${result.dir}")
     return result

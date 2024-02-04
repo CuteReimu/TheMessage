@@ -28,7 +28,7 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             players.find { (it.alive || it.dieJustNow) && it.identity == Black && it.secretTask == Sweeper }
         val pioneer = diedQueue.find { it.identity == Black && it.secretTask == Pioneer } // 先行者
         var declaredWinner = ArrayList<Player>()
-        var winner: MutableList<Player> = ArrayList()
+        var winner = ArrayList<Player>()
         if (whoseTurn === killer && diedQueue.any { it.messageCards.countTrueCard() >= 2 }) {
             declaredWinner.add(killer)
             winner.add(killer)
@@ -47,9 +47,7 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
         }
         if (declaredWinner.isNotEmpty()) {
             whoseTurn.game!!.changeGameResult(whoseTurn, declaredWinner, winner)
-            val declaredWinners = declaredWinner.toTypedArray()
-            val winners = winner.toTypedArray()
-            logger.info("${declaredWinners.contentToString()}宣告胜利，胜利者有${winners.contentToString()}")
+            logger.info("${declaredWinner.joinToString()}宣告胜利，胜利者有${winner.joinToString()}")
             whoseTurn.game!!.allPlayerSetRoleFaceUp()
             whoseTurn.game!!.end(declaredWinner, winner)
             return ResolveResult(null, false)
