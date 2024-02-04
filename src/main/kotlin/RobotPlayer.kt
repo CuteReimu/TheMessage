@@ -230,7 +230,7 @@ class RobotPlayer : Player() {
             if (identity != Black) {
                 val target = game!!.players.find { it !== this && it!!.alive && it.identity == identity }
                 if (target != null) {
-                    val giveCards = cards.sortCards(identity).take(3)
+                    val giveCards = cards.sortCards(identity, true).takeLast(3)
                     if (giveCards.isNotEmpty()) {
                         cards.removeAll(giveCards.toSet())
                         target.cards.addAll(giveCards)
