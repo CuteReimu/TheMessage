@@ -5,6 +5,7 @@ import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -128,8 +129,17 @@ class CangShenJiaoTang : TriggeredSkill {
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
-                    builder.enable = true
-                    builder.cardId = event.inFrontOfWhom.messageCards.filter(Black).bestCard(r.identity).id
+                    val take =
+                        if (r === event.inFrontOfWhom)
+                            !(r.identity == Black && r.secretTask in listOf(Killer, Pioneer, Sweeper))
+                        else if (r.isPartner(event.inFrontOfWhom))
+                            true
+                        else
+                            r.identity == Black && r.secretTask in listOf(Killer, Pioneer, Sweeper)
+                    if (take) {
+                        builder.enable = true
+                        builder.cardId = event.inFrontOfWhom.messageCards.filter(Black).bestCard(r.identity).id
+                    }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }

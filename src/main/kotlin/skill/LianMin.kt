@@ -2,7 +2,8 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
-import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_lian_min_toc
 import com.fengsheng.protos.Role.skill_lian_min_tos
@@ -82,7 +83,7 @@ class LianMin : TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
-            if (!card.colors.contains(color.Black)) {
+            if (!card.isBlack()) {
                 logger.error("你选择的不是黑色情报")
                 (player as? HumanPlayer)?.sendErrorMessage("你选择的不是黑色情报")
                 return null
@@ -108,8 +109,10 @@ class LianMin : TriggeredSkill {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeLianMin) return false
             val p = fsm0.event.sender
-            for (target in listOf(p, fsm0.event.inFrontOfWhom)) {
-                if (!target.alive || p.isEnemy(target)) continue
+            for (target in listOf(fsm0.event.inFrontOfWhom, p)) {
+                if (!target.alive || p.isEnemy(target) &&
+                    !(p.identity == Black && p.secretTask in listOf(Killer, Pioneer, Sweeper))
+                ) continue
                 val cards = target.messageCards.filter { it.isBlack() }
                 if (cards.isEmpty()) continue
                 val card = cards.bestCard(p.identity)
