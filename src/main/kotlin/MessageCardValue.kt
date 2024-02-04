@@ -19,7 +19,7 @@ import com.fengsheng.skill.QiangYingXiaLing
  * @param inFrontOfWhom 情报在谁面前
  * @param card 情报牌
  */
-private fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolean {
+fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolean {
     if (!alive) return false
     if (identity != Black) {
         return isPartnerOrSelf(inFrontOfWhom) && identity in card.colors && inFrontOfWhom.messageCards.count(identity) >= 2

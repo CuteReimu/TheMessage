@@ -1,9 +1,6 @@
 package com.fengsheng.skill
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
-import com.fengsheng.Player
+import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Role.skill_ji_zhi_toc
@@ -57,9 +54,20 @@ class JiZhi : ActiveSkill {
 
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.whoseFightTurn.roleFaceUp) return false
-            GameExecutor.post(e.whoseFightTurn.game!!, {
-                skill.executeProtocol(e.whoseFightTurn.game!!, e.whoseFightTurn, skill_ji_zhi_tos.getDefaultInstance())
+            val p = e.whoseFightTurn
+            !p.roleFaceUp || return false
+            p.game!!.players.any { it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) } || return false
+            GameExecutor.post(p.game!!, {
+                skill.executeProtocol(p.game!!, p, skill_ji_zhi_tos.getDefaultInstance())
+            }, 2, TimeUnit.SECONDS)
+            return true
+        }
+
+        fun ai2(e: WaitForChengQing, skill: ActiveSkill): Boolean {
+            val p = e.askWhom
+            !p.roleFaceUp || return false
+            GameExecutor.post(p.game!!, {
+                skill.executeProtocol(p.game!!, p, skill_ji_zhi_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)
             return true
         }

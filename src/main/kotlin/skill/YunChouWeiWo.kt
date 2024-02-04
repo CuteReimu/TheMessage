@@ -161,7 +161,10 @@ class YunChouWeiWo : ActiveSkill {
     companion object {
         fun ai(e: Fsm, skill: ActiveSkill): Boolean {
             val player = if (e is FightPhaseIdle) e.whoseFightTurn else (e as MainPhaseIdle).whoseTurn
-            if (player.roleFaceUp) return false
+            !player.roleFaceUp || return false
+            if (e is FightPhaseIdle) {
+                player.game!!.players.any { it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) } || return false
+            }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_yun_chou_wei_wo_a_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)

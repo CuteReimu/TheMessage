@@ -1,9 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_gong_fen_toc
 import com.fengsheng.protos.Role.skill_gong_fen_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -94,13 +92,7 @@ class GongFen : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
-            var blackCount = 0
-            for (p in player.game!!.players) {
-                p!!.alive || continue
-                blackCount += p.messageCards.count(Black)
-                if (blackCount >= 2) break
-            }
-            blackCount >= 2 || return false
+            player.game!!.players.any { it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) } || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_gong_fen_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)
