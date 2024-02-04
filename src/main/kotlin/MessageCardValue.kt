@@ -10,7 +10,6 @@ import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.LengXueXunLian.MustLockOne
 import com.fengsheng.skill.LianLuo
 import com.fengsheng.skill.QiangYingXiaLing
-import com.fengsheng.skill.SkillId.QIANG_YING_XIA_LING
 
 /**
  * 判断玩家是否能赢
@@ -73,8 +72,8 @@ private fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card)
  * @param card 情报牌
  */
 fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Int {
-    if (game!!.players.any { isPartnerOrSelf(it!!) && willWin(whoseTurn, inFrontOfWhom, card) }) return 600
-    if (game!!.players.any { isEnemy(it!!) && willWin(whoseTurn, inFrontOfWhom, card) }) return -600
+    if (game!!.players.any { isPartnerOrSelf(it!!) && it.willWin(whoseTurn, inFrontOfWhom, card) }) return 600
+    if (game!!.players.any { isEnemy(it!!) && it.willWin(whoseTurn, inFrontOfWhom, card) }) return -600
     var value = 0
     if (identity == Black) {
         if (secretTask == Collector && this === inFrontOfWhom) {
@@ -234,7 +233,7 @@ fun Player.calSendMessageCard(
             }
         }
     }
-    if (result.card.canLock() || findSkill(QIANG_YING_XIA_LING) != null) {
+    if (result.card.canLock() || skills.any { it is MustLockOne || it is QiangYingXiaLing }) {
         var maxValue = Int.MIN_VALUE
         var lockTarget: Player? = null
         val targets =
