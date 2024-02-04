@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
@@ -123,7 +124,7 @@ class JiSong : ActiveSkill {
                 }
             }
             target !== e.inFrontOfWhom || return false
-            val cards = List(2) { player.cards[it] }
+            val cards = player.cards.sortCards(player.identity, true).take(2)
             GameExecutor.post(player.game!!, {
                 val builder = skill_ji_song_tos.newBuilder()
                 cards.forEach { card -> builder.addCardIds(card.id) }

@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -98,10 +99,10 @@ class ChiZiZhiXin : TriggeredSkill {
                     val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
                     builder2.drawCard = true
                     if (r.identity != Black && r.identity in event.messageCard.colors) {
-                        val card = r.cards.find { r.identity in it.colors && !it.isBlack() }
-                            ?: r.cards.find { r.identity in it.colors }
-                        if (card != null) {
-                            builder2.cardId = card.id
+                        val cards = r.cards.filter { r.identity in it.colors && !it.isBlack() }
+                            .ifEmpty { r.cards.filter { r.identity in it.colors } }
+                        if (cards.isNotEmpty()) {
+                            builder2.cardId = cards.bestCard(r.identity, true).id
                             builder2.drawCard = false
                         }
                     }

@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.MainPhaseIdle
@@ -83,7 +84,7 @@ class PinMingSanLang : MainPhaseSkill() {
                     }
                 } else return false
             }
-            val card = p.cards.filter { it.isPureBlack() }.randomOrNull() ?: return false
+            val card = p.cards.filter { it.isPureBlack() }.ifEmpty { return false }.bestCard(p.identity, true)
             GameExecutor.post(p.game!!, {
                 val builder = skill_pin_ming_san_lang_tos.newBuilder()
                 builder.cardId = card.id

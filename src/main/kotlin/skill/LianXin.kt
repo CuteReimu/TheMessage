@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
@@ -112,7 +113,7 @@ class LianXin : TriggeredSkill {
             } else {
                 var value = Int.MIN_VALUE
                 var card = r.cards.first(checkCard)
-                for (c in r.cards) {
+                for (c in r.cards.sortCards(r.identity, true)) {
                     checkCard(c) || continue
                     val v = r.calculateMessageCardValue(event.whoseTurn, event.sender, c)
                     if (v > value) {

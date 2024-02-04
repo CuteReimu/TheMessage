@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_lian_min_toc
@@ -109,7 +110,9 @@ class LianMin : TriggeredSkill {
             val p = fsm0.event.sender
             for (target in listOf(p, fsm0.event.inFrontOfWhom)) {
                 if (!target.alive || p.isEnemy(target)) continue
-                val card = target.messageCards.find { it.colors.contains(color.Black) } ?: continue
+                val cards = target.messageCards.filter { it.isBlack() }
+                if (cards.isEmpty()) continue
+                val card = cards.bestCard(p.identity)
                 GameExecutor.post(p.game!!, {
                     val builder = skill_lian_min_tos.newBuilder()
                     builder.cardId = card.id

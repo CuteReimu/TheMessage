@@ -1,6 +1,7 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -77,7 +78,7 @@ class WeiBi : Card {
             }
             if (target is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    autoSelect()
+                    autoSelect(true)
                 }, 2, TimeUnit.SECONDS)
             }
             return null
@@ -120,8 +121,10 @@ class WeiBi : Card {
             )
         }
 
-        private fun autoSelect() {
-            val card = target.cards.filter { it.type == wantType }.random()
+        private fun autoSelect(isRobot: Boolean = false) {
+            val card = target.cards.filter { it.type == wantType }.run {
+                if (isRobot) bestCard(target.identity, true) else random()
+            }
             val builder = wei_bi_give_card_tos.newBuilder()
             builder.cardId = card.id
             if (target is HumanPlayer) builder.seq = target.seq

@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.MainPhaseIdle
@@ -77,14 +78,15 @@ class YunChouWeiWo : ActiveSkill {
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
+                        val sortedCards = cards.sortCards(r.identity)
                         cards.forEach { builder.addCards(it.toPbCard()) }
                         val seq2 = p.seq
                         builder.seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
                                 val builder2 = skill_yun_chou_wei_wo_b_tos.newBuilder()
-                                builder2.addDeckCardIds(cards[3].id)
-                                builder2.addDeckCardIds(cards[4].id)
+                                builder2.addDeckCardIds(sortedCards[4].id)
+                                builder2.addDeckCardIds(sortedCards[3].id)
                                 builder2.seq = seq2
                                 g.tryContinueResolveProtocol(r, builder2.build())
                                 return@post

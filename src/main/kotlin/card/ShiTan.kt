@@ -1,6 +1,7 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -127,11 +128,11 @@ class ShiTan : Card {
             if (target is RobotPlayer) {
                 if (card.checkDrawCard(target) || target.cards.isEmpty()) {
                     GameExecutor.post(target.game!!, {
-                        autoSelect()
+                        autoSelect(true)
                     }, 100, TimeUnit.MILLISECONDS)
                 } else {
                     GameExecutor.post(target.game!!, {
-                        autoSelect()
+                        autoSelect(true)
                     }, 2, TimeUnit.SECONDS)
                 }
             }
@@ -191,10 +192,12 @@ class ShiTan : Card {
             )
         }
 
-        private fun autoSelect() {
+        private fun autoSelect(isRobot: Boolean = false) {
             val builder = execute_shi_tan_tos.newBuilder()
-            if (!card.checkDrawCard(target) && target.cards.isNotEmpty())
-                builder.addCardId(target.cards.random().id)
+            if (!card.checkDrawCard(target) && target.cards.isNotEmpty()) {
+                if (isRobot) builder.addCardId(target.cards.bestCard(target.identity, true).id)
+                else builder.addCardId(target.cards.random().id)
+            }
             target.game!!.tryContinueResolveProtocol(target, builder.build())
         }
     }
@@ -244,7 +247,8 @@ class ShiTan : Card {
             val p = player.game!!.players.filter {
                 it !== player && it!!.alive && (!it.roleFaceUp ||
                         (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
-                        it.isEnemy(player) != it.identity in (card as ShiTan).whoDrawCard // 敌人弃牌，队友摸牌
+                        it.isEnemy(player) != it.identity in (card as ShiTan).whoDrawCard && // 敌人弃牌，队友摸牌
+                        !(it.isEnemy(player) && it.cards.isEmpty()) // 不对没有手牌的敌人使用
             }.randomOrNull() ?: return false
             GameExecutor.post(
                 player.game!!,

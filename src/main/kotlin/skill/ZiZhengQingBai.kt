@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_toc
@@ -70,9 +71,9 @@ class ZiZhengQingBai : MainPhaseSkill() {
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.whoseTurn.getSkillUseCount(SkillId.ZI_ZHENG_QING_BAI) > 0) return false
-            val card = e.whoseTurn.cards.find {
+            val card = e.whoseTurn.cards.filter {
                 e.whoseTurn.identity == Black || e.whoseTurn.identity !in it.colors
-            } ?: return false
+            }.ifEmpty { return false }.bestCard(e.whoseTurn.identity, true)
             val cardId = card.id
             GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_zi_zheng_qing_bai_tos.newBuilder()

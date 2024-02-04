@@ -51,13 +51,13 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
                 }
             }
             if (r is RobotPlayer) {
-                var value = 0
+                var value = -1
                 var playerAndCard: PlayerAndCard? = null
                 for (c in r.cards) {
                     for (p in r.game!!.sortedFrom(r.game!!.players, r.location)) {
                         if (p.alive && r !== p) {
                             val v = r.calculateMessageCardValue(event.whoseTurn, p, c)
-                            if (v >= value) {
+                            if (v > value) {
                                 value = v
                                 playerAndCard = PlayerAndCard(p, c)
                             }

@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.protos.Common.color.Black
@@ -68,7 +69,7 @@ class CangShenJiaoTang : TriggeredSkill {
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_cang_shen_jiao_tang_b_tos.newBuilder()
-                    builder.enable = true
+                    builder.enable = r.isPartnerOrSelf(event.inFrontOfWhom)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -128,7 +129,7 @@ class CangShenJiaoTang : TriggeredSkill {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
                     builder.enable = true
-                    builder.cardId = event.inFrontOfWhom.messageCards.filter(Black).random().id
+                    builder.cardId = event.inFrontOfWhom.messageCards.filter(Black).bestCard(r.identity).id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }

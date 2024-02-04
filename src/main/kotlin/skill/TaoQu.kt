@@ -127,7 +127,7 @@ class TaoQu : MainPhaseSkill() {
                             if (!card.colors.any { c -> c in colors }) null
                             else PlayerAndCard(it, card)
                         }
-                    }.random()
+                    }.minBy { RobotPlayer.cardOrder[it.card.type]!! }
                     val builder2 = skill_tao_qu_b_tos.newBuilder()
                     builder2.targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
                     builder2.cardId = playerAndCard.card.id

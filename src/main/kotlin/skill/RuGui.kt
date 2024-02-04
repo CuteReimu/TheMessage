@@ -48,11 +48,11 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
                 }
             }
             if (r is RobotPlayer) {
-                var value = 0
+                var value = -1
                 var card: Card? = null
                 for (c in r.messageCards) {
                     val v = r.calculateMessageCardValue(event.whoseTurn, event.whoseTurn, c)
-                    if (v >= value) {
+                    if (v > value) {
                         value = v
                         card = c
                     }

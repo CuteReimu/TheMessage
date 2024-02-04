@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -47,7 +48,7 @@ class BoAi : MainPhaseSkill() {
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.waitingSecond = Config.WaitSecond
                     if (p === r) {
-                        val seq2: Int = p.seq
+                        val seq2 = p.seq
                         builder.seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
@@ -70,7 +71,7 @@ class BoAi : MainPhaseSkill() {
                         return@post
                     }
                     val builder = skill_bo_ai_b_tos.newBuilder()
-                    builder.cardId = r.cards.first().id
+                    builder.cardId = r.cards.bestCard(r.identity, true).id
                     builder.targetPlayerId = r.getAlternativeLocation(player.location)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)

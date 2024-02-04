@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
@@ -87,8 +88,8 @@ class HuoXin : MainPhaseSkill() {
         val waitingSecond: Int
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            val card = target.cards.run { find { it.hasSameColor(showCard) } ?: first() }
             if (r is HumanPlayer) {
+                val card = target.cards.run { find { it.hasSameColor(showCard) } ?: first() }
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
@@ -99,6 +100,9 @@ class HuoXin : MainPhaseSkill() {
                     }
                 }, r.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
+                val card = target.cards.run {
+                    filter { it.hasSameColor(showCard) }.ifEmpty { this }.bestCard(r.identity)
+                }
                 GameExecutor.post(r.game!!, {
                     val builder = skill_huo_xin_b_tos.newBuilder()
                     builder.discardCardId = card.id

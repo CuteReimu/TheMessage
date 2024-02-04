@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -109,7 +110,7 @@ class JingMeng : TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder = skill_jing_meng_b_tos.newBuilder()
-                    builder.cardId = target.cards.first().id
+                    builder.cardId = target.cards.bestCard(r.identity).id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 2, TimeUnit.SECONDS)
             }

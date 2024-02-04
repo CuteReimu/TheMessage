@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.card_type.*
@@ -91,7 +92,7 @@ class RuBiZhiShi : ActiveSkill {
                 GameExecutor.post(g, {
                     val builder2 = skill_ru_bi_zhi_shi_b_tos.newBuilder()
                     builder2.enable = true
-                    builder2.cardId = target.cards.random().id
+                    builder2.cardId = target.cards.bestCard(r.identity).id
                     g.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }

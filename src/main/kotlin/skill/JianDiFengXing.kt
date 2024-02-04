@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
@@ -169,9 +170,10 @@ class JianDiFengXing : TriggeredSkill {
                 GameExecutor.post(r.game!!, {
                     val builder2 = skill_jian_di_feng_xing_c_tos.newBuilder()
                     if (r.isEnemy(event.inFrontOfWhom) && !event.messageCard.isBlack()) {
-                        r.cards.filter { it.isBlack() }.randomOrNull()?.let { card ->
+                        val cards = r.cards.filter { it.isBlack() }
+                        if (cards.isNotEmpty()) {
                             builder2.enable = true
-                            builder2.cardId = card.id
+                            builder2.cardId = cards.bestCard(r.identity, true).id
                         }
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())

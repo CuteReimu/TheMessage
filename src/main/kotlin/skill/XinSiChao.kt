@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.skill_xin_si_chao_toc
 import com.fengsheng.protos.Role.skill_xin_si_chao_tos
@@ -61,8 +62,8 @@ class XinSiChao : MainPhaseSkill() {
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.whoseTurn.getSkillUseCount(SkillId.XIN_SI_CHAO) == 0 || return false
-            val card = e.whoseTurn.cards.randomOrNull() ?: return false
-            val cardId = card.id
+            val card = e.whoseTurn.cards.ifEmpty { return false }
+            val cardId = card.bestCard(e.whoseTurn.identity, true).id
             GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_xin_si_chao_tos.newBuilder()
                 builder.cardId = cardId

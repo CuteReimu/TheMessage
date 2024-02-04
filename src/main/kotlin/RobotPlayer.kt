@@ -2,10 +2,9 @@ package com.fengsheng
 
 import com.fengsheng.card.*
 import com.fengsheng.phase.*
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color.*
-import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Right
 import com.fengsheng.protos.Common.secret_task.*
@@ -35,7 +34,7 @@ class RobotPlayer : Player() {
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
         if (cards.size > 1 && findSkill(JI_SONG) == null && (findSkill(GUANG_FA_BAO) == null || roleFaceUp)) {
-            for (card in cards) {
+            for (card in cards.sortCards(identity)) {
                 val ai = aiMainPhase[card.type]
                 if (ai != null && ai.test(fsm, card)) return
             }
@@ -51,7 +50,7 @@ class RobotPlayer : Player() {
             val ai = aiSkillSendPhaseStart[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
-        for (card in cards) {
+        for (card in cards.sortCards(identity)) {
             val ai = aiSendPhaseStart[card.type]
             if (ai != null && ai.test(fsm, card)) return
         }
@@ -136,7 +135,7 @@ class RobotPlayer : Player() {
             val ai = aiSkillFightPhase[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
-        for (card in cards) {
+        for (card in cards.sortCards(identity)) {
             for (cardType in listOf(Jie_Huo, Wu_Dao, Diao_Bao)) {
                 val (ok, _) = canUseCardTypes(cardType, card)
                 if (ok) {
@@ -231,7 +230,7 @@ class RobotPlayer : Player() {
             if (identity != Black) {
                 val target = game!!.players.find { it !== this && it!!.alive && it.identity == identity }
                 if (target != null) {
-                    val giveCards = cards.take(3)
+                    val giveCards = cards.sortCards(identity).take(3)
                     if (giveCards.isNotEmpty()) {
                         cards.removeAll(giveCards.toSet())
                         target.cards.addAll(giveCards)
@@ -258,8 +257,6 @@ class RobotPlayer : Player() {
     }
 
     companion object {
-
-
         private val aiSkillMainPhase = hashMapOf<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>>(
             XIN_SI_CHAO to BiPredicate { e, skill -> XinSiChao.ai(e, skill) },
             GUI_ZHA to BiPredicate { e, skill -> GuiZha.ai(e, skill) },
@@ -339,5 +336,33 @@ class RobotPlayer : Player() {
             Jie_Huo to BiPredicate { e, card -> JieHuo.ai(e, card) },
             Wu_Dao to BiPredicate { e, card -> WuDao.ai(e, card) },
         )
+
+        val cardOrder = mapOf(
+            Jie_Huo to 1,
+            Wu_Dao to 2,
+            Diao_Bao to 3,
+            Cheng_Qing to 4,
+            Wei_Bi to 5,
+            Shi_Tan to 6,
+            Feng_Yun_Bian_Huan to 7,
+            Li_You to 8,
+            Mi_Ling to 9,
+            Diao_Hu_Li_Shan to 10,
+            Yu_Qin_Gu_Zong to 11,
+            Ping_Heng to 12,
+            Po_Yi to 13,
+        )
+
+        fun Card.betterThan(card: Card) = cardOrder[type]!! < cardOrder[card.type]!!
+
+        fun Iterable<Card>.sortCards(c: color, reverse: Boolean = false): List<Card> {
+            return if (reverse) sortedBy { -cardOrder[it.type]!! * 100 + if (c in it.colors) 1 else 0 }
+            else sortedBy { cardOrder[it.type]!! + if (c in it.colors) 1 else 0 }
+        }
+
+        fun Iterable<Card>.bestCard(c: color, reverse: Boolean = false): Card {
+            return if (reverse) minBy { -cardOrder[it.type]!! * 100 + if (c in it.colors) 1 else 0 }
+            else minBy { cardOrder[it.type]!! + if (c in it.colors) 1 else 0 }
+        }
     }
 }

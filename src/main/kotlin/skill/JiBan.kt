@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -138,7 +139,9 @@ class JiBan : MainPhaseSkill() {
                 if (seq != 0) availableTargets
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets } // 机器人优先选队友
             val player = players.random()!!
-            val builder = skill_ji_ban_b_tos.newBuilder().addCardIds(r.cards.first().id)
+            val builder = skill_ji_ban_b_tos.newBuilder()
+            if (seq != 0) builder.addCardIds(r.cards.random().id)
+            else builder.addCardIds(r.cards.bestCard(r.identity, true).id)
             builder.seq = seq
             builder.targetPlayerId = r.getAlternativeLocation(player.location)
             r.game!!.tryContinueResolveProtocol(r, builder.build())

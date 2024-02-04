@@ -163,7 +163,8 @@ class JiangHuLing : TriggeredSkill {
             if (p is RobotPlayer) {
                 val target = event.inFrontOfWhom
                 val card =
-                    target.messageCards.find { (p.isEnemy(target) || p.identity !in it.colors) && color in it.colors }
+                    target.messageCards.filter { (p.isEnemy(target) || p.identity !in it.colors) && color in it.colors }
+                        .run { filter { it.isBlack() }.ifEmpty { this } }.randomOrNull()
                 GameExecutor.post(
                     p.game!!,
                     {

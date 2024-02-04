@@ -1,5 +1,6 @@
 package com.fengsheng
 
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.ScoreFactory.logger
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
@@ -211,7 +212,7 @@ fun Player.calSendMessageCard(
         return sum / n
     }
 
-    for (card in availableCards) {
+    for (card in availableCards.sortCards(identity, true)) {
         if (card.direction == Up || skills.any { it is LianLuo }) {
             for (target in game!!.sortedFrom(game!!.players, location)) {
                 if (target === this || !target.alive) continue

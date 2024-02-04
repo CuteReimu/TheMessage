@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
@@ -84,13 +85,17 @@ class GuangFaBao : ActiveSkill {
                         target = g.players.find { it!!.alive && it.messageCards.count(color.Black) < 2 }
                         card = if (target != null) {
                             val c1 = target.identity
-                            r.cards.filter { it.isBlack() && !target.checkThreeSameMessageCard(it) }
-                                .run { find { c1 == color.Black || c1 !in it.colors } ?: firstOrNull() }
+                            r.cards.filter { it.isBlack() && !target.checkThreeSameMessageCard(it) }.run {
+                                filter { c1 == color.Black || c1 !in it.colors }.ifEmpty { this }
+                                    .bestCard(r.identity, true)
+                            }
                         } else null
                     } else {
                         target = r
-                        card = r.cards.filter { r.identity in it.colors && !r.checkThreeSameMessageCard(it) }
-                            .run { find { it.colors.size == 1 } ?: firstOrNull() }
+                        card = r.cards.filter { r.identity in it.colors && !r.checkThreeSameMessageCard(it) }.run {
+                            filter { it.colors.size == 1 }.ifEmpty { this }
+                                .bestCard(r.identity, true)
+                        }
                     }
                     if (target != null && card != null) {
                         val builder = skill_guang_fa_bao_b_tos.newBuilder()

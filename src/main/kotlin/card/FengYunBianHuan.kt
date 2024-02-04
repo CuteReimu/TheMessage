@@ -1,6 +1,7 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -192,7 +193,7 @@ class FengYunBianHuan : Card {
                     builder.cardId = card.id
                     builder.asMessageCard = true
                 } else {
-                    builder.cardId = drawCards.random().id
+                    builder.cardId = drawCards.bestCard(r.identity).id
                     builder.asMessageCard = false
                 }
             }

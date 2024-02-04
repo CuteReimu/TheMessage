@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -101,12 +102,12 @@ class MianLiCangZhen : TriggeredSkill {
             val p = fsm.event.sender
             val target = fsm.event.inFrontOfWhom
             if (!target.alive) return false
-            var value = 0
+            var value = -1
             var card: Card? = null
-            for (c in p.cards) {
+            for (c in p.cards.sortCards(p.identity, true)) {
                 c.isBlack() || continue
                 val v = p.calculateMessageCardValue(fsm.event.whoseTurn, target, c)
-                if (v >= value) {
+                if (v > value) {
                     value = v
                     card = c
                 }

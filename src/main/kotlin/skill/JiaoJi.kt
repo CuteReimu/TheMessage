@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
@@ -105,7 +106,7 @@ class JiaoJi : MainPhaseSkill() {
         if (r is RobotPlayer) {
             GameExecutor.post(g, {
                 val builder2 = skill_jiao_ji_b_tos.newBuilder()
-                for (c in r.cards) {
+                for (c in r.cards.sortCards(r.identity, true)) {
                     if (builder2.cardIdsCount >= needReturnCount.first) break
                     builder2.addCardIds(c.id)
                 }

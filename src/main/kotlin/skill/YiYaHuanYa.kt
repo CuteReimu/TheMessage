@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -112,13 +113,13 @@ class YiYaHuanYa : TriggeredSkill {
             if (fsm !is executeYiYaHuanYa) return false
             val player = fsm.event.inFrontOfWhom
             val target = fsm.event.sender
-            var value = 0
+            var value = -1
             var playerAndCard: PlayerAndCard? = null
-            for (c in player.cards) {
+            for (c in player.cards.sortCards(player.identity, true)) {
                 c.isBlack() || continue
                 for (p in listOf(target, target.getNextLeftAlivePlayer(), target.getNextRightAlivePlayer())) {
                     val v = player.calculateMessageCardValue(fsm.event.whoseTurn, p, c)
-                    if (v >= value) {
+                    if (v > value) {
                         value = v
                         playerAndCard = PlayerAndCard(p, c)
                     }
