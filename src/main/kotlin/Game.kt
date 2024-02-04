@@ -1,5 +1,6 @@
 package com.fengsheng
 
+import akka.actor.ActorRef
 import com.fengsheng.ScoreFactory.calScore
 import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.Statistics.PlayerGameResult
@@ -15,22 +16,14 @@ import com.fengsheng.skill.*
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
 import io.netty.util.Timeout
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.coroutines.launch
 import org.apache.logging.log4j.kotlin.logger
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
-class Game private constructor(totalPlayerCount: Int) {
-    val queue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
-
-    val id: Int = ++increaseId
-
+class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var resolvingEvents = emptyList<Event>()
     private var unresolvedEvents = ArrayList<Event>()
 
@@ -42,7 +35,7 @@ class Game private constructor(totalPlayerCount: Int) {
     @Volatile
     var isEnd = false
         private set
-    var players: List<Player?>
+    var players: List<Player?> = List(totalPlayerCount) { null }
     var deck = Deck(this)
     var fsm: Fsm? = null
     var possibleSecretTasks: List<secret_task> = emptyList()
@@ -51,22 +44,6 @@ class Game private constructor(totalPlayerCount: Int) {
      * 用于出牌阶段结束时提醒还未发动的技能
      */
     var mainPhaseAlreadyNotify = false
-
-    init {
-        // 调用构造函数时加锁了，所以increaseId无需加锁
-        players = List(totalPlayerCount) { null }
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch {
-            while (!isEnd) try {
-                val callBack = queue.receive()
-                callBack()
-            } catch (_: ClosedReceiveChannelException) {
-                break
-            } catch (e: Exception) {
-                logger.error("catch throwable", e)
-            }
-        }
-    }
 
     fun setStartTimer() {
         val delay = if (players.count { it is HumanPlayer } <= 1) 0L else 5L
@@ -249,7 +226,7 @@ class Game private constructor(totalPlayerCount: Int) {
         humanPlayers.forEach { playerNameCache.remove(it.playerName) }
         players.forEach { it!!.reset() }
         if (forceEnd) humanPlayers.forEach { it.send(notify_kicked_toc.getDefaultInstance()) }
-        queue.close()
+        actorRef.tell(StopGameActor(), ActorRef.noSender())
     }
 
     /**
@@ -432,9 +409,13 @@ class Game private constructor(totalPlayerCount: Int) {
         val playerCache = ConcurrentHashMap<String, HumanPlayer>()
         val GameCache = ConcurrentHashMap<Int, Game>()
         val playerNameCache = ConcurrentHashMap<String, HumanPlayer>()
-        private var increaseId = 0
-        private var lastTotalPlayerCount = Config.TotalPlayerCount
-        var newGame = Game(lastTotalPlayerCount)
+        val increaseId = AtomicInteger(0)
+
+        @Volatile
+        var lastTotalPlayerCount = Config.TotalPlayerCount
+
+        @Volatile
+        var newGame = GameExecutor.newGame(lastTotalPlayerCount)
 
         fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
             oldPlayer.channel = newPlayer.channel
@@ -450,7 +431,7 @@ class Game private constructor(totalPlayerCount: Int) {
         fun newInstance() {
             if (newGame.players.all { it is HumanPlayer } && newGame.players.size >= 5)
                 lastTotalPlayerCount = newGame.players.size + 1
-            newGame = Game(lastTotalPlayerCount.coerceIn(minOf(5, Config.TotalPlayerCount)..8))
+            newGame = GameExecutor.newGame(lastTotalPlayerCount.coerceIn(minOf(5, Config.TotalPlayerCount)..8))
         }
 
         @Throws(IOException::class, ClassNotFoundException::class)
