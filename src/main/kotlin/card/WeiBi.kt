@@ -6,14 +6,17 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
-import com.fengsheng.protos.Common.card_type.Wei_Bi
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.skill.SkillId.CHENG_FU
+import com.fengsheng.skill.ChengFu
+import com.fengsheng.skill.CunBuBuRang
+import com.fengsheng.skill.ShouKouRuPing
 import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class WeiBi : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -199,8 +202,7 @@ class WeiBi : Card {
             return false
         }
 
-        private val availableCardType =
-            listOf(card_type.Cheng_Qing, card_type.Jie_Huo, card_type.Diao_Bao, card_type.Wu_Dao)
+        private val availableCardType = listOf(Cheng_Qing, Jie_Huo, Diao_Bao, Wu_Dao)
 
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
@@ -225,14 +227,15 @@ class WeiBi : Card {
                 }, 2, TimeUnit.SECONDS)
                 return true
             }
-            val identity = player.identity
             val p = player.game!!.players.filter {
                 it !== player && it!!.alive &&
-                        (!it.roleFaceUp || (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
-                        (identity == color.Black || identity != it.identity) &&
-                        it.cards.any { card -> availableCardType.contains(card.type) }
+                        (!it.roleFaceUp || !it.skills.any { s -> s is ChengFu || s is ShouKouRuPing || s is CunBuBuRang }) &&
+                        it.isEnemy(player) &&
+                        it.cards.any { card -> card.type in availableCardType }
             }.randomOrNull() ?: return false
-            val cardType = availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.random()
+            val cardType =
+                if (Random.nextInt(4) == 0) availableCardType.random() // 1/4的概率纯随机
+                else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.random()
             GameExecutor.post(
                 player.game!!,
                 { card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType) },

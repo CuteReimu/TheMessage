@@ -3,13 +3,17 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.LiYou
 import com.fengsheng.card.WeiBi
+import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.secret_task.Disturber
 import com.fengsheng.protos.Role.skill_gui_zha_toc
 import com.fengsheng.protos.Role.skill_gui_zha_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 肥原龙川技能【诡诈】：出牌阶段限一次，你可以指定一名角色，然后视为你对其使用了一张【威逼】或【利诱】。
@@ -77,15 +81,25 @@ class GuiZha : MainPhaseSkill() {
             val player = e.whoseTurn
             player.getSkillUseCount(SkillId.GUI_ZHA) == 0 || return false
             val game = player.game!!
-            val nextCard = game.deck.peek(1).firstOrNull() ?: return false
-            var value = 0
+            val nextCard = game.deck.peek(1).firstOrNull()
             var target: Player? = null
-            for (p in game.sortedFrom(game.players, player.location)) {
-                p.alive || continue
-                val result = player.calculateMessageCardValue(player, p, nextCard)
-                if (result > value) {
-                    value = result
-                    target = p
+            if (player.identity == Black && player.secretTask == Disturber) { // 如果是搅局者，优先选择真情报最少的玩家
+                target = game.players.filter { it !== player && it!!.alive }.run {
+                    minOf { it!!.messageCards.countTrueCard() }.let { minCount ->
+                        filter { it!!.messageCards.countTrueCard() == minCount }.randomOrNull()
+                    }
+                }
+            } else if (nextCard == null || Random.nextInt(4) == 0) { // 1/4的概率选自己
+                target = player
+            } else {
+                var value = 0
+                for (p in game.sortedFrom(game.players, player.location)) {
+                    p.alive || continue
+                    val result = player.calculateMessageCardValue(player, p, nextCard)
+                    if (result > value) {
+                        value = result
+                        target = p
+                    }
                 }
             }
             target ?: return false

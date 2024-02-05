@@ -92,7 +92,9 @@ class GongFen : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
-            player.game!!.players.any { it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) } || return false
+            player.game!!.players.any {
+                it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) || it.willDie(e.messageCard)
+            } || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_gong_fen_tos.getDefaultInstance())
             }, 2, TimeUnit.SECONDS)

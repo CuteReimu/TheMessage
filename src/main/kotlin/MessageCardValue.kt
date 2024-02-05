@@ -13,6 +13,11 @@ import com.fengsheng.skill.LianLuo
 import com.fengsheng.skill.QiangYingXiaLing
 
 /**
+ * 判断玩家是否会死
+ */
+fun Player.willDie(card: Card): Boolean = messageCards.count(Black) >= 2 && card.isBlack()
+
+/**
  * 判断玩家是否能赢
  *
  * @param whoseTurn 当前回合玩家

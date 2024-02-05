@@ -33,8 +33,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             } else {
                 selected[player!!.location] = options[player.location].run {
                     if (Config.IsGmEnable) return@run firstOrNull()
-                    find { it.role == shang_yu }
-                        ?: run { filter { it.role in aiPreferRole }.ifEmpty { this } }.randomOrNull()
+                    filter { it.role in aiPreferRole }.ifEmpty { this }.randomOrNull()
                 } ?: RoleSkillsData()
                 player.roleSkillsData = selected[player.location]!!
                 player.originRole = selected[player.location]!!.role
@@ -99,7 +98,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             }, 1, TimeUnit.SECONDS)
         }
 
-        private val aiPreferRole = listOf(
+        private val aiPreferRole = setOf(
             duan_mu_jing,
             lao_bie,
             shao_xiu,

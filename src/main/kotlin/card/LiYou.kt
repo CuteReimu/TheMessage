@@ -6,11 +6,14 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.secret_task.Disturber
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class LiYou : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -102,15 +105,25 @@ class LiYou : Card {
             val player = e.whoseTurn
             !player.cannotPlayCard(Li_You) || return false
             val game = player.game!!
-            val nextCard = game.deck.peek(1).firstOrNull() ?: return false
-            var value = 0
+            val nextCard = game.deck.peek(1).firstOrNull()
             var target: Player? = null
-            for (p in game.sortedFrom(game.players, player.location)) {
-                p.alive || continue
-                val result = player.calculateMessageCardValue(player, p, nextCard)
-                if (result > value) {
-                    value = result
-                    target = p
+            if (player.identity == Black && player.secretTask == Disturber) { // 如果是搅局者，优先选择真情报最少的玩家
+                target = game.players.filter { it !== player && it!!.alive }.run {
+                    minOf { it!!.messageCards.countTrueCard() }.let { minCount ->
+                        filter { it!!.messageCards.countTrueCard() == minCount }.randomOrNull()
+                    }
+                }
+            } else if (nextCard == null || Random.nextInt(4) == 0) { // 1/4的概率选自己
+                target = player
+            } else {
+                var value = 0
+                for (p in game.sortedFrom(game.players, player.location)) {
+                    p.alive || continue
+                    val result = player.calculateMessageCardValue(player, p, nextCard)
+                    if (result > value) {
+                        value = result
+                        target = p
+                    }
                 }
             }
             target ?: return false

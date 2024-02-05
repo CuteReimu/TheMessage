@@ -3,12 +3,10 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 商玉技能【借刀杀人】：争夺阶段，你可以翻开此角色牌，然后抽取另一名角色的一张手牌并展示之。若展示的牌是：**黑色**，则你可以将其置入一名角色的情报区，并将你的角色牌翻至面朝下。**非黑色**，则你摸一张牌。
@@ -80,7 +78,7 @@ class JieDaoShaRen : ActiveSkill {
                     builder.playerId = p.getAlternativeLocation(r.location)
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     builder.card = card.toPbCard()
-                    if (card.colors.contains(color.Black)) {
+                    if (card.isBlack()) {
                         builder.waitingSecond = Config.WaitSecond
                         if (p === r) {
                             val seq2 = p.seq
@@ -98,7 +96,7 @@ class JieDaoShaRen : ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            if (!card.colors.contains(color.Black)) {
+            if (!card.isBlack()) {
                 r.draw(1)
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
@@ -187,10 +185,11 @@ class JieDaoShaRen : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
-            player.getSkillUseCount(SkillId.JIE_DAO_SHA_REN) == 0 || Random.nextInt(3) == 0 || return false
             val target = player.game!!.players.filter {
                 it !== player && it!!.alive && it.cards.isNotEmpty() &&
-                        it.cards.all { card -> card.colors.contains(color.Black) }
+                        it.cards.count { card -> card.isBlack() }.let { blackCount ->
+                            blackCount * 3 > it.cards.size * 2 // 黑牌占比大于 2/3
+                        }
             }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_jie_dao_sha_ren_a_tos.newBuilder()
