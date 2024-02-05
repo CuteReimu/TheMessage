@@ -111,13 +111,13 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
                 value += when (inFrontOfWhom.messageCards.count(Black)) {
                     0 -> 1
                     1 -> 11
-                    else -> 111
+                    else -> -111
                 }
                 if (secretTask == Pioneer && this === inFrontOfWhom) {
                     value += when (inFrontOfWhom.messageCards.count(Black)) {
                         0 -> 1
                         1 -> 11
-                        else -> 111
+                        else -> -111
                     }
                 }
             }
