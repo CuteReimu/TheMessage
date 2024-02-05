@@ -301,15 +301,30 @@ fun Player.calFightPhase(
 ): FightPhaseResult? {
     val order = mutableListOf(Jie_Huo, Wu_Dao, Diao_Bao)
     order.shuffle()
-    if (skills.any { it is YouDao || roleFaceUp && it is JiangJiJiuJi }) {
-        order[order.indexOf(Wu_Dao)] = order[0]
-        order[0] = Wu_Dao
-    } else if (roleFaceUp && skills.any { it is ShunShiErWei || it is ShenCang }) {
-        order[order.indexOf(Jie_Huo)] = order[0]
-        order[0] = Jie_Huo
-    } else if (roleFaceUp && skills.any { it is HuanRi }) {
-        order[order.indexOf(Diao_Bao)] = order[0]
-        order[0] = Diao_Bao
+    if (skills.any { it is YouDao || it is JiangJiJiuJi }) {
+        if (roleFaceUp) {
+            order[order.indexOf(Wu_Dao)] = order[0]
+            order[0] = Wu_Dao
+        } else {
+            order[order.indexOf(Wu_Dao)] = order[2]
+            order[2] = Wu_Dao
+        }
+    } else if (skills.any { it is ShunShiErWei || it is ShenCang }) {
+        if (roleFaceUp) {
+            order[order.indexOf(Jie_Huo)] = order[0]
+            order[0] = Jie_Huo
+        } else {
+            order[order.indexOf(Jie_Huo)] = order[2]
+            order[2] = Jie_Huo
+        }
+    } else if (skills.any { it is HuanRi }) {
+        if (roleFaceUp) {
+            order[order.indexOf(Diao_Bao)] = order[0]
+            order[0] = Diao_Bao
+        } else {
+            order[order.indexOf(Diao_Bao)] = order[2]
+            order[2] = Diao_Bao
+        }
     }
     var value = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
     var result: FightPhaseResult? = null
