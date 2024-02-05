@@ -1,6 +1,7 @@
 package com.fengsheng.card
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.ResolveCard
@@ -111,7 +112,7 @@ class MiLing : Card {
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq2)) {
                         val builder = mi_ling_choose_card_tos.newBuilder()
-                        builder.cardId = target.cards.first().id
+                        builder.cardId = target.cards.random().id
                         builder.seq = seq2
                         r.game!!.tryContinueResolveProtocol(r, builder.build())
                     }
@@ -119,7 +120,16 @@ class MiLing : Card {
             } else {
                 GameExecutor.post(r.game!!, {
                     val builder = mi_ling_choose_card_tos.newBuilder()
-                    builder.cardId = target.cards.random().id
+                    var value = Double.POSITIVE_INFINITY
+                    var card = target.cards.first()
+                    for (c in target.cards.sortCards(target.identity, true)) {
+                        val v = target.calSendMessageCard(sendPhase.whoseTurn, listOf(c)).value
+                        if (v <= value) {
+                            value = v
+                            card = c
+                        }
+                    }
+                    builder.cardId = card.id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 3, TimeUnit.SECONDS)
             }
