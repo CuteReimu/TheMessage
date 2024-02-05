@@ -142,7 +142,7 @@ class PoYi : Card {
             val player = e.inFrontOfWhom
             !player.cannotPlayCard(Po_Yi) || return false
             !e.isMessageCardFaceUp && e.messageCard.isBlack() || return false
-            GameExecutor.post(player.game!!, { card.asCard(Po_Yi).execute(player.game!!, player) }, 3, TimeUnit.SECONDS)
+            GameExecutor.post(player.game!!, { card.asCard(Po_Yi).execute(player.game!!, player) }, 1, TimeUnit.SECONDS)
             return true
         }
     }
