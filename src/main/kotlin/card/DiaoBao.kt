@@ -1,6 +1,8 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -10,7 +12,6 @@ import com.fengsheng.protos.Fengsheng.notify_phase_toc
 import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
-import java.util.concurrent.TimeUnit
 
 class DiaoBao : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -85,19 +86,5 @@ class DiaoBao : Card {
 
     override fun toString(): String {
         return "${cardColorToString(colors)}调包"
-    }
-
-    companion object {
-        fun ai(e: FightPhaseIdle, card: Card): Boolean {
-            val player = e.whoseFightTurn
-            !player.cannotPlayCard(Diao_Bao) || return false
-            val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-            val newValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card)
-            newValue > oldValue || return false
-            GameExecutor.post(player.game!!, {
-                card.asCard(Diao_Bao).execute(player.game!!, player)
-            }, 3, TimeUnit.SECONDS)
-            return true
-        }
     }
 }

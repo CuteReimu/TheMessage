@@ -95,55 +95,29 @@ class RuBiZhiShi : ActiveSkill {
                 GameExecutor.post(g, {
                     val sortedCards = target.cards.sortCards(r.identity)
                     if (fsm is FightPhaseIdle) {
-                        if (!target.cannotPlayCard(Jie_Huo)) {
-                            for (card in sortedCards) {
-                                target.canUseCardTypes(Jie_Huo, card, true).first || continue
-                                fsm.inFrontOfWhom !== target || break
-                                val oldValue =
-                                    r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
-                                val newValue = r.calculateMessageCardValue(fsm.whoseTurn, target, fsm.messageCard)
-                                newValue > oldValue || break
-                                val builder = use_jie_huo_tos.newBuilder()
-                                builder.cardId = card.id
-                                g.tryContinueResolveProtocol(r, builder.build())
-                                return@post
-                            }
-                        }
-                        if (!target.cannotPlayCard(Wu_Dao)) {
-                            for (card in sortedCards) {
-                                target.canUseCardTypes(Wu_Dao, card, true).first || continue
-                                var wuDaoTarget: Player? = null
-                                var oldValue =
-                                    r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
-                                val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
-                                val newValueLeft = r.calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard)
-                                if (newValueLeft > oldValue) {
-                                    wuDaoTarget = left
-                                    oldValue = newValueLeft
+                        val result = r.calFightPhase(fsm)
+                        if (result != null) {
+                            when (result.cardType) {
+                                Jie_Huo -> {
+                                    val builder = use_jie_huo_tos.newBuilder()
+                                    builder.cardId = result.card.id
+                                    g.tryContinueResolveProtocol(r, builder.build())
                                 }
-                                val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
-                                val newValueRight = r.calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard)
-                                if (newValueRight > oldValue) wuDaoTarget = right
-                                wuDaoTarget ?: break
-                                val builder = use_wu_dao_tos.newBuilder()
-                                builder.cardId = card.id
-                                builder.targetPlayerId = r.getAlternativeLocation(wuDaoTarget.location)
-                                g.tryContinueResolveProtocol(r, builder.build())
-                                return@post
+
+                                Diao_Bao -> {
+                                    val builder = use_diao_bao_tos.newBuilder()
+                                    builder.cardId = result.card.id
+                                    g.tryContinueResolveProtocol(r, builder.build())
+                                }
+
+                                else -> { // Wu_Dao
+                                    val builder = use_wu_dao_tos.newBuilder()
+                                    builder.cardId = result.card.id
+                                    builder.targetPlayerId = r.getAlternativeLocation(result.wuDaoTarget!!.location)
+                                    g.tryContinueResolveProtocol(r, builder.build())
+                                }
                             }
-                        }
-                        if (!target.cannotPlayCard(Diao_Bao)) {
-                            for (card in sortedCards) {
-                                target.canUseCardTypes(Diao_Bao, card, true).first || continue
-                                val oldValue =
-                                    r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
-                                val newValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, card)
-                                newValue > oldValue || break
-                                val builder = use_diao_bao_tos.newBuilder()
-                                builder.cardId = card.id
-                                g.tryContinueResolveProtocol(r, builder.build())
-                                return@post
-                            }
+                            return@post
                         }
                     } else if (fsm is WaitForChengQing) {
                         if (!target.cannotPlayCard(Cheng_Qing)) {

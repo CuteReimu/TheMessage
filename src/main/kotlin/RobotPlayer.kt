@@ -138,14 +138,13 @@ class RobotPlayer : Player() {
             val ai = aiSkillFightPhase1[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
-        for (card in cards.sortCards(identity)) {
-            for (cardType in listOf(Wu_Dao, Jie_Huo, Diao_Bao)) {
-                val (ok, _) = canUseCardTypes(cardType, card)
-                if (ok) {
-                    val ai = aiFightPhase[cardType]
-                    if (ai != null && ai.test(fsm, card)) return
-                }
-            }
+        val result = calFightPhase(fsm)
+        if (result != null) {
+            if (result.cardType == Wu_Dao)
+                result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
+            else
+                result.card.asCard(result.cardType).execute(game!!, this)
+            return
         }
         for (skill in skills) {
             val ai = aiSkillFightPhase2[skill.skillId]
@@ -324,11 +323,6 @@ class RobotPlayer : Player() {
         )
         private val aiSendPhase = hashMapOf<card_type, BiPredicate<SendPhaseIdle, Card>>(
             Po_Yi to BiPredicate { e, card -> PoYi.ai(e, card) },
-        )
-        private val aiFightPhase = hashMapOf<card_type, BiPredicate<FightPhaseIdle, Card>>(
-            Diao_Bao to BiPredicate { e, card -> DiaoBao.ai(e, card) },
-            Jie_Huo to BiPredicate { e, card -> JieHuo.ai(e, card) },
-            Wu_Dao to BiPredicate { e, card -> WuDao.ai(e, card) },
         )
 
         val cardOrder = mapOf(

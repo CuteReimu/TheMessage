@@ -5,13 +5,15 @@ import com.fengsheng.ScoreFactory.logger
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
+import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.skill.*
 import com.fengsheng.skill.LengXueXunLian.MustLockOne
-import com.fengsheng.skill.LianLuo
-import com.fengsheng.skill.QiangYingXiaLing
 
 /**
  * 判断玩家是否会死
@@ -261,6 +263,9 @@ fun Player.calSendMessageCard(
     return result
 }
 
+/**
+ * 是否要救人
+ */
 fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
     var save = isPartnerOrSelf(whoDie)
     var notSave = false
@@ -280,4 +285,71 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
         save = save || sweeper !== this
     }
     return !notSave && save
+}
+
+class FightPhaseResult(
+    val cardType: card_type,
+    val card: Card,
+    val wuDaoTarget: Player?,
+    val value: Int
+)
+
+fun Player.calFightPhase(e: FightPhaseIdle, availableCards: List<Card> = this.cards): FightPhaseResult? {
+    val order = mutableListOf(Jie_Huo, Wu_Dao, Diao_Bao)
+    order.shuffle()
+    if (skills.any { it is YouDao || roleFaceUp && it is JiangJiJiuJi }) {
+        order[order.indexOf(Wu_Dao)] = order[0]
+        order[0] = Wu_Dao
+    } else if (roleFaceUp && skills.any { it is ShunShiErWei || it is ShenCang }) {
+        order[order.indexOf(Jie_Huo)] = order[0]
+        order[0] = Jie_Huo
+    } else if (roleFaceUp && skills.any { it is HuanRi }) {
+        order[order.indexOf(Diao_Bao)] = order[0]
+        order[0] = Diao_Bao
+    }
+    var value = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+    var result: FightPhaseResult? = null
+    val cards = availableCards.sortCards(identity)
+    for (cardType in order) {
+        !cannotPlayCard(cardType) || continue
+        loop@ for (card in cards) {
+            val (ok, _) = canUseCardTypes(cardType, card)
+            ok || continue
+            when (cardType) {
+                Jie_Huo -> {
+                    val newValue = calculateMessageCardValue(e.whoseTurn, this, e.messageCard)
+                    if (newValue > value) {
+                        result = FightPhaseResult(cardType, card, null, newValue)
+                        value = newValue
+                    }
+                    break@loop
+                }
+
+                Diao_Bao -> {
+                    val newValue = calculateMessageCardValue(e.whoseTurn, this, e.messageCard)
+                    if (newValue > value) {
+                        result = FightPhaseResult(cardType, card, null, newValue)
+                        value = newValue
+                    }
+                }
+
+                else -> { // Wu_Dao
+                    val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
+                    val newValueLeft = calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
+                    if (newValueLeft > value) {
+                        result = FightPhaseResult(cardType, card, left, newValueLeft)
+                        value = newValueLeft
+                    }
+                    val right = e.inFrontOfWhom.getNextRightAlivePlayer()
+                    val newValueRight = calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
+                    if (newValueRight > value) {
+                        result = FightPhaseResult(cardType, card, right, newValueRight)
+                        value = newValueRight
+                    }
+                    break@loop
+                }
+            }
+        }
+    }
+    return result
 }

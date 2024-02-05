@@ -1,6 +1,8 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -9,7 +11,6 @@ import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
-import java.util.concurrent.TimeUnit
 
 class JieHuo : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -93,19 +94,6 @@ class JieHuo : Card {
             g.resolve(
                 ResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), Jie_Huo, resolveFunc, fsm)
             )
-        }
-
-        fun ai(e: FightPhaseIdle, card: Card): Boolean {
-            val player = e.whoseFightTurn
-            !player.cannotPlayCard(Jie_Huo) || return false
-            e.inFrontOfWhom !== player || return false
-            val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-            val newValue = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard)
-            newValue > oldValue || return false
-            GameExecutor.post(player.game!!, {
-                card.asCard(Jie_Huo).execute(player.game!!, player)
-            }, 3, TimeUnit.SECONDS)
-            return true
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.fengsheng.card
 
-import com.fengsheng.*
+import com.fengsheng.Game
+import com.fengsheng.HumanPlayer
+import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -10,7 +12,6 @@ import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
-import java.util.concurrent.TimeUnit
 
 class WuDao : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -104,27 +105,6 @@ class WuDao : Card {
                 fsm.whoseTurn, r, target, card?.getOriginCard(), Wu_Dao, resolveFunc, fsm,
                 valid = target !== fsm.inFrontOfWhom
             )
-        }
-
-        fun ai(e: FightPhaseIdle, card: Card): Boolean {
-            val player = e.whoseFightTurn
-            !player.cannotPlayCard(Wu_Dao) || return false
-            var target: Player? = null
-            var oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-            val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
-            val newValueLeft = player.calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
-            if (newValueLeft > oldValue) {
-                target = left
-                oldValue = newValueLeft
-            }
-            val right = e.inFrontOfWhom.getNextRightAlivePlayer()
-            val newValueRight = player.calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
-            if (newValueRight > oldValue) target = right
-            target ?: return false
-            GameExecutor.post(player.game!!, {
-                card.asCard(Wu_Dao).execute(player.game!!, player, target)
-            }, 3, TimeUnit.SECONDS)
-            return true
         }
     }
 }
