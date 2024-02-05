@@ -138,23 +138,24 @@ class RobotPlayer : Player() {
             val ai = aiSkillFightPhase1[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
-        !game!!.isEarly || this === fsm.whoseTurn || game!!.players.any {
-            if (isEnemy(it!!)) it.willWin(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
-            else it.willDie(fsm.messageCard)
-        } || return
-        val result = calFightPhase(fsm)
-        if (result != null) {
-            GameExecutor.post(game!!, {
-                if (result.cardType == Wu_Dao)
-                    result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
-                else
-                    result.card.asCard(result.cardType).execute(game!!, this)
-            }, 3, TimeUnit.SECONDS)
-            return
-        }
-        for (skill in skills) {
-            val ai = aiSkillFightPhase2[skill.skillId]
-            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+        if (!game!!.isEarly || this === fsm.whoseTurn || game!!.players.any {
+                if (isEnemy(it!!)) it.willWin(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
+                else it.willDie(fsm.messageCard)
+            }) {
+            val result = calFightPhase(fsm)
+            if (result != null) {
+                GameExecutor.post(game!!, {
+                    if (result.cardType == Wu_Dao)
+                        result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
+                    else
+                        result.card.asCard(result.cardType).execute(game!!, this)
+                }, 3, TimeUnit.SECONDS)
+                return
+            }
+            for (skill in skills) {
+                val ai = aiSkillFightPhase2[skill.skillId]
+                if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+            }
         }
         GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 1, TimeUnit.SECONDS)
     }
