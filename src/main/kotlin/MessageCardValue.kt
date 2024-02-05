@@ -330,7 +330,7 @@ fun Player.calFightPhase(
                 }
 
                 Diao_Bao -> {
-                    val newValue = calculateMessageCardValue(e.whoseTurn, this, e.messageCard)
+                    val newValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card)
                     if (newValue > value) {
                         result = FightPhaseResult(cardType, card, null, newValue)
                         value = newValue
