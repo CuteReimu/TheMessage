@@ -294,7 +294,11 @@ class FightPhaseResult(
     val value: Int
 )
 
-fun Player.calFightPhase(e: FightPhaseIdle, availableCards: List<Card> = this.cards): FightPhaseResult? {
+fun Player.calFightPhase(
+    e: FightPhaseIdle,
+    whoUse: Player = this,
+    availableCards: List<Card> = this.cards
+): FightPhaseResult? {
     game!!.turn > game!!.players.size - 2 || game!!.players.any {
         if (isEnemy(it!!)) it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
         else it.willDie(e.messageCard)
@@ -321,7 +325,7 @@ fun Player.calFightPhase(e: FightPhaseIdle, availableCards: List<Card> = this.ca
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
-                    val newValue = calculateMessageCardValue(e.whoseTurn, this, e.messageCard)
+                    val newValue = calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard)
                     if (newValue > value) {
                         result = FightPhaseResult(cardType, card, null, newValue)
                         value = newValue

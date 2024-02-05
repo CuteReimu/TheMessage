@@ -140,10 +140,12 @@ class RobotPlayer : Player() {
         }
         val result = calFightPhase(fsm)
         if (result != null) {
-            if (result.cardType == Wu_Dao)
-                result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
-            else
-                result.card.asCard(result.cardType).execute(game!!, this)
+            GameExecutor.post(game!!, {
+                if (result.cardType == Wu_Dao)
+                    result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
+                else
+                    result.card.asCard(result.cardType).execute(game!!, this)
+            }, 3, TimeUnit.SECONDS)
             return
         }
         for (skill in skills) {

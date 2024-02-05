@@ -93,9 +93,8 @@ class RuBiZhiShi : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val sortedCards = target.cards.sortCards(r.identity)
                     if (fsm is FightPhaseIdle) {
-                        val result = r.calFightPhase(fsm)
+                        val result = r.calFightPhase(fsm, target, target.cards)
                         if (result != null) {
                             when (result.cardType) {
                                 Jie_Huo -> {
@@ -121,7 +120,7 @@ class RuBiZhiShi : ActiveSkill {
                         }
                     } else if (fsm is WaitForChengQing) {
                         if (!target.cannotPlayCard(Cheng_Qing)) {
-                            for (card in sortedCards) {
+                            for (card in target.cards.sortCards(r.identity)) {
                                 target.canUseCardTypes(Cheng_Qing, card, true).first || continue
                                 val black =
                                     fsm.whoDie.messageCards.filter { it.isBlack() }.run run1@{
@@ -395,6 +394,7 @@ class RuBiZhiShi : ActiveSkill {
 
         fun ai2(e: WaitForChengQing, skill: ActiveSkill): Boolean {
             val r = e.askWhom
+            !r.roleFaceUp || return false
             r.wantToSave(e.whoseTurn, e.whoDie) || return false
             val target = r.game!!.players.filter {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
