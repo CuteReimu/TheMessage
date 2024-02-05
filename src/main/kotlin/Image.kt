@@ -203,8 +203,8 @@ object Image {
         g.color = Color.BLACK
         g.drawString("段位", CELL_W * 2 + font.size * 2 + 3, CELL_H - 3)
         g.drawString("分数", CELL_W * 3 + font.size * 2 + 3, CELL_H - 3)
-        g.drawString("总场次", CELL_W * 4 + font.size * 2 + 3, CELL_H - 3)
-        g.drawString("胜率", CELL_W * 5 + font.size * 2 + 3, CELL_H - 3)
+        g.drawString("赛季场次", CELL_W * 4 + font.size * 2 + 3, CELL_H - 3)
+        g.drawString("赛季胜率", CELL_W * 5 + font.size * 2 + 3, CELL_H - 3)
         g.drawString("最近一局", CELL_W * 6 + font.size * 2 + 3, CELL_H - 3)
         val g1 = Gradient(lines.map { it.score.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
         val g2 = Gradient(lines.map { it.gameCount.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
