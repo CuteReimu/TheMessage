@@ -1,7 +1,11 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.count
 import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.secret_task
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -74,12 +78,19 @@ class ChengZhi : TriggeredSkill {
                     player.send(builder.build())
                 }
             }
-            if (r is RobotPlayer) GameExecutor.post(
-                r.game!!,
-                { r.game!!.tryContinueResolveProtocol(r, skill_cheng_zhi_tos.newBuilder().setEnable(true).build()) },
-                2,
-                TimeUnit.SECONDS
-            )
+            if (r is RobotPlayer) GameExecutor.post(r.game!!, {
+                val builder = skill_cheng_zhi_tos.newBuilder()
+                fun Player.process(identity: color, secretTask: secret_task) =
+                    if (identity != Black) r.cards.count(identity) * 10
+                    else when (secretTask) {
+                        Collector -> maxOf(messageCards.count(Red), messageCards.count(Blue)) * 2 - 2
+                        Mutator -> 100
+                        Pioneer -> messageCards.count(Black) * 10 - 1
+                        else -> -100
+                    }
+                builder.enable = r.process(whoDie.identity, whoDie.secretTask) > r.process(r.identity, r.secretTask)
+                r.game!!.tryContinueResolveProtocol(r, builder.build())
+            }, 2, TimeUnit.SECONDS)
             return null
         }
 
