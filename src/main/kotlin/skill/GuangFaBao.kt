@@ -86,14 +86,16 @@ class GuangFaBao : ActiveSkill {
                         card = if (target != null) {
                             val c1 = target.identity
                             r.cards.filter { it.isBlack() && !target.checkThreeSameMessageCard(it) }.run {
-                                filter { c1 == color.Black || c1 !in it.colors }.ifEmpty { this }
+                                filter { c1 == color.Black || c1 !in it.colors }
+                                    .ifEmpty { this }
+                                    .ifEmpty { return@run null }
                                     .bestCard(r.identity, true)
                             }
                         } else null
                     } else {
                         target = r
                         card = r.cards.filter { r.identity in it.colors && !r.checkThreeSameMessageCard(it) }.run {
-                            filter { it.colors.size == 1 }.ifEmpty { this }
+                            filter { it.colors.size == 1 }.ifEmpty { this }.ifEmpty { return@run null }
                                 .bestCard(r.identity, true)
                         }
                     }
