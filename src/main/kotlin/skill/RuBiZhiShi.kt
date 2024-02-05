@@ -127,7 +127,7 @@ class RuBiZhiShi : ActiveSkill {
                                 wuDaoTarget ?: break
                                 val builder = use_wu_dao_tos.newBuilder()
                                 builder.cardId = card.id
-                                builder.targetPlayerId = r.getAbstractLocation(wuDaoTarget.location)
+                                builder.targetPlayerId = r.getAlternativeLocation(wuDaoTarget.location)
                                 g.tryContinueResolveProtocol(r, builder.build())
                                 return@post
                             }
