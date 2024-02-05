@@ -212,7 +212,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             }
             Statistics.addPlayerGameCount(playerGameResultList)
             Statistics.calculateRankList()
-            if (players.size == humanPlayers.size)
+            if (humanPlayers.size > 1)
                 MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
             this.players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }
         }
