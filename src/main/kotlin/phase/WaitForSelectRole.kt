@@ -35,7 +35,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                 selected[player!!.location] = options[player.location].run {
                     if (Config.IsGmEnable) return@run firstOrNull()
                     filter { it.role in aiPreferRole }.ifEmpty {
-                        aiPreferRole.filter {
+                        RoleCache.filterForbidRoles(aiPreferRole).filter {
                             options.all { option -> option.all { o -> it != o.role } }
                                     && selected.all { o -> it != o?.role }
                         }.map { RoleCache.getRoleSkillsData(it) }

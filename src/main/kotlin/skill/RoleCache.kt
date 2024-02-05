@@ -189,6 +189,12 @@ object RoleCache {
     fun getRoleName(role: role) = mapCache[role]?.name
     fun getRoleSkillsData(role: role) = mapCache[role]
 
+    fun filterForbidRoles(roles: Collection<role>) = runBlocking {
+        mu.withLock {
+            roles.filter { role -> !forbiddenRoleCache.any { it.role == role } }
+        }
+    }
+
     private fun writeForbiddenRolesFile(buf: ByteArray) {
         pool.trySend {
             try {
