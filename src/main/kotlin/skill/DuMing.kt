@@ -14,6 +14,7 @@ import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 金自来技能【赌命】：一回合一次，情报传递到你面前时，或【调包】结算后，若情报是面朝下，你可以声明一种颜色，检视待收情报并面朝下放回，摸一张牌。若猜错且你有纯黑色手牌，则你必须将一张纯黑色手牌置入自己的情报区。
@@ -84,7 +85,7 @@ class DuMing : TriggeredSkill {
                 GameExecutor.post(g, {
                     val builder2 = skill_du_ming_a_tos.newBuilder()
                     builder2.enable = true
-                    if (messageCard == null) {
+                    if (messageCard == null || Random.nextBoolean()) {
                         builder2.color = listOf(Red, Blue, Black).random()
                     } else {
                         var wrong = false
