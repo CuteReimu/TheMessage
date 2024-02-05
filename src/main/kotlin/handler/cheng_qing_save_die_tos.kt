@@ -5,7 +5,7 @@ import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.phase.WaitNextForChengQing
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Fengsheng
-import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
+import com.fengsheng.skill.RuBiZhiShi.executeRuBiZhiShi
 import org.apache.logging.log4j.kotlin.logger
 
 class cheng_qing_save_die_tos : AbstractProtoHandler<Fengsheng.cheng_qing_save_die_tos>() {
@@ -15,7 +15,7 @@ class cheng_qing_save_die_tos : AbstractProtoHandler<Fengsheng.cheng_qing_save_d
             r.sendErrorMessage("操作太晚了")
             return
         }
-        if (r.game!!.fsm is excuteRuBiZhiShi) {
+        if (r.game!!.fsm is executeRuBiZhiShi) {
             r.game!!.tryContinueResolveProtocol(r, pb)
             return
         }

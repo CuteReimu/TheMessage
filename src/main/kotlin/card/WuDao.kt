@@ -109,8 +109,6 @@ class WuDao : Card {
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
             !player.cannotPlayCard(Wu_Dao) || return false
-            if (player === e.inFrontOfWhom && player.identity == color.Black && player.secretTask == secret_task.Pioneer)
-                return false
             var target: Player? = null
             var oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             val left = e.inFrontOfWhom.getNextLeftAlivePlayer()

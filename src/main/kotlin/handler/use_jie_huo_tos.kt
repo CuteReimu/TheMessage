@@ -3,7 +3,7 @@ package com.fengsheng.handler
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Fengsheng
-import com.fengsheng.skill.RuBiZhiShi.excuteRuBiZhiShi
+import com.fengsheng.skill.RuBiZhiShi.executeRuBiZhiShi
 import com.fengsheng.skill.canUseCardTypes
 import org.apache.logging.log4j.kotlin.logger
 
@@ -14,7 +14,7 @@ class use_jie_huo_tos : AbstractProtoHandler<Fengsheng.use_jie_huo_tos>() {
             r.sendErrorMessage("操作太晚了")
             return
         }
-        if (r.game!!.fsm is excuteRuBiZhiShi) {
+        if (r.game!!.fsm is executeRuBiZhiShi) {
             r.game!!.tryContinueResolveProtocol(r, pb)
             return
         }

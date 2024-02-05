@@ -133,6 +133,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             qin_yuan_yuan,
             sp_cheng_xiao_die,
             gao_qiao_zhi_zi,
+            sheng_lao_ban,
             jian_xian_sheng,
             sp_xiao_jiu,
             lao_hu,

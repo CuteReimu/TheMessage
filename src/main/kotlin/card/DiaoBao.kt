@@ -6,8 +6,6 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Diao_Bao
-import com.fengsheng.protos.Common.color.Blue
-import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Fengsheng.notify_phase_toc
 import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
 import com.fengsheng.skill.cannotPlayCard
@@ -93,11 +91,6 @@ class DiaoBao : Card {
         fun ai(e: FightPhaseIdle, card: Card): Boolean {
             val player = e.whoseFightTurn
             !player.cannotPlayCard(Diao_Bao) || return false
-            if (player.identity == Red) {
-                if (Blue in card.colors) return false
-            } else if (player.identity == Blue) {
-                if (Red in card.colors) return false
-            }
             val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             val newValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card)
             newValue > oldValue || return false

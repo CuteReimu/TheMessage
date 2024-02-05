@@ -4,6 +4,7 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.ScoreFactory.logger
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
+import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.direction.*
@@ -258,4 +259,25 @@ fun Player.calSendMessageCard(
     }
     logger.debug("计算结果：${result.card}(cardId:${result.card.id})传递给${result.target}，方向是${result.dir}")
     return result
+}
+
+fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
+    var save = isPartnerOrSelf(whoDie)
+    var notSave = false
+    val killer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Killer }
+    val pioneer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Pioneer }
+    val sweeper = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Sweeper }
+    if (killer === whoseTurn && whoDie.messageCards.countTrueCard() >= 2) {
+        if (killer === this) notSave = true
+        save = save || killer !== this
+    }
+    if (pioneer === whoDie && whoDie.messageCards.countTrueCard() >= 1) {
+        if (pioneer === this) notSave = true
+        save = save || pioneer !== this
+    }
+    if (sweeper != null && whoDie.messageCards.run { count(Red) <= 1 && count(Blue) <= 1 }) {
+        if (sweeper === this) notSave = true
+        save = save || sweeper !== this
+    }
+    return !notSave && save
 }

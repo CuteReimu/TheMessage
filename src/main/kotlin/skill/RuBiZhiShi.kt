@@ -2,9 +2,12 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.card_type.*
+import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -59,10 +62,10 @@ class RuBiZhiShi : ActiveSkill {
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[如臂指使]，查看了${target}的手牌")
         g.playerSetRoleFaceUp(r, true)
-        g.resolve(excuteRuBiZhiShi(fsm as ProcessFsm, r, target))
+        g.resolve(executeRuBiZhiShi(fsm as ProcessFsm, r, target))
     }
 
-    data class excuteRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
+    data class executeRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             for (p in g.players) {
@@ -90,10 +93,92 @@ class RuBiZhiShi : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder2 = skill_ru_bi_zhi_shi_b_tos.newBuilder()
-                    builder2.enable = true
-                    builder2.cardId = target.cards.bestCard(r.identity).id
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    val sortedCards = target.cards.sortCards(r.identity)
+                    if (fsm is FightPhaseIdle) {
+                        if (!target.cannotPlayCard(Jie_Huo)) {
+                            for (card in sortedCards) {
+                                target.canUseCardTypes(Jie_Huo, card, true).first || continue
+                                fsm.inFrontOfWhom !== target || break
+                                val oldValue =
+                                    r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
+                                val newValue = r.calculateMessageCardValue(fsm.whoseTurn, target, fsm.messageCard)
+                                newValue > oldValue || break
+                                val builder = use_jie_huo_tos.newBuilder()
+                                builder.cardId = card.id
+                                g.tryContinueResolveProtocol(r, builder.build())
+                                return@post
+                            }
+                        }
+                        if (!target.cannotPlayCard(Wu_Dao)) {
+                            for (card in sortedCards) {
+                                target.canUseCardTypes(Wu_Dao, card, true).first || continue
+                                var wuDaoTarget: Player? = null
+                                var oldValue =
+                                    r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
+                                val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
+                                val newValueLeft = r.calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard)
+                                if (newValueLeft > oldValue) {
+                                    wuDaoTarget = left
+                                    oldValue = newValueLeft
+                                }
+                                val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
+                                val newValueRight = r.calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard)
+                                if (newValueRight > oldValue) wuDaoTarget = right
+                                wuDaoTarget ?: break
+                                val builder = use_wu_dao_tos.newBuilder()
+                                builder.cardId = card.id
+                                builder.targetPlayerId = r.getAbstractLocation(wuDaoTarget.location)
+                                g.tryContinueResolveProtocol(r, builder.build())
+                                return@post
+                            }
+                        }
+                        if (!target.cannotPlayCard(Diao_Bao)) {
+                            for (card in sortedCards) {
+                                target.canUseCardTypes(Diao_Bao, card, true).first || continue
+                                val oldValue =
+                                    r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
+                                val newValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, card)
+                                newValue > oldValue || break
+                                val builder = use_diao_bao_tos.newBuilder()
+                                builder.cardId = card.id
+                                g.tryContinueResolveProtocol(r, builder.build())
+                                return@post
+                            }
+                        }
+                    } else if (fsm is WaitForChengQing) {
+                        if (!target.cannotPlayCard(Cheng_Qing)) {
+                            for (card in sortedCards) {
+                                target.canUseCardTypes(Cheng_Qing, card, true).first || continue
+                                val black =
+                                    fsm.whoDie.messageCards.filter { it.isBlack() }.run run1@{
+                                        if (fsm.whoDie.identity == Black) {
+                                            when (fsm.whoDie.secretTask) {
+                                                Killer, Pioneer ->
+                                                    return@run1 find { it.colors.size > 1 } ?: firstOrNull()
+
+                                                Sweeper ->
+                                                    return@run1 find { it.colors.size == 1 } ?: firstOrNull()
+
+                                                else -> {}
+                                            }
+                                        }
+                                        find { it.colors.size == 1 }
+                                            ?: find { r.identity !in it.colors }
+                                            ?: firstOrNull()
+                                    } ?: break
+                                val builder = cheng_qing_save_die_tos.newBuilder()
+                                builder.use = true
+                                builder.cardId = card.id
+                                builder.targetCardId = black.id
+                                g.tryContinueResolveProtocol(r, builder.build())
+                                return@post
+                            }
+                        }
+                    }
+                    val builder = skill_ru_bi_zhi_shi_b_tos.newBuilder()
+                    builder.enable = true
+                    builder.cardId = target.cards.bestCard(r.identity).id
+                    g.tryContinueResolveProtocol(r, builder.build())
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -270,9 +355,10 @@ class RuBiZhiShi : ActiveSkill {
                         (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
                         return null
                     }
-                    if (card.type != Cheng_Qing) {
-                        logger.error("这张牌不是澄清")
-                        (r as? HumanPlayer)?.sendErrorMessage("这张牌不是澄清")
+                    val (ok, convertCardSkill) = target.canUseCardTypes(Cheng_Qing, card, true)
+                    if (!ok) {
+                        logger.error("这张${card}不能当作澄清使用")
+                        (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作澄清使用")
                         return null
                     }
                     val target2 = fsm.whoDie
@@ -291,6 +377,7 @@ class RuBiZhiShi : ActiveSkill {
                     logger.info("${r}让${target}对${target2}面前的${card2}使用了$card")
                     notifyUseSkill(enable = true, useCard = true)
                     r.game!!.fsm = fsm
+                    convertCardSkill?.onConvert(target)
                     card.execute(r.game!!, target, target2, card2.id)
                     return null
                 }
@@ -321,6 +408,20 @@ class RuBiZhiShi : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
             !r.roleFaceUp || return false
+            val target = r.game!!.players.filter {
+                it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
+            }.randomOrNull() ?: return false
+            GameExecutor.post(r.game!!, {
+                val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
+                builder.targetPlayerId = r.getAlternativeLocation(target.location)
+                skill.executeProtocol(r.game!!, r, builder.build())
+            }, 3, TimeUnit.SECONDS)
+            return true
+        }
+
+        fun ai2(e: WaitForChengQing, skill: ActiveSkill): Boolean {
+            val r = e.askWhom
+            r.wantToSave(e.whoseTurn, e.whoDie) || return false
             val target = r.game!!.players.filter {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
