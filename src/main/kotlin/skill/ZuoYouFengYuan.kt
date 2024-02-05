@@ -80,9 +80,16 @@ class ZuoYouFengYuan : ActiveSkill {
             !r.roleFaceUp || return false
             val players = r.game!!.players.toMutableList()
             players.removeIf { !it!!.alive }
-            players.removeIf { if (it!!.isEnemy(r)) it.cards.size <= 3 else it.cards.size >= 3 }
-            players.size >= 2 || return false
-            players.shuffle()
+            val willWin = players.find { it!!.isEnemy(r) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) }
+            if (willWin != null) {
+                players.removeIf { it!!.isPartnerOrSelf(willWin) }
+                players.size >= 2 || return false
+                players.sortBy { it!!.cards.size }
+            } else {
+                players.removeIf { if (it!!.isEnemy(r)) it.cards.size <= 3 else it.cards.size >= 3 }
+                players.size >= 2 || return false
+                players.shuffle()
+            }
             GameExecutor.post(r.game!!, {
                 val builder = skill_zuo_you_feng_yuan_tos.newBuilder()
                 builder.addTargetPlayerIds(r.getAlternativeLocation(players[0]!!.location))

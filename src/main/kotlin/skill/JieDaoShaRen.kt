@@ -2,7 +2,9 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
+import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -186,11 +188,9 @@ class JieDaoShaRen : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             val target = player.game!!.players.filter {
-                it !== player && it!!.alive && it.cards.isNotEmpty() &&
-                        it.cards.count { card -> card.isBlack() }.let { blackCount ->
-                            blackCount * 3 > it.cards.size * 2 // 黑牌占比大于 2/3
-                        }
-            }.randomOrNull() ?: return false
+                it !== player && it!!.alive && it.cards.isNotEmpty()
+            }.maxByOrNull { it!!.cards.count(Black).toDouble() / it.cards.size } ?: return false
+            target.cards.count(Black) * 2 > target.cards.size || return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_jie_dao_sha_ren_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
