@@ -1,11 +1,15 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
+import com.fengsheng.card.count
+import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -59,11 +63,55 @@ class DuMing : TriggeredSkill {
                     p.send(builder.build())
                 }
             }
+            val messageCard = when (event) {
+                is FinishResolveCardEvent -> {
+                    val fightPhase = event.nextFsm as? FightPhaseIdle
+                    if (fightPhase == null) {
+                        logger.error("状态错误：${event.nextFsm}")
+                        null
+                    } else {
+                        fightPhase.messageCard
+                    }
+                }
+
+                is MessageMoveNextEvent -> event.messageCard
+                else -> {
+                    logger.error("状态错误：$event")
+                    null
+                }
+            }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder2 = skill_du_ming_a_tos.newBuilder()
                     builder2.enable = true
-                    builder2.color = listOf(Red, Blue, Black).random()
+                    if (messageCard == null) {
+                        builder2.color = listOf(Red, Blue, Black).random()
+                    } else {
+                        var wrong = false
+                        if (r.identity == Black) {
+                            when (r.secretTask) {
+                                Killer -> {
+                                    if (r.messageCards.count(Black) < 2 ||
+                                        r === event.whoseTurn && r.messageCards.countTrueCard() >= 2
+                                    ) wrong = true
+                                }
+
+                                Pioneer -> {
+                                    if (r.messageCards.count(Black) < 2 || r.messageCards.countTrueCard() >= 1)
+                                        wrong = true
+                                }
+
+                                Sweeper -> {
+                                    if (r.messageCards.count(Black) < 2 ||
+                                        r.messageCards.run { count(Red) <= 1 && count(Blue) <= 1 }
+                                    ) wrong = true
+                                }
+
+                                else -> {}
+                            }
+                        }
+                        builder2.color = listOf(Red, Blue, Black).filter { it !in messageCard.colors == wrong }.random()
+                    }
                     g.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }
@@ -156,7 +204,7 @@ class DuMing : TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder2 = skill_du_ming_b_tos.newBuilder()
-                    builder2.cardId = r.cards.filter { it.isPureBlack() }.random().id
+                    builder2.cardId = r.cards.filter { it.isPureBlack() }.bestCard(r.identity, true).id
                     g.tryContinueResolveProtocol(r, builder2.build())
                 }, 2, TimeUnit.SECONDS)
             }
