@@ -134,8 +134,12 @@ class RobotPlayer : Player() {
     override fun notifyFightPhase(waitSecond: Int) {
         val fsm = game!!.fsm as FightPhaseIdle
         if (this !== fsm.whoseFightTurn) return
+        for (skill in skills) {
+            val ai = aiSkillFightPhase1[skill.skillId]
+            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+        }
         for (card in cards.sortCards(identity)) {
-            for (cardType in listOf(Jie_Huo, Wu_Dao, Diao_Bao)) {
+            for (cardType in listOf(Wu_Dao, Jie_Huo, Diao_Bao)) {
                 val (ok, _) = canUseCardTypes(cardType, card)
                 if (ok) {
                     val ai = aiFightPhase[cardType]
@@ -144,7 +148,7 @@ class RobotPlayer : Player() {
             }
         }
         for (skill in skills) {
-            val ai = aiSkillFightPhase[skill.skillId]
+            val ai = aiSkillFightPhase2[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
         GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 1, TimeUnit.SECONDS)
@@ -264,11 +268,14 @@ class RobotPlayer : Player() {
             LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) },
             YOU_DI_SHEN_RU to BiPredicate { e, skill -> YouDiShenRu.ai(e, skill) },
         )
-        private val aiSkillFightPhase = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
+        private val aiSkillFightPhase1 = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
             TOU_TIAN to BiPredicate { e, skill -> TouTian.ai(e, skill) },
+            JIE_DAO_SHA_REN to BiPredicate { e, skill -> JieDaoShaRen.ai(e, skill) },
+            RU_BI_ZHI_SHI to BiPredicate { e, skill -> RuBiZhiShi.ai(e, skill) },
+        )
+        private val aiSkillFightPhase2 = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
             JI_ZHI to BiPredicate { e, skill -> JiZhi.ai(e, skill) },
             YI_HUA_JIE_MU to BiPredicate { e, skill -> YiHuaJieMu.ai(e, skill) },
-            JIE_DAO_SHA_REN to BiPredicate { e, skill -> JieDaoShaRen.ai(e, skill) },
             GUANG_FA_BAO to BiPredicate { e, skill -> GuangFaBao.ai(e, skill) },
             JI_SONG to BiPredicate { e, skill -> JiSong.ai(e, skill) },
             MIAO_BI_QIAO_BIAN to BiPredicate { e, skill -> MiaoBiQiaoBian.ai(e, skill) },
@@ -281,7 +288,6 @@ class RobotPlayer : Player() {
             ZUO_YOU_FENG_YUAN to BiPredicate { e, skill -> ZuoYouFengYuan.ai(e, skill) },
             GONG_FEN to BiPredicate { e, skill -> GongFen.ai(e, skill) },
             YUN_CHOU_WEI_WO to BiPredicate { e, skill -> YunChouWeiWo.ai(e, skill) },
-            RU_BI_ZHI_SHI to BiPredicate { e, skill -> RuBiZhiShi.ai(e, skill) },
             DING_LUN to BiPredicate { e, skill -> DingLun.ai(e, skill) },
             YING_BIAN_ZI_RU to BiPredicate { e, skill -> YingBianZiRu.ai(e, skill) },
         )
