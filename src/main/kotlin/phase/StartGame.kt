@@ -12,6 +12,7 @@ data class StartGame(val game: Game, val whoseTurn: Int) : Fsm {
     override fun resolve(): ResolveResult? {
         val players = game.players
         logger.info("游戏开始了，场上的角色依次是：${players.joinToString()}")
+        game.turn = 0
         game.deck.init(players.size)
         for (i in players.indices) players[(whoseTurn + i) % players.size]!!.init()
         for (i in players.indices) {

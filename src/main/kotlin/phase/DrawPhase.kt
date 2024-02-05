@@ -14,6 +14,7 @@ data class DrawPhase(val player: Player) : Fsm {
         if (!player.alive) {
             return ResolveResult(NextTurn(player), true)
         }
+        player.game!!.turn++
         logger.info("${player}的回合开始了")
         for (p in player.game!!.players) {
             p!!.notifyDrawPhase()

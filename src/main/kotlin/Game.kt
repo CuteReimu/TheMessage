@@ -39,6 +39,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var deck = Deck(this)
     var fsm: Fsm? = null
     var possibleSecretTasks: List<secret_task> = emptyList()
+    var turn = 0
 
     /**
      * 用于出牌阶段结束时提醒还未发动的技能
