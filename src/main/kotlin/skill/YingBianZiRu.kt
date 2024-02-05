@@ -104,10 +104,11 @@ class YingBianZiRu : ActiveSkill {
                 }, r.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
-                    val target = listOf(
-                        fsm.inFrontOfWhom.getNextLeftAlivePlayer(),
-                        fsm.inFrontOfWhom.getNextRightAlivePlayer()
-                    ).random()
+                    val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
+                    val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
+                    val leftValue = r.calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard)
+                    val rightValue = r.calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard)
+                    val target = if (leftValue > rightValue) left else right
                     val builder = skill_ying_bian_zi_ru_b_tos.newBuilder()
                     builder.targetPlayerId = r.getAlternativeLocation(target.location)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
