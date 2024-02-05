@@ -299,10 +299,6 @@ fun Player.calFightPhase(
     whoUse: Player = this,
     availableCards: List<Card> = this.cards
 ): FightPhaseResult? {
-    game!!.turn > game!!.players.size - 2 || game!!.players.any {
-        if (isEnemy(it!!)) it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-        else it.willDie(e.messageCard)
-    } || return null
     val order = mutableListOf(Jie_Huo, Wu_Dao, Diao_Bao)
     order.shuffle()
     if (skills.any { it is YouDao || roleFaceUp && it is JiangJiJiuJi }) {
