@@ -207,6 +207,7 @@ class WeiBi : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Wei_Bi) || return false
+            !player.game!!.isEarly || return false
             val yaPao = player.game!!.players.find {
                 it!!.alive && it.findSkill(SHOU_KOU_RU_PING) != null
             }

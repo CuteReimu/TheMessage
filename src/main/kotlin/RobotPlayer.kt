@@ -138,7 +138,7 @@ class RobotPlayer : Player() {
             val ai = aiSkillFightPhase1[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
-        game!!.turn > game!!.players.size - 2 || game!!.players.any {
+        !game!!.isEarly || this === fsm.whoseTurn || game!!.players.any {
             if (isEnemy(it!!)) it.willWin(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
             else it.willDie(fsm.messageCard)
         } || return

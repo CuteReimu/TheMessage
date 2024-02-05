@@ -315,7 +315,7 @@ class MiLing : Card {
             val player = e.whoseTurn
             !player.cannotPlayCard(Mi_Ling) || return false
             val target = player.game!!.players.filter {
-                it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
+                it !== player && it!!.alive && (player.game!!.isEarly || it.isEnemy(player)) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             val secret =
                 if (player.identity == color.Black) (0..2).random()

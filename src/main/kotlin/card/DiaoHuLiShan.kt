@@ -80,6 +80,7 @@ class DiaoHuLiShan : Card {
         fun ai(e: MainPhaseIdle, card: Card): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Diao_Hu_Li_Shan) || return false
+            !player.game!!.isEarly || return false
             val p = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player)
             }.randomOrNull() ?: return false

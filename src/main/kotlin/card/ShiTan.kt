@@ -229,33 +229,33 @@ class ShiTan : Card {
             val yaPao = player.game!!.players.find {
                 it!!.alive && it.findSkill(SHOU_KOU_RU_PING) != null
             }
-            if (yaPao === player) {
-                val p = player.game!!.players.run {
-                    filter { it!!.alive && it.isPartner(player) }.randomOrNull()
-                        ?: filter { it !== player && it!!.alive }.randomOrNull()
-                } ?: return false
-                GameExecutor.post(player.game!!, {
-                    card.asCard(Shi_Tan).execute(player.game!!, player, p)
-                }, 3, TimeUnit.SECONDS)
-                return true
-            } else if (yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0) {
-                GameExecutor.post(player.game!!, {
-                    card.asCard(Shi_Tan).execute(player.game!!, player, yaPao)
-                }, 3, TimeUnit.SECONDS)
-                return true
-            }
-            val p = player.game!!.players.filter {
-                it !== player && it!!.alive && (!it.roleFaceUp ||
-                        (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
-                        it.isEnemy(player) != it.identity in (card as ShiTan).whoDrawCard && // 敌人弃牌，队友摸牌
-                        !(it.isEnemy(player) && it.cards.isEmpty()) // 不对没有手牌的敌人使用
+            val p = when {
+                player.game!!.isEarly ->
+                    player.game!!.players.filter {
+                        it !== player && it!!.alive && (!it.roleFaceUp ||
+                                (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null))
+                    }
+
+                yaPao === player ->
+                    player.game!!.players.run {
+                        filter { it!!.alive && it.isPartner(player) }
+                            .ifEmpty { filter { it !== player && it!!.alive } }
+                    }
+
+                yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0 ->
+                    listOf(yaPao)
+
+                else ->
+                    player.game!!.players.filter {
+                        it !== player && it!!.alive && (!it.roleFaceUp ||
+                                (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
+                                it.isEnemy(player) != it.identity in (card as ShiTan).whoDrawCard && // 敌人弃牌，队友摸牌
+                                !(it.isEnemy(player) && it.cards.isEmpty()) // 不对没有手牌的敌人使用
+                    }
             }.randomOrNull() ?: return false
-            GameExecutor.post(
-                player.game!!,
-                { card.execute(player.game!!, player, p) },
-                3,
-                TimeUnit.SECONDS
-            )
+            GameExecutor.post(player.game!!, {
+                card.asCard(Shi_Tan).execute(player.game!!, player, p)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

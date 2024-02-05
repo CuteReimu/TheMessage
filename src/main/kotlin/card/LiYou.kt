@@ -108,12 +108,16 @@ class LiYou : Card {
             val nextCard = game.deck.peek(1).firstOrNull()
             var target: Player? = null
             if (player.identity == Black && player.secretTask == Disturber) { // 如果是搅局者，优先选择真情报最少的玩家
-                target = game.players.filter { it !== player && it!!.alive }.run {
-                    minOf { it!!.messageCards.countTrueCard() }.let { minCount ->
-                        filter { it!!.messageCards.countTrueCard() == minCount }.randomOrNull()
+                if (!game.isEarly) {
+                    target = game.players.filter { it !== player && it!!.alive }.run {
+                        minOf { it!!.messageCards.countTrueCard() }.let { minCount ->
+                            filter { it!!.messageCards.countTrueCard() == minCount }.run {
+                                filter { it!!.messageCards.count(Black) < 2 }.ifEmpty { this }
+                            }.randomOrNull()
+                        }
                     }
                 }
-            } else if (nextCard == null || Random.nextInt(4) == 0) { // 1/4的概率选自己
+            } else if (game.isEarly || nextCard == null || Random.nextInt(4) == 0) { // 1/4的概率选自己
                 target = player
             } else {
                 var value = 0
