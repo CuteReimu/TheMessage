@@ -190,7 +190,7 @@ class JieDaoShaRen : ActiveSkill {
             val target = player.game!!.players.filter {
                 it !== player && it!!.alive && it.cards.isNotEmpty()
             }.maxByOrNull { it!!.cards.count(Black).toDouble() / it.cards.size } ?: return false
-            target.cards.count(Black) * 2 > target.cards.size || return false
+            target.cards.count(Black) * 2 >= target.cards.size || return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_jie_dao_sha_ren_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
