@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -51,18 +51,16 @@ class ZhuanJiao : TriggeredSkill {
                 }
             }
             if (r is RobotPlayer) {
-                val messageCard = r.messageCards.find { !it.colors.contains(color.Black) }
-                if (messageCard != null) {
-                    val identity = r.identity
-                    val c = messageCard.colors.first()
+                for (messageCard in r.messageCards) {
+                    !messageCard.isBlack() || continue
                     val players = r.game!!.players.filter { p ->
                         if (p === r || !p!!.alive) return@filter false
-                        if (identity == color.Black) {
-                            if (c == p.identity) return@filter false
+                        if (r.identity == Black) {
+                            if (p.identity in messageCard.colors) return@filter false
                         } else {
-                            if (p.identity != color.Black && p.identity != identity) return@filter false
+                            if (p.isEnemy(r)) return@filter false
                         }
-                        p.messageCards.count { it.colors.contains(c) } < 2
+                        !p.checkThreeSameMessageCard(messageCard)
                     }
                     if (players.isNotEmpty()) {
                         val target = players[Random.nextInt(players.size)]!!
@@ -117,7 +115,7 @@ class ZhuanJiao : TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
                 return null
             }
-            if (card.colors.contains(color.Black)) {
+            if (card.isBlack()) {
                 logger.error("不是非黑色情报")
                 (player as? HumanPlayer)?.sendErrorMessage("不是非黑色情报")
                 return null

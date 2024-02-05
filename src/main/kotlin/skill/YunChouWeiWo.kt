@@ -164,8 +164,8 @@ class YunChouWeiWo : ActiveSkill {
             !player.roleFaceUp || return false
             if (e is FightPhaseIdle) {
                 player.game!!.players.any {
-                    it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) || it.willDie(e.messageCard)
-                } || return false
+                    it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+                } || e.inFrontOfWhom.willDie(e.messageCard) || return false
             }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_yun_chou_wei_wo_a_tos.getDefaultInstance())

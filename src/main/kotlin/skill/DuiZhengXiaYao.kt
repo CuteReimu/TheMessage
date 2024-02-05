@@ -9,7 +9,6 @@ import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 黄济仁技能【对症下药】：争夺阶段，你可以翻开此角色牌，然后摸三张牌，并且你可以展示两张含有相同颜色的手牌，然后从一名角色的情报区，弃置一张对应颜色情报。
@@ -92,7 +91,7 @@ class DuiZhengXiaYao : ActiveSkill {
                             return@post
                         }
                     }
-                    g.tryContinueResolveProtocol(r, skill_dui_zheng_xia_yao_b_tos.newBuilder().setEnable(false).build())
+                    g.tryContinueResolveProtocol(r, skill_dui_zheng_xia_yao_b_tos.getDefaultInstance())
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -285,13 +284,10 @@ class DuiZhengXiaYao : ActiveSkill {
 
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.roleFaceUp) return false
-            val playerCount = player.game!!.players.size
-            val playerAndCards = player.game!!.players.filter { it!!.alive }.flatMap { p ->
-                p!!.messageCards.map { PlayerAndCard(p, it) }
-            }
-            if (playerAndCards.size < playerCount) return false
-            if (Random.nextInt(playerCount * playerCount) != 0) return false
+            !player.roleFaceUp || return false
+            player.game!!.players.any {
+                it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            } || e.inFrontOfWhom.willDie(e.messageCard) || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_dui_zheng_xia_yao_a_tos.getDefaultInstance())
             }, 3, TimeUnit.SECONDS)

@@ -197,7 +197,10 @@ class GuangFaBao : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.roleFaceUp || player !== e.whoseTurn) return false
+            !player.roleFaceUp || return false
+            player === e.whoseTurn || player.game!!.players.any {
+                it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            } || e.inFrontOfWhom.willDie(e.messageCard) || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_guang_fa_bao_a_tos.newBuilder().build())
             }, 3, TimeUnit.SECONDS)

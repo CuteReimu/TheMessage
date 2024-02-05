@@ -5,6 +5,10 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.Blue
+import com.fengsheng.protos.Common.color.Red
+import com.fengsheng.protos.Common.secret_task.Collector
+import com.fengsheng.protos.Common.secret_task.Mutator
 import com.fengsheng.protos.Role.skill_ji_song_toc
 import com.fengsheng.protos.Role.skill_ji_song_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -112,7 +116,9 @@ class JiSong : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             player.getSkillUseCount(SkillId.JI_SONG) == 0 || return false
-            player.cards.size >= 2 || return false
+            player.game!!.players.any {
+                it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            } || e.inFrontOfWhom.willDie(e.messageCard) || return false
             var value = Int.MIN_VALUE
             var target = e.inFrontOfWhom
             for (p in player.game!!.sortedFrom(player.game!!.players, player.location)) {
@@ -124,10 +130,30 @@ class JiSong : ActiveSkill {
                 }
             }
             target !== e.inFrontOfWhom || return false
-            val cards = player.cards.sortCards(player.identity, true).take(2)
+            var canRed = true
+            var canBlue = true
+            when (player.identity) {
+                Red -> canRed = false
+                Blue -> canBlue = false
+                else -> {
+                    if (player.secretTask in listOf(Collector, Mutator)) {
+                        canRed = false
+                        canBlue = false
+                    }
+                }
+            }
+            val messageCard = player.messageCards.filter {
+                !it.isBlack() && (canRed || Red !in it.colors) && (canBlue || Blue !in it.colors)
+            }.randomOrNull()
+            var cards = emptyList<Card>()
+            if (messageCard == null) {
+                cards = player.cards.sortCards(player.identity, true).take(2)
+                cards.size == 2 || return false
+            }
             GameExecutor.post(player.game!!, {
                 val builder = skill_ji_song_tos.newBuilder()
                 cards.forEach { card -> builder.addCardIds(card.id) }
+                builder.messageCard = messageCard?.id ?: 0
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
                 skill.executeProtocol(player.game!!, player, builder.build())
             }, 3, TimeUnit.SECONDS)

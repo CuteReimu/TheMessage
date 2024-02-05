@@ -3,7 +3,6 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.JieHuo
 import com.fengsheng.card.WuDao
-import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color.Black
@@ -163,10 +162,9 @@ class YingBianZiRu : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             !e.isMessageCardFaceUp || return false
-            player.game!!.players.find {
-                it!!.alive && player.isEnemy(it)
-                        && it.identity != Black && it.messageCards.count(it.identity) >= 2
-            } ?: return false
+            player.game!!.players.any {
+                it!!.isEnemy(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            } || e.inFrontOfWhom.run { isPartnerOrSelf(player) && willDie(e.messageCard) } || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_ying_bian_zi_ru_a_tos.getDefaultInstance())
             }, 3, TimeUnit.SECONDS)
