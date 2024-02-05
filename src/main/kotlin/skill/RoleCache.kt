@@ -186,10 +186,8 @@ object RoleCache {
         return roleSkillsDataList
     }
 
-    fun getRoleName(role: role): String? {
-        val roleSkillsData = mapCache[role]
-        return roleSkillsData?.name
-    }
+    fun getRoleName(role: role) = mapCache[role]?.name
+    fun getRoleSkillsData(role: role) = mapCache[role]
 
     private fun writeForbiddenRolesFile(buf: ByteArray) {
         pool.trySend {

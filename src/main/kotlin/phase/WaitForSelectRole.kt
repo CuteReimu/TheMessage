@@ -3,6 +3,7 @@ package com.fengsheng.phase
 import com.fengsheng.*
 import com.fengsheng.protos.Common.role.*
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -33,7 +34,12 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             } else {
                 selected[player!!.location] = options[player.location].run {
                     if (Config.IsGmEnable) return@run firstOrNull()
-                    filter { it.role in aiPreferRole }.ifEmpty { this }.randomOrNull()
+                    filter { it.role in aiPreferRole }.ifEmpty {
+                        aiPreferRole.filter {
+                            options.all { option -> option.all { o -> it != o.role } }
+                                    && selected.all { o -> it != o?.role }
+                        }.map { RoleCache.getRoleSkillsData(it) }
+                    }.ifEmpty { this }.randomOrNull()
                 } ?: RoleSkillsData()
                 player.roleSkillsData = selected[player.location]!!
                 player.originRole = selected[player.location]!!.role
@@ -112,7 +118,6 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             shang_yu,
             pei_ling,
             gui_jiao,
-            wang_tian_xiang,
             xuan_qing_zi,
             bai_cang_lang,
             bai_fei_fei,
