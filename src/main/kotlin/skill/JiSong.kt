@@ -130,7 +130,7 @@ class JiSong : ActiveSkill {
                 cards.forEach { card -> builder.addCardIds(card.id) }
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

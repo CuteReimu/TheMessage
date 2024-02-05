@@ -112,7 +112,7 @@ class JingMeng : TriggeredSkill {
                     val builder = skill_jing_meng_b_tos.newBuilder()
                     builder.cardId = target.cards.bestCard(r.identity).id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -169,7 +169,7 @@ class JingMeng : TriggeredSkill {
                 val builder = skill_jing_meng_a_tos.newBuilder()
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
                 p.game!!.tryContinueResolveProtocol(p, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

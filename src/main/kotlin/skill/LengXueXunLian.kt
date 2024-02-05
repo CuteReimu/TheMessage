@@ -110,7 +110,7 @@ class LengXueXunLian : ActiveSkill {
                     if (result.lockedPlayers.isNotEmpty())
                         builder2.lockPlayerId = r.getAlternativeLocation(result.lockedPlayers.first().location)
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -206,7 +206,7 @@ class LengXueXunLian : ActiveSkill {
                     e.whoseTurn,
                     skill_leng_xue_xun_lian_a_tos.getDefaultInstance()
                 )
-            }, 2, TimeUnit.SECONDS)
+            }, 1, TimeUnit.SECONDS)
             return true
         }
     }

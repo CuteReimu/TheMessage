@@ -200,7 +200,7 @@ class GuangFaBao : ActiveSkill {
             if (player.roleFaceUp || player !== e.whoseTurn) return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_guang_fa_bao_a_tos.newBuilder().build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

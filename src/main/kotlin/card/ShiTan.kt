@@ -133,7 +133,7 @@ class ShiTan : Card {
                 } else {
                     GameExecutor.post(target.game!!, {
                         autoSelect(true)
-                    }, 2, TimeUnit.SECONDS)
+                    }, 1, TimeUnit.SECONDS)
                 }
             }
             return null
@@ -236,12 +236,12 @@ class ShiTan : Card {
                 } ?: return false
                 GameExecutor.post(player.game!!, {
                     card.asCard(Shi_Tan).execute(player.game!!, player, p)
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
                 return true
             } else if (yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0) {
                 GameExecutor.post(player.game!!, {
                     card.asCard(Shi_Tan).execute(player.game!!, player, yaPao)
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
                 return true
             }
             val p = player.game!!.players.filter {
@@ -253,7 +253,7 @@ class ShiTan : Card {
             GameExecutor.post(
                 player.game!!,
                 { card.execute(player.game!!, player, p) },
-                2,
+                3,
                 TimeUnit.SECONDS
             )
             return true

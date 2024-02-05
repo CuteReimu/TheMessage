@@ -112,7 +112,7 @@ class YingBianZiRu : ActiveSkill {
                     val builder = skill_ying_bian_zi_ru_b_tos.newBuilder()
                     builder.targetPlayerId = r.getAlternativeLocation(target.location)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -169,7 +169,7 @@ class YingBianZiRu : ActiveSkill {
             } ?: return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_ying_bian_zi_ru_a_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

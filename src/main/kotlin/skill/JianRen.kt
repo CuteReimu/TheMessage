@@ -114,7 +114,7 @@ class JianRen : TriggeredSkill {
                     builder.targetPlayerId = r.getAlternativeLocation(autoChoose.player.location)
                     builder.cardId = autoChoose.card.id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return if (isBlack && autoChoose != null) null else ResolveResult(fsm, true)
         }

@@ -72,7 +72,7 @@ class CangShenJiaoTang : TriggeredSkill {
                     val builder = skill_cang_shen_jiao_tang_b_tos.newBuilder()
                     builder.enable = r.isPartnerOrSelf(event.inFrontOfWhom)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -141,7 +141,7 @@ class CangShenJiaoTang : TriggeredSkill {
                         builder.cardId = event.inFrontOfWhom.messageCards.filter(Black).bestCard(r.identity).id
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }

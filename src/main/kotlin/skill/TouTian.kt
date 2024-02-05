@@ -56,7 +56,7 @@ class TouTian : ActiveSkill {
                 skill.executeProtocol(
                     e.whoseFightTurn.game!!, e.whoseFightTurn, skill_tou_tian_tos.getDefaultInstance()
                 )
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

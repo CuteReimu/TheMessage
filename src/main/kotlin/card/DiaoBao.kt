@@ -103,7 +103,7 @@ class DiaoBao : Card {
             newValue > oldValue || return false
             GameExecutor.post(player.game!!, {
                 card.asCard(Diao_Bao).execute(player.game!!, player)
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

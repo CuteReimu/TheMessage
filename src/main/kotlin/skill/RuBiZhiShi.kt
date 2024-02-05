@@ -94,7 +94,7 @@ class RuBiZhiShi : ActiveSkill {
                     builder2.enable = true
                     builder2.cardId = target.cards.bestCard(r.identity).id
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -328,7 +328,7 @@ class RuBiZhiShi : ActiveSkill {
                 val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
                 builder.targetPlayerId = r.getAlternativeLocation(target.location)
                 skill.executeProtocol(r.game!!, r, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

@@ -89,7 +89,7 @@ class PinMingSanLang : MainPhaseSkill() {
                 val builder = skill_pin_ming_san_lang_tos.newBuilder()
                 builder.cardId = card.id
                 skill.executeProtocol(p.game!!, p, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

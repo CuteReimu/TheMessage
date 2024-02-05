@@ -68,7 +68,7 @@ class XinSiChao : MainPhaseSkill() {
                 val builder = skill_xin_si_chao_tos.newBuilder()
                 builder.cardId = cardId
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

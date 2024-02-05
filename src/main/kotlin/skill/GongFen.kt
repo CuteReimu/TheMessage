@@ -97,7 +97,7 @@ class GongFen : ActiveSkill {
             } || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_gong_fen_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

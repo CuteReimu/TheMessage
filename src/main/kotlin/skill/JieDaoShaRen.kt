@@ -116,7 +116,7 @@ class JieDaoShaRen : ActiveSkill {
                     builder.enable = true
                     builder.targetPlayerId = r.getAlternativeLocation(target2.location)
                     g.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -195,7 +195,7 @@ class JieDaoShaRen : ActiveSkill {
                 val builder = skill_jie_dao_sha_ren_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

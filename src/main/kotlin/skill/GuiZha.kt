@@ -108,7 +108,7 @@ class GuiZha : MainPhaseSkill() {
                 builder.cardType = card_type.Li_You
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
                 skill.executeProtocol(game, e.whoseTurn, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

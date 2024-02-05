@@ -121,7 +121,7 @@ class LianMin : TriggeredSkill {
                     builder.cardId = card.id
                     builder.targetPlayerId = p.getAlternativeLocation(target.location)
                     p.game!!.tryContinueResolveProtocol(p, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
                 return true
             }
             return false

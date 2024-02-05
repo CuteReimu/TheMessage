@@ -129,7 +129,7 @@ class HouZiQieXin : MainPhaseSkill() {
                 builder.targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
                 builder.messageCardId = playerAndCard.card.id
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

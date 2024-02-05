@@ -102,7 +102,7 @@ class YunChouWeiWo : ActiveSkill {
                     builder.addDeckCardIds(cards[3].id)
                     builder.addDeckCardIds(cards[4].id)
                     g.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -169,7 +169,7 @@ class YunChouWeiWo : ActiveSkill {
             }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_yun_chou_wei_wo_a_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

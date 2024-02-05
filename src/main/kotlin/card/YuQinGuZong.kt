@@ -114,7 +114,7 @@ class YuQinGuZong : Card {
             GameExecutor.post(game, {
                 card.asCard(Yu_Qin_Gu_Zong)
                     .execute(game, player, result.card, result.dir, result.target, result.lockedPlayers.toList())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

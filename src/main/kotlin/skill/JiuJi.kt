@@ -57,7 +57,7 @@ class JiuJi : TriggeredSkill {
                     val builder2 = skill_jiu_ji_a_tos.newBuilder()
                     builder2.enable = true
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }

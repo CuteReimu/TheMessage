@@ -58,7 +58,7 @@ class XinGeLianLuo : TriggeredSkill {
                         builder.targetPlayerId = r.getAlternativeLocation(target.location)
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }

@@ -111,7 +111,7 @@ class JiaoJi : MainPhaseSkill() {
                     builder2.addCardIds(c.id)
                 }
                 g.tryContinueResolveProtocol(r, builder2.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
         }
         g.resolve(executeJiaoJi(fsm, target, needReturnCount))
     }
@@ -188,7 +188,7 @@ class JiaoJi : MainPhaseSkill() {
                 val builder = skill_jiao_ji_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

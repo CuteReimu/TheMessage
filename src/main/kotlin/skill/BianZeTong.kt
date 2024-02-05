@@ -59,7 +59,7 @@ class BianZeTong : TriggeredSkill {
                     builder2.cardTypeA = listOf(Diao_Bao, Wu_Dao, Jie_Huo).random()
                     builder2.cardTypeB = Po_Yi
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             r.draw(1)
             return null

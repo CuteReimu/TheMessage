@@ -81,7 +81,7 @@ class YiHuaJieMu : ActiveSkill {
                     builder2.cardId = card.id
                     builder2.toPlayerId = r.getAlternativeLocation(toPlayer.location)
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -170,7 +170,7 @@ class YiHuaJieMu : ActiveSkill {
             if (g.players.count { it!!.alive } < 2) return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
                 skill.executeProtocol(g, e.whoseFightTurn, skill_yi_hua_jie_mu_a_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

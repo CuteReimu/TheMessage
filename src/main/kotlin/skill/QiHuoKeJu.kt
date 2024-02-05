@@ -90,7 +90,7 @@ class QiHuoKeJu : TriggeredSkill {
                 val builder = skill_qi_huo_ke_ju_tos.newBuilder()
                 builder.cardId = card.id
                 p.game!!.tryContinueResolveProtocol(p, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

@@ -83,7 +83,7 @@ class JinBi : MainPhaseSkill() {
             if (target is RobotPlayer)
                 GameExecutor.post(target.game!!, {
                     target.game!!.tryContinueResolveProtocol(target, skill_jin_bi_b_tos.getDefaultInstance())
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             return null
         }
 
@@ -169,7 +169,7 @@ class JinBi : MainPhaseSkill() {
                 val builder = skill_jin_bi_a_tos.newBuilder()
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

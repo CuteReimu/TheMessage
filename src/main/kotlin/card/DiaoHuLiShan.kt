@@ -91,7 +91,7 @@ class DiaoHuLiShan : Card {
             val isSkill = isSkills.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 card.asCard(Diao_Hu_Li_Shan).execute(player.game!!, player, p, isSkill)
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

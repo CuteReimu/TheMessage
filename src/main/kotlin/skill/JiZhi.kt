@@ -59,7 +59,7 @@ class JiZhi : ActiveSkill {
             p.game!!.players.any { it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) } || return false
             GameExecutor.post(p.game!!, {
                 skill.executeProtocol(p.game!!, p, skill_ji_zhi_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
 
@@ -68,7 +68,7 @@ class JiZhi : ActiveSkill {
             !p.roleFaceUp || return false
             GameExecutor.post(p.game!!, {
                 skill.executeProtocol(p.game!!, p, skill_ji_zhi_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

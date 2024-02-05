@@ -79,7 +79,7 @@ class ZiZhengQingBai : MainPhaseSkill() {
                 val builder = skill_zi_zheng_qing_bai_tos.newBuilder()
                 builder.cardId = cardId
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

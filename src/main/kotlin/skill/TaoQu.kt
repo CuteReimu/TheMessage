@@ -132,7 +132,7 @@ class TaoQu : MainPhaseSkill() {
                     builder2.targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
                     builder2.cardId = playerAndCard.card.id
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -214,7 +214,7 @@ class TaoQu : MainPhaseSkill() {
                 val builder = skill_tao_qu_a_tos.newBuilder()
                 builder.addAllCardIds(cardIds)
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

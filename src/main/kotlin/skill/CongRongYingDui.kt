@@ -60,7 +60,7 @@ class CongRongYingDui : TriggeredSkill {
                     if (target.cards.isEmpty() || target.isPartnerOrSelf(r))
                         builder2.drawCard = true
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }

@@ -82,7 +82,7 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                         builder2.cardId = targetAndCard.card.id
                     }
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -220,7 +220,7 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                     builder.targetPlayerId = r.getAlternativeLocation(defaultTarget.location)
                     builder.faceUp = !defaultTarget.roleFaceUp && defaultTarget.isEnemy(r)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -301,7 +301,7 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                 builder2.targetPlayerId = player.getAlternativeLocation(target.location)
                 builder2.cardId = card.id
                 skill.executeProtocol(g, player, builder2.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

@@ -107,7 +107,7 @@ class ChiZiZhiXin : TriggeredSkill {
                         }
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -171,7 +171,7 @@ class ChiZiZhiXin : TriggeredSkill {
             val p = fsm0.event.sender
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skill_chi_zi_zhi_xin_a_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 1, TimeUnit.SECONDS)
             return true
         }
     }

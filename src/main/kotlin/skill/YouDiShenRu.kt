@@ -109,7 +109,7 @@ class YouDiShenRu : ActiveSkill {
                 builder.cardDir = result.dir
                 builder.addAllLockPlayerId(result.lockedPlayers.map { player.getAlternativeLocation(it.location) })
                 skill.executeProtocol(game, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 1, TimeUnit.SECONDS)
             return true
         }
     }

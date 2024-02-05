@@ -122,7 +122,7 @@ class YuSiWangPo : MainPhaseSkill() {
                     val builder2 = skill_yu_si_wang_po_b_tos.newBuilder()
                     builder2.addAllCardIds(target.cards.sortCards(target.identity, true).take(cardCount).map { it.id })
                     g.tryContinueResolveProtocol(target, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -183,7 +183,7 @@ class YuSiWangPo : MainPhaseSkill() {
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
                 builder.cardId = card.id
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

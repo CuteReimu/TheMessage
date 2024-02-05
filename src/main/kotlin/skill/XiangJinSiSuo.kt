@@ -56,7 +56,7 @@ class XiangJinSiSuo : TriggeredSkill {
                         builder.targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }

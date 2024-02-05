@@ -125,7 +125,7 @@ class WuDao : Card {
             target ?: return false
             GameExecutor.post(player.game!!, {
                 card.asCard(Wu_Dao).execute(player.game!!, player, target)
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

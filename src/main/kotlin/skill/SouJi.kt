@@ -96,7 +96,7 @@ class SouJi : ActiveSkill {
                     builder.addAllCardIds(target.cards.filter(Black).map { it.id })
                     if (fsm.messageCard.isBlack()) builder.messageCard = true
                     g.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -176,7 +176,7 @@ class SouJi : ActiveSkill {
                 val builder = skill_sou_ji_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(p.location)
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

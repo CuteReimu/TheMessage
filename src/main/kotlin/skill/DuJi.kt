@@ -151,7 +151,7 @@ class DuJi : ActiveSkill {
                     } else {
                         g.tryContinueResolveProtocol(r, skill_du_ji_b_tos.newBuilder().setEnable(false).build())
                     }
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -234,7 +234,7 @@ class DuJi : ActiveSkill {
                         selection.waitingPlayer,
                         skill_du_ji_c_tos.newBuilder().setInFrontOfMe(false).build()
                     )
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -301,7 +301,7 @@ class DuJi : ActiveSkill {
                         .addTargetPlayerIds(player.getAlternativeLocation(player1.location))
                         .addTargetPlayerIds(player.getAlternativeLocation(player2.location)).build()
                 )
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

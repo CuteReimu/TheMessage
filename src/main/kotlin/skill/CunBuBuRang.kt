@@ -60,7 +60,7 @@ class CunBuBuRang : TriggeredSkill {
                     val builder = skill_cun_bu_bu_rang_tos.newBuilder()
                     builder.enable = true
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }

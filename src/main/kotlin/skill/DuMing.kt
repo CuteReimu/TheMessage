@@ -113,7 +113,7 @@ class DuMing : TriggeredSkill {
                         builder2.color = listOf(Red, Blue, Black).filter { it !in messageCard.colors == wrong }.random()
                     }
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -206,7 +206,7 @@ class DuMing : TriggeredSkill {
                     val builder2 = skill_du_ming_b_tos.newBuilder()
                     builder2.cardId = r.cards.filter { it.isPureBlack() }.bestCard(r.identity, true).id
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }

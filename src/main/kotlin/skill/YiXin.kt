@@ -72,7 +72,7 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
                         builder.targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }

@@ -131,7 +131,7 @@ class YiYaHuanYa : TriggeredSkill {
                 builder.cardId = playerAndCard.card.id
                 builder.targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
                 player.game!!.tryContinueResolveProtocol(player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

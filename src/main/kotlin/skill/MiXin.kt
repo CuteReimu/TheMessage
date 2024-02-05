@@ -128,7 +128,7 @@ class MiXin : TriggeredSkill {
                     val builder = skill_mi_xin_b_tos.newBuilder()
                     builder.cardId = card.id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -187,7 +187,7 @@ class MiXin : TriggeredSkill {
             val p = fsm0.event.inFrontOfWhom
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skill_mi_xin_a_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 1, TimeUnit.SECONDS)
             return true
         }
     }

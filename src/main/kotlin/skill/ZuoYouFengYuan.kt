@@ -88,7 +88,7 @@ class ZuoYouFengYuan : ActiveSkill {
                 builder.addTargetPlayerIds(r.getAlternativeLocation(players[0]!!.location))
                 builder.addTargetPlayerIds(r.getAlternativeLocation(players[1]!!.location))
                 skill.executeProtocol(r.game!!, r, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

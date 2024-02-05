@@ -119,7 +119,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
                         }
                     }
                     target.game!!.tryContinueResolveProtocol(target, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -211,7 +211,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
                 builder.cardId = cardId
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

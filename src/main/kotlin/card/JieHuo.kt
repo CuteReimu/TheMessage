@@ -104,7 +104,7 @@ class JieHuo : Card {
             newValue > oldValue || return false
             GameExecutor.post(player.game!!, {
                 card.asCard(Jie_Huo).execute(player.game!!, player)
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

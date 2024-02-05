@@ -62,7 +62,7 @@ class JiangHuLing : TriggeredSkill {
                     builder.enable = true
                     builder.color = color
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }

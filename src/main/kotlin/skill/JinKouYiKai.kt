@@ -82,7 +82,7 @@ class JinKouYiKai : ActiveSkill {
                     val newValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, cards.first())
                     builder.exchange = newValue > oldValue
                     g.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -138,7 +138,7 @@ class JinKouYiKai : ActiveSkill {
             if (player !== e.whoseTurn || player.getSkillUseCount(SkillId.JIN_KOU_YI_KAI) > 0) return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_jin_kou_yi_kai_a_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

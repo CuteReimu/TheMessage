@@ -100,7 +100,7 @@ class MiaoShou : ActiveSkill {
                         builder.cardId = target.cards.firstOrNull()?.id ?: 0
                     builder.targetPlayerId = 0
                     g.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -194,7 +194,7 @@ class MiaoShou : ActiveSkill {
                 val builder = skill_miao_shou_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(p.location)
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

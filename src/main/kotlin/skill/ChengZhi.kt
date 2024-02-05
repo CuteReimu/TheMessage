@@ -90,7 +90,7 @@ class ChengZhi : TriggeredSkill {
                     }
                 builder.enable = r.process(whoDie.identity, whoDie.secretTask) > r.process(r.identity, r.secretTask)
                 r.game!!.tryContinueResolveProtocol(r, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return null
         }
 

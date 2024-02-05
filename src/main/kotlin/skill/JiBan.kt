@@ -61,7 +61,7 @@ class JiBan : MainPhaseSkill() {
                     p.send(builder.build())
                 }
             }
-            if (r is RobotPlayer) GameExecutor.post(g, { autoSelect(0) }, 2, TimeUnit.SECONDS)
+            if (r is RobotPlayer) GameExecutor.post(g, { autoSelect(0) }, 1, TimeUnit.SECONDS)
             return null
         }
 
@@ -153,7 +153,7 @@ class JiBan : MainPhaseSkill() {
             if (e.whoseTurn.getSkillUseCount(SkillId.JI_BAN) > 0) return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skill_ji_ban_a_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

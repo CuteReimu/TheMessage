@@ -74,7 +74,7 @@ class BoAi : MainPhaseSkill() {
                     builder.cardId = r.cards.bestCard(r.identity, true).id
                     builder.targetPlayerId = r.getAlternativeLocation(player.location)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }
@@ -157,7 +157,7 @@ class BoAi : MainPhaseSkill() {
                 skill.executeProtocol(
                     e.whoseTurn.game!!, e.whoseTurn, skill_bo_ai_a_tos.getDefaultInstance()
                 )
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

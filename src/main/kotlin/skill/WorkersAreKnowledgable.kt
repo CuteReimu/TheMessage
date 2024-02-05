@@ -68,7 +68,7 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
                     builder.enable = targets.isNotEmpty()
                     builder.addAllTargetPlayerId(targets.map { r.getAlternativeLocation(it!!.location) })
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }

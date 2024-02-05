@@ -72,7 +72,7 @@ class ZhuanJiao : TriggeredSkill {
                             builder.enable = true
                             builder.cardId = messageCard.id
                             r.game!!.tryContinueResolveProtocol(r, builder.build())
-                        }, 2, TimeUnit.SECONDS)
+                        }, 3, TimeUnit.SECONDS)
                         return null
                     }
                 }
@@ -83,7 +83,7 @@ class ZhuanJiao : TriggeredSkill {
                         builder.enable = false
                         r.game!!.tryContinueResolveProtocol(r, builder.build())
                     },
-                    2,
+                    1,
                     TimeUnit.SECONDS
                 )
             }

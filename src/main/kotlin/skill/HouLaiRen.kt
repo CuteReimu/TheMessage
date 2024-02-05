@@ -97,7 +97,7 @@ class HouLaiRen : ActiveSkill {
                     val builder2 = skill_hou_lai_ren_b_tos.newBuilder()
                     builder2.role = roles.first().role
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -150,7 +150,7 @@ class HouLaiRen : ActiveSkill {
                 val builder = skill_hou_lai_ren_a_tos.newBuilder()
                 builder.remainCardId = card.id
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 1, TimeUnit.SECONDS)
             return true
         }
     }

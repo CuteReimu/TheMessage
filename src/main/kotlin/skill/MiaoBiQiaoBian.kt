@@ -123,7 +123,7 @@ class MiaoBiQiaoBian : ActiveSkill {
                         builder.cardId = playerAndCard.card.id
                         g.tryContinueResolveProtocol(r, builder.build())
                     }
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             if (!canTakeAnother) {
                 for (p in g.players) {
@@ -225,7 +225,7 @@ class MiaoBiQiaoBian : ActiveSkill {
             builder.targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

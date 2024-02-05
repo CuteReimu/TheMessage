@@ -39,7 +39,7 @@ class RobotPlayer : Player() {
                 if (ai != null && ai.test(fsm, card)) return
             }
         }
-        GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 2, TimeUnit.SECONDS)
+        GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
     }
 
     override fun notifySendPhaseStart(waitSecond: Int) {
@@ -57,7 +57,7 @@ class RobotPlayer : Player() {
         GameExecutor.post(game!!, {
             val result = calSendMessageCard()
             game!!.resolve(OnSendCard(this, this, result.card, result.dir, result.target, result.lockedPlayers))
-        }, 2, TimeUnit.SECONDS)
+        }, 1, TimeUnit.SECONDS)
     }
 
     override fun notifySendMessageCard(
@@ -121,7 +121,7 @@ class RobotPlayer : Player() {
                 else
                     MessageMoveNext(fsm)
             )
-        }, 2, TimeUnit.SECONDS)
+        }, 1, TimeUnit.SECONDS)
     }
 
     override fun notifyChooseReceiveCard(player: Player) {
@@ -131,10 +131,6 @@ class RobotPlayer : Player() {
     override fun notifyFightPhase(waitSecond: Int) {
         val fsm = game!!.fsm as FightPhaseIdle
         if (this !== fsm.whoseFightTurn) return
-        for (skill in skills) {
-            val ai = aiSkillFightPhase[skill.skillId]
-            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
-        }
         for (card in cards.sortCards(identity)) {
             for (cardType in listOf(Jie_Huo, Wu_Dao, Diao_Bao)) {
                 val (ok, _) = canUseCardTypes(cardType, card)
@@ -144,7 +140,11 @@ class RobotPlayer : Player() {
                 }
             }
         }
-        GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 2, TimeUnit.SECONDS)
+        for (skill in skills) {
+            val ai = aiSkillFightPhase[skill.skillId]
+            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+        }
+        GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 1, TimeUnit.SECONDS)
     }
 
     override fun notifyReceivePhase() {
@@ -168,7 +168,7 @@ class RobotPlayer : Player() {
                 this,
                 Fengsheng.end_receive_phase_tos.getDefaultInstance()
             )
-        }, 2, TimeUnit.SECONDS)
+        }, 1, TimeUnit.SECONDS)
     }
 
     override fun notifyWin(
@@ -217,10 +217,10 @@ class RobotPlayer : Player() {
                 }
                 find { it.colors.size == 1 } ?: find { identity !in it.colors } ?: firstOrNull()
             } ?: return@run
-            GameExecutor.post(game!!, { card.execute(game!!, this, whoDie, black.id) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(game!!, { card.execute(game!!, this, whoDie, black.id) }, 3, TimeUnit.SECONDS)
             return
         }
-        GameExecutor.post(game!!, { game!!.resolve(WaitNextForChengQing(fsm)) }, 2, TimeUnit.SECONDS)
+        GameExecutor.post(game!!, { game!!.resolve(WaitNextForChengQing(fsm)) }, 1, TimeUnit.SECONDS)
     }
 
     override fun waitForDieGiveCard(whoDie: Player, waitSecond: Int) {
@@ -253,7 +253,7 @@ class RobotPlayer : Player() {
                 }
             }
             game!!.resolve(AfterDieGiveCard(fsm))
-        }, 2, TimeUnit.SECONDS)
+        }, 3, TimeUnit.SECONDS)
     }
 
     companion object {

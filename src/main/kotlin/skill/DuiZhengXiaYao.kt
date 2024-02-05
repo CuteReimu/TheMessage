@@ -93,7 +93,7 @@ class DuiZhengXiaYao : ActiveSkill {
                         }
                     }
                     g.tryContinueResolveProtocol(r, skill_dui_zheng_xia_yao_b_tos.newBuilder().setEnable(false).build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -196,7 +196,7 @@ class DuiZhengXiaYao : ActiveSkill {
                     builder.targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)
                     builder.messageCardId = defaultSelection.card.id
                     g.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -294,7 +294,7 @@ class DuiZhengXiaYao : ActiveSkill {
             if (Random.nextInt(playerCount * playerCount) != 0) return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_dui_zheng_xia_yao_a_tos.getDefaultInstance())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

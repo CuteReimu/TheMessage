@@ -95,7 +95,7 @@ class JianDiFengXing : TriggeredSkill {
                     val builder2 = skill_jian_di_feng_xing_b_tos.newBuilder()
                     builder2.cardId = r.cards.filter { it.isPureBlack() }.random().id
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             if (!hasBlack)
                 return ResolveResult(fsm, true)
@@ -177,7 +177,7 @@ class JianDiFengXing : TriggeredSkill {
                         }
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             if (!messageExists)
                 return ResolveResult(fsm, true)
@@ -251,7 +251,7 @@ class JianDiFengXing : TriggeredSkill {
             GameExecutor.post(p.game!!, {
                 val builder = skill_jian_di_feng_xing_a_tos.newBuilder()
                 p.game!!.tryContinueResolveProtocol(p, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

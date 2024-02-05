@@ -82,7 +82,7 @@ class WeiBi : Card {
             if (target is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     autoSelect(true)
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }
@@ -218,13 +218,13 @@ class WeiBi : Card {
                 val cardType = availableCardType.random()
                 GameExecutor.post(player.game!!, {
                     card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType)
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
                 return true
             } else if (yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0) {
                 val cardType = availableCardType.random()
                 GameExecutor.post(player.game!!, {
                     card.asCard(Wei_Bi).execute(player.game!!, player, yaPao, cardType)
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
                 return true
             }
             val p = player.game!!.players.filter {
@@ -239,7 +239,7 @@ class WeiBi : Card {
             GameExecutor.post(
                 player.game!!,
                 { card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType) },
-                2,
+                3,
                 TimeUnit.SECONDS
             )
             return true

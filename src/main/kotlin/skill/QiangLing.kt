@@ -72,7 +72,7 @@ class QiangLing : TriggeredSkill {
                     builder.enable = result.isNotEmpty()
                     builder.addAllTypes(result)
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }

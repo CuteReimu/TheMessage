@@ -127,7 +127,7 @@ class LiYou : Card {
                 }
             }
             target ?: return false
-            GameExecutor.post(game, { card.asCard(Li_You).execute(game, player, target) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(game, { card.asCard(Li_You).execute(game, player, target) }, 3, TimeUnit.SECONDS)
             return true
         }
     }

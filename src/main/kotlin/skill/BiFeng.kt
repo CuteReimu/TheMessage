@@ -53,7 +53,7 @@ class BiFeng : TriggeredSkill {
                     val builder2 = skill_bi_feng_tos.newBuilder()
                     builder2.enable = true
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }

@@ -117,7 +117,7 @@ class FengYunBianHuan : Card {
                 }
             }
             if (r is RobotPlayer) {
-                GameExecutor.post(r.game!!, { autoChooseCard() }, 2, TimeUnit.SECONDS)
+                GameExecutor.post(r.game!!, { autoChooseCard() }, 3, TimeUnit.SECONDS)
             }
             return null
         }

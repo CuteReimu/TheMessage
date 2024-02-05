@@ -121,7 +121,7 @@ class MiLing : Card {
                     val builder = mi_ling_choose_card_tos.newBuilder()
                     builder.cardId = target.cards.random().id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -210,7 +210,7 @@ class MiLing : Card {
                         builder.addAllLockPlayerId(result.lockedPlayers.map { target.getAlternativeLocation(it.location) })
                         target.game!!.tryContinueResolveProtocol(target, builder.build())
                     }
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }

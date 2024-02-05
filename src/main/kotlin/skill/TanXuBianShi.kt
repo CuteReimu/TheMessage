@@ -108,7 +108,7 @@ class TanXuBianShi : MainPhaseSkill() {
                         if (mustGiveColor == null) target.cards.random().id
                         else target.cards.filter { mustGiveColor in it.colors }.random().id
                     target.game!!.tryContinueResolveProtocol(target, builder2.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             return null
         }
 
@@ -174,7 +174,7 @@ class TanXuBianShi : MainPhaseSkill() {
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
                 builder.cardId = card.id
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

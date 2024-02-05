@@ -107,7 +107,7 @@ class HuoXin : MainPhaseSkill() {
                     val builder = skill_huo_xin_b_tos.newBuilder()
                     builder.discardCardId = card.id
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
-                }, 2, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
             return null
         }
@@ -168,7 +168,7 @@ class HuoXin : MainPhaseSkill() {
                 val builder = skill_huo_xin_a_tos.newBuilder()
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

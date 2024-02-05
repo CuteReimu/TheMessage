@@ -76,7 +76,7 @@ class DingLun : ActiveSkill {
                 skill.executeProtocol(
                     e.whoseFightTurn.game!!, e.whoseFightTurn, skill_ding_lun_tos.getDefaultInstance()
                 )
-            }, 2, TimeUnit.SECONDS)
+            }, 1, TimeUnit.SECONDS)
             return true
         }
     }

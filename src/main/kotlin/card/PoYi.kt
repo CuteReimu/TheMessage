@@ -85,7 +85,7 @@ class PoYi : Card {
                     val show = sendPhase.messageCard.colors.contains(color.Black)
                     showAndDrawCard(show)
                     r.game!!.resolve(sendPhase.copy(isMessageCardFaceUp = show))
-                }, 2, TimeUnit.SECONDS)
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }
@@ -142,7 +142,7 @@ class PoYi : Card {
             val player = e.inFrontOfWhom
             !player.cannotPlayCard(Po_Yi) || return false
             !e.isMessageCardFaceUp && e.messageCard.isBlack() || return false
-            GameExecutor.post(player.game!!, { card.asCard(Po_Yi).execute(player.game!!, player) }, 2, TimeUnit.SECONDS)
+            GameExecutor.post(player.game!!, { card.asCard(Po_Yi).execute(player.game!!, player) }, 3, TimeUnit.SECONDS)
             return true
         }
     }
