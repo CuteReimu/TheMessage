@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
@@ -105,8 +106,8 @@ class TanXuBianShi : MainPhaseSkill() {
                 GameExecutor.post(target.game!!, {
                     val builder2 = skill_tan_xu_bian_shi_b_tos.newBuilder()
                     builder2.cardId =
-                        if (mustGiveColor == null) target.cards.random().id
-                        else target.cards.filter { mustGiveColor in it.colors }.random().id
+                        if (mustGiveColor == null) target.cards.bestCard(target.identity, true).id
+                        else target.cards.filter { mustGiveColor in it.colors }.bestCard(target.identity, true).id
                     target.game!!.tryContinueResolveProtocol(target, builder2.build())
                 }, 3, TimeUnit.SECONDS)
             return null
