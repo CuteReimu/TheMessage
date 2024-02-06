@@ -337,9 +337,9 @@ fun Player.calFightPhase(
     var result: FightPhaseResult? = null
     val cards = availableCards.sortCards(identity)
     for (cardType in order) {
-        !cannotPlayCard(cardType) || continue
+        !whoUse.cannotPlayCard(cardType) || continue
         loop@ for (card in cards) {
-            val (ok, _) = canUseCardTypes(cardType, card)
+            val (ok, _) = whoUse.canUseCardTypes(cardType, card, whoUse !== this)
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
