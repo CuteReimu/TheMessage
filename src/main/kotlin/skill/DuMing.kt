@@ -86,7 +86,8 @@ class DuMing : TriggeredSkill {
                     val builder2 = skill_du_ming_a_tos.newBuilder()
                     builder2.enable = true
                     if (messageCard == null || causer == null ||
-                        if (r.identity == Black) Random.nextBoolean() else causer.identity != r.identity
+                        if (r.identity == Black) r !== causer && Random.nextBoolean()
+                        else causer.identity != r.identity
                     ) {
                         builder2.color = listOf(Red, Blue, Black).random()
                     } else {
