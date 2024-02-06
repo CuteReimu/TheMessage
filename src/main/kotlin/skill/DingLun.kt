@@ -70,8 +70,9 @@ class DingLun : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             player === e.inFrontOfWhom || return false
-            player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard) >= 0 || return false
-            !player.checkThreeSameMessageCard(e.messageCard) || return false
+            val value = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard)
+            val asMessage = !player.checkThreeSameMessageCard(e.messageCard)
+            value == 0 || (asMessage == (value > 0)) || return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
                 skill.executeProtocol(
                     e.whoseFightTurn.game!!, e.whoseFightTurn, skill_ding_lun_tos.getDefaultInstance()
