@@ -14,6 +14,7 @@ import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.*
 import com.fengsheng.skill.LengXueXunLian.MustLockOne
+import kotlin.random.Random
 
 /**
  * 判断是否有玩家会死或者赢
@@ -306,8 +307,7 @@ fun Player.calFightPhase(
     whoUse: Player = this,
     availableCards: List<Card> = this.cards
 ): FightPhaseResult? {
-    val order = mutableListOf(Jie_Huo, Wu_Dao, Diao_Bao)
-    order.shuffle()
+    val order = mutableListOf(Wu_Dao, Jie_Huo, Diao_Bao)
     if (skills.any { it is YouDao || it is JiangJiJiuJi }) {
         if (roleFaceUp) {
             order[order.indexOf(Wu_Dao)] = order[0]
@@ -360,17 +360,28 @@ fun Player.calFightPhase(
                 }
 
                 else -> { // Wu_Dao
-                    val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
-                    val newValueLeft = calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
-                    if (newValueLeft > value) {
-                        result = FightPhaseResult(cardType, card, left, newValueLeft)
-                        value = newValueLeft
+                    val calLeft = {
+                        val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
+                        val newValueLeft = calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
+                        if (newValueLeft > value) {
+                            result = FightPhaseResult(cardType, card, left, newValueLeft)
+                            value = newValueLeft
+                        }
                     }
-                    val right = e.inFrontOfWhom.getNextRightAlivePlayer()
-                    val newValueRight = calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
-                    if (newValueRight > value) {
-                        result = FightPhaseResult(cardType, card, right, newValueRight)
-                        value = newValueRight
+                    val calRight = {
+                        val right = e.inFrontOfWhom.getNextRightAlivePlayer()
+                        val newValueRight = calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
+                        if (newValueRight > value) {
+                            result = FightPhaseResult(cardType, card, right, newValueRight)
+                            value = newValueRight
+                        }
+                    }
+                    if (Random.nextBoolean()) {
+                        calLeft()
+                        calRight()
+                    } else {
+                        calRight()
+                        calLeft()
                     }
                     break@loop
                 }
