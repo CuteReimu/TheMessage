@@ -2,7 +2,6 @@ package com.fengsheng.phase
 
 import com.fengsheng.Fsm
 import com.fengsheng.ResolveResult
-import com.fengsheng.skill.cannotPlayCardAndSkillForFightPhase
 
 /**
  * 争夺阶段即将询问下一个人时
@@ -23,9 +22,7 @@ data class FightPhaseNext(val fightPhase: FightPhaseIdle) : Fsm {
                     fightPhase.messageCard,
                     fightPhase.inFrontOfWhom
                 ), true
-            ) else if (players[whoseFightTurn]!!.alive &&
-                !players[whoseFightTurn]!!.cannotPlayCardAndSkillForFightPhase(fightPhase)
-            ) break
+            ) else if (players[whoseFightTurn]!!.alive) break
         }
         return ResolveResult(fightPhase.copy(whoseFightTurn = players[whoseFightTurn]!!), true)
     }

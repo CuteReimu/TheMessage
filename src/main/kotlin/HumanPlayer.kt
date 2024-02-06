@@ -10,6 +10,7 @@ import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role.skill_leng_xue_xun_lian_a_tos
 import com.fengsheng.skill.ActiveSkill
 import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.cannotPlayCardAndSkillForFightPhase
 import com.fengsheng.skill.mustReceiveMessage
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.TextFormat
@@ -296,6 +297,7 @@ class HumanPlayer(
 
     override fun notifyFightPhase(waitSecond: Int) {
         val fsm = game!!.fsm as FightPhaseIdle
+        val skip = cannotPlayCardAndSkillForFightPhase(fsm)
         val builder = notify_phase_toc.newBuilder()
         builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
         builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
@@ -311,7 +313,7 @@ class HumanPlayer(
                     incrSeq()
                     game!!.resolve(FightPhaseNext(fsm))
                 }
-            }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+            }, if (skip) 1 else getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
         }
         send(builder.build())
     }
