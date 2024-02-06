@@ -36,6 +36,7 @@ class HumanPlayer(
     private var timeoutCount = 0
     private var recorder = Recorder()
     private var autoPlay = false
+    var mainPhaseStartTime = 0L
     val limiter = Limiter(10, 100, TimeUnit.MILLISECONDS)
 
     @Volatile
@@ -192,6 +193,7 @@ class HumanPlayer(
         builder.waitingPlayerId = playerId
         builder.waitingSecond = waitSecond
         if (this === player) {
+            mainPhaseStartTime = System.currentTimeMillis()
             builder.seq = seq
             val seq2 = seq
             timeout = GameExecutor.post(game!!, {
