@@ -87,6 +87,9 @@ class Recorder {
             try {
                 DataInputStream(FileInputStream(recordFile)).use { `is` ->
                     val pb = record_file.parseFrom(`is`.readAllBytes())
+                    val recordVersion = pb.clientVersion
+                    if (version < recordVersion)
+                        logger.warn("客户端版本号过低，录像可能有问题。录像$recordVersion，当前$version")
                     list = pb.linesList
                     currentIndex = 0
                     logger.info("load record success: $recordId")
