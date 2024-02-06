@@ -87,12 +87,6 @@ class Recorder {
             try {
                 DataInputStream(FileInputStream(recordFile)).use { `is` ->
                     val pb = record_file.parseFrom(`is`.readAllBytes())
-                    val recordVersion = pb.clientVersion
-                    if (version < recordVersion) {
-                        player.sendErrorMessage("客户端版本号过低，请重新下载最新客户端")
-                        loading = false
-                        return@trySend
-                    }
                     list = pb.linesList
                     currentIndex = 0
                     logger.info("load record success: $recordId")
