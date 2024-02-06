@@ -33,7 +33,7 @@ class RobotPlayer : Player() {
             val ai = aiSkillMainPhase[skill.skillId]
             if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
         }
-        if (cards.size > 1) {
+        if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null) {
             for (card in cards.run {
                 if (findSkill(JI_SONG) == null && (findSkill(GUANG_FA_BAO) == null || roleFaceUp)) this
                 else filter { it.type == Wei_Bi }

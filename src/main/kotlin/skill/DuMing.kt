@@ -64,28 +64,30 @@ class DuMing : TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            val messageCard = when (event) {
-                is FinishResolveCardEvent -> {
-                    val fightPhase = event.nextFsm as? FightPhaseIdle
-                    if (fightPhase == null) {
-                        logger.error("状态错误：${event.nextFsm}")
-                        null
-                    } else {
-                        fightPhase.messageCard
+            if (r is RobotPlayer) {
+                val (messageCard, causer) = when (event) {
+                    is FinishResolveCardEvent -> {
+                        val fightPhase = event.nextFsm as? FightPhaseIdle
+                        if (fightPhase == null) {
+                            logger.error("状态错误：${event.nextFsm}")
+                            null to null
+                        } else {
+                            fightPhase.messageCard to event.player
+                        }
+                    }
+
+                    is MessageMoveNextEvent -> event.messageCard to event.whoseTurn
+                    else -> {
+                        logger.error("状态错误：$event")
+                        null to null
                     }
                 }
-
-                is MessageMoveNextEvent -> event.messageCard
-                else -> {
-                    logger.error("状态错误：$event")
-                    null
-                }
-            }
-            if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val builder2 = skill_du_ming_a_tos.newBuilder()
                     builder2.enable = true
-                    if (messageCard == null || Random.nextBoolean()) {
+                    if (messageCard == null || causer == null ||
+                        if (r.identity == Black) Random.nextBoolean() else causer.identity != r.identity
+                    ) {
                         builder2.color = listOf(Red, Blue, Black).random()
                     } else {
                         var wrong = false

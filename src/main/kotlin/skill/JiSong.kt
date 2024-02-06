@@ -116,9 +116,7 @@ class JiSong : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             player.getSkillUseCount(SkillId.JI_SONG) == 0 || return false
-            player.game!!.players.any {
-                it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-            } || e.inFrontOfWhom.willDie(e.messageCard) || return false
+            player.game!!.players.anyoneWillWinOrDie(e) || return false
             var value = Int.MIN_VALUE
             var target = e.inFrontOfWhom
             for (p in player.game!!.sortedFrom(player.game!!.players, player.location)) {

@@ -285,9 +285,7 @@ class DuiZhengXiaYao : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
-            player.game!!.players.any {
-                it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-            } || e.inFrontOfWhom.willDie(e.messageCard) || return false
+            player.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_dui_zheng_xia_yao_a_tos.getDefaultInstance())
             }, 3, TimeUnit.SECONDS)

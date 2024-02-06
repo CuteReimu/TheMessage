@@ -226,10 +226,15 @@ class HumanPlayer(
         }
         send(builder.build())
         if (this === player && player.cards.isEmpty() && waitSecond > 0) {
-            val skill = player.findSkill(SkillId.LENG_XUE_XUN_LIAN) as ActiveSkill
-            val builder2 = skill_leng_xue_xun_lian_a_tos.newBuilder()
-            builder2.seq = seq
-            skill.executeProtocol(game!!, player, builder2.build())
+            val seq2 = seq
+            timeout = GameExecutor.post(game!!, {
+                if (checkSeq(seq2)) {
+                    val skill = player.findSkill(SkillId.LENG_XUE_XUN_LIAN) as ActiveSkill
+                    val builder2 = skill_leng_xue_xun_lian_a_tos.newBuilder()
+                    builder2.seq = seq
+                    skill.executeProtocol(game!!, player, builder2.build())
+                }
+            }, 100, TimeUnit.MILLISECONDS)
         }
     }
 

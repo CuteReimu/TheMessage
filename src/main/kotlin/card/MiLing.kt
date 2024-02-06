@@ -11,7 +11,7 @@ import com.fengsheng.protos.Common.card_type.Mi_Ling
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role
 import com.fengsheng.skill.LengXueXunLian
-import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.SkillId.LENG_XUE_XUN_LIAN
 import com.fengsheng.skill.canSendCard
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
@@ -201,7 +201,7 @@ class MiLing : Card {
                 }, target.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(target.game!!, {
-                    val skill = target.findSkill(SkillId.LENG_XUE_XUN_LIAN) as? LengXueXunLian
+                    val skill = target.findSkill(LENG_XUE_XUN_LIAN) as? LengXueXunLian
                     if (skill != null) {
                         skill.executeProtocol(
                             target.game!!,
@@ -315,7 +315,8 @@ class MiLing : Card {
             val player = e.whoseTurn
             !player.cannotPlayCard(Mi_Ling) || return false
             val target = player.game!!.players.filter {
-                it !== player && it!!.alive && (player.game!!.isEarly || it.isEnemy(player)) && it.cards.isNotEmpty()
+                it !== player && it!!.alive && (player.game!!.isEarly || it.isEnemy(player))
+                        && it.findSkill(LENG_XUE_XUN_LIAN) == null && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             val secret =
                 if (player.identity == color.Black) (0..2).random()

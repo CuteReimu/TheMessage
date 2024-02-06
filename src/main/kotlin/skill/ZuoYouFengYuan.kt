@@ -83,8 +83,16 @@ class ZuoYouFengYuan : ActiveSkill {
             val willWin = players.find { it!!.isEnemy(r) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) }
             if (willWin != null) {
                 players.removeIf { it!!.isPartnerOrSelf(willWin) }
-                players.size >= 2 || return false
-                players.sortBy { it!!.cards.size }
+                if (players.size == 1) players.add(
+                    r.game!!.players.filter { it !== players.first() && it!!.alive }.maxBy { it!!.cards.size })
+                else if (players.size >= 2) players.sortBy { it!!.cards.size }
+                else return false
+            } else if (e.inFrontOfWhom.willDie(e.messageCard) && e.inFrontOfWhom.isPartnerOrSelf(r)) {
+                players.removeIf { it!!.isEnemy(r) }
+                if (players.size == 1) players.add(
+                    r.game!!.players.filter { it !== players.first() && it!!.alive }.maxBy { it!!.cards.size })
+                else if (players.size >= 2) players.sortBy { it!!.cards.size }
+                else return false
             } else {
                 players.removeIf { if (it!!.isEnemy(r)) it.cards.size <= 3 else it.cards.size >= 3 }
                 players.size >= 2 || return false

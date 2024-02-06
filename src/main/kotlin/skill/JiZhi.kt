@@ -56,7 +56,7 @@ class JiZhi : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val p = e.whoseFightTurn
             !p.roleFaceUp || return false
-            p.game!!.players.any { it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) } || return false
+            p.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(p.game!!, {
                 skill.executeProtocol(p.game!!, p, skill_ji_zhi_tos.getDefaultInstance())
             }, 3, TimeUnit.SECONDS)

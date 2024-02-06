@@ -3,8 +3,11 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.JieHuo
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.Common.card_type.Jie_Huo
+import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.skill_tou_tian_toc
 import com.fengsheng.protos.Role.skill_tou_tian_tos
+import com.fengsheng.skill.SkillId.TOU_TIAN
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -13,7 +16,7 @@ import java.util.concurrent.TimeUnit
  * 鄭文先技能【偷天】：争夺阶段你可以翻开此角色牌，然后视为你使用了一张【截获】。
  */
 class TouTian : ActiveSkill {
-    override val skillId = SkillId.TOU_TIAN
+    override val skillId = TOU_TIAN
 
     override val isInitialSkill = true
 
@@ -52,6 +55,8 @@ class TouTian : ActiveSkill {
             val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             val newValue = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard)
             newValue > oldValue || return false
+            val result = player.calFightPhase(e)
+            if (result != null && result.cardType in listOf(Jie_Huo, Wu_Dao) && result.value >= newValue) return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
                 skill.executeProtocol(
                     e.whoseFightTurn.game!!, e.whoseFightTurn, skill_tou_tian_tos.getDefaultInstance()

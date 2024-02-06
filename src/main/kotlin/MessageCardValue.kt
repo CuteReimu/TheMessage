@@ -16,9 +16,16 @@ import com.fengsheng.skill.*
 import com.fengsheng.skill.LengXueXunLian.MustLockOne
 
 /**
+ * 判断是否有玩家会死或者赢
+ */
+fun Iterable<Player?>.anyoneWillWinOrDie(e: FightPhaseIdle) = any {
+    it!!.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+} || e.inFrontOfWhom.willDie(e.messageCard)
+
+/**
  * 判断玩家是否会死
  */
-fun Player.willDie(card: Card): Boolean = messageCards.count(Black) >= 2 && card.isBlack()
+fun Player.willDie(card: Card) = messageCards.count(Black) >= 2 && card.isBlack()
 
 /**
  * 判断玩家是否能赢
