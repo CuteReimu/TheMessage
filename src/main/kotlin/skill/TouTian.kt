@@ -49,8 +49,9 @@ class TouTian : ActiveSkill {
 
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
-            !e.whoseFightTurn.roleFaceUp || return false
             val player = e.whoseFightTurn
+            !player.roleFaceUp || return false
+            !player.game!!.isEarly || player.game!!.players.anyoneWillWinOrDie(e) || return false
             e.inFrontOfWhom !== player || return false
             val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             val newValue = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard)
