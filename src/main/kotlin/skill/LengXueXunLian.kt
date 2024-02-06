@@ -102,7 +102,7 @@ class LengXueXunLian : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val availableCards = cards.filter { it.isBlack() }.ifEmpty { cards.toList() }
+                    val availableCards = cards.filter { it.isBlack() }.ifEmpty { cards }
                     val result = r.calSendMessageCard(r, availableCards)
                     val builder2 = skill_leng_xue_xun_lian_b_tos.newBuilder()
                     builder2.sendCardId = result.card.id
