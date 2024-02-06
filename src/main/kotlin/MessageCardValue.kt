@@ -230,12 +230,12 @@ fun Player.calSendMessageCard(
 
     for (card in availableCards.sortCards(identity, true)) {
         if (card.direction == Up || skills.any { it is LianLuo }) {
-            for (target in game!!.sortedFrom(game!!.players, location)) {
-                if (target === this || !target.alive) continue
-                val tmpValue = calAveValue(card, 0.7) { if (this === target) this@calSendMessageCard else target }
+            val (partner, enemy) = game!!.players.filter { it !== this && it!!.alive }.partition { isPartner(it!!) }
+            for (target in partner.shuffled() + enemy.shuffled()) {
+                val tmpValue = calAveValue(card, 0.7) { if (this === target) this@calSendMessageCard else target!! }
                 if (tmpValue > value) {
                     value = tmpValue
-                    result = SendMessageCardResult(card, target, Up, emptyList(), value)
+                    result = SendMessageCardResult(card, target!!, Up, emptyList(), value)
                 }
             }
         } else if (card.direction == Left) {

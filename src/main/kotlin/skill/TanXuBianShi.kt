@@ -169,6 +169,9 @@ class TanXuBianShi : MainPhaseSkill() {
             val card = e.whoseTurn.cards.randomOrNull() ?: return false
             val player = e.whoseTurn.game!!.players.filter { p ->
                 p !== e.whoseTurn && p!!.alive && p.cards.isNotEmpty()
+            }.run {
+                if (e.whoseTurn.game!!.isEarly) this
+                else filter { it!!.isEnemy(e.whoseTurn) }.ifEmpty { this }
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_tan_xu_bian_shi_a_tos.newBuilder()

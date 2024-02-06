@@ -161,8 +161,9 @@ class HuoXin : MainPhaseSkill() {
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.whoseTurn.getSkillUseCount(SkillId.HUO_XIN) > 0) return false
+            val isEarly = e.whoseTurn.game!!.isEarly
             val target = e.whoseTurn.game!!.players.filter {
-                it!!.alive && it.isEnemy(e.whoseTurn) && it.cards.isNotEmpty()
+                it!!.alive && (isEarly || it.isEnemy(e.whoseTurn)) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_huo_xin_a_tos.newBuilder()

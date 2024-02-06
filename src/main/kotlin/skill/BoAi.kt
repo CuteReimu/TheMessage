@@ -65,14 +65,14 @@ class BoAi : MainPhaseSkill() {
             r.draw(1)
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val player = r.game!!.players.find { it!!.alive && it.isPartner(r) && it.isFemale }
-                    if (player == null) {
-                        r.game!!.tryContinueResolveProtocol(r, skill_bo_ai_b_tos.newBuilder().setCardId(0).build())
-                        return@post
-                    }
                     val builder = skill_bo_ai_b_tos.newBuilder()
-                    builder.cardId = r.cards.bestCard(r.identity, true).id
-                    builder.targetPlayerId = r.getAlternativeLocation(player.location)
+                    if (!g.isEarly) {
+                        val player = r.game!!.players.find { it!!.alive && it.isPartner(r) && it.isFemale }
+                        if (player != null) {
+                            builder.cardId = r.cards.bestCard(r.identity, true).id
+                            builder.targetPlayerId = r.getAlternativeLocation(player.location)
+                        }
+                    }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 1, TimeUnit.SECONDS)
             }

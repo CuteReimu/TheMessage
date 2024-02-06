@@ -182,8 +182,12 @@ class JiaoJi : MainPhaseSkill() {
             val player = e.whoseTurn
             player.getSkillUseCount(SkillId.JIAO_JI) == 0 || return false
             val players = player.game!!.players.filter { it !== player && it!!.alive && it.cards.isNotEmpty() }
-            val target = players.filter { player.isEnemy(it!!) && it.cards.size >= 2 }
-                .ifEmpty { players.filter { player.isEnemy(it!!) } }.ifEmpty { players }.randomOrNull() ?: return false
+            val target = (
+                    if (player.game!!.isEarly) players.filter { it!!.cards.size >= 2 }
+                    else
+                        players.filter { player.isEnemy(it!!) && it.cards.size >= 2 }
+                            .ifEmpty { players.filter { player.isEnemy(it!!) } }
+                    ).ifEmpty { players }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_jiao_ji_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)

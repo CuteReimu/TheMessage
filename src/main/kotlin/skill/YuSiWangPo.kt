@@ -174,6 +174,7 @@ class YuSiWangPo : MainPhaseSkill() {
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.whoseTurn.getSkillUseCount(SkillId.YU_SI_WANG_PO) == 0 || return false
+            !e.whoseTurn.game!!.isEarly || return false
             val card = e.whoseTurn.cards.ifEmpty { return false }.bestCard(e.whoseTurn.identity, true)
             val target =
                 e.whoseTurn.game!!.players.filter { it!!.alive && it.isEnemy(e.whoseTurn) && it.cards.size >= 2 }

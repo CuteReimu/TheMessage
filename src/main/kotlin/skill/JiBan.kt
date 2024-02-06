@@ -136,7 +136,7 @@ class JiBan : MainPhaseSkill() {
         private fun autoSelect(seq: Int) {
             val availableTargets = r.game!!.players.filter { it!!.alive && it !== r } // 如果所有人都死了游戏就结束了，所以这里一定不为空
             val players =
-                if (seq != 0) availableTargets
+                if (seq != 0 || r.game!!.isEarly) availableTargets
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets } // 机器人优先选队友
             val player = players.random()!!
             val builder = skill_ji_ban_b_tos.newBuilder()

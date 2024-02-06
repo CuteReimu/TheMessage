@@ -381,6 +381,7 @@ class RuBiZhiShi : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
             !r.roleFaceUp || return false
+            !r.game!!.isEarly || r.game!!.players.anyoneWillWinOrDie(e) || return false
             val target = r.game!!.players.filter {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
