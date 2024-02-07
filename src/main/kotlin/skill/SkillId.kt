@@ -9,7 +9,7 @@ enum class SkillId(private val cName: String) {
     ZHI_YIN("知音"), JING_MENG("惊梦"), JIE_DAO_SHA_REN("借刀杀人"), JIAO_JI("交际"), JI_SONG("急送"),
     ZHUAN_JIAO("转交"), MIAO_BI_QIAO_BIAN("妙笔巧辩"), JIN_BI("禁闭"), INVALID("被无效"), JIN_KOU_YI_KAI("金口一开"),
     JI_BAN("羁绊"), YING_BIAN("应变"), YOU_DAO("诱导"), BO_AI("博爱"), GUANG_FA_BAO("广发报"),
-    QIANG_LING("强令"), JIAN_REN("坚韧"), MIAO_SHOU("妙手"), SOU_JI("搜辑"), JIANG_HU_LING("江湖令"),
+    QIANG_LING("强令"), JIAN_REN("坚韧"), MIAO_SHOU("妙手"), SOU_JI("搜缉"), JIANG_HU_LING("江湖令"),
     DUI_ZHENG_XIA_YAO("对症下药"), DU_JI("毒计"), CANG_SHEN_JIAO_TANG("藏身教堂"), XIAN_FA_ZHI_REN("先发制人"),
     LENG_XUE_XUN_LIAN("冷血训练"), GUAN_HAI("观海"), BI_FENG("避风"), ZUO_YOU_FENG_YUAN("左右逢源"), BI_YI_SHUANG_FEI("比翼双飞"),
     TAN_QIU_ZHEN_LI("探求真理"), RU_BI_ZHI_SHI("如臂指使"), SHEN_CANG("深藏"), GONG_FEN("共焚"), HUO_XIN("惑心"),

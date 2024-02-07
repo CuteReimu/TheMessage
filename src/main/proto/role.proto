@@ -703,13 +703,13 @@ message skill_jian_ren_b_toc {
   uint32 card_id = 3; // 弃的牌
 }
 
-// 李醒【搜辑】A：争夺阶段，你可以翻开此角色牌，然后查看一名角色的手牌和待收情报。
+// 李醒【搜缉】A：争夺阶段，你可以翻开此角色牌，然后查看一名角色的手牌和待收情报。
 message skill_sou_ji_a_tos {
   uint32 target_player_id = 1; // 目标角色
   uint32 seq = 2;
 }
 
-// 广播使用【搜辑】A
+// 广播使用【搜缉】A
 message skill_sou_ji_a_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2; // 目标角色
@@ -719,14 +719,14 @@ message skill_sou_ji_a_toc {
   uint32 seq = 6;
 }
 
-// 李醒【搜辑】B：并且你可以选择其中任意张黑色牌，展示并加入你的手牌。
+// 李醒【搜缉】B：并且你可以选择其中任意张黑色牌，展示并加入你的手牌。
 message skill_sou_ji_b_tos {
   repeated uint32 card_ids = 1; // 拿的所有手牌
   bool message_card = 2; // 是否拿情报
   uint32 seq = 3;
 }
 
-// 广播使用【搜辑】B，即使一张都没有拿，也会广播这条协议
+// 广播使用【搜缉】B，即使一张都没有拿，也会广播这条协议
 message skill_sou_ji_b_toc {
   uint32 player_id = 1;
   uint32 target_player_id = 2;

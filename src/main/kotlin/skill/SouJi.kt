@@ -12,7 +12,7 @@ import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 李醒技能【搜辑】：争夺阶段，你可以翻开此角色牌，然后查看一名角色的手牌和待收情报，并且你可以选择其中任意张黑色牌，展示并加入你的手牌。
+ * 李醒技能【搜缉】：争夺阶段，你可以翻开此角色牌，然后查看一名角色的手牌和待收情报，并且你可以选择其中任意张黑色牌，展示并加入你的手牌。
  */
 class SouJi : ActiveSkill {
     override val skillId = SkillId.SOU_JI
@@ -24,13 +24,13 @@ class SouJi : ActiveSkill {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
-            logger.error("现在不是发动[搜辑]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[搜辑]的时机")
+            logger.error("现在不是发动[搜缉]的时机")
+            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[搜缉]的时机")
             return
         }
         if (r.roleFaceUp) {
-            logger.error("你现在正面朝上，不能发动[搜辑]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[搜辑]")
+            logger.error("你现在正面朝上，不能发动[搜缉]")
+            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[搜缉]")
             return
         }
         val pb = message as skill_sou_ji_a_tos
@@ -60,7 +60,7 @@ class SouJi : ActiveSkill {
     private data class executeSouJi(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            logger.info("${r}对${target}发动了[搜辑]")
+            logger.info("${r}对${target}发动了[搜缉]")
             for (p in g.players) {
                 if (p is HumanPlayer) {
                     val builder = skill_sou_ji_a_toc.newBuilder()
@@ -171,7 +171,7 @@ class SouJi : ActiveSkill {
             !player.roleFaceUp || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
             val p = player.game!!.players.filter { it!!.alive && player.isEnemy(it) }.run {
-                minOf { it!!.cards.count(Black) }.let { min -> filter { it!!.cards.count(Black) == min } }
+                maxOf { it!!.cards.count(Black) }.let { max -> filter { it!!.cards.count(Black) == max } }
                     .ifEmpty { this }
             }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
