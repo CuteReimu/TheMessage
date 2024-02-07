@@ -140,44 +140,36 @@ fun Player.calculateMessageCardValue(
     checkThreeSame: Boolean = false
 ): Int {
     if (!checkThreeSame) {
+        val disturber = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Disturber }
         if (whoseTurn.identity == Black && whoseTurn.secretTask == Stealer) {
             if (this === whoseTurn) { // 簒夺者的回合，任何人赢了，簒夺者都会赢
-                if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return 600
-            } else { // 簒夺者的回合，任何人赢了，都算作输
-                if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return -600
-            }
-        } else if (whoseTurn.identity == Black && whoseTurn.secretTask == Disturber) {
-            if (whoseTurn.skills.any { it is BiYiShuangFei }) {
-                if (this === whoseTurn) { // 秦圆圆的回合，任何人赢了，秦圆圆都会赢
-                    if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return 600
-                } else {
-                    if (game!!.players.any { it !== this && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
-                        return -600
-                    if (willWinInternal(whoseTurn, inFrontOfWhom, colors)) // 搅局者别人赢优先于自己赢
-                        return 600
-                }
-            } else {
-                if (game!!.players.any { it !== this && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
-                    return -600
-                if (willWinInternal(whoseTurn, inFrontOfWhom, colors)) // 搅局者别人赢优先于自己赢
+                if (game!!.players.any { it !== disturber && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
                     return 600
+            } else { // 簒夺者的回合，任何人赢了，都算作输
+                if (game!!.players.any { it !== disturber && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
+                    return -600
+            }
+        } else if (whoseTurn.skills.any { it is BiYiShuangFei }) {
+            if (this === whoseTurn) { // 秦圆圆的回合，任何人赢了，秦圆圆都会赢
+                if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return 600
+            } else { // 秦圆圆的回合，只有自己赢才是赢，队友赢也算输
+                if (this !== disturber && willWinInternal(whoseTurn, inFrontOfWhom, colors))
+                    return 600
+                if (game!!.players.any {
+                        it !== this && it !== disturber && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                    }) return -600
+                if (disturber != null && disturber.willWinInternal(whoseTurn, inFrontOfWhom, colors))
+                    return if (disturber === this) 300 else -300
             }
         } else {
-            if (whoseTurn.skills.any { it is BiYiShuangFei }) {
-                if (this === whoseTurn) { // 秦圆圆的回合，任何人赢了，秦圆圆都会赢
-                    if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return 600
-                } else { // 秦圆圆的回合，只有自己赢才是赢，队友赢也算输
-                    if (willWinInternal(whoseTurn, inFrontOfWhom, colors))
-                        return 600
-                    if (game!!.players.any { it !== this && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
-                        return -600
-                }
-            } else {
-                if (game!!.players.any { !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
-                    return 600
-                if (game!!.players.any { isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
-                    return -600
-            }
+            if (game!!.players.any {
+                    it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                }) return 600
+            if (game!!.players.any {
+                    it !== disturber && isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                }) return -600
+            if (disturber != null && disturber.willWinInternal(whoseTurn, inFrontOfWhom, colors))
+                return if (disturber === this) 300 else -300
         }
     }
     var value = 0
