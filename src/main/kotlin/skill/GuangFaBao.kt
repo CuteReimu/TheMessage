@@ -1,11 +1,10 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.RobotPlayer.Companion.bestCard
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
-import com.fengsheng.card.count
+import com.fengsheng.card.WeiBi
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -79,27 +78,39 @@ class GuangFaBao : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val target: Player?
-                    val card: Card?
-                    if (r.identity == color.Black) {
-                        target = g.players.find { it!!.alive && it.messageCards.count(color.Black) < 2 }
-                        card = if (target != null) {
-                            val c1 = target.identity
-                            r.cards.filter { it.isBlack() && !target.checkThreeSameMessageCard(it) }.run {
-                                filter { c1 == color.Black || c1 !in it.colors }
-                                    .ifEmpty { this }
-                                    .ifEmpty { return@run null }
-                                    .bestCard(r.identity, true)
+                    val players = g.sortedFrom(g.players.filter { it!!.alive }, r.location)
+                    var card: Card? = null
+                    var target: Player? = null
+                    var value = 0
+                    val (importantCards, otherCards) = r.cards.partition { it.type in WeiBi.availableCardType }
+                    for (c in otherCards.sortCards(r.identity, true)) {
+                        for (p in players) {
+                            !p.checkThreeSameMessageCard(c) || continue
+                            val v = r.calculateMessageCardValue(fsm.whoseTurn, p, c)
+                            if (v > value) {
+                                value = v
+                                card = c
+                                target = p
                             }
-                        } else null
-                    } else {
-                        target = r
-                        card = r.cards.filter { r.identity in it.colors && !r.checkThreeSameMessageCard(it) }.run {
-                            filter { it.colors.size == 1 }.ifEmpty { this }.ifEmpty { return@run null }
-                                .bestCard(r.identity, true)
                         }
                     }
-                    if (target != null && card != null) {
+                    if (card == null) {
+                        for (c in importantCards.sortCards(r.identity, true)) {
+                            for (p in players) {
+                                val v = r.calculateMessageCardValue(fsm.whoseTurn, p, c)
+                                if (v > value) {
+                                    value = v
+                                    card = c
+                                    target = p
+                                }
+                            }
+                        }
+                        if (card != null && target != null && target.checkThreeSameMessageCard(card)) {
+                            card = null
+                            target = null
+                        }
+                    }
+                    if (card != null && target != null) {
                         val builder = skill_guang_fa_bao_b_tos.newBuilder()
                         builder.enable = true
                         builder.targetPlayerId = r.getAlternativeLocation(target.location)
@@ -107,7 +118,7 @@ class GuangFaBao : ActiveSkill {
                         g.tryContinueResolveProtocol(r, builder.build())
                         return@post
                     }
-                    g.tryContinueResolveProtocol(r, skill_guang_fa_bao_b_tos.newBuilder().setEnable(false).build())
+                    g.tryContinueResolveProtocol(r, skill_guang_fa_bao_b_tos.getDefaultInstance())
                 }, 1, TimeUnit.SECONDS)
             }
             return null

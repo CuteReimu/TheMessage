@@ -65,7 +65,7 @@ class QiangLing : TriggeredSkill {
                                 0 -> listOf(Po_Yi, Cheng_Qing).filterNot { r.cannotPlayCard(it) }
                                 1 -> plus(if (event is SendCardEvent && !r.cannotPlayCard(Po_Yi)) Po_Yi else Cheng_Qing)
                                 2 -> this
-                                else -> shuffled().take(2)
+                                else -> sortedBy { type -> r.cards.any { it.type == type } }.take(2)
                             }
                         }
                     val builder = skill_qiang_ling_tos.newBuilder()

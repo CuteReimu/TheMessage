@@ -56,7 +56,9 @@ class BianZeTong : TriggeredSkill {
                 GameExecutor.post(r.game!!, {
                     val builder2 = skill_bian_ze_tong_tos.newBuilder()
                     builder2.enable = true
-                    builder2.cardTypeA = listOf(Diao_Bao, Wu_Dao, Jie_Huo).random()
+                    builder2.cardTypeA = listOf(Diao_Bao, Wu_Dao, Jie_Huo).run {
+                        filter { type -> r.cards.all { it.type != type } }.ifEmpty { this }
+                    }.random()
                     builder2.cardTypeB = Po_Yi
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 3, TimeUnit.SECONDS)
