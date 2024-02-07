@@ -149,6 +149,8 @@ fun Player.calculateMessageCardValue(
                 if (game!!.players.any { it !== disturber && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
                     return -600
             }
+            if (disturber != null && disturber.willWinInternal(whoseTurn, inFrontOfWhom, colors))
+                return if (disturber === this) 300 else -300
         } else if (whoseTurn.skills.any { it is BiYiShuangFei }) {
             if (this === whoseTurn) { // 秦圆圆的回合，任何人赢了，秦圆圆都会赢
                 if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return 600
