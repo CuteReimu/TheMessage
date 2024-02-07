@@ -152,7 +152,7 @@ class BoAi : MainPhaseSkill() {
 
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
-            if (e.whoseTurn.getSkillUseCount(SkillId.BO_AI) > 0) return false
+            e.whoseTurn.getSkillUseCount(SkillId.BO_AI) == 0 || return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 skill.executeProtocol(
                     e.whoseTurn.game!!, e.whoseTurn, skill_bo_ai_a_tos.getDefaultInstance()

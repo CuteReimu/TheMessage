@@ -3,6 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
+import com.fengsheng.card.WeiBi
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
@@ -108,6 +109,7 @@ class JiaoJi : MainPhaseSkill() {
                 val builder2 = skill_jiao_ji_b_tos.newBuilder()
                 for (c in r.cards.sortCards(r.identity, true)) {
                     if (builder2.cardIdsCount >= needReturnCount.first) break
+                    if (c.type in WeiBi.availableCardType) r.weiBiSuccessfulRate = 4
                     builder2.addCardIds(c.id)
                 }
                 g.tryContinueResolveProtocol(r, builder2.build())

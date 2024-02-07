@@ -137,7 +137,10 @@ class JiBan : MainPhaseSkill() {
             val availableTargets = r.game!!.players.filter { it!!.alive && it !== r } // 如果所有人都死了游戏就结束了，所以这里一定不为空
             val players =
                 if (seq != 0 || r.game!!.isEarly) availableTargets
-                else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets } // 机器人优先选队友
+                else availableTargets.filter { r.isPartner(it!!) }.ifEmpty {
+                    r.weiBiSuccessfulRate = 4
+                    availableTargets
+                } // 机器人优先选队友
             val player = players.random()!!
             val builder = skill_ji_ban_b_tos.newBuilder()
             if (seq != 0) builder.addCardIds(r.cards.random().id)

@@ -136,9 +136,18 @@ class Deck(private val game: Game) {
                 shiTanIndex.forEach { cards.removeAt(it) }
             }
         }
+        for (card in cards) {
+            val index =
+                if (card.colors.size == 1) card.colors.first().number * 4
+                else card.colors[0].number * 3 + card.colors[1].number
+            colorRates[index] += 1.0
+        }
+        for (i in colorRates.indices) colorRates[i] /= cards.size.toDouble()
         nextId = DefaultDeck.last().id
         cards.shuffle()
     }
+
+    val colorRates = DoubleArray(9)
 
     companion object {
         val DefaultDeck = listOf(

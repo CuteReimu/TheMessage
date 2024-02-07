@@ -6,14 +6,13 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Common.secret_task.Disturber
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
+import com.fengsheng.skill.SkillId.HUO_XIN
+import com.fengsheng.skill.SkillId.YUN_CHOU_WEI_WO
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class LiYou : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -106,31 +105,30 @@ class LiYou : Card {
             !player.cannotPlayCard(Li_You) || return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()
-            var target: Player? = null
-            if (player.identity == Black && player.secretTask == Disturber) { // 如果是搅局者，优先选择真情报最少的玩家
-                if (!game.isEarly) {
-                    target = game.players.filter { it !== player && it!!.alive }.run {
-                        minOf { it!!.messageCards.countTrueCard() }.let { minCount ->
-                            filter { it!!.messageCards.countTrueCard() == minCount }.run {
-                                filter { it!!.messageCards.count(Black) < 2 }.ifEmpty { this }
-                            }.randomOrNull()
+            var target = player
+            if (!game.isEarly) {
+                if (nextCard != null && (player.getSkillUseCount(HUO_XIN) > 0 || player.getSkillUseCount(YUN_CHOU_WEI_WO) > 0)) {
+                    var value = 9
+                    for (p in game.sortedFrom(game.players, player.location)) {
+                        p.alive || continue
+                        val result = player.calculateMessageCardValue(player, p, nextCard, true)
+                        if (result > value) {
+                            value = result
+                            target = p
+                        }
+                    }
+                } else {
+                    var value = 0.9
+                    for (p in game.sortedFrom(game.players, player.location)) {
+                        p.alive || continue
+                        val result = player.calculateMessageCardValue(player, p, true)
+                        if (result > value) {
+                            value = result
+                            target = p
                         }
                     }
                 }
-            } else if (game.isEarly || nextCard == null || Random.nextInt(4) == 0) { // 1/4的概率选自己
-                target = player
-            } else {
-                var value = 0
-                for (p in game.sortedFrom(game.players, player.location)) {
-                    p.alive || continue
-                    val result = player.calculateMessageCardValue(player, p, nextCard)
-                    if (result > value) {
-                        value = result
-                        target = p
-                    }
-                }
             }
-            target ?: return false
             GameExecutor.post(game, { card.asCard(Li_You).execute(game, player, target) }, 3, TimeUnit.SECONDS)
             return true
         }
