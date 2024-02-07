@@ -105,8 +105,10 @@ class LiYou : Card {
             !player.cannotPlayCard(Li_You) || return false
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()
-            var target = player
-            if (!game.isEarly) {
+            var target: Player? = null
+            if (game.isEarly) {
+                target = player
+            } else {
                 if (nextCard != null && (player.getSkillUseCount(HUO_XIN) > 0 || player.getSkillUseCount(YUN_CHOU_WEI_WO) > 0)) {
                     var value = 9
                     for (p in game.sortedFrom(game.players, player.location)) {
@@ -129,6 +131,7 @@ class LiYou : Card {
                     }
                 }
             }
+            target ?: return false
             GameExecutor.post(game, { card.asCard(Li_You).execute(game, player, target) }, 3, TimeUnit.SECONDS)
             return true
         }
