@@ -61,11 +61,17 @@ fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolea
                         else if (Blue in card.colors) messageCards.count(Blue) >= 2
                         else false
 
-            Mutator ->
-                (inFrontOfWhom === this || !inFrontOfWhom.willWin(whoseTurn, inFrontOfWhom, card)) &&
-                        if (Red in card.colors) messageCards.count(Red) >= 2
-                        else if (Blue in card.colors) messageCards.count(Blue) >= 2
-                        else false
+            Mutator -> {
+                if (inFrontOfWhom.let {
+                        (it.identity != Black || it.secretTask == Collector) &&
+                                it.willWin(whoseTurn, it, card)
+                    }) {
+                    return false
+                }
+                if (Red in card.colors) messageCards.count(Red) >= 2
+                else if (Blue in card.colors) messageCards.count(Blue) >= 2
+                else false
+            }
 
             Pioneer ->
                 this === inFrontOfWhom && Black in card.colors && messageCards.count(Black) >= 2
