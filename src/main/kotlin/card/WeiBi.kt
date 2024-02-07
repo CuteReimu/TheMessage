@@ -237,7 +237,7 @@ class WeiBi : Card {
                         it.cards.any { card -> card.type in availableCardType }
             }.randomOrNull() ?: return false
             val cardType =
-                if (Random.nextInt(4) < player.weiBiSuccessfulRate) availableCardType.random() // N/4的概率纯随机
+                if (Random.nextInt(4) >= player.weiBiSuccessfulRate) availableCardType.random() // N/4的概率纯随机
                 else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.random()
             GameExecutor.post(
                 player.game!!,
