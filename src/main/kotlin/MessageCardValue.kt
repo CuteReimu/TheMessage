@@ -35,7 +35,10 @@ fun Player.willDie(card: Card) = messageCards.count(Black) >= 2 && card.isBlack(
  * @param inFrontOfWhom 情报在谁面前
  * @param card 情报牌
  */
-fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolean {
+fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card) =
+    calculateMessageCardValue(whoseTurn, inFrontOfWhom, card) >= 600
+
+private fun Player.willWinInternal(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolean {
     if (!alive) return false
     if (identity != Black) {
         return isPartnerOrSelf(inFrontOfWhom) && identity in card.colors && inFrontOfWhom.messageCards.count(identity) >= 2
@@ -45,7 +48,7 @@ fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolea
                 if (this !== whoseTurn) return false
                 if (game!!.players.any {
                         (it!!.identity != Black || it.secretTask in listOf(Collector, Mutator)) &&
-                                it.willWin(whoseTurn, inFrontOfWhom, card)
+                                it.willWinInternal(whoseTurn, inFrontOfWhom, card)
                     }) {
                     return false
                 }
@@ -53,7 +56,13 @@ fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolea
             }
 
             Stealer ->
-                this === whoseTurn && game!!.players.any { it !== this && it!!.willWin(whoseTurn, inFrontOfWhom, card) }
+                this === whoseTurn && game!!.players.any {
+                    it !== this && it!!.willWinInternal(
+                        whoseTurn,
+                        inFrontOfWhom,
+                        card
+                    )
+                }
 
             Collector ->
                 this === inFrontOfWhom &&
@@ -64,7 +73,7 @@ fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolea
             Mutator -> {
                 if (inFrontOfWhom.let {
                         (it.identity != Black || it.secretTask == Collector) &&
-                                it.willWin(whoseTurn, it, card)
+                                it.willWinInternal(whoseTurn, it, card)
                     }) {
                     return false
                 }
@@ -95,8 +104,17 @@ fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Boolea
  * @param card 情报牌
  */
 fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, card: Card): Int {
-    if (game!!.players.any { isPartnerOrSelf(it!!) && it.willWin(whoseTurn, inFrontOfWhom, card) }) return 600
-    if (game!!.players.any { isEnemy(it!!) && it.willWin(whoseTurn, inFrontOfWhom, card) }) return -600
+    if (whoseTurn.skills.any { it is BiYiShuangFei }) {
+        if (this === whoseTurn) { // 秦圆圆的回合，任何人赢了，秦圆圆都会赢
+            if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, card) }) return 600
+        } else { // 秦圆圆的回合，只有自己赢才是赢，队友赢也算输
+            if (game!!.players.any { it === this && it.willWinInternal(whoseTurn, inFrontOfWhom, card) }) return 600
+            if (game!!.players.any { it !== this && it!!.willWinInternal(whoseTurn, inFrontOfWhom, card) }) return -600
+        }
+    } else {
+        if (game!!.players.any { !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, card) }) return 600
+        if (game!!.players.any { isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, card) }) return -600
+    }
     var value = 0
     if (identity == Black) {
         if (secretTask == Collector && this === inFrontOfWhom) {
@@ -305,7 +323,8 @@ class FightPhaseResult(
     val cardType: card_type,
     val card: Card,
     val wuDaoTarget: Player?,
-    val value: Int
+    val value: Int,
+    val deltaValue: Int
 )
 
 fun Player.calFightPhase(
@@ -339,7 +358,8 @@ fun Player.calFightPhase(
             order[2] = Diao_Bao
         }
     }
-    var value = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+    val oldValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+    var value = oldValue
     var result: FightPhaseResult? = null
     val cards = availableCards.sortCards(identity)
     for (cardType in order) {
@@ -351,7 +371,7 @@ fun Player.calFightPhase(
                 Jie_Huo -> {
                     val newValue = calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard)
                     if (newValue > value) {
-                        result = FightPhaseResult(cardType, card, null, newValue)
+                        result = FightPhaseResult(cardType, card, null, newValue, newValue - oldValue)
                         value = newValue
                     }
                     break@loop
@@ -360,7 +380,7 @@ fun Player.calFightPhase(
                 Diao_Bao -> {
                     val newValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card)
                     if (newValue > value) {
-                        result = FightPhaseResult(cardType, card, null, newValue)
+                        result = FightPhaseResult(cardType, card, null, newValue, newValue - oldValue)
                         value = newValue
                     }
                 }
@@ -370,7 +390,7 @@ fun Player.calFightPhase(
                         val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
                         val newValueLeft = calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
                         if (newValueLeft > value) {
-                            result = FightPhaseResult(cardType, card, left, newValueLeft)
+                            result = FightPhaseResult(cardType, card, left, newValueLeft, newValueLeft - oldValue)
                             value = newValueLeft
                         }
                     }
@@ -378,7 +398,7 @@ fun Player.calFightPhase(
                         val right = e.inFrontOfWhom.getNextRightAlivePlayer()
                         val newValueRight = calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
                         if (newValueRight > value) {
-                            result = FightPhaseResult(cardType, card, right, newValueRight)
+                            result = FightPhaseResult(cardType, card, right, newValueRight, newValueRight - oldValue)
                             value = newValueRight
                         }
                     }
