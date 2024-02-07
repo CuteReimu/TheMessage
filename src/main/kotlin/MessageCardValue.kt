@@ -59,15 +59,6 @@ private fun Player.willWinInternal(whoseTurn: Player, inFrontOfWhom: Player, col
                 Black in colors && inFrontOfWhom.messageCards.count(Black) >= 2
             }
 
-            Stealer ->
-                this === whoseTurn && game!!.players.any {
-                    it !== this && it!!.willWinInternal(
-                        whoseTurn,
-                        inFrontOfWhom,
-                        colors
-                    )
-                }
-
             Collector ->
                 this === inFrontOfWhom &&
                         if (Red in colors) messageCards.count(Red) >= 2
@@ -149,7 +140,13 @@ fun Player.calculateMessageCardValue(
     checkThreeSame: Boolean = false
 ): Int {
     if (!checkThreeSame) {
-        if (whoseTurn.skills.any { it is BiYiShuangFei }) {
+        if (whoseTurn.identity == Black && whoseTurn.secretTask == Stealer) {
+            if (this === whoseTurn) { // 簒夺者的回合，任何人赢了，簒夺者都会赢
+                if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return 600
+            } else { // 簒夺者的回合，任何人赢了，都算作输
+                if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return -600
+            }
+        } else if (whoseTurn.skills.any { it is BiYiShuangFei }) {
             if (this === whoseTurn) { // 秦圆圆的回合，任何人赢了，秦圆圆都会赢
                 if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return 600
             } else { // 秦圆圆的回合，只有自己赢才是赢，队友赢也算输
