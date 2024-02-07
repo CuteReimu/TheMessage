@@ -95,7 +95,7 @@ class SouJi : ActiveSkill {
                     val builder = skill_sou_ji_b_tos.newBuilder()
                     builder.addAllCardIds(target.cards.filter(Black).map { it.id })
                     if (fsm.messageCard.isBlack() &&
-                        r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard) <= 0
+                        r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard) <= 10
                     ) builder.messageCard = true
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 3, TimeUnit.SECONDS)
