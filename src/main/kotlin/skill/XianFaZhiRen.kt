@@ -67,14 +67,15 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                     val builder2 = skill_xian_fa_zhi_ren_a_tos.newBuilder()
                     val targetAndCard = g.players.flatMap {
                         if (it!!.isPartnerOrSelf(r)) {
-                            if (it.messageCards.count(Black) >= 3)
-                                return@flatMap it.messageCards.filter(Black).map { card -> PlayerAndCard(it, card) }
-                        } else if (it.messageCards.count(Red) == 3) {
-                            return@flatMap it.messageCards.filter(Red).map { card -> PlayerAndCard(it, card) }
-                        } else if (it.messageCards.count(Blue) == 3) {
-                            return@flatMap it.messageCards.filter(Blue).map { card -> PlayerAndCard(it, card) }
+                            if (it.messageCards.count(Black) < 3) emptyList()
+                            else it.messageCards.filter(Black).map { card -> PlayerAndCard(it, card) }
+                        } else {
+                            listOf(Red, Blue).flatMap { c ->
+                                if (it.messageCards.count(c) == 3)
+                                    it.messageCards.filter(c).map { card -> PlayerAndCard(it, card) }
+                                else emptyList()
+                            }
                         }
-                        emptyList()
                     }.randomOrNull()
                     builder2.enable = targetAndCard != null
                     if (targetAndCard != null) {
@@ -82,7 +83,7 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                         builder2.cardId = targetAndCard.card.id
                     }
                     g.tryContinueResolveProtocol(r, builder2.build())
-                }, 3, TimeUnit.SECONDS)
+                }, 100, TimeUnit.MILLISECONDS)
             }
             return null
         }
@@ -215,10 +216,16 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                     }
                 }, r.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
+                val target = r.game!!.players.filter { it!!.alive && it.isEnemy(r) }.run {
+                    filter { !it!!.hasEverFaceUp }.ifEmpty { filter { !it!!.roleFaceUp } }.ifEmpty {
+                        if (fsm is FightPhaseIdle) filter { !it!!.hasNoSkillForFightPhase(fsm) }
+                        else this
+                    }.ifEmpty { this }
+                }.randomOrNull() ?: r
                 GameExecutor.post(r.game!!, {
                     val builder = skill_xian_fa_zhi_ren_b_tos.newBuilder()
-                    builder.targetPlayerId = r.getAlternativeLocation(defaultTarget.location)
-                    builder.faceUp = !defaultTarget.roleFaceUp && defaultTarget.isEnemy(r)
+                    builder.targetPlayerId = r.getAlternativeLocation(target.location)
+                    builder.faceUp = !target.roleFaceUp
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 3, TimeUnit.SECONDS)
             }
@@ -280,21 +287,28 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.roleFaceUp) return false
-            val g = player.game!!
             val target = e.inFrontOfWhom
-            if (!target.alive) return false
-            val card = target.messageCards.run {
-                if (target.isPartnerOrSelf(player)) {
-                    if (count(Black) >= 2 && Black in e.messageCard.colors)
-                        return@run filter(Black)
-                } else if (count(Red) == 2 && Red in e.messageCard.colors) {
-                    return@run target.messageCards.filter(Red)
-                } else if (count(Blue) == 2 && Blue in e.messageCard.colors) {
-                    return@run target.messageCards.filter(Blue)
+            val g = player.game!!
+            !player.roleFaceUp || return false
+            !g.players.any {
+                it!!.isPartnerOrSelf(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            } || return false
+            g.players.any {
+                it!!.isEnemy(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            } || target.isPartnerOrSelf(player) && target.willDie(e.messageCard) || return false
+            var cards =
+                e.messageCard.colors.filter { it != Black && target.messageCards.count(it) == 2 }.flatMap { color ->
+                    target.messageCards.filter { color in it.colors }.run {
+                        filter { !it.isBlack() }.ifEmpty { this }
+                    }
                 }
-                emptyList()
-            }.randomOrNull() ?: return false
+            if (cards.isEmpty() && e.messageCard.isBlack() && target.messageCards.count(Black) == 2) {
+                cards = target.messageCards.filter(Black).run {
+                    filter { it.isPureBlack() }.ifEmpty { this }
+                }
+            }
+            val card = cards.run { filter { player.identity !in it.colors }.ifEmpty { this } }
+                .randomOrNull() ?: return false
             GameExecutor.post(g, {
                 val builder2 = skill_xian_fa_zhi_ren_a_tos.newBuilder()
                 builder2.enable = true
