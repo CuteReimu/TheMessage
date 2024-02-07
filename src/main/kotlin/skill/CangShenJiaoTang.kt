@@ -1,11 +1,11 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.RobotPlayer.Companion.bestCard
+import com.fengsheng.RobotPlayer.Companion.sortCards
+import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -128,17 +128,33 @@ class CangShenJiaoTang : TriggeredSkill {
                 }, r.getWaitSeconds(timeoutSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
+                    var value = 0
+                    var selectedCard: Card? = null
+                    var asMessageCard = false
+                    val messageCards = event.inFrontOfWhom.messageCards.filter(Black).sortCards(r.identity)
+                    for (messageCard in messageCards) {
+                        // 回溯法
+                        val index = messageCards.indexOfFirst { c -> c.id == messageCard.id }
+                        event.inFrontOfWhom.messageCards.removeAt(index)
+                        val newValue1 = -r.calculateMessageCardValue(event.whoseTurn, event.inFrontOfWhom, messageCard)
+                        if (newValue1 > value) {
+                            value = newValue1
+                            selectedCard = messageCard
+                            asMessageCard = false
+                        }
+                        val newValue2 = r.calculateMessageCardValue(event.whoseTurn, r, messageCard)
+                        if (newValue1 + newValue2 > value) {
+                            value = newValue1 + newValue2
+                            selectedCard = messageCard
+                            asMessageCard = true
+                        }
+                        event.inFrontOfWhom.messageCards.add(index, messageCard)
+                    }
                     val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
-                    val take =
-                        if (r === event.inFrontOfWhom)
-                            !(r.identity == Black && r.secretTask in listOf(Killer, Pioneer, Sweeper))
-                        else if (r.isPartner(event.inFrontOfWhom))
-                            true
-                        else
-                            r.identity == Black && r.secretTask in listOf(Killer, Pioneer, Sweeper)
-                    if (take) {
+                    if (selectedCard != null) {
                         builder.enable = true
-                        builder.cardId = event.inFrontOfWhom.messageCards.filter(Black).bestCard(r.identity).id
+                        builder.cardId = selectedCard.id
+                        builder.asMessageCard = asMessageCard
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 3, TimeUnit.SECONDS)

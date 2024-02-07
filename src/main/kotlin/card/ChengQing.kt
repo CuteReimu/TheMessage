@@ -128,7 +128,7 @@ class ChengQing : Card {
             val p = (p1 + p2).randomOrNull() ?: return false
             GameExecutor.post(g, {
                 card.asCard(Cheng_Qing).execute(g, player, p.player, p.card.id)
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

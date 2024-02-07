@@ -80,7 +80,7 @@ class JinKouYiKai : ActiveSkill {
                     val builder = skill_jin_kou_yi_kai_b_tos.newBuilder()
                     val oldValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
                     val newValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, cards.first())
-                    builder.exchange = newValue > oldValue
+                    builder.exchange = newValue > oldValue + 10
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 3, TimeUnit.SECONDS)
             }

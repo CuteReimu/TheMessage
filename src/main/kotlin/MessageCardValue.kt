@@ -209,18 +209,14 @@ fun Player.calculateMessageCardValue(
             }
         } else {
             if (Black in colors) {
+                val useless = secretTask == Sweeper && inFrontOfWhom.messageCards.countTrueCard() > 1
                 value += when (inFrontOfWhom.messageCards.count(Black)) {
-                    0 -> 1
-                    1 -> 11
-                    else -> if (checkThreeSame) return 10 else -111
+                    0 -> if (useless) 0 else 1
+                    1 -> if (useless) 0 else 11
+                    else -> if (checkThreeSame) return 10 else if (this === inFrontOfWhom) -112 else 0
                 }
-                if (secretTask == Pioneer && this === inFrontOfWhom) {
-                    value += when (inFrontOfWhom.messageCards.count(Black)) {
-                        0 -> 1
-                        1 -> 11
-                        else -> if (checkThreeSame) return 10 else -111
-                    }
-                }
+                if (secretTask == Pioneer && this === inFrontOfWhom)
+                    value += 11
             }
         }
     } else {
