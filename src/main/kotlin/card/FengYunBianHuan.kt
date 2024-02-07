@@ -55,7 +55,7 @@ class FengYunBianHuan : Card {
         while (players.size > drawCards.size) {
             players.removeLast() // 兼容牌库抽完的情况
         }
-        players.forEach { it.weiBiSuccessfulRate = 4 }
+        players.forEach { it.weiBiFailRate = 0 }
         logger.info("${r}使用了${this}，翻开了${drawCards.joinToString()}")
         for (player in r.game!!.players) {
             if (player is HumanPlayer) {

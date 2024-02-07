@@ -175,10 +175,10 @@ class WeiBi : Card {
                 if (!valid) {
                     OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm)
                 } else if (hasCard(target, wantType)) {
-                    r.weiBiSuccessfulRate--
+                    r.weiBiFailRate++
                     executeWeiBi(fsm, r, target, card, wantType)
                 } else {
-                    r.weiBiSuccessfulRate = 4
+                    r.weiBiFailRate = 0
                     logger.info("${target}向${r}展示了所有手牌")
                     for (p in g.players) {
                         if (p is HumanPlayer) {
@@ -237,7 +237,7 @@ class WeiBi : Card {
                         it.cards.any { card -> card.type in availableCardType }
             }.randomOrNull() ?: return false
             val cardType =
-                if (Random.nextInt(4) >= player.weiBiSuccessfulRate) availableCardType.random() // N/4的概率纯随机
+                if (Random.nextInt(4) < player.weiBiFailRate) availableCardType.random() // N/4的概率纯随机
                 else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.random()
             GameExecutor.post(
                 player.game!!,

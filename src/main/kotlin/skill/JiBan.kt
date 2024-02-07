@@ -138,7 +138,7 @@ class JiBan : MainPhaseSkill() {
             val players =
                 if (seq != 0 || r.game!!.isEarly) availableTargets
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty {
-                    r.weiBiSuccessfulRate = 4
+                    r.weiBiFailRate = 0
                     availableTargets
                 } // 机器人优先选队友
             val player = players.random()!!
