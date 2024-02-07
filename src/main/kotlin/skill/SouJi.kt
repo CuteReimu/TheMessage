@@ -94,7 +94,9 @@ class SouJi : ActiveSkill {
                 GameExecutor.post(g, {
                     val builder = skill_sou_ji_b_tos.newBuilder()
                     builder.addAllCardIds(target.cards.filter(Black).map { it.id })
-                    if (fsm.messageCard.isBlack()) builder.messageCard = true
+                    if (fsm.messageCard.isBlack() &&
+                        r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard) <= 0
+                    ) builder.messageCard = true
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 3, TimeUnit.SECONDS)
             }
@@ -166,12 +168,12 @@ class SouJi : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
-            if (player.roleFaceUp) return false
-            if (!player.game!!.players.any {
-                    it!!.alive && player.isEnemy(it) && it.identity != Black && it.messageCards.count(it.identity) >= 2
-                }) return false
-            val players = player.game!!.players.filter { it!!.alive && player.isEnemy(it) }
-            val p = players.maxByOrNull { it!!.cards.size } ?: return false
+            !player.roleFaceUp || return false
+            player.game!!.players.anyoneWillWinOrDie(e) || return false
+            val p = player.game!!.players.filter { it!!.alive && player.isEnemy(it) }.run {
+                minOf { it!!.cards.count(Black) }.let { min -> filter { it!!.cards.count(Black) == min } }
+                    .ifEmpty { this }
+            }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_sou_ji_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(p.location)
