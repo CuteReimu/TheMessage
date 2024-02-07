@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.*
@@ -92,6 +93,33 @@ class BiFeng : TriggeredSkill {
             r.draw(2)
             event.valid = false
             return ResolveResult(fsm, true)
+        }
+    }
+
+    companion object {
+        fun ai(e: FightPhaseIdle): Boolean {
+            val player = e.whoseFightTurn
+            player.getSkillUseCount(SkillId.BI_FENG) == 0 || return false
+            for (type in listOf(Jie_Huo, Wu_Dao).shuffled()) {
+                !player.cannotPlayCard(type) || continue
+                for (card in player.cards) {
+                    val (ok, _) = player.canUseCardTypes(type, card)
+                    ok || continue
+                    GameExecutor.post(player.game!!, {
+                        if (type == Wu_Dao) {
+                            val target = listOf(
+                                e.inFrontOfWhom.getNextLeftAlivePlayer(),
+                                e.inFrontOfWhom.getNextRightAlivePlayer()
+                            ).random()
+                            card.asCard(type).execute(player.game!!, player, target)
+                        } else {
+                            card.asCard(type).execute(player.game!!, player)
+                        }
+                    }, 3, TimeUnit.SECONDS)
+                    return true
+                }
+            }
+            return false
         }
     }
 }

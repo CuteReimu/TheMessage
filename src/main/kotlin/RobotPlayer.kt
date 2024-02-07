@@ -136,7 +136,7 @@ class RobotPlayer : Player() {
         this === fsm.whoseFightTurn || return
         for (skill in skills) {
             val ai = aiSkillFightPhase1[skill.skillId]
-            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+            if (ai != null && ai.test(fsm, skill as? ActiveSkill)) return
         }
         if (!game!!.isEarly || this === fsm.whoseTurn || game!!.players.any {
                 if (isEnemy(it!!)) it.willWin(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
@@ -274,13 +274,14 @@ class RobotPlayer : Player() {
             LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) },
             YOU_DI_SHEN_RU to BiPredicate { e, skill -> YouDiShenRu.ai(e, skill) },
         )
-        private val aiSkillFightPhase1 = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
-            TOU_TIAN to BiPredicate { e, skill -> TouTian.ai(e, skill) },
-            JIE_DAO_SHA_REN to BiPredicate { e, skill -> JieDaoShaRen.ai(e, skill) },
-            RU_BI_ZHI_SHI to BiPredicate { e, skill -> RuBiZhiShi.ai(e, skill) },
-            JIN_KOU_YI_KAI to BiPredicate { e, skill -> JinKouYiKai.ai(e, skill) },
-            GUANG_FA_BAO to BiPredicate { e, skill -> GuangFaBao.ai(e, skill) },
-            DING_LUN to BiPredicate { e, skill -> DingLun.ai(e, skill) },
+        private val aiSkillFightPhase1 = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill?>>(
+            TOU_TIAN to BiPredicate { e, skill -> TouTian.ai(e, skill!!) },
+            JIE_DAO_SHA_REN to BiPredicate { e, skill -> JieDaoShaRen.ai(e, skill!!) },
+            RU_BI_ZHI_SHI to BiPredicate { e, skill -> RuBiZhiShi.ai(e, skill!!) },
+            JIN_KOU_YI_KAI to BiPredicate { e, skill -> JinKouYiKai.ai(e, skill!!) },
+            GUANG_FA_BAO to BiPredicate { e, skill -> GuangFaBao.ai(e, skill!!) },
+            DING_LUN to BiPredicate { e, skill -> DingLun.ai(e, skill!!) },
+            BI_FENG to BiPredicate { e, _ -> BiFeng.ai(e) },
         )
         private val aiSkillFightPhase2 = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
             JI_ZHI to BiPredicate { e, skill -> JiZhi.ai(e, skill) },
