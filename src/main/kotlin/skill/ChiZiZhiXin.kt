@@ -105,6 +105,7 @@ class ChiZiZhiXin : TriggeredSkill {
                         }
                     }
                     val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
+                    builder2.drawCard = true
                     card?.let {
                         builder2.drawCard = false
                         builder2.cardId = it.id
