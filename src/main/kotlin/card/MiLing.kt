@@ -8,6 +8,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Mi_Ling
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role
 import com.fengsheng.skill.LengXueXunLian
@@ -310,24 +311,55 @@ class MiLing : Card {
     }
 
     companion object {
-        fun ai(e: SendPhaseStart, card: Card): Boolean {
+        fun ai(e: SendPhaseStart, card: Card): Pair<Double, () -> Unit>? {
             card as MiLing
             val player = e.whoseTurn
-            !player.cannotPlayCard(Mi_Ling) || return false
-            val target = player.game!!.players.filter {
-                it !== player && it!!.alive && (player.game!!.isEarly || it.isEnemy(player))
-                        && it.findSkill(LENG_XUE_XUN_LIAN) == null && it.cards.isNotEmpty()
-            }.randomOrNull() ?: return false
-            val secret =
-                if (player.identity == color.Black) (0..2).random()
-                else (0..2).first { card.secret[it] == player.identity }
-            GameExecutor.post(
-                player.game!!,
-                { card.execute(player.game!!, player, target, secret) },
-                2,
-                TimeUnit.SECONDS
-            )
-            return true
+            !player.cannotPlayCard(Mi_Ling) || return null
+            var value = Double.NEGATIVE_INFINITY
+            var target: Player? = null
+            var color = Black
+            for (p in player.game!!.players) {
+                p!!.alive && p !== player && (player.game!!.isEarly || p.isEnemy(player))
+                        && p.findSkill(LENG_XUE_XUN_LIAN) == null && p.cards.isNotEmpty() || continue
+                val players = player.game!!.sortedFrom(player.game!!.players.filter { it!!.alive }, p.location)
+                for (c in listOf(Black, Red, Blue)) {
+                    var sum = 0.0
+                    var n = 0.0
+                    var currentPercent = 1.0
+                    for (i in players.indices) {
+                        val inFrontOfWhom = players[(i + 1) % players.size]
+                        var m = currentPercent
+                        if (player.isPartnerOrSelf(inFrontOfWhom)) m *= 1.2
+                        val v = player.calculateMessageCardValue(player, inFrontOfWhom, listOf(c))
+                        sum += v * m
+                        n += m
+                    }
+                    currentPercent = 1.0
+                    for (i in (players.size - 1) downTo 0) {
+                        val inFrontOfWhom = players[(i + 1) % players.size]
+                        var m = currentPercent
+                        if (player.isPartnerOrSelf(inFrontOfWhom)) m *= 1.2
+                        val v = player.calculateMessageCardValue(player, inFrontOfWhom, listOf(c))
+                        sum += v * m
+                        n += m
+                    }
+                    if (sum / n / 1.5 > value) {
+                        value = sum / n / 1.5
+                        target = p
+                        color = c
+                    }
+                }
+            }
+            target ?: return null
+            val secret = (0..2).first { card.secret[it] == color }
+            return (value + 10.0) to {
+                GameExecutor.post(
+                    player.game!!,
+                    { card.execute(player.game!!, player, target, secret) },
+                    2,
+                    TimeUnit.SECONDS
+                )
+            }
         }
     }
 }
