@@ -133,10 +133,7 @@ class CangShenJiaoTang : TriggeredSkill {
                     var asMessageCard = false
                     val messageCards = event.inFrontOfWhom.messageCards.filter(Black).sortCards(r.identity)
                     for (messageCard in messageCards) {
-                        // 回溯法
-                        val index = messageCards.indexOfFirst { c -> c.id == messageCard.id }
-                        event.inFrontOfWhom.messageCards.removeAt(index)
-                        val newValue1 = -r.calculateMessageCardValue(event.whoseTurn, event.inFrontOfWhom, messageCard)
+                        val newValue1 = r.calculateRemoveCardValue(event.whoseTurn, event.inFrontOfWhom, messageCard)
                         if (newValue1 > value) {
                             value = newValue1
                             selectedCard = messageCard
@@ -148,7 +145,6 @@ class CangShenJiaoTang : TriggeredSkill {
                             selectedCard = messageCard
                             asMessageCard = true
                         }
-                        event.inFrontOfWhom.messageCards.add(index, messageCard)
                     }
                     val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
                     if (selectedCard != null) {

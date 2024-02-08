@@ -115,19 +115,22 @@ class ChengQing : Card {
             !(player.identity == Black && player.secretTask in listOf(Killer, Pioneer, Sweeper)) || return false
             !player.cannotPlayCard(Cheng_Qing) || return false
             val g = player.game!!
-            val p1 = (if (g.isEarly) listOf(player)
-            else g.players.filter { p -> p!!.alive && p.isPartnerOrSelf(player) }) // 伙伴或自己
-                .flatMap { p -> p!!.messageCards.filter(Black).map { c -> PlayerAndCard(p, c) } }.run { // 黑情报
-                    if (player.identity == Black) this else filterNot { player.identity in it.card.colors } // 非神秘人排除自己身份颜色的情报
+            var value = 10
+            var playerAndCard: PlayerAndCard? = null
+            for (p in g.sortedFrom(g.players, player.location)) {
+                p.alive && (p === player || !g.isEarly) && p.isPartnerOrSelf(player) || continue
+                for (c in p.messageCards.toList()) {
+                    c.isBlack() || continue
+                    val v = p.calculateRemoveCardValue(player, p, c)
+                    if (v > value) {
+                        value = v
+                        playerAndCard = PlayerAndCard(p, c)
+                    }
                 }
-            val p2 = g.players.filter { p -> p!!.alive && p.isEnemy(player) && p.identity != Black } // 敌人
-                .flatMap { p ->
-                    p!!.messageCards.filter { Black in it.colors && p.identity in it.colors } // 黑情报且有敌人身份颜色
-                        .map { c -> PlayerAndCard(p, c) }
-                }
-            val p = (p1 + p2).randomOrNull() ?: return false
+            }
+            playerAndCard ?: return false
             GameExecutor.post(g, {
-                card.asCard(Cheng_Qing).execute(g, player, p.player, p.card.id)
+                card.asCard(Cheng_Qing).execute(g, player, playerAndCard.player, playerAndCard.card.id)
             }, 3, TimeUnit.SECONDS)
             return true
         }

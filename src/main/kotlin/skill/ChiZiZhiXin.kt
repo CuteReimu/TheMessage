@@ -1,9 +1,8 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.RobotPlayer.Companion.bestCard
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
-import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -96,15 +95,19 @@ class ChiZiZhiXin : TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
-                    builder2.drawCard = true
-                    if (r.identity != Black && r.identity in event.messageCard.colors) {
-                        val cards = r.cards.filter { r.identity in it.colors && !it.isBlack() }
-                            .ifEmpty { r.cards.filter { r.identity in it.colors } }
-                        if (cards.isNotEmpty()) {
-                            builder2.cardId = cards.bestCard(r.identity, true).id
-                            builder2.drawCard = false
+                    var value = 30
+                    var card: Card? = null
+                    for (c in r.cards.filter { it.hasSameColor(event.messageCard) }.sortCards(r.identity, true)) {
+                        val v = r.calculateMessageCardValue(event.whoseTurn, event.sender, c)
+                        if (v > value) {
+                            value = v
+                            card = c
                         }
+                    }
+                    val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
+                    card?.let {
+                        builder2.drawCard = false
+                        builder2.cardId = it.id
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 3, TimeUnit.SECONDS)

@@ -127,6 +127,17 @@ fun Player.calculateMessageCardValue(
 ) = calculateMessageCardValue(whoseTurn, inFrontOfWhom, card.colors, checkThreeSame)
 
 /**
+ * 计算移除一张情报牌的价值
+ */
+fun Player.calculateRemoveCardValue(whoseTurn: Player, from: Player, card: Card): Int {
+    val index = from.messageCards.indexOfFirst { it.id == card.id }
+    from.messageCards.removeAt(index)
+    return -calculateMessageCardValue(whoseTurn, from, card).apply {
+        from.messageCards.add(index, card)
+    }
+}
+
+/**
  * 计算情报牌的价值
  *
  * @param whoseTurn 当前回合玩家
@@ -139,8 +150,8 @@ fun Player.calculateMessageCardValue(
     colors: List<color>,
     checkThreeSame: Boolean = false
 ): Int {
+    val disturber = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Disturber }
     if (!checkThreeSame) {
-        val disturber = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Disturber }
         if (whoseTurn.identity == Black && whoseTurn.secretTask == Stealer) {
             if (this === whoseTurn) { // 簒夺者的回合，任何人赢了，簒夺者都会赢
                 if (game!!.players.any { it !== disturber && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
@@ -149,19 +160,26 @@ fun Player.calculateMessageCardValue(
                 if (game!!.players.any { it !== disturber && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
                     return -600
             }
-            if (disturber != null && disturber.willWinInternal(whoseTurn, inFrontOfWhom, colors))
-                return if (disturber === this) 300 else -300
         } else if (whoseTurn.skills.any { it is BiYiShuangFei }) {
-            if (this === whoseTurn) { // 秦圆圆的回合，任何人赢了，秦圆圆都会赢
-                if (game!!.players.any { it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) }) return 600
-            } else { // 秦圆圆的回合，只有自己赢才是赢，队友赢也算输
-                if (this !== disturber && willWinInternal(whoseTurn, inFrontOfWhom, colors))
-                    return 600
+            if (this === whoseTurn) { // 秦圆圆的回合，任何男性角色赢了，秦圆圆都会赢
                 if (game!!.players.any {
-                        it !== this && it !== disturber && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                        it !== disturber && (it === this || it!!.isMale)
+                                && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                    }) return 600
+                if (game!!.players.any {
+                        it !== disturber && !(it === this || it!!.isMale)
+                                && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return -600
-                if (disturber != null && disturber.willWinInternal(whoseTurn, inFrontOfWhom, colors))
-                    return if (disturber === this) 300 else -300
+            } else if (identity == Black) { // 秦圆圆的回合，神秘人没关系，反正没有队友
+                if (game!!.players.any {
+                        it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                    }) return 600
+                if (game!!.players.any {
+                        it !== disturber && isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                    }) return -600
+            } else if (inFrontOfWhom.identity in colors && inFrontOfWhom.messageCards.count(inFrontOfWhom.identity) >= 2) {
+                return if (inFrontOfWhom === this || isPartner(inFrontOfWhom) && !inFrontOfWhom.isMale) 600
+                else -600
             }
         } else {
             if (game!!.players.any {
@@ -170,10 +188,10 @@ fun Player.calculateMessageCardValue(
             if (game!!.players.any {
                     it !== disturber && isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                 }) return -600
-            if (disturber != null && disturber.willWinInternal(whoseTurn, inFrontOfWhom, colors))
-                return if (disturber === this) 300 else -300
         }
     }
+    if (disturber != null && disturber.willWinInternal(whoseTurn, inFrontOfWhom, colors))
+        return if (disturber === this) 300 else -300
     var value = 0
     if (identity == Black) {
         if (secretTask == Collector && this === inFrontOfWhom) {
