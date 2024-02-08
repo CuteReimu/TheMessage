@@ -163,7 +163,7 @@ class HuoXin : MainPhaseSkill() {
             if (e.whoseTurn.getSkillUseCount(SkillId.HUO_XIN) > 0) return false
             val isEarly = e.whoseTurn.game!!.isEarly
             val target = e.whoseTurn.game!!.players.filter {
-                it!!.alive && (isEarly || it.isEnemy(e.whoseTurn)) && it.cards.isNotEmpty()
+                it !== e.whoseTurn && it!!.alive && (isEarly || it.isEnemy(e.whoseTurn)) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 e.whoseTurn.weiBiFailRate = 0
