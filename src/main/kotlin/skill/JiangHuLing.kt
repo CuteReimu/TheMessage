@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.Card
 import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
@@ -162,23 +163,25 @@ class JiangHuLing : TriggeredSkill {
             val p = event.sender
             if (p is RobotPlayer) {
                 val target = event.inFrontOfWhom
-                val card =
-                    target.messageCards.filter { (p.isEnemy(target) || p.identity !in it.colors) && color in it.colors }
-                        .run { filter { it.isBlack() }.ifEmpty { this } }.randomOrNull()
-                GameExecutor.post(
-                    p.game!!,
-                    {
-                        if (card != null) {
-                            val builder = skill_jiang_hu_ling_b_tos.newBuilder()
-                            builder.cardId = card.id
-                            p.game!!.tryContinueResolveProtocol(p, builder.build())
-                        } else {
-                            p.game!!.tryContinueResolveProtocol(p, end_receive_phase_tos.getDefaultInstance())
-                        }
-                    },
-                    2,
-                    TimeUnit.SECONDS
-                )
+                var value = 0
+                var card: Card? = null
+                for (c in target.messageCards.filter { color in it.colors }) {
+                    var v = p.calculateRemoveCardValue(event.whoseTurn, target, c)
+                    if (c.isBlack()) v += 10
+                    if (v >= value) {
+                        value = v
+                        card = c
+                    }
+                }
+                GameExecutor.post(p.game!!, {
+                    if (card != null) {
+                        val builder = skill_jiang_hu_ling_b_tos.newBuilder()
+                        builder.cardId = card.id
+                        p.game!!.tryContinueResolveProtocol(p, builder.build())
+                    } else {
+                        p.game!!.tryContinueResolveProtocol(p, end_receive_phase_tos.getDefaultInstance())
+                    }
+                }, 2, TimeUnit.SECONDS)
             }
             return null
         }

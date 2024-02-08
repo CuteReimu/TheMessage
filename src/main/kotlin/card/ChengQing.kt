@@ -121,7 +121,7 @@ class ChengQing : Card {
                 p.alive && (p === player || !g.isEarly) && p.isPartnerOrSelf(player) || continue
                 for (c in p.messageCards.toList()) {
                     c.isBlack() || continue
-                    val v = p.calculateRemoveCardValue(player, p, c)
+                    val v = player.calculateRemoveCardValue(player, p, c)
                     if (v > value) {
                         value = v
                         playerAndCard = PlayerAndCard(p, c)

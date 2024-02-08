@@ -134,8 +134,8 @@ class CangShenJiaoTang : TriggeredSkill {
                     val messageCards = event.inFrontOfWhom.messageCards.filter(Black).sortCards(r.identity)
                     for (messageCard in messageCards) {
                         val newValue1 = r.calculateRemoveCardValue(event.whoseTurn, event.inFrontOfWhom, messageCard)
-                        if (newValue1 > value) {
-                            value = newValue1
+                        if (newValue1 + 10 >= value) {
+                            value = newValue1 + 10
                             selectedCard = messageCard
                             asMessageCard = false
                         }
