@@ -362,8 +362,8 @@ fun Player.calSendMessageCard(
         val targets =
             if (result.dir == Up) listOf(this, result.target)
             else game!!.players.filter { it!!.alive }
-        for (player in game!!.sortedFrom(targets, location)) {
-            val v = calculateMessageCardValue(whoseTurn, player, result.card)
+        for (player in targets.shuffled()) {
+            val v = calculateMessageCardValue(whoseTurn, player!!, result.card)
             if (v > maxValue) {
                 maxValue = v
                 lockTarget = player

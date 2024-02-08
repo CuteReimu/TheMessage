@@ -318,7 +318,7 @@ class MiLing : Card {
             var value = Double.NEGATIVE_INFINITY
             var target: Player? = null
             var color = Black
-            for (p in player.game!!.players) {
+            for (p in player.game!!.players.shuffled()) {
                 p!!.alive && p !== player && (player.game!!.isEarly || p.isEnemy(player))
                         && p.findSkill(LENG_XUE_XUN_LIAN) == null && p.cards.isNotEmpty() || continue
                 val players = player.game!!.sortedFrom(player.game!!.players.filter { it!!.alive }, p.location)

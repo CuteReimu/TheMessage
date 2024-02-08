@@ -188,9 +188,9 @@ class JieDaoShaRen : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
-            val target = player.game!!.sortedFrom(player.game!!.players.filter {
+            val target = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
-            }, player.location).maxByOrNull { it.cards.count(Black).toDouble() / it.cards.size } ?: return false
+            }.shuffled().maxByOrNull { it!!.cards.count(Black).toDouble() / it.cards.size } ?: return false
             GameExecutor.post(player.game!!, {
                 val builder = skill_jie_dao_sha_ren_a_tos.newBuilder()
                 builder.targetPlayerId = player.getAlternativeLocation(target.location)
