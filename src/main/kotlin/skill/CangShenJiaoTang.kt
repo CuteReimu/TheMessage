@@ -139,6 +139,7 @@ class CangShenJiaoTang : TriggeredSkill {
                             selectedCard = messageCard
                             asMessageCard = false
                         }
+                        r !== event.inFrontOfWhom || continue
                         val newValue2 = r.calculateMessageCardValue(event.whoseTurn, r, messageCard)
                         if (newValue1 + newValue2 > value) {
                             value = newValue1 + newValue2
