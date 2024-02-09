@@ -85,7 +85,8 @@ class DiaoHuLiShan : Card {
                 it!!.alive && it.isEnemy(player)
             }.randomOrNull() ?: return false
             val isSkills = ArrayList<Boolean>()
-            if (p.cards.isNotEmpty() && !p.skills.any { it is CannotPlayCard }) isSkills.add(false)
+            if (p.cards.any { it.type in WeiBi.availableCardType }
+                && !p.skills.any { it is CannotPlayCard }) isSkills.add(false)
             if ((!p.roleFaceUp || p.isPublicRole) &&
                 p.skills.any { it is ActiveSkill && it !is MainPhaseSkill }
             ) isSkills.add(true)
