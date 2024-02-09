@@ -120,7 +120,7 @@ class LiYou : Card {
                         }
                     }
                 } else {
-                    var value = 0.9
+                    var value = 0.999
                     for (p in game.sortedFrom(game.players, player.location)) {
                         p.alive || continue
                         val result = player.calculateMessageCardValue(player, p, true)

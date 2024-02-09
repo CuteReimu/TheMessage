@@ -156,7 +156,7 @@ class RobotPlayer : Player() {
                 else it.willDie(fsm.messageCard)
             }) {
             val result = calFightPhase(fsm)
-            if (result != null && result.deltaValue >= 10) {
+            if (result != null && result.deltaValue > 10) {
                 GameExecutor.post(game!!, {
                     if (result.cardType == Wu_Dao)
                         result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
