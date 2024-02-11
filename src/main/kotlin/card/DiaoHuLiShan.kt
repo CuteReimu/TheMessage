@@ -11,9 +11,12 @@ import com.fengsheng.protos.Common.card_type.Diao_Hu_Li_Shan
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
-import com.fengsheng.skill.*
+import com.fengsheng.skill.CannotPlayCard
+import com.fengsheng.skill.InvalidSkill
+import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class DiaoHuLiShan : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -81,16 +84,27 @@ class DiaoHuLiShan : Card {
             val player = e.whoseTurn
             !player.cannotPlayCard(Diao_Hu_Li_Shan) || return false
             !player.game!!.isEarly || return false
-            val p = player.game!!.players.filter {
+            fun countImportantCard(p: Player): Int {
+                return p.cards.count { c -> c.type in WeiBi.availableCardType }
+            }
+
+            val enemies = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player)
-            }.randomOrNull() ?: return false
-            val isSkills = ArrayList<Boolean>()
-            if (p.cards.any { it.type in WeiBi.availableCardType }
-                && !p.skills.any { it is CannotPlayCard }) isSkills.add(false)
-            if ((!p.roleFaceUp || p.isPublicRole) &&
-                p.skills.any { it is ActiveSkill && it !is MainPhaseSkill }
-            ) isSkills.add(true)
-            val isSkill = isSkills.randomOrNull() ?: return false
+            }.filterNotNull().shuffled()
+
+            var p = enemies.maxByOrNull(::countImportantCard)
+            var isSkill = false
+            if (p != null && countImportantCard(p) == 0)
+                p = null
+            if (p == null || countImportantCard(p) <= 1 && Random.nextBoolean()) {
+                val p2 = enemies.find { !it.hasEverFaceUp }
+                    ?: enemies.find { !it.roleFaceUp }
+                if (p2 != null) {
+                    isSkill = true
+                    p = p2
+                }
+            }
+            p ?: return false
             GameExecutor.post(player.game!!, {
                 card.asCard(Diao_Hu_Li_Shan).execute(player.game!!, player, p, isSkill)
             }, 3, TimeUnit.SECONDS)

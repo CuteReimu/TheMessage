@@ -359,14 +359,38 @@ fun Player.calSendMessageCard(
     if (result.card.canLock() || skills.any { it is MustLockOne || it is QiangYingXiaLing }) {
         var maxValue = Int.MIN_VALUE
         var lockTarget: Player? = null
-        val targets =
-            if (result.dir == Up) listOf(this, result.target)
-            else game!!.players.filter { it!!.alive }
-        for (player in targets.shuffled()) {
-            val v = calculateMessageCardValue(whoseTurn, player!!, result.card)
-            if (v > maxValue) {
-                maxValue = v
-                lockTarget = player
+        when (result.dir) {
+            Left -> {
+                val targets = game!!.sortedFrom(game!!.players.filter { it!!.alive }, location)
+                for (i in listOf(0) + ((targets.size - 1) downTo 1)) {
+                    val target = targets[i]
+                    val v = calculateMessageCardValue(whoseTurn, target, result.card)
+                    if (v > maxValue) {
+                        maxValue = v
+                        lockTarget = target
+                    }
+                }
+            }
+
+            Right -> {
+                val targets = game!!.sortedFrom(game!!.players.filter { it!!.alive }, location)
+                for (target in targets) {
+                    val v = calculateMessageCardValue(whoseTurn, target, result.card)
+                    if (v > maxValue) {
+                        maxValue = v
+                        lockTarget = target
+                    }
+                }
+            }
+
+            else -> {
+                for (player in listOf(this, result.target)) {
+                    val v = calculateMessageCardValue(whoseTurn, player, result.card)
+                    if (v > maxValue) {
+                        maxValue = v
+                        lockTarget = player
+                    }
+                }
             }
         }
         lockTarget?.let { if (result.dir == Up && it.isPartner(this) || it !== this) result.lockedPlayers = listOf(it) }
