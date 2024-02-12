@@ -7,9 +7,7 @@ import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.card_type.Po_Yi
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.po_yi_show_toc
-import com.fengsheng.protos.Fengsheng.use_po_yi_toc
+import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -70,11 +68,8 @@ class PoYi : Card {
                             if (builder.waitingSecond == 0) 0
                             else player.getWaitSeconds(builder.waitingSecond + 2)
                         player.timeout = GameExecutor.post(r.game!!, {
-                            if (player.checkSeq(seq2)) {
-                                player.incrSeq()
-                                showAndDrawCard(false)
-                                r.game!!.resolve(sendPhase)
-                            }
+                            if (player.checkSeq(seq2))
+                                r.game!!.tryContinueResolveProtocol(r, po_yi_show_tos.getDefaultInstance())
                         }, waitingSecond.toLong(), TimeUnit.SECONDS)
                     }
                     player.send(builder.build())
@@ -82,16 +77,16 @@ class PoYi : Card {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val show = sendPhase.messageCard.colors.contains(color.Black)
-                    showAndDrawCard(show)
-                    r.game!!.resolve(sendPhase.copy(isMessageCardFaceUp = show))
+                    val builder2 = po_yi_show_tos.newBuilder()
+                    builder2.show = sendPhase.messageCard.isBlack()
+                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 1, TimeUnit.SECONDS)
             }
             return null
         }
 
         override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
-            if (message !is Fengsheng.po_yi_show_tos) {
+            if (message !is po_yi_show_tos) {
                 logger.error("现在正在结算破译")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算破译")
                 return null
@@ -101,7 +96,7 @@ class PoYi : Card {
                 (player as? HumanPlayer)?.sendErrorMessage("你不是破译的使用者")
                 return null
             }
-            if (message.show && !sendPhase.messageCard.colors.contains(color.Black)) {
+            if (message.show && !sendPhase.messageCard.isBlack()) {
                 logger.error("非黑牌不能翻开")
                 (player as? HumanPlayer)?.sendErrorMessage("非黑牌不能翻开")
                 return null
