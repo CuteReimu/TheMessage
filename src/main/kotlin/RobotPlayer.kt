@@ -347,12 +347,12 @@ class RobotPlayer : Player() {
         )
 
         val cardOrder = mapOf(
-            Wei_Bi to 1,
-            Jie_Huo to 2,
-            Wu_Dao to 3,
-            Diao_Bao to 4,
-            Feng_Yun_Bian_Huan to 5,
-            Li_You to 6,
+            Jie_Huo to 1,
+            Wu_Dao to 2,
+            Diao_Bao to 3,
+            Feng_Yun_Bian_Huan to 4,
+            Li_You to 5,
+            Wei_Bi to 6,
             Cheng_Qing to 7,
             Mi_Ling to 8,
             Shi_Tan to 9,

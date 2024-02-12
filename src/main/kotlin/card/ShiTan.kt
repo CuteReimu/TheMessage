@@ -233,7 +233,8 @@ class ShiTan : Card {
                 player.game!!.isEarly ->
                     player.game!!.players.filter {
                         it !== player && it!!.alive && (!it.roleFaceUp ||
-                                (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null))
+                                (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
+                                it.cards.isNotEmpty() // 不对没有手牌的人使用
                     }
 
                 yaPao === player ->

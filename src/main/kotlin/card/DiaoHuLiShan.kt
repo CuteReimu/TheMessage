@@ -97,8 +97,9 @@ class DiaoHuLiShan : Card {
             if (p != null && countImportantCard(p) == 0)
                 p = null
             if (p == null || countImportantCard(p) <= 1 && Random.nextBoolean()) {
-                val p2 = enemies.find { !it.hasEverFaceUp }
-                    ?: enemies.find { !it.roleFaceUp }
+                val p2 = enemies.filter {
+                    it.skills.any { s -> s.isInitialSkill }
+                }.run { find { !it.hasEverFaceUp } ?: find { !it.roleFaceUp } }
                 if (p2 != null) {
                     isSkill = true
                     p = p2

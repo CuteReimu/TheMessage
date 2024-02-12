@@ -6,6 +6,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
+import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.phase.Main_Phase
@@ -56,6 +57,7 @@ class FengYunBianHuan : Card {
             players.removeLast() // 兼容牌库抽完的情况
         }
         players.forEach { it.weiBiFailRate = 0 }
+        g.turn += g.players.size
         logger.info("${r}使用了${this}，翻开了${drawCards.joinToString()}")
         for (player in r.game!!.players) {
             if (player is HumanPlayer) {
@@ -194,8 +196,14 @@ class FengYunBianHuan : Card {
                     builder.cardId = card.id
                     builder.asMessageCard = true
                 } else {
-                    builder.cardId = drawCards.bestCard(r.identity).id
-                    builder.asMessageCard = false
+                    if (r === mainPhaseIdle.whoseTurn) {
+                        builder.cardId = drawCards.filter { it.type == Wei_Bi }
+                            .ifEmpty { drawCards }.bestCard(r.identity).id
+                        builder.asMessageCard = false
+                    } else {
+                        builder.cardId = drawCards.bestCard(r.identity).id
+                        builder.asMessageCard = false
+                    }
                 }
             }
             r.game!!.tryContinueResolveProtocol(r, builder.build())

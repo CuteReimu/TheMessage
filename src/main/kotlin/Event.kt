@@ -49,7 +49,7 @@ class SendPhaseStartEvent(override val whoseTurn: Player) : Event()
 /**
  * 选择接收情报事件
  */
-class ChooseReceiveCardEvent(override val whoseTurn: Player, val inFrontOfWhom: Player) : Event()
+class ChooseReceiveCardEvent(override val whoseTurn: Player, val inFrontOfWhom: Player, val messageCard: Card) : Event()
 
 /**
  * 弃牌事件

@@ -106,28 +106,24 @@ class LiYou : Card {
             val game = player.game!!
             val nextCard = game.deck.peek(1).firstOrNull()
             var target: Player? = null
-            if (game.isEarly) {
-                target = player
-            } else {
-                if (nextCard != null && (player.getSkillUseCount(HUO_XIN) > 0 || player.getSkillUseCount(YUN_CHOU_WEI_WO) > 0)) {
-                    var value = 9
-                    for (p in game.sortedFrom(game.players, player.location)) {
-                        p.alive || continue
-                        val result = player.calculateMessageCardValue(player, p, nextCard, true)
-                        if (result > value) {
-                            value = result
-                            target = p
-                        }
+            if (nextCard != null && (player.getSkillUseCount(HUO_XIN) > 0 || player.getSkillUseCount(YUN_CHOU_WEI_WO) > 0)) {
+                var value = 9
+                for (p in game.sortedFrom(game.players, player.location)) {
+                    p.alive || continue
+                    val result = player.calculateMessageCardValue(player, p, nextCard, true)
+                    if (result > value) {
+                        value = result
+                        target = p
                     }
-                } else {
-                    var value = 0.999
-                    for (p in game.sortedFrom(game.players, player.location)) {
-                        p.alive || continue
-                        val result = player.calculateMessageCardValue(player, p, true)
-                        if (result > value) {
-                            value = result
-                            target = p
-                        }
+                }
+            } else {
+                var value = 0.999
+                for (p in game.sortedFrom(game.players, player.location)) {
+                    p.alive || continue
+                    val result = player.calculateMessageCardValue(player, p, true)
+                    if (result > value) {
+                        value = result
+                        target = p
                     }
                 }
             }

@@ -59,6 +59,12 @@ class QiangLing : TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
+                    if (event is ChooseReceiveCardEvent) {
+                        if (!r.willWin(event.whoseTurn, r, event.messageCard) && r.willDie(event.messageCard)) {
+                            r.game!!.tryContinueResolveProtocol(r, skill_qiang_ling_tos.getDefaultInstance())
+                            return@post
+                        }
+                    }
                     val result = listOf(Jie_Huo, Diao_Bao, Wu_Dao)
                         .filterNot { r.cannotPlayCard(it) }.run {
                             when (size) {
