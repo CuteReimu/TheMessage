@@ -42,10 +42,16 @@ fun Player.willDie(colors: List<color>) = messageCards.count(Black) >= 2 && Blac
 fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card) =
     calculateMessageCardValue(whoseTurn, inFrontOfWhom, card) >= 600
 
-private fun Player.willWinInternal(whoseTurn: Player, inFrontOfWhom: Player, colors: List<color>): Boolean {
+private fun Player.willWinInternal(
+    whoseTurn: Player,
+    inFrontOfWhom: Player,
+    colors: List<color>,
+    partnerTogether: Boolean = true
+): Boolean {
     if (!alive) return false
     if (identity != Black) {
-        return isPartnerOrSelf(inFrontOfWhom) && identity in colors && inFrontOfWhom.messageCards.count(identity) >= 2
+        return (if (partnerTogether) isPartnerOrSelf(inFrontOfWhom) else this === inFrontOfWhom)
+                && identity in colors && inFrontOfWhom.messageCards.count(identity) >= 2
     } else {
         return when (secretTask) {
             Killer -> {
@@ -72,9 +78,9 @@ private fun Player.willWinInternal(whoseTurn: Player, inFrontOfWhom: Player, col
                     }) {
                     return false
                 }
-                if (Red in colors) messageCards.count(Red) >= 2
-                else if (Blue in colors) messageCards.count(Blue) >= 2
-                else false
+                if (Red in colors && inFrontOfWhom.messageCards.count(Red) >= 2) return true
+                if (Blue in colors && inFrontOfWhom.messageCards.count(Blue) >= 2) return true
+                false
             }
 
             Pioneer ->
@@ -164,11 +170,11 @@ fun Player.calculateMessageCardValue(
             if (this === whoseTurn) { // 秦圆圆的回合，任何男性角色赢了，秦圆圆都会赢
                 if (game!!.players.any {
                         it !== disturber && (it === this || it!!.isMale)
-                                && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                                && it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
                     }) return 600
                 if (game!!.players.any {
                         it !== disturber && !(it === this || it!!.isMale)
-                                && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                                && it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
                     }) return -600
             } else if (identity == Black) { // 秦圆圆的回合，神秘人没关系，反正没有队友
                 if (game!!.players.any {

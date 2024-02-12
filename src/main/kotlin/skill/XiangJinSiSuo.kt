@@ -1,7 +1,10 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.count
 import com.fengsheng.phase.ReceivePhaseIdle
+import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.direction.Up
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -51,9 +54,25 @@ class XiangJinSiSuo : TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     val builder = skill_xiang_jin_si_suo_a_tos.newBuilder()
-                    r.game!!.players.filter { it!!.alive }.randomOrNull()?.let {
-                        builder.enable = true
-                        builder.targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
+                    builder.enable = true
+                    builder.targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
+                    if (event.dir == Up && r.identity != Black && event.targetPlayer.identity == r.identity &&
+                        event.sender.identity == r.identity && r.identity in event.messageCard.colors
+                    ) {
+                        val other = if (r === event.sender) event.targetPlayer else event.sender
+                        val count1 = r.messageCards.count(r.identity)
+                        val count2 = other.messageCards.count(r.identity)
+                        val countB1 = r.messageCards.count(Black)
+                        val countB2 = other.messageCards.count(Black)
+                        if (count1 > count2) {
+                            builder.targetPlayerId = 0
+                        } else if (count1 < count2) {
+                            builder.targetPlayerId = r.getAlternativeLocation(other.location)
+                        } else if (countB1 > countB2) {
+                            builder.targetPlayerId = r.getAlternativeLocation(other.location)
+                        } else {
+                            builder.targetPlayerId = 0
+                        }
                     }
                     r.game!!.tryContinueResolveProtocol(r, builder.build())
                 }, 1, TimeUnit.SECONDS)
