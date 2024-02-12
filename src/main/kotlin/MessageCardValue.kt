@@ -169,11 +169,11 @@ fun Player.calculateMessageCardValue(
         } else if (whoseTurn.skills.any { it is BiYiShuangFei }) {
             if (this === whoseTurn) { // 秦圆圆的回合，任何男性角色赢了，秦圆圆都会赢
                 if (game!!.players.any {
-                        it !== disturber && (it === this || it!!.isMale)
+                        it !== disturber && (isPartnerOrSelf(it!!) || it.isMale)
                                 && it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
                     }) return 600
                 if (game!!.players.any {
-                        it !== disturber && !(it === this || it!!.isMale)
+                        it !== disturber && !(isPartnerOrSelf(it!!) || it.isMale)
                                 && it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
                     }) return -600
             } else if (identity == Black) { // 秦圆圆的回合，神秘人没关系，反正没有队友
@@ -184,8 +184,9 @@ fun Player.calculateMessageCardValue(
                         it !== disturber && isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return -600
             } else if (inFrontOfWhom.identity in colors && inFrontOfWhom.messageCards.count(inFrontOfWhom.identity) >= 2) {
-                return if (inFrontOfWhom === this || isPartner(inFrontOfWhom) && !inFrontOfWhom.isMale) 600
-                else -600
+                return if (inFrontOfWhom === this || isPartner(inFrontOfWhom) &&
+                    (!inFrontOfWhom.isMale || isPartnerOrSelf(whoseTurn))
+                ) 600 else -600
             }
         } else {
             if (game!!.players.any {
@@ -434,7 +435,8 @@ class FightPhaseResult(
     val card: Card,
     val wuDaoTarget: Player?,
     val value: Int,
-    val deltaValue: Int
+    val deltaValue: Int,
+    val convertCardSkill: ConvertCardSkill?
 )
 
 fun Player.calFightPhase(
@@ -475,13 +477,20 @@ fun Player.calFightPhase(
     for (cardType in order) {
         !whoUse.cannotPlayCard(cardType) || continue
         loop@ for (card in cards) {
-            val (ok, _) = whoUse.canUseCardTypes(cardType, card, whoUse !== this)
+            val (ok, convertCardSkill) = whoUse.canUseCardTypes(cardType, card, whoUse !== this)
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
                     val newValue = calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard)
                     if (newValue > value) {
-                        result = FightPhaseResult(cardType, card, null, newValue, newValue - oldValue)
+                        result = FightPhaseResult(
+                            cardType,
+                            card,
+                            null,
+                            newValue,
+                            newValue - oldValue,
+                            convertCardSkill
+                        )
                         value = newValue
                     }
                     break@loop
@@ -490,7 +499,14 @@ fun Player.calFightPhase(
                 Diao_Bao -> {
                     val newValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card)
                     if (newValue > value) {
-                        result = FightPhaseResult(cardType, card, null, newValue, newValue - oldValue)
+                        result = FightPhaseResult(
+                            cardType,
+                            card,
+                            null,
+                            newValue,
+                            newValue - oldValue,
+                            convertCardSkill
+                        )
                         value = newValue
                     }
                 }
@@ -500,7 +516,14 @@ fun Player.calFightPhase(
                         val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
                         val newValueLeft = calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
                         if (newValueLeft > value) {
-                            result = FightPhaseResult(cardType, card, left, newValueLeft, newValueLeft - oldValue)
+                            result = FightPhaseResult(
+                                cardType,
+                                card,
+                                left,
+                                newValueLeft,
+                                newValueLeft - oldValue,
+                                convertCardSkill
+                            )
                             value = newValueLeft
                         }
                     }
@@ -508,7 +531,14 @@ fun Player.calFightPhase(
                         val right = e.inFrontOfWhom.getNextRightAlivePlayer()
                         val newValueRight = calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
                         if (newValueRight > value) {
-                            result = FightPhaseResult(cardType, card, right, newValueRight, newValueRight - oldValue)
+                            result = FightPhaseResult(
+                                cardType,
+                                card,
+                                right,
+                                newValueRight,
+                                newValueRight - oldValue,
+                                convertCardSkill
+                            )
                             value = newValueRight
                         }
                     }

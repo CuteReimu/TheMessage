@@ -5,10 +5,6 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Common.color.Blue
-import com.fengsheng.protos.Common.color.Red
-import com.fengsheng.protos.Common.secret_task.Collector
-import com.fengsheng.protos.Common.secret_task.Mutator
 import com.fengsheng.protos.Role.skill_ji_song_toc
 import com.fengsheng.protos.Role.skill_ji_song_tos
 import com.google.protobuf.GeneratedMessageV3
@@ -128,21 +124,19 @@ class JiSong : ActiveSkill {
                 }
             }
             target !== e.inFrontOfWhom || return false
-            var canRed = true
-            var canBlue = true
-            when (player.identity) {
-                Red -> canRed = false
-                Blue -> canBlue = false
-                else -> {
-                    if (player.secretTask in listOf(Collector, Mutator)) {
-                        canRed = false
-                        canBlue = false
-                    }
+            var valueRemove = -value
+            var messageCard: Card? = null
+            for (card in player.messageCards) {
+                !card.isBlack() || continue
+                val v = player.calculateRemoveCardValue(e.whoseTurn, player, card)
+                if (v > valueRemove) {
+                    valueRemove = v
+                    messageCard = card
                 }
             }
-            val messageCard = player.messageCards.filter {
-                !it.isBlack() && (canRed || Red !in it.colors) && (canBlue || Blue !in it.colors)
-            }.randomOrNull()
+            value + valueRemove > 0 || value > 20 || return false
+            if (messageCard != null && value + valueRemove < value - 20)
+                messageCard = null
             var cards = emptyList<Card>()
             if (messageCard == null) {
                 cards = player.cards.sortCards(player.identity, true).take(2)

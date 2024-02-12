@@ -384,7 +384,7 @@ class RuBiZhiShi : ActiveSkill {
             !r.game!!.isEarly || r.game!!.players.anyoneWillWinOrDie(e) || return false
             val target = r.game!!.players.filter {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
-            }.randomOrNull() ?: return false
+            }.shuffled().maxByOrNull { it!!.cards.size } ?: return false
             GameExecutor.post(r.game!!, {
                 val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
                 builder.targetPlayerId = r.getAlternativeLocation(target.location)
@@ -399,7 +399,7 @@ class RuBiZhiShi : ActiveSkill {
             r.wantToSave(e.whoseTurn, e.whoDie) || return false
             val target = r.game!!.players.filter {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
-            }.randomOrNull() ?: return false
+            }.shuffled().maxByOrNull { it!!.cards.size } ?: return false
             GameExecutor.post(r.game!!, {
                 val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
                 builder.targetPlayerId = r.getAlternativeLocation(target.location)

@@ -8,6 +8,7 @@ import com.fengsheng.protos.Common.card_type.Ping_Heng
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.use_ping_heng_toc
+import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -81,7 +82,7 @@ class PingHeng : Card {
     }
 
     companion object {
-        fun ai(e: MainPhaseIdle, card: Card): Boolean {
+        fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Ping_Heng) || return false
             player.cards.size <= 3 || return false
@@ -91,12 +92,10 @@ class PingHeng : Card {
                 else if (identity != color.Black && identity == it.identity) it.cards.size <= 3
                 else it.cards.size >= 3
             }.randomOrNull() ?: return false
-            GameExecutor.post(
-                player.game!!,
-                { card.asCard(Ping_Heng).execute(player.game!!, player, p) },
-                2,
-                TimeUnit.SECONDS
-            )
+            GameExecutor.post(player.game!!, {
+                convertCardSkill?.onConvert(player)
+                card.asCard(Ping_Heng).execute(player.game!!, player, p)
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

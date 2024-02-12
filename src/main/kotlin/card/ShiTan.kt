@@ -9,8 +9,8 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Shi_Tan
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.skill.SkillId.CHENG_FU
-import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
+import com.fengsheng.skill.ConvertCardSkill
+import com.fengsheng.skill.SkillId.*
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -223,11 +223,11 @@ class ShiTan : Card {
     }
 
     companion object {
-        fun ai(e: MainPhaseIdle, card: Card): Boolean {
+        fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Shi_Tan) || return false
             val yaPao = player.game!!.players.find {
-                it!!.alive && it.findSkill(SHOU_KOU_RU_PING) != null
+                it!!.alive && (it.findSkill(SHOU_KOU_RU_PING) != null || it.findSkill(CONG_RONG_YING_DUI) != null)
             }
             val p = when {
                 player.game!!.isEarly ->
@@ -249,12 +249,14 @@ class ShiTan : Card {
                 else ->
                     player.game!!.players.filter {
                         it !== player && it!!.alive && (!it.roleFaceUp ||
-                                (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
+                                (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null &&
+                                        it.findSkill(CONG_RONG_YING_DUI) == null)) &&
                                 it.isEnemy(player) != it.identity in (card as ShiTan).whoDrawCard && // 敌人弃牌，队友摸牌
                                 !(it.isEnemy(player) && it.cards.isEmpty()) // 不对没有手牌的敌人使用
                     }
             }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
+                convertCardSkill?.onConvert(player)
                 card.asCard(Shi_Tan).execute(player.game!!, player, p)
             }, 3, TimeUnit.SECONDS)
             return true

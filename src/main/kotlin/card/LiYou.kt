@@ -8,6 +8,7 @@ import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.use_li_you_toc
+import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.SkillId.HUO_XIN
 import com.fengsheng.skill.SkillId.YUN_CHOU_WEI_WO
 import com.fengsheng.skill.cannotPlayCard
@@ -100,7 +101,7 @@ class LiYou : Card {
             g.resolve(ResolveCard(r, r, target, card?.getOriginCard(), Li_You, resolveFunc, fsm))
         }
 
-        fun ai(e: MainPhaseIdle, card: Card): Boolean {
+        fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Li_You) || return false
             val game = player.game!!
@@ -128,7 +129,10 @@ class LiYou : Card {
                 }
             }
             target ?: return false
-            GameExecutor.post(game, { card.asCard(Li_You).execute(game, player, target) }, 3, TimeUnit.SECONDS)
+            GameExecutor.post(game, {
+                convertCardSkill?.onConvert(player)
+                card.asCard(Li_You).execute(game, player, target)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

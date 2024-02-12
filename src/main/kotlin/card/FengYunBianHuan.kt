@@ -11,6 +11,7 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.phase.Main_Phase
 import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -215,15 +216,13 @@ class FengYunBianHuan : Card {
     }
 
     companion object {
-        fun ai(e: MainPhaseIdle, card: Card): Boolean {
+        fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Feng_Yun_Bian_Huan) || return false
-            GameExecutor.post(
-                player.game!!,
-                { card.asCard(Feng_Yun_Bian_Huan).execute(player.game!!, player) },
-                2,
-                TimeUnit.SECONDS
-            )
+            GameExecutor.post(player.game!!, {
+                convertCardSkill?.onConvert(player)
+                card.asCard(Feng_Yun_Bian_Huan).execute(player.game!!, player)
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

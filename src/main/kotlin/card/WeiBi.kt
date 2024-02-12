@@ -8,11 +8,8 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.skill.ChengFu
-import com.fengsheng.skill.CunBuBuRang
-import com.fengsheng.skill.ShouKouRuPing
+import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
-import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -206,7 +203,7 @@ class WeiBi : Card {
 
         val availableCardType = listOf(Cheng_Qing, Jie_Huo, Diao_Bao, Wu_Dao)
 
-        fun ai(e: MainPhaseIdle, card: Card): Boolean {
+        fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Wei_Bi) || return false
             !player.game!!.isEarly || return false
@@ -239,12 +236,10 @@ class WeiBi : Card {
             val cardType =
                 if (Random.nextInt(4) < player.weiBiFailRate) availableCardType.random() // N/4的概率纯随机
                 else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.random()
-            GameExecutor.post(
-                player.game!!,
-                { card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType) },
-                3,
-                TimeUnit.SECONDS
-            )
+            GameExecutor.post(player.game!!, {
+                convertCardSkill?.onConvert(player)
+                card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

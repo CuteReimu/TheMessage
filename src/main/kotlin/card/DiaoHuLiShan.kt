@@ -12,6 +12,7 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
 import com.fengsheng.skill.CannotPlayCard
+import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.InvalidSkill
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -80,7 +81,7 @@ class DiaoHuLiShan : Card {
     }
 
     companion object {
-        fun ai(e: MainPhaseIdle, card: Card): Boolean {
+        fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Diao_Hu_Li_Shan) || return false
             !player.game!!.isEarly || return false
@@ -109,6 +110,7 @@ class DiaoHuLiShan : Card {
             }
             p ?: return false
             GameExecutor.post(player.game!!, {
+                convertCardSkill?.onConvert(player)
                 card.asCard(Diao_Hu_Li_Shan).execute(player.game!!, player, p, isSkill)
             }, 3, TimeUnit.SECONDS)
             return true

@@ -8,6 +8,7 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
+import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -110,7 +111,7 @@ class ChengQing : Card {
     }
 
     companion object {
-        fun ai(e: MainPhaseIdle, card: Card): Boolean {
+        fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !(player.identity == Black && player.secretTask in listOf(Killer, Pioneer, Sweeper)) || return false
             !player.cannotPlayCard(Cheng_Qing) || return false
@@ -130,6 +131,7 @@ class ChengQing : Card {
             }
             playerAndCard ?: return false
             GameExecutor.post(g, {
+                convertCardSkill?.onConvert(player)
                 card.asCard(Cheng_Qing).execute(g, player, playerAndCard.player, playerAndCard.card.id)
             }, 3, TimeUnit.SECONDS)
             return true

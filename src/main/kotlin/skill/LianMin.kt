@@ -1,9 +1,8 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.RobotPlayer.Companion.bestCard
-import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
+import com.fengsheng.card.Card
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_lian_min_toc
 import com.fengsheng.protos.Role.skill_lian_min_tos
@@ -109,17 +108,27 @@ class LianMin : TriggeredSkill {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeLianMin) return false
             val p = fsm0.event.sender
+            var value = 0
+            var card: Card? = null
+            var targetPlayer: Player? = null
             for (target in listOf(fsm0.event.inFrontOfWhom, p)) {
-                if (!target.alive || p.isEnemy(target) &&
-                    !(p.identity == Black && p.secretTask in listOf(Killer, Pioneer, Sweeper))
-                ) continue
+                target.alive || continue
                 val cards = target.messageCards.filter { it.isBlack() }
-                if (cards.isEmpty()) continue
-                val card = cards.bestCard(p.identity)
+                cards.isNotEmpty() || continue
+                for (c in cards.sortCards(p.identity)) {
+                    val v = p.calculateRemoveCardValue(fsm0.event.whoseTurn, target, c)
+                    if (v > value) {
+                        value = v
+                        card = c
+                        targetPlayer = target
+                    }
+                }
+            }
+            if (card != null && targetPlayer != null) {
                 GameExecutor.post(p.game!!, {
                     val builder = skill_lian_min_tos.newBuilder()
                     builder.cardId = card.id
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
+                    builder.targetPlayerId = p.getAlternativeLocation(targetPlayer.location)
                     p.game!!.tryContinueResolveProtocol(p, builder.build())
                 }, 3, TimeUnit.SECONDS)
                 return true

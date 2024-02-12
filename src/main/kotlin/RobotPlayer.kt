@@ -2,9 +2,10 @@ package com.fengsheng
 
 import com.fengsheng.card.*
 import com.fengsheng.phase.*
-import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
+import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Right
 import com.fengsheng.protos.Common.secret_task.*
@@ -14,8 +15,6 @@ import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.*
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import java.util.function.BiPredicate
-import java.util.function.Predicate
 
 class RobotPlayer : Player() {
     override fun notifyAddHandCard(location: Int, unknownCount: Int, cards: List<Card>) {
@@ -30,16 +29,22 @@ class RobotPlayer : Player() {
         val fsm = game!!.fsm as MainPhaseIdle
         if (this !== fsm.whoseTurn) return
         for (skill in skills) {
-            val ai = aiSkillMainPhase[skill.skillId]
-            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+            val ai = aiSkillMainPhase[skill.skillId] ?: continue
+            if (ai(fsm, skill as ActiveSkill)) return
         }
         if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null) {
-            for (card in cards.run {
-                if (findSkill(JI_SONG) == null && (findSkill(GUANG_FA_BAO) == null || roleFaceUp)) this
-                else filter { it.type == Wei_Bi }
-            }.sortCards(identity)) {
-                val ai = aiMainPhase[card.type]
-                if (ai != null && ai.test(fsm, card)) return
+            val cardTypes =
+                if (findSkill(JI_SONG) == null && (findSkill(GUANG_FA_BAO) == null || roleFaceUp))
+                    cardOrder.keys.sortedBy { cardOrder[it] }
+                else listOf(Wei_Bi)
+            for (cardType in cardTypes) {
+                !cannotPlayCard(cardType) || continue
+                for (card in cards.sortCards(identity)) {
+                    val (ok, convertCardSkill) = canUseCardTypes(cardType, card)
+                    ok || continue
+                    val ai = aiMainPhase[card.type] ?: continue
+                    if (ai(fsm, card, convertCardSkill)) return
+                }
             }
         }
         GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
@@ -50,8 +55,8 @@ class RobotPlayer : Player() {
         val fsm = game!!.fsm as SendPhaseStart
         if (this !== fsm.whoseTurn) return
         for (skill in skills) {
-            val ai = aiSkillSendPhaseStart[skill.skillId]
-            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+            val ai = aiSkillSendPhaseStart[skill.skillId] ?: continue
+            if (ai(fsm, skill as ActiveSkill)) return
         }
         var value = Double.NEGATIVE_INFINITY
         var cb: (() -> Unit)? = null
@@ -94,8 +99,8 @@ class RobotPlayer : Player() {
     override fun startSendPhaseTimer(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseIdle
         for (card in cards) {
-            val ai = aiSendPhase[card.type]
-            if (ai != null && ai.test(fsm, card)) return
+            val ai = aiSendPhase[card.type] ?: continue
+            if (ai(fsm, card)) return
         }
         GameExecutor.post(game!!, {
             val receive = fsm.mustReceiveMessage() || // 如果必须接收，则接收
@@ -148,8 +153,8 @@ class RobotPlayer : Player() {
         val fsm = game!!.fsm as FightPhaseIdle
         this === fsm.whoseFightTurn || return
         for (skill in skills) {
-            val ai = aiSkillFightPhase1[skill.skillId]
-            if (ai != null && ai.test(fsm, skill as? ActiveSkill)) return
+            val ai = aiSkillFightPhase1[skill.skillId] ?: continue
+            if (ai(fsm, skill as? ActiveSkill)) return
         }
         if (!game!!.isEarly || this === fsm.whoseTurn || game!!.players.any {
                 if (isEnemy(it!!)) it.willWin(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
@@ -158,6 +163,7 @@ class RobotPlayer : Player() {
             val result = calFightPhase(fsm)
             if (result != null && result.deltaValue > 10) {
                 GameExecutor.post(game!!, {
+                    result.convertCardSkill?.onConvert(this)
                     if (result.cardType == Wu_Dao)
                         result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
                     else
@@ -166,8 +172,8 @@ class RobotPlayer : Player() {
                 return
             }
             for (skill in skills) {
-                val ai = aiSkillFightPhase2[skill.skillId]
-                if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+                val ai = aiSkillFightPhase2[skill.skillId] ?: continue
+                if (ai(fsm, skill as ActiveSkill)) return
             }
         }
         GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 1, TimeUnit.SECONDS)
@@ -186,8 +192,8 @@ class RobotPlayer : Player() {
     ) {
         if (waitingPlayer !== this) return
         for (skill in skills) {
-            val ai = aiSkillReceivePhase[skill.skillId]
-            if (ai != null && ai.test(game!!.fsm!!)) return
+            val ai = aiSkillReceivePhase[skill.skillId] ?: continue
+            if (ai(game!!.fsm!!)) return
         }
         GameExecutor.TimeWheel.newTimeout({
             game!!.tryContinueResolveProtocol(
@@ -210,8 +216,8 @@ class RobotPlayer : Player() {
         val fsm = game!!.fsm as WaitForChengQing
         if (askWhom !== this) return
         for (skill in skills) {
-            val ai = aiSkillWaitForChengQing[skill.skillId]
-            if (ai != null && ai.test(fsm, skill as ActiveSkill)) return
+            val ai = aiSkillWaitForChengQing[skill.skillId] ?: continue
+            if (ai(fsm, skill as ActiveSkill)) return
         }
         run {
             wantToSave(whoseTurn, whoDie) || return@run
@@ -266,84 +272,84 @@ class RobotPlayer : Player() {
     }
 
     companion object {
-        private val aiSkillMainPhase = hashMapOf<SkillId, BiPredicate<MainPhaseIdle, ActiveSkill>>(
-            XIN_SI_CHAO to BiPredicate { e, skill -> XinSiChao.ai(e, skill) },
-            GUI_ZHA to BiPredicate { e, skill -> GuiZha.ai(e, skill) },
-            JIAO_JI to BiPredicate { e, skill -> JiaoJi.ai(e, skill) },
-            JIN_BI to BiPredicate { e, skill -> JinBi.ai(e, skill) },
-            JI_BAN to BiPredicate { e, skill -> JiBan.ai(e, skill) },
-            BO_AI to BiPredicate { e, skill -> BoAi.ai(e, skill) },
-            TAN_QIU_ZHEN_LI to BiPredicate { e, skill -> TanQiuZhenLi.ai(e, skill) },
-            HUO_XIN to BiPredicate { e, skill -> HuoXin.ai(e, skill) },
-            YUN_CHOU_WEI_WO to BiPredicate { e, skill -> YunChouWeiWo.ai(e, skill) },
-            ZI_ZHENG_QING_BAI to BiPredicate { e, skill -> ZiZhengQingBai.ai(e, skill) },
-            PIN_MING_SAN_LANG to BiPredicate { e, skill -> PinMingSanLang.ai(e, skill) },
-            YU_SI_WANG_PO to BiPredicate { e, skill -> YuSiWangPo.ai(e, skill) },
-            TAO_QU to BiPredicate { e, skill -> TaoQu.ai(e, skill) },
-            TAN_XU_BIAN_SHI to BiPredicate { e, skill -> TanXuBianShi.ai(e, skill) },
-            HOU_ZI_QIE_XIN to BiPredicate { e, skill -> HouZiQieXin.ai(e, skill) },
+        private val aiSkillMainPhase = hashMapOf(
+            XIN_SI_CHAO to XinSiChao::ai,
+            GUI_ZHA to GuiZha::ai,
+            JIAO_JI to JiaoJi::ai,
+            JIN_BI to JinBi::ai,
+            JI_BAN to JiBan::ai,
+            BO_AI to BoAi::ai,
+            TAN_QIU_ZHEN_LI to TanQiuZhenLi::ai,
+            HUO_XIN to HuoXin::ai,
+            YUN_CHOU_WEI_WO to YunChouWeiWo::ai,
+            ZI_ZHENG_QING_BAI to ZiZhengQingBai::ai,
+            PIN_MING_SAN_LANG to PinMingSanLang::ai,
+            YU_SI_WANG_PO to YuSiWangPo::ai,
+            TAO_QU to TaoQu::ai,
+            TAN_XU_BIAN_SHI to TanXuBianShi::ai,
+            HOU_ZI_QIE_XIN to HouZiQieXin::ai,
         )
-        private val aiSkillSendPhaseStart = hashMapOf<SkillId, BiPredicate<SendPhaseStart, ActiveSkill>>(
-            LENG_XUE_XUN_LIAN to BiPredicate { e, skill -> LengXueXunLian.ai(e, skill) },
-            YOU_DI_SHEN_RU to BiPredicate { e, skill -> YouDiShenRu.ai(e, skill) },
+        private val aiSkillSendPhaseStart = hashMapOf(
+            LENG_XUE_XUN_LIAN to LengXueXunLian::ai,
+            YOU_DI_SHEN_RU to YouDiShenRu::ai,
         )
-        private val aiSkillFightPhase1 = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill?>>(
-            TOU_TIAN to BiPredicate { e, skill -> TouTian.ai(e, skill!!) },
-            JIE_DAO_SHA_REN to BiPredicate { e, skill -> JieDaoShaRen.ai(e, skill!!) },
-            RU_BI_ZHI_SHI to BiPredicate { e, skill -> RuBiZhiShi.ai(e, skill!!) },
-            JIN_KOU_YI_KAI to BiPredicate { e, skill -> JinKouYiKai.ai(e, skill!!) },
-            GUANG_FA_BAO to BiPredicate { e, skill -> GuangFaBao.ai(e, skill!!) },
-            DING_LUN to BiPredicate { e, skill -> DingLun.ai(e, skill!!) },
-            BI_FENG to BiPredicate { e, _ -> BiFeng.ai(e) },
+        private val aiSkillFightPhase1 = hashMapOf<SkillId, (FightPhaseIdle, ActiveSkill?) -> Boolean>(
+            TOU_TIAN to { e, skill -> TouTian.ai(e, skill!!) },
+            JIE_DAO_SHA_REN to { e, skill -> JieDaoShaRen.ai(e, skill!!) },
+            RU_BI_ZHI_SHI to { e, skill -> RuBiZhiShi.ai(e, skill!!) },
+            JIN_KOU_YI_KAI to { e, skill -> JinKouYiKai.ai(e, skill!!) },
+            GUANG_FA_BAO to { e, skill -> GuangFaBao.ai(e, skill!!) },
+            DING_LUN to { e, skill -> DingLun.ai(e, skill!!) },
+            BI_FENG to { e, _ -> BiFeng.ai(e) },
         )
-        private val aiSkillFightPhase2 = hashMapOf<SkillId, BiPredicate<FightPhaseIdle, ActiveSkill>>(
-            JI_ZHI to BiPredicate { e, skill -> JiZhi.ai(e, skill) },
-            YI_HUA_JIE_MU to BiPredicate { e, skill -> YiHuaJieMu.ai(e, skill) },
-            JI_SONG to BiPredicate { e, skill -> JiSong.ai(e, skill) },
-            MIAO_BI_QIAO_BIAN to BiPredicate { e, skill -> MiaoBiQiaoBian.ai(e, skill) },
-            MIAO_SHOU to BiPredicate { e, skill -> MiaoShou.ai(e, skill) },
-            SOU_JI to BiPredicate { e, skill -> SouJi.ai(e, skill) },
-            DUI_ZHENG_XIA_YAO to BiPredicate { e, skill -> DuiZhengXiaYao.ai(e, skill) },
-            DU_JI to BiPredicate { e, skill -> DuJi.ai(e, skill) },
-            XIAN_FA_ZHI_REN to BiPredicate { e, skill -> XianFaZhiRen.ai(e, skill) },
-            ZUO_YOU_FENG_YUAN to BiPredicate { e, skill -> ZuoYouFengYuan.ai(e, skill) },
-            GONG_FEN to BiPredicate { e, skill -> GongFen.ai(e, skill) },
-            YUN_CHOU_WEI_WO to BiPredicate { e, skill -> YunChouWeiWo.ai(e, skill) },
-            YING_BIAN_ZI_RU to BiPredicate { e, skill -> YingBianZiRu.ai(e, skill) },
+        private val aiSkillFightPhase2 = hashMapOf(
+            JI_ZHI to JiZhi::ai,
+            YI_HUA_JIE_MU to YiHuaJieMu::ai,
+            JI_SONG to JiSong::ai,
+            MIAO_BI_QIAO_BIAN to MiaoBiQiaoBian::ai,
+            MIAO_SHOU to MiaoShou::ai,
+            SOU_JI to SouJi::ai,
+            DUI_ZHENG_XIA_YAO to DuiZhengXiaYao::ai,
+            DU_JI to DuJi::ai,
+            XIAN_FA_ZHI_REN to XianFaZhiRen::ai,
+            ZUO_YOU_FENG_YUAN to ZuoYouFengYuan::ai,
+            GONG_FEN to GongFen::ai,
+            YUN_CHOU_WEI_WO to YunChouWeiWo::ai,
+            YING_BIAN_ZI_RU to YingBianZiRu::ai,
         )
-        private val aiSkillReceivePhase = hashMapOf<SkillId, Predicate<Fsm>>(
-            JIN_SHEN to Predicate { fsm -> JinShen.ai(fsm) },
-            LIAN_MIN to Predicate { fsm -> LianMin.ai(fsm) },
-            MIAN_LI_CANG_ZHEN to Predicate { fsm -> MianLiCangZhen.ai(fsm) },
-            QI_HUO_KE_JU to Predicate { fsm -> QiHuoKeJu.ai(fsm) },
-            YI_YA_HUAN_YA to Predicate { fsm -> YiYaHuanYa.ai(fsm) },
-            JING_MENG to Predicate { fsm -> JingMeng.ai(fsm) },
-            JIAN_REN to Predicate { fsm -> JianRen.ai(fsm) },
-            CHI_ZI_ZHI_XIN to Predicate { fsm -> ChiZiZhiXin.ai(fsm) },
-            LIAN_XIN to Predicate { fsm -> LianXin.ai(fsm) },
-            MI_XIN to Predicate { fsm -> MiXin.ai(fsm) },
-            JIAN_DI_FENG_XING to Predicate { fsm -> JianDiFengXing.ai(fsm) },
+        private val aiSkillReceivePhase = hashMapOf(
+            JIN_SHEN to JinShen::ai,
+            LIAN_MIN to LianMin::ai,
+            MIAN_LI_CANG_ZHEN to MianLiCangZhen::ai,
+            QI_HUO_KE_JU to QiHuoKeJu::ai,
+            YI_YA_HUAN_YA to YiYaHuanYa::ai,
+            JING_MENG to JingMeng::ai,
+            JIAN_REN to JianRen::ai,
+            CHI_ZI_ZHI_XIN to ChiZiZhiXin::ai,
+            LIAN_XIN to LianXin::ai,
+            MI_XIN to MiXin::ai,
+            JIAN_DI_FENG_XING to JianDiFengXing::ai,
         )
-        private val aiSkillWaitForChengQing = hashMapOf<SkillId, BiPredicate<WaitForChengQing, ActiveSkill>>(
-            JI_ZHI to BiPredicate { e, skill -> JiZhi.ai2(e, skill) },
-            HOU_LAI_REN to BiPredicate { e, skill -> HouLaiRen.ai(e, skill) },
-            RU_BI_ZHI_SHI to BiPredicate { e, skill -> RuBiZhiShi.ai2(e, skill) },
+        private val aiSkillWaitForChengQing = hashMapOf(
+            JI_ZHI to JiZhi::ai2,
+            HOU_LAI_REN to HouLaiRen::ai,
+            RU_BI_ZHI_SHI to RuBiZhiShi::ai2,
         )
-        private val aiMainPhase = hashMapOf<card_type, BiPredicate<MainPhaseIdle, Card>>(
-            Cheng_Qing to BiPredicate { e, card -> ChengQing.ai(e, card) },
-            Li_You to BiPredicate { e, card -> LiYou.ai(e, card) },
-            Ping_Heng to BiPredicate { e, card -> PingHeng.ai(e, card) },
-            Shi_Tan to BiPredicate { e, card -> ShiTan.ai(e, card) },
-            Wei_Bi to BiPredicate { e, card -> WeiBi.ai(e, card) },
-            Feng_Yun_Bian_Huan to BiPredicate { e, card -> FengYunBianHuan.ai(e, card) },
-            Diao_Hu_Li_Shan to BiPredicate { e, card -> DiaoHuLiShan.ai(e, card) },
+        private val aiMainPhase = hashMapOf(
+            Cheng_Qing to ChengQing::ai,
+            Li_You to LiYou::ai,
+            Ping_Heng to PingHeng::ai,
+            Shi_Tan to ShiTan::ai,
+            Wei_Bi to WeiBi::ai,
+            Feng_Yun_Bian_Huan to FengYunBianHuan::ai,
+            Diao_Hu_Li_Shan to DiaoHuLiShan::ai,
         )
-        private val aiSendPhaseStart = hashMapOf<card_type, (SendPhaseStart, Card) -> Pair<Double, () -> Unit>?>(
-            Mi_Ling to { e, card -> MiLing.ai(e, card) },
-            Yu_Qin_Gu_Zong to { e, card -> YuQinGuZong.ai(e, card) },
+        private val aiSendPhaseStart = hashMapOf(
+            Mi_Ling to MiLing::ai,
+            Yu_Qin_Gu_Zong to YuQinGuZong::ai,
         )
-        private val aiSendPhase = hashMapOf<card_type, BiPredicate<SendPhaseIdle, Card>>(
-            Po_Yi to BiPredicate { e, card -> PoYi.ai(e, card) },
+        private val aiSendPhase = hashMapOf(
+            Po_Yi to PoYi::ai,
         )
 
         val cardOrder = mapOf(

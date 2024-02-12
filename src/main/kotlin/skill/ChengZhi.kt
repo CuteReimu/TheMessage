@@ -81,10 +81,16 @@ class ChengZhi : TriggeredSkill {
             if (r is RobotPlayer) GameExecutor.post(r.game!!, {
                 val builder = skill_cheng_zhi_tos.newBuilder()
                 fun Player.process(identity: color, secretTask: secret_task) =
-                    if (identity != Black) r.cards.count(identity) * 10
-                    else when (secretTask) {
-                        Collector -> maxOf(messageCards.count(Red), messageCards.count(Blue)) * 2 - 2
-                        Mutator -> 100
+                    if (identity != Black) {
+                        maxOf(game!!.players.filter { it!!.alive && it.identity == identity }
+                            .maxOf { it!!.messageCards.count(identity) * 10 },
+                            r.cards.count(identity) * 10
+                        )
+                    } else when (secretTask) {
+                        Collector -> maxOf(messageCards.count(Red), messageCards.count(Blue)) * 2 - 3
+                        Mutator -> game!!.players.filter { it!!.alive }
+                            .maxOf { maxOf(it!!.messageCards.count(Red), it.messageCards.count(Blue)) * 2 - 2 }
+
                         Pioneer -> messageCards.count(Black) * 10 - 1
                         else -> -100
                     }
