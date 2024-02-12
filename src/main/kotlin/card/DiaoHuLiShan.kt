@@ -92,7 +92,9 @@ class DiaoHuLiShan : Card {
                 it!!.alive && it.isEnemy(player)
             }.filterNotNull().shuffled()
 
-            var p = enemies.maxByOrNull(::countImportantCard)
+            var p = enemies.filter {
+                !it.skills.any { s -> s is CannotPlayCard && s.forbidAllCard }
+            }.maxByOrNull(::countImportantCard)
             var isSkill = false
             if (p != null && countImportantCard(p) == 0)
                 p = null
