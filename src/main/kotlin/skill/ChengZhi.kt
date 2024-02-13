@@ -84,7 +84,7 @@ class ChengZhi : TriggeredSkill {
                     if (identity != Black) {
                         maxOf(game!!.players.filter { it!!.alive && it.identity == identity }
                             .maxOf { it!!.messageCards.count(identity) * 10 },
-                            r.cards.count(identity) * 10
+                            r.messageCards.count(identity) * 10
                         )
                     } else when (secretTask) {
                         Collector -> maxOf(messageCards.count(Red), messageCards.count(Blue)) * 2 - 3
