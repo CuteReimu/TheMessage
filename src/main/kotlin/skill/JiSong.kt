@@ -126,7 +126,7 @@ class JiSong : ActiveSkill {
             target !== e.inFrontOfWhom || return false
             var valueRemove = -value
             var messageCard: Card? = null
-            for (card in player.messageCards) {
+            for (card in player.messageCards.toList()) {
                 !card.isBlack() || continue
                 val v = player.calculateRemoveCardValue(e.whoseTurn, player, card)
                 if (v > valueRemove) {
