@@ -55,7 +55,7 @@ class JiuJi : TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     val builder2 = skill_jiu_ji_a_tos.newBuilder()
-                    builder2.enable = true
+                    builder2.enable = event.card != null
                     r.game!!.tryContinueResolveProtocol(r, builder2.build())
                 }, 1, TimeUnit.SECONDS)
             }
