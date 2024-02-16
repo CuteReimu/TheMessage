@@ -228,12 +228,14 @@ class DuJi : ActiveSkill {
                     p.send(builder.build())
                 }
             }
-            if (selection.waitingPlayer is RobotPlayer) {
+            val p = selection.waitingPlayer
+            if (p is RobotPlayer) {
+                val inFrontOfMe = p.calculateMessageCardValue(fsm.whoseTurn, p, selection.card) >
+                        p.calculateMessageCardValue(fsm.whoseTurn, selection.fromPlayer, selection.card)
                 GameExecutor.post(g, {
-                    g.tryContinueResolveProtocol(
-                        selection.waitingPlayer,
-                        skill_du_ji_c_tos.newBuilder().setInFrontOfMe(false).build()
-                    )
+                    val builder = skill_du_ji_c_tos.newBuilder()
+                    builder.inFrontOfMe = inFrontOfMe
+                    g.tryContinueResolveProtocol(p, builder.build())
                 }, 3, TimeUnit.SECONDS)
             }
             return null

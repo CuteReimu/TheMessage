@@ -1,6 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
@@ -105,18 +106,32 @@ class TanQiuZhenLi : MainPhaseSkill() {
             } else {
                 GameExecutor.post(target.game!!, {
                     val builder = skill_tan_qiu_zhen_li_b_tos.newBuilder()
-                    val messageCard = target.messageCards.find { it.isPureBlack() }
-                    if (messageCard != null) {
-                        builder.enable = true
-                        builder.fromHand = false
-                        builder.cardId = messageCard.id
-                    } else {
-                        val card = target.cards.find { it.isPureBlack() }
-                        if (card != null) {
-                            builder.enable = true
-                            builder.fromHand = true
-                            builder.cardId = card.id
+                    var value = 0
+                    var card: Card? = null
+                    var fromHand = false
+                    for (c in target.messageCards.toList()) {
+                        c.isPureBlack() || continue
+                        val v = target.calculateRemoveCardValue(r, target, c) +
+                                target.calculateMessageCardValue(r, r, c)
+                        if (v > value) {
+                            value = v
+                            card = c
+                            fromHand = false
                         }
+                    }
+                    for (c in target.cards.sortCards(target.identity, true)) {
+                        c.isPureBlack() || continue
+                        val v = -10 + target.calculateMessageCardValue(r, r, c)
+                        if (v > value) {
+                            value = v
+                            card = c
+                            fromHand = true
+                        }
+                    }
+                    if (card != null) {
+                        builder.enable = true
+                        builder.fromHand = fromHand
+                        builder.cardId = card.id
                     }
                     target.game!!.tryContinueResolveProtocol(target, builder.build())
                 }, 3, TimeUnit.SECONDS)

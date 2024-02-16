@@ -227,7 +227,10 @@ class ShiTan : Card {
             val player = e.whoseTurn
             !player.cannotPlayCard(Shi_Tan) || return false
             val yaPao = player.game!!.players.find {
-                it!!.alive && (it.findSkill(SHOU_KOU_RU_PING) != null || it.findSkill(CONG_RONG_YING_DUI) != null)
+                it!!.alive && it.findSkill(SHOU_KOU_RU_PING) != null
+            }
+            val jianXianSheng = player.game!!.players.find {
+                it!!.alive && it.findSkill(CONG_RONG_YING_DUI) != null
             }
             val p = when {
                 player.game!!.isEarly ->
@@ -237,11 +240,19 @@ class ShiTan : Card {
                                 it.cards.isNotEmpty() // 不对没有手牌的人使用
                     }
 
-                yaPao === player ->
+                yaPao === player || jianXianSheng === player ->
                     player.game!!.players.run {
-                        filter { it!!.alive && it.isPartner(player) }
-                            .ifEmpty { filter { it !== player && it!!.alive } }
+                        filter { it!!.alive && it.isPartner(player) }.run {
+                            filter { it === jianXianSheng || it === yaPao }.ifEmpty { this }
+                        }.ifEmpty {
+                            filter { it !== player && it!!.alive }.run {
+                                filterNot { it === jianXianSheng || it === yaPao }.ifEmpty { this }
+                            }
+                        }
                     }
+
+                jianXianSheng != null && player.isPartner(jianXianSheng) ->
+                    listOf(jianXianSheng)
 
                 yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0 ->
                     listOf(yaPao)
