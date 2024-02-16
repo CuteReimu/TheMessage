@@ -53,7 +53,6 @@ class SouJi : ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        g.deck.discard(fsm.messageCard)
         g.resolve(executeSouJi(fsm, r, target))
     }
 

@@ -197,6 +197,7 @@ class CangShenJiaoTang : TriggeredSkill {
                     logger.info("${player}发动了[藏身教堂]，将${target}面前的${card}移到自己面前")
                     target.deleteMessageCard(message.cardId)
                     player.messageCards.add(card)
+                    player.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
                 } else {
                     logger.info("${player}发动了[藏身教堂]，将${target}面前的${card}加入了手牌")
                     target.deleteMessageCard(message.cardId)
@@ -215,7 +216,6 @@ class CangShenJiaoTang : TriggeredSkill {
                     p.send(builder.build())
                 }
             }
-            player.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             return ResolveResult(fsm, true)
         }
     }
