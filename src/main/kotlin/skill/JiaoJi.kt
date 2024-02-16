@@ -110,7 +110,6 @@ class JiaoJi : MainPhaseSkill() {
                 val builder2 = skill_jiao_ji_b_tos.newBuilder()
                 for (c in r.cards.sortCards(r.identity, true)) {
                     if (builder2.cardIdsCount >= needReturnCount.first) break
-                    if (c.type in WeiBi.availableCardType) r.weiBiFailRate = 0
                     builder2.addCardIds(c.id)
                 }
                 g.tryContinueResolveProtocol(r, builder2.build())
@@ -175,7 +174,10 @@ class JiaoJi : MainPhaseSkill() {
                 }
             }
             g.addEvent(GiveCardEvent(r, target, r))
-            g.addEvent(GiveCardEvent(r, r, target))
+            if (cards.isNotEmpty()) {
+                g.addEvent(GiveCardEvent(r, r, target))
+                if (cards.any { it.type in WeiBi.availableCardType }) r.weiBiFailRate = 0
+            }
             return ResolveResult(fsm, true)
         }
     }

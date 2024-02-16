@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
+import com.fengsheng.card.WeiBi
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -135,16 +136,18 @@ class JiBan : MainPhaseSkill() {
 
         private fun autoSelect(seq: Int) {
             val availableTargets = r.game!!.players.filter { it!!.alive && it !== r } // 如果所有人都死了游戏就结束了，所以这里一定不为空
+            val card =
+                if (seq != 0) r.cards.random()
+                else r.cards.bestCard(r.identity, true)
             val players =
                 if (seq != 0 || r.game!!.isEarly) availableTargets
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty {
-                    r.weiBiFailRate = 0
+                    if (card.type in WeiBi.availableCardType) r.weiBiFailRate = 0
                     availableTargets
                 } // 机器人优先选队友
             val player = players.random()!!
             val builder = skill_ji_ban_b_tos.newBuilder()
-            if (seq != 0) builder.addCardIds(r.cards.random().id)
-            else builder.addCardIds(r.cards.bestCard(r.identity, true).id)
+            builder.addCardIds(card.id)
             builder.seq = seq
             builder.targetPlayerId = r.getAlternativeLocation(player.location)
             r.game!!.tryContinueResolveProtocol(r, builder.build())

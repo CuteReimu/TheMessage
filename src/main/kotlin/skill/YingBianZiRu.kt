@@ -165,7 +165,10 @@ class YingBianZiRu : ActiveSkill {
             !e.isMessageCardFaceUp || return false
             player.game!!.players.any {
                 it!!.isEnemy(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-            } || e.inFrontOfWhom.run { isPartnerOrSelf(player) && willDie(e.messageCard) } || return false
+            } || e.inFrontOfWhom.run {
+                isPartnerOrSelf(player) && willDie(e.messageCard)
+                        && !willWin(e.whoseTurn, this, e.messageCard)
+            } || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skill_ying_bian_zi_ru_a_tos.getDefaultInstance())
             }, 3, TimeUnit.SECONDS)
