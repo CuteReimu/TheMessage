@@ -4,6 +4,8 @@ import com.fengsheng.Fsm
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.card.Card
+import com.fengsheng.card.count
+import com.fengsheng.protos.Common.color.*
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -24,7 +26,9 @@ data class OnReceiveCard(
         val player = inFrontOfWhom
         if (player.alive) {
             player.messageCards.add(messageCard)
-            logger.info("${player}成功接收情报")
+            player.messageCards.run {
+                logger.info("${player}成功接收情报${messageCard}，现在有${count(Red)}红${count(Blue)}蓝${count(Black)}黑")
+            }
             for (p in player.game!!.players) p!!.notifyReceivePhase()
             val next = ReceivePhaseIdle(whoseTurn, sender, messageCard, inFrontOfWhom)
             return ResolveResult(next, true)
