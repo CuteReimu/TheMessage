@@ -195,6 +195,8 @@ object RoleCache {
         }
     }
 
+    fun randRoleName() = mapCache.values.randomOrNull()?.name
+
     private fun writeForbiddenRolesFile(buf: ByteArray) {
         pool.trySend {
             try {

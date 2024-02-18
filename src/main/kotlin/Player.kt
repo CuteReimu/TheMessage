@@ -5,6 +5,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.RoleSkillsData
 import com.fengsheng.skill.Skill
 import com.fengsheng.skill.SkillId
@@ -319,6 +320,11 @@ abstract class Player protected constructor() {
 
         fun randPlayerName(game: Game): String {
             val except = game.players.mapNotNull { it?.playerName }
+            val part1 =
+                listOf("激动", "愉悦", "喜悦", "悲伤", "欢乐", "愤怒", "恐惧", "忧虑", "开心", "感激", "失望", "放松")
+                    .filter { except.all { s -> !s.startsWith("${it}的") } }.randomOrNull()
+            val part2 = RoleCache.randRoleName()
+            if (part1 != null && part2 != null) return "${part1}的${part2.replaceFirst("SP", "", true)}"
             return (setOf(
                 "这是机器人", "去群里喊人", "喊人一起玩", "不要单机",
                 "人多才好玩", "单机没意思", "别玩人机局", "多喊点人",
