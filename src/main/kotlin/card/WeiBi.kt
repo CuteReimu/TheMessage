@@ -42,7 +42,7 @@ class WeiBi : Card {
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val target = args[0] as Player
         val wantType = args[1] as card_type
-        logger.info("${r}对${target}使用了$this")
+        logger.info("${r}对${target}使用了$this，并宣言了$wantType")
         r.deleteCard(id)
         execute(this, g, r, target, wantType)
     }
