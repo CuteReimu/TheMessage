@@ -57,7 +57,6 @@ class FengYunBianHuan : Card {
         while (players.size > drawCards.size) {
             players.removeLast() // 兼容牌库抽完的情况
         }
-        players.forEach { it.weiBiFailRate = 0 }
         g.turn += g.players.size
         logger.info("${r}使用了${this}，翻开了${drawCards.joinToString()}")
         for (player in r.game!!.players) {
@@ -74,6 +73,7 @@ class FengYunBianHuan : Card {
         val resolveFunc = { _: Boolean ->
             executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
+        players.forEach { it.weiBiFailRate = 0 }
         g.resolve(ResolveCard(r, r, null, getOriginCard(), Feng_Yun_Bian_Huan, resolveFunc, fsm))
     }
 

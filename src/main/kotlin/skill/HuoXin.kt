@@ -77,6 +77,7 @@ class HuoXin : MainPhaseSkill() {
                 p.send(builder.build())
             }
         }
+        r.weiBiFailRate = 0
         g.resolve(executeHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))
     }
 
@@ -166,7 +167,6 @@ class HuoXin : MainPhaseSkill() {
                 it !== e.whoseTurn && it!!.alive && (isEarly || it.isEnemy(e.whoseTurn)) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                e.whoseTurn.weiBiFailRate = 0
                 val builder = skill_huo_xin_a_tos.newBuilder()
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())

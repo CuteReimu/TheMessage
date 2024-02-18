@@ -62,6 +62,7 @@ class RuBiZhiShi : ActiveSkill {
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[如臂指使]，查看了${target}的手牌")
         g.playerSetRoleFaceUp(r, true)
+        r.weiBiFailRate = 0
         g.resolve(executeRuBiZhiShi(fsm as ProcessFsm, r, target))
     }
 
