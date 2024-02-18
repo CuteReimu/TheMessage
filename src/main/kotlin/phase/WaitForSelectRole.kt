@@ -25,11 +25,9 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                 else
                     notifySelectRole(player)
                 player.timeout = GameExecutor.post(game, {
-                    val autoSelect = options[player.location].firstOrNull()?.role ?: unknown
-                    game.tryContinueResolveProtocol(
-                        player,
-                        select_role_tos.newBuilder().setRole(autoSelect).build()
-                    )
+                    val builder = select_role_tos.newBuilder()
+                    builder.role = options[player.location].firstOrNull()?.role ?: unknown
+                    game.tryContinueResolveProtocol(player, builder.build())
                 }, player.getWaitSeconds(Config.WaitSecond * 2 + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 selected[player!!.location] = options[player.location].run {

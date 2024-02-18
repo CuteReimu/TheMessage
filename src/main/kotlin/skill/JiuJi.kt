@@ -39,10 +39,12 @@ class JiuJi : TriggeredSkill {
                         val seq2 = player.seq
                         builder.seq = seq2
                         player.timeout = GameExecutor.post(r.game!!, {
-                            val builder2 = skill_jiu_ji_a_tos.newBuilder()
-                            builder2.enable = true
-                            builder2.seq = seq2
-                            r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                            if (r.checkSeq(seq2)) {
+                                val builder2 = skill_jiu_ji_a_tos.newBuilder()
+                                builder2.enable = true
+                                builder2.seq = seq2
+                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                            }
                         }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         player.send(builder.build())
                     } else {

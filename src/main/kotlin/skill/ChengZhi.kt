@@ -61,19 +61,16 @@ class ChengZhi : TriggeredSkill {
                         for (card in cards) builder.addCards(card.toPbCard())
                         builder.identity = whoDie.identity
                         builder.secretTask = whoDie.secretTask
-                        val seq2: Int = player.seq
+                        val seq2 = player.seq
                         builder.seq = seq2
-                        player.timeout = GameExecutor.post(
-                            r.game!!,
-                            {
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            if (r.checkSeq(seq2)) {
                                 val builder2 = skill_cheng_zhi_tos.newBuilder()
                                 builder2.enable = false
                                 builder2.seq = seq2
                                 r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            },
-                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                            }
+                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
                     player.send(builder.build())
                 }

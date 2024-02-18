@@ -471,6 +471,7 @@ class HumanPlayer(
 
     override fun incrSeq() {
         seq++
+        timeout?.cancel()
         /*timeout?.also { timeout ->
             if (timeout.isExpired) {
                 if (!autoPlay && ++timeoutCount >= 3) setAutoPlay(true)

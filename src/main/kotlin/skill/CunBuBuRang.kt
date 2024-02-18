@@ -43,10 +43,12 @@ class CunBuBuRang : TriggeredSkill {
                         val seq = player.seq
                         builder.seq = seq
                         player.timeout = GameExecutor.post(r.game!!, {
-                            val builder2 = skill_cun_bu_bu_rang_tos.newBuilder()
-                            builder2.enable = true
-                            builder2.seq = seq
-                            r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                            if (r.checkSeq(seq)) {
+                                val builder2 = skill_cun_bu_bu_rang_tos.newBuilder()
+                                builder2.enable = true
+                                builder2.seq = seq
+                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                            }
                         }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         // 晚一秒提示凌素秋，以防客户端动画bug
                         GameExecutor.post(r.game!!, { player.send(builder.build()) }, 1, TimeUnit.SECONDS)
