@@ -232,10 +232,14 @@ class WeiBi : Card {
                         (!it.roleFaceUp || !it.skills.any { s -> s is ChengFu || s is ShouKouRuPing || s is CunBuBuRang }) &&
                         it.isEnemy(player) &&
                         it.cards.any { card -> card.type in availableCardType }
+            }.run {
+                filter { it!!.cards.any { card -> card.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) } }.ifEmpty { this }
             }.randomOrNull() ?: return false
             val cardType =
-                if (Random.nextInt(4) < player.weiBiFailRate) availableCardType.random() // N/4的概率纯随机
-                else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.random()
+                if (Random.nextInt(4) < player.weiBiFailRate) listOf(Jie_Huo, Wu_Dao, Diao_Bao).random() // N/4的概率纯随机
+                else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.run {
+                    filter { it != Cheng_Qing }.ifEmpty { this }
+                }.random()
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType)

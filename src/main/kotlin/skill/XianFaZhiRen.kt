@@ -6,6 +6,7 @@ import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.role.shang_yu
 import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -217,10 +218,13 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                 }, r.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 val target = r.game!!.players.filter { it!!.alive && it.isEnemy(r) }.run {
-                    filter { !it!!.hasEverFaceUp }.ifEmpty { filter { !it!!.roleFaceUp } }.ifEmpty {
-                        if (fsm is FightPhaseIdle) filter { !it!!.hasNoSkillForFightPhase(fsm) }
-                        else this
-                    }.ifEmpty { this }
+                    filter { it!!.hasEverFaceUp && !it.roleFaceUp && it.role == shang_yu }
+                        .ifEmpty { filter { !it!!.hasEverFaceUp } }
+                        .ifEmpty { filter { !it!!.roleFaceUp } }
+                        .ifEmpty {
+                            if (fsm is FightPhaseIdle) filter { !it!!.hasNoSkillForFightPhase(fsm) }
+                            else this
+                        }.ifEmpty { this }
                 }.randomOrNull() ?: r
                 GameExecutor.post(r.game!!, {
                     val builder = skill_xian_fa_zhi_ren_b_tos.newBuilder()
