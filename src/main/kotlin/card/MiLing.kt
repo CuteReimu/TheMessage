@@ -9,12 +9,11 @@ import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Mi_Ling
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.protos.Role
-import com.fengsheng.skill.LengXueXunLian
+import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.LENG_XUE_XUN_LIAN
-import com.fengsheng.skill.canSendCard
-import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -188,8 +187,8 @@ class MiLing : Card {
                     if (target.checkSeq(seq2)) {
                         val card = messageCard ?: target.cards.find { this.card.secret[secret] in it.colors }!!
                         val messageTarget = when (card.direction) {
-                            direction.Left -> target.getNextLeftAlivePlayer()
-                            direction.Right -> target.getNextRightAlivePlayer()
+                            Left -> target.getNextLeftAlivePlayer()
+                            Right -> target.getNextRightAlivePlayer()
                             else -> target.game!!.players.filter { target !== it && it!!.alive }.random()!!
                         }
                         val builder = send_message_card_tos.newBuilder()
@@ -201,6 +200,10 @@ class MiLing : Card {
                     }
                 }, target.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
+                val delay =
+                    if (messageCard != null && messageCard.direction != Up && !messageCard.canLock() &&
+                        !target.skills.any { it is LianLuo || it is QiangYingXiaLing }
+                    ) 100L else 1000L
                 GameExecutor.post(target.game!!, {
                     val skill = target.findSkill(LENG_XUE_XUN_LIAN) as? LengXueXunLian
                     if (skill != null) {
@@ -221,7 +224,7 @@ class MiLing : Card {
                         builder.addAllLockPlayerId(result.lockedPlayers.map { target.getAlternativeLocation(it.location) })
                         target.game!!.tryContinueResolveProtocol(target, builder.build())
                     }
-                }, 1, TimeUnit.SECONDS)
+                }, delay, TimeUnit.MILLISECONDS)
             }
             return null
         }
