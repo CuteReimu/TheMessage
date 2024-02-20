@@ -227,6 +227,20 @@ fun Player.calculateMessageCardValue(
                 }
             }
         }
+        if (secretTask == Mutator && this === inFrontOfWhom) {
+            if (Red in colors) {
+                value += when (messageCards.count(Red)) {
+                    0, 1 -> 6
+                    else -> if (checkThreeSame) return 10 else 1000
+                }
+            }
+            if (Blue in colors) {
+                value += when (messageCards.count(Blue)) {
+                    0, 1 -> 6
+                    else -> if (checkThreeSame) return 10 else 1000
+                }
+            }
+        }
         if (secretTask == Disturber && this != inFrontOfWhom) {
             val count = inFrontOfWhom.messageCards.countTrueCard()
             if (inFrontOfWhom.willDie(colors))

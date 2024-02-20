@@ -166,7 +166,7 @@ class TanXuBianShi : MainPhaseSkill() {
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.whoseTurn.getSkillUseCount(SkillId.TAN_XU_BIAN_SHI) == 0 || return false
-            val card = e.whoseTurn.cards.randomOrNull() ?: return false
+            val card = e.whoseTurn.cards.ifEmpty { return false }.bestCard(e.whoseTurn.identity, true)
             val player = e.whoseTurn.game!!.players.filter { p ->
                 p !== e.whoseTurn && p!!.alive && p.cards.isNotEmpty()
             }.run {
