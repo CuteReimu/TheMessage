@@ -47,7 +47,7 @@ class RobotPlayer : Player() {
                 }
             }
         }
-        GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
+        GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 500, TimeUnit.MILLISECONDS)
     }
 
     override fun notifySendPhaseStart(waitSecond: Int) {
@@ -176,7 +176,7 @@ class RobotPlayer : Player() {
                 if (ai(fsm, skill as ActiveSkill)) return
             }
         }
-        GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 1, TimeUnit.SECONDS)
+        GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500, TimeUnit.MILLISECONDS)
     }
 
     override fun notifyReceivePhase() {
@@ -200,7 +200,7 @@ class RobotPlayer : Player() {
                 this,
                 Fengsheng.end_receive_phase_tos.getDefaultInstance()
             )
-        }, 1, TimeUnit.SECONDS)
+        }, 100, TimeUnit.MILLISECONDS)
     }
 
     override fun notifyWin(
