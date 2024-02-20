@@ -42,6 +42,16 @@ fun Player.willDie(colors: List<color>) = messageCards.count(Black) >= 2 && Blac
 fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card) =
     calculateMessageCardValue(whoseTurn, inFrontOfWhom, card) >= 600
 
+/**
+ * 判断玩家是否能赢
+ *
+ * @param whoseTurn 当前回合玩家
+ * @param inFrontOfWhom 情报在谁面前
+ * @param colors 情报牌的颜色
+ */
+fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, colors: List<color>) =
+    calculateMessageCardValue(whoseTurn, inFrontOfWhom, colors) >= 600
+
 private fun Player.willWinInternal(
     whoseTurn: Player,
     inFrontOfWhom: Player,

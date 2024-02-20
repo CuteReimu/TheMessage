@@ -182,6 +182,13 @@ class LianXin : TriggeredSkill {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeLianXinA) return false
             val p = fsm0.event.inFrontOfWhom
+            val target = fsm0.event.sender
+            val card = fsm0.event.messageCard
+            if (card.colors.size == 1) {
+                if (p.game!!.players.any {
+                        it!!.isEnemy(p) && it.willWin(fsm0.event.whoseTurn, target, card)
+                    } || target.isPartnerOrSelf(p) && target.willDie(card)) return false
+            }
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skill_lian_xin_a_tos.getDefaultInstance())
             }, 1, TimeUnit.SECONDS)

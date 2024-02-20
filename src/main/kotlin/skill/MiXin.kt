@@ -3,6 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
 import com.fengsheng.protos.Role.*
@@ -185,6 +186,14 @@ class MiXin : TriggeredSkill {
         fun ai(fsm0: Fsm): Boolean {
             if (fsm0 !is executeMiXinA) return false
             val p = fsm0.event.inFrontOfWhom
+            val target = fsm0.event.sender
+            val card = fsm0.event.messageCard
+            if (card.colors.size == 2) {
+                val color = listOf(Black, Red, Blue).filter { it !in card.colors }
+                if (p.game!!.players.any {
+                        it!!.isEnemy(p) && it.willWin(fsm0.event.whoseTurn, target, color)
+                    } || target.isPartnerOrSelf(p) && target.willDie(color)) return false
+            }
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skill_mi_xin_a_tos.getDefaultInstance())
             }, 1, TimeUnit.SECONDS)
