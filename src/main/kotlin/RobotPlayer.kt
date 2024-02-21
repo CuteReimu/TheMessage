@@ -47,7 +47,7 @@ class RobotPlayer : Player() {
                 }
             }
         }
-        GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 500, TimeUnit.MILLISECONDS)
+        GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
     }
 
     override fun notifySendPhaseStart(waitSecond: Int) {
