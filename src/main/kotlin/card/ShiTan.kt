@@ -257,14 +257,22 @@ class ShiTan : Card {
                 yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0 ->
                     listOf(yaPao)
 
-                else ->
+                else -> {
                     player.game!!.players.filter {
                         it !== player && it!!.alive && (!it.roleFaceUp ||
-                                (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null &&
-                                        it.findSkill(CONG_RONG_YING_DUI) == null)) &&
-                                it.isEnemy(player) != it.identity in (card as ShiTan).whoDrawCard && // 敌人弃牌，队友摸牌
-                                !(it.isEnemy(player) && it.cards.isEmpty()) // 不对没有手牌的敌人使用
+                                (it.findSkill(CHENG_FU) == null && it.findSkill(CONG_RONG_YING_DUI) == null))
+                    }.run {
+                        filter {
+                            it!!.isPartner(player) &&
+                                    (it.findSkill(SHOU_KOU_RU_PING) != null || it.identity in (card as ShiTan).whoDrawCard)
+                        }.ifEmpty {
+                            filter {
+                                it!!.isEnemy(player) && it.findSkill(SHOU_KOU_RU_PING) == null &&
+                                        it.identity !in (card as ShiTan).whoDrawCard && it.cards.isNotEmpty()
+                            }
+                        }
                     }
+                }
             }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
