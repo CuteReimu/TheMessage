@@ -65,7 +65,7 @@ class join_room_tos : ProtoHandler {
             player.sendErrorMessage("客户端版本号过低，请重新下载最新客户端")
             return
         }
-        if (Game.GameCache.size > Config.MaxRoomCount) {
+        if (Game.gameCache.size > Config.MaxRoomCount) {
             player.sendErrorMessage("房间已满，请稍后再试")
             return
         }
@@ -119,7 +119,7 @@ class join_room_tos : ProtoHandler {
             player.game = newGame
             val builder = Fengsheng.get_room_info_toc.newBuilder()
             builder.myPosition = player.location
-            builder.onlineCount = Game.GameCache.values.sumOf { it.players.size } + newGame.players.count { it != null }
+            builder.onlineCount = Game.onlineCount
             for (p in player.game!!.players) {
                 if (p == null) {
                     builder.addNames("")

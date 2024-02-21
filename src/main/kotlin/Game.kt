@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var resolvingEvents = emptyList<Event>()
@@ -99,7 +100,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         players.all { it != null } || return
         !isStarted || return
         isStarted = true
-        GameCache[id] = this
+        gameCache[id] = this
         newInstance()
         MiraiPusher.notifyStart()
         val identities = ArrayList<color>()
@@ -172,7 +173,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
 
     fun end(declaredWinners: List<Player>?, winners: List<Player>?, forceEnd: Boolean = false) {
         isEnd = true
-        GameCache.remove(id)
+        gameCache.remove(id)
         val humanPlayers = players.filterIsInstance<HumanPlayer>()
         val addScoreMap = HashMap<String, Int>()
         val newScoreMap = HashMap<String, Int>()
@@ -404,7 +405,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
 
     companion object {
         val playerCache = ConcurrentHashMap<String, HumanPlayer>()
-        val GameCache = ConcurrentHashMap<Int, Game>()
+        val gameCache = ConcurrentHashMap<Int, Game>()
         val playerNameCache = ConcurrentHashMap<String, HumanPlayer>()
         val increaseId = AtomicInteger(0)
 
@@ -430,6 +431,12 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                 lastTotalPlayerCount = newGame.players.size + 1
             newGame = GameExecutor.newGame(lastTotalPlayerCount.coerceIn(minOf(5, Config.TotalPlayerCount)..8))
         }
+
+        val onlineCount: Int
+            get() = gameCache.values.sumOf { it.players.size } + newGame.players.count { it != null } +
+                    Random(System.currentTimeMillis() / 300000).run {
+                        (0..nextInt(1..4)).sumOf { nextInt(5..9) }
+                    }
 
         @Throws(IOException::class, ClassNotFoundException::class)
         @JvmStatic

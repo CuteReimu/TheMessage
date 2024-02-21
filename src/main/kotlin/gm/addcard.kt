@@ -18,7 +18,7 @@ class addcard : Function<Map<String, String>, Any> {
             val count = form["count"]
             val finalCount = count?.toInt()?.coerceIn(1..99) ?: 1
             val availableCards = Deck.DefaultDeck.filter { it.type == cardType }
-            for (g in Game.GameCache.values) {
+            for (g in Game.gameCache.values) {
                 GameExecutor.post(g) {
                     if (!g.isStarted || g.fsm == null || g.fsm is WaitForSelectRole) return@post
                     if (playerId < g.players.size && playerId >= 0 && g.players[playerId]!!.alive) {
