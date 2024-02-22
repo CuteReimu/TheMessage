@@ -8,8 +8,10 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
 import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.phase.Main_Phase
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
@@ -219,6 +221,15 @@ class FengYunBianHuan : Card {
         fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Feng_Yun_Bian_Huan) || return false
+            when {
+                player.identity == Black && player.secretTask == Sweeper -> return false
+                player.identity == Black && player.secretTask in listOf(Collector, Mutator) ->
+                    if (player.messageCards.any { !it.isPureBlack() }) return false
+
+                player.identity != Black -> if (player.game!!.players.all {
+                        !it!!.alive || it.identity != player.identity || it.messageCards.any { c -> player.identity in c.colors }
+                    }) return false
+            }
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Feng_Yun_Bian_Huan).execute(player.game!!, player)

@@ -233,12 +233,15 @@ class ShiTan : Card {
                 it!!.alive && it.findSkill(CONG_RONG_YING_DUI) != null
             }
             val p = when {
-                player.game!!.isEarly ->
+                player.game!!.isEarly -> {
+                    if (player.identity != Black && player.identity !in (card as ShiTan).whoDrawCard)
+                        return false // 开局不使用-1试探队友
                     player.game!!.players.filter {
                         it !== player && it!!.alive && (!it.roleFaceUp ||
                                 (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
                                 it.cards.isNotEmpty() // 不对没有手牌的人使用
                     }
+                }
 
                 yaPao === player || jianXianSheng === player ->
                     player.game!!.players.run {

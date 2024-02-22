@@ -302,6 +302,7 @@ class RobotPlayer : Player() {
             GUANG_FA_BAO to { e, skill -> GuangFaBao.ai(e, skill!!) },
             DING_LUN to { e, skill -> DingLun.ai(e, skill!!) },
             BI_FENG to { e, _ -> BiFeng.ai(e) },
+            SOU_JI to { e, skill -> SouJi.ai(e, skill!!) },
         )
         private val aiSkillFightPhase2 = hashMapOf(
             JI_ZHI to JiZhi::ai,
@@ -309,7 +310,6 @@ class RobotPlayer : Player() {
             JI_SONG to JiSong::ai,
             MIAO_BI_QIAO_BIAN to MiaoBiQiaoBian::ai,
             MIAO_SHOU to MiaoShou::ai,
-            SOU_JI to SouJi::ai,
             DUI_ZHENG_XIA_YAO to DuiZhengXiaYao::ai,
             DU_JI to DuJi::ai,
             XIAN_FA_ZHI_REN to XianFaZhiRen::ai,
