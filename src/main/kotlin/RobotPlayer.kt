@@ -220,6 +220,7 @@ class RobotPlayer : Player() {
             if (ai(fsm, skill as ActiveSkill)) return
         }
         run {
+            !cannotPlayCard(Cheng_Qing) || return@run
             wantToSave(whoseTurn, whoDie) || return@run
             val card = cards.find { it is ChengQing } ?: return@run
             val black = whoDie.messageCards.filter { it.isBlack() }.run run1@{
