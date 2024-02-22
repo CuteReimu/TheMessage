@@ -103,7 +103,7 @@ class PoYi : Card {
             }
             player.incrSeq()
             showAndDrawCard(message.show)
-            val newFsm = sendPhase.copy(isMessageCardFaceUp = message.show)
+            val newFsm = if (message.show) sendPhase.copy(isMessageCardFaceUp = true) else sendPhase
             return ResolveResult(
                 OnFinishResolveCard(sendPhase.whoseTurn, player, null, card.getOriginCard(), Po_Yi, newFsm),
                 true
