@@ -54,7 +54,9 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         GameExecutor.post(game) {
             if (player.game !== game) return@post
             if (game.isStarted) {
-                player.notifyPlayerUpdateStatus()
+                if (game.players.all { it !is HumanPlayer || !it.isActive } && Config.IsGmEnable)
+                    game.end(null, null)
+                else player.notifyPlayerUpdateStatus()
             } else {
                 logger.info("${player.playerName}离开了房间")
                 game.players = game.players.toMutableList().apply { set(player.location, null) }
