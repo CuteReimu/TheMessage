@@ -1,8 +1,6 @@
 package com.fengsheng.network
 
-import com.fengsheng.Game
-import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
+import com.fengsheng.*
 import com.fengsheng.handler.ProtoHandler
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Fengsheng.leave_room_toc
@@ -113,7 +111,6 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
     private data class ProtoInfo(val name: String, val parser: Parser<*>, val handler: ProtoHandler)
 
     companion object {
-        @Suppress("DEPRECATION")
         private val printer = TextFormat.printer().escapingNonAscii(false)
         private val ProtoInfoMap = HashMap<Short, ProtoInfo>()
         private val heartMsgId: Short = stringHash("heart_tos")
