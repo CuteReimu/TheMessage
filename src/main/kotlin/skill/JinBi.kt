@@ -1,12 +1,13 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+
 /**
  * 王田香技能【禁闭】：出牌阶段限一次，你可以指定一名角色，除非其交给你两张手牌，否则其本回合不能使用手牌，且所有角色技能无效。
  */
@@ -164,7 +165,9 @@ class JinBi : MainPhaseSkill() {
             e.whoseTurn.getSkillUseCount(SkillId.JIN_BI) == 0 || return false
             val player = e.whoseTurn.game!!.players.filter { p ->
                 p!!.alive && p.isEnemy(e.whoseTurn)
-            }.shuffled().maxByOrNull {it!!.cards.count{c ->c.type in listOf(Jie_Huo,Wu_Dao,Diao_Bao)}} ?: return false
+            }.shuffled().maxByOrNull {
+                it!!.cards.count { c -> c.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) }
+            } ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 val builder = skill_jin_bi_a_tos.newBuilder()
                 builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)

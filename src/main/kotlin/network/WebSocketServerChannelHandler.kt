@@ -90,7 +90,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         GameExecutor.post(game) {
             if (player.game !== game) return@post
             if (game.isStarted) {
-                if (game.players.all  { it !is HumanPlayer || !it.isActive } && Config.IsGmEnable)
+                if (game.players.all { it !is HumanPlayer || !it.isActive } && Config.IsGmEnable)
                     game.end(null, null)
                 else player.notifyPlayerUpdateStatus()
             } else {
