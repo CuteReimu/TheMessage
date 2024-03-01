@@ -1658,3 +1658,34 @@ message skill_workers_are_knowledgable_toc {
   uint32 player_id = 1; // 火车司机的ID
   repeated uint32 target_player_id = 2;
 }
+
+// CP小九【壮志满怀】：你接收红色情报或你传出的红色情报被接收后，可以选择一项：
+// 1. 拿取一张你或其的黑色情报到手中。
+// 2. 双方各摸一张牌。
+message skill_zhuang_zhi_man_huai_tos {
+  uint32 card_id = 1; // 目标卡牌ID，为0就是选另一个选项
+  uint32 seq = 2;
+}
+
+// CP小九【壮志满怀】
+message skill_zhuang_zhi_man_huai_toc {
+  uint32 player_id = 1;
+  card   card = 2; // 目标卡牌，为空就是选另一个选项
+  uint32 target_player_id = 3;
+}
+
+// CP韩梅【暗藏杀机】：你接收蓝色情报或你传出的蓝色情报被接收后，可以选择一项：
+// 1. 将一张纯黑色情报置入其情报区。
+// 2. 你抽取其一张手牌牌。
+message skill_an_cang_sha_ji_tos {
+  uint32 card_id = 1; // 目标卡牌ID，为0就是选另一个选项
+  uint32 seq = 2;
+}
+
+// CP韩梅【暗藏杀机】
+message skill_an_cang_sha_ji_toc {
+  uint32 player_id = 1;
+  card   card = 2; // 目标卡牌，为空就是选另一个选项
+  uint32 target_player_id = 3;
+  card   hand_card = 4; // 抽取到的对方的手牌，和上面的card有且仅有一个为空
+}
