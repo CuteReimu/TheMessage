@@ -176,7 +176,7 @@ fun Player.calculateMessageCardValue(
                 if (game!!.players.any { it !== disturber && it!!.willWinInternal(whoseTurn, inFrontOfWhom, colors) })
                     return -600
             }
-        } else if (whoseTurn.skills.any { it is BiYiShuangFei }) {
+        } else if (whoseTurn.roleFaceUp && whoseTurn.skills.any { it is BiYiShuangFei }) {
             if (this === whoseTurn) { // 秦圆圆的回合，任何男性角色赢了，秦圆圆都会赢
                 if (game!!.players.any {
                         it !== disturber && (isPartnerOrSelf(it!!) || it.isMale)
