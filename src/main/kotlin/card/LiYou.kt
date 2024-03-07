@@ -132,7 +132,7 @@ class LiYou : Card {
             GameExecutor.post(game, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Li_You).execute(game, player, target)
-            }, 3, TimeUnit.SECONDS)
+            }, if ((player.game!!.players.maxOfOrNull{Statistics.getScore(it!!.playerName)?:0}?: 0) > 100) 3 else 5, TimeUnit.SECONDS)
             return true
         }
     }

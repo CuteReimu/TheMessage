@@ -359,7 +359,7 @@ class MiLing : Card {
                 GameExecutor.post(
                     player.game!!,
                     { card.execute(player.game!!, player, target, secret) },
-                    2,
+                    if ((player.game!!.players.maxOfOrNull{Statistics.getScore(it!!.playerName)?:0}?: 0) > 100) 3 else 5,
                     TimeUnit.SECONDS
                 )
             }

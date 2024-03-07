@@ -280,7 +280,7 @@ class ShiTan : Card {
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Shi_Tan).execute(player.game!!, player, p)
-            }, 3, TimeUnit.SECONDS)
+            }, if ((player.game!!.players.maxOfOrNull{Statistics.getScore(it!!.playerName)?:0}?: 0) > 100) 3 else 5, TimeUnit.SECONDS)
             return true
         }
     }

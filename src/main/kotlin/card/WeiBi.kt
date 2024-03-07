@@ -205,6 +205,7 @@ class WeiBi : Card {
 
         fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
+            val delay : Long = if ((player.game!!.players.maxOfOrNull{Statistics.getScore(it!!.playerName)?:0}?: 0) > 100) 3 else 5
             !player.cannotPlayCard(Wei_Bi) || return false
             !player.game!!.isEarly || return false
             val yaPao = player.game!!.players.find {
@@ -218,13 +219,13 @@ class WeiBi : Card {
                 val cardType = availableCardType.random()
                 GameExecutor.post(player.game!!, {
                     card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType)
-                }, 3, TimeUnit.SECONDS)
+                }, delay, TimeUnit.SECONDS)
                 return true
             } else if (yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0) {
                 val cardType = availableCardType.random()
                 GameExecutor.post(player.game!!, {
                     card.asCard(Wei_Bi).execute(player.game!!, player, yaPao, cardType)
-                }, 3, TimeUnit.SECONDS)
+                }, delay, TimeUnit.SECONDS)
                 return true
             }
             val p = player.game!!.players.filter {
@@ -243,7 +244,7 @@ class WeiBi : Card {
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Wei_Bi).execute(player.game!!, player, p, cardType)
-            }, 3, TimeUnit.SECONDS)
+            }, delay, TimeUnit.SECONDS)
             return true
         }
     }

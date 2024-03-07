@@ -107,7 +107,7 @@ class YuQinGuZong : Card {
                 GameExecutor.post(game, {
                     card.asCard(Yu_Qin_Gu_Zong)
                         .execute(game, player, result.card, result.dir, result.target, result.lockedPlayers.toList())
-                }, 3, TimeUnit.SECONDS)
+                }, if ((game.players.maxOfOrNull{Statistics.getScore(it!!.playerName)?:0}?: 0) > 100) 3 else 5, TimeUnit.SECONDS)
             }
         }
     }

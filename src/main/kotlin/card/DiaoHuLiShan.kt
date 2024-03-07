@@ -4,6 +4,7 @@ import com.fengsheng.Game
 import com.fengsheng.GameExecutor
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
+import com.fengsheng.Statistics
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
@@ -112,7 +113,7 @@ class DiaoHuLiShan : Card {
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Diao_Hu_Li_Shan).execute(player.game!!, player, p, isSkill)
-            }, 3, TimeUnit.SECONDS)
+            }, if ((player.game!!.players.maxOfOrNull{Statistics.getScore(it!!.playerName)?:0}?: 0) > 100) 3 else 5, TimeUnit.SECONDS)
             return true
         }
     }

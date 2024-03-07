@@ -133,7 +133,7 @@ class ChengQing : Card {
             GameExecutor.post(g, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Cheng_Qing).execute(g, player, playerAndCard.player, playerAndCard.card.id)
-            }, 3, TimeUnit.SECONDS)
+            }, if ((g.players.maxOfOrNull{Statistics.getScore(it!!.playerName)?:0}?: 0) > 100) 3 else 5, TimeUnit.SECONDS)
             return true
         }
     }
