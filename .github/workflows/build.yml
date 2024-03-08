@@ -37,5 +37,5 @@ jobs:
 
       - name: Execute Gradle build
         env:
-          GRADLE_OPTS: '-Xmx2g'
+          GRADLE_OPTS: '-Xmx4g'
         run: ./gradlew build
