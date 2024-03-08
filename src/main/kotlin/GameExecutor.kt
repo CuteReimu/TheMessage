@@ -66,10 +66,9 @@ object GameExecutor {
      * 绝大部分逻辑代码都应该由游戏的协程去执行，因此不需要加锁。
      */
     fun post(game: Game, callback: () -> Unit, delay: Long, unit: TimeUnit): Timeout {
-        if (delay == 3L && unit == TimeUnit.SECONDS) {
-            if (game.players.any { (Statistics.getScore(it!!.playerName) ?: 0) > 100 })
-                return TimeWheel.newTimeout({ post(game, callback) }, 5, unit)
-        }
+        if (delay == 3L && unit == TimeUnit.SECONDS && game.players.any {
+                it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) <= 100
+            }) return TimeWheel.newTimeout({ post(game, callback) }, 5, unit)
         return TimeWheel.newTimeout({ post(game, callback) }, delay, unit)
     }
 
