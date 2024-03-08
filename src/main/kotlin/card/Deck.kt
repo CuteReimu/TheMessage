@@ -263,7 +263,8 @@ class Deck(private val game: Game) {
                 106, listOf(color.Red, color.Black), direction.Up, true,
                 listOf(color.Red, color.Black, color.Blue)
             ),
-            MiLing(107, listOf(color.Red), direction.Left, false, listOf(color.Blue, color.Red, color.Black)),
+            // 这张牌的实际卡牌是蓝红黑，和105重复了，这里优化一下，改成黑红蓝
+            MiLing(107, listOf(color.Red), direction.Left, false, listOf(color.Black, color.Red, color.Blue)),
             MiLing(108, listOf(color.Red), direction.Right, false, listOf(color.Red, color.Blue, color.Black)),
             DiaoHuLiShan(109, listOf(color.Black), direction.Up, false),
             // DiaoHuLiShan(110, listOf(color.Black), direction.Left, false),
