@@ -36,4 +36,6 @@ jobs:
         uses: gradle/gradle-build-action@v3
 
       - name: Execute Gradle build
+        env:
+          GRADLE_OPTS: '-Xmx2g'
         run: ./gradlew build
