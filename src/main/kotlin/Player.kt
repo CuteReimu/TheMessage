@@ -37,9 +37,9 @@ abstract class Player protected constructor() {
     var hasEverFaceUp = false
 
     /**
-     * 威逼不透视概率，用于机器人。开局四分之二的概率透视威逼，每次失败变为零，每次成功加四分之一。
+     * 威逼不透视概率，用于机器人。开局二分之一的概率威逼不透视，每次失败变为零，每次成功加二分之一。
      */
-    var weiBiFailRate = 2
+    var weiBiFailRate = 1
 
     var roleSkillsData = RoleSkillsData()
         set(value) {

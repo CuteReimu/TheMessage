@@ -236,7 +236,7 @@ class WeiBi : Card {
                 filter { it!!.cards.any { card -> card.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) } }.ifEmpty { this }
             }.randomOrNull() ?: return false
             val cardType =
-                if (Random.nextInt(4) < player.weiBiFailRate) listOf(Jie_Huo, Wu_Dao, Diao_Bao).random() // N/4的概率纯随机
+                if (Random.nextInt(2) < player.weiBiFailRate) listOf(Jie_Huo, Wu_Dao, Diao_Bao).random() // N/2的概率纯随机
                 else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.run {
                     filter { it != Cheng_Qing }.ifEmpty { this }
                 }.random()
