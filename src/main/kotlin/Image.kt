@@ -208,7 +208,7 @@ object Image {
         g.drawString("最近一局", CELL_W * 6 + font.size * 2 + 3, CELL_H - 3)
         val g1 = Gradient(lines.map { it.score.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
         val g2 = Gradient(lines.map { it.gameCount.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
-        val g3 = Gradient(lines.map { PlayerGameCount(it.winCount, it.gameCount).rate })
+        val g3 = Gradient(lines.map { PlayerGameCount(it.winCount, it.gameCount).rate.coerceIn(8.0..50.0) })
         val g4 = Gradient(lines.mapNotNull { if (it.lastTime == 0L) null else it.lastTime.toDouble() })
         lines.forEachIndexed { index, line ->
             val rank = ScoreFactory.getRankStringNameByScore(line.score)
