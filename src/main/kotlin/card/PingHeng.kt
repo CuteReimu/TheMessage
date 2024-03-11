@@ -95,7 +95,7 @@ class PingHeng : Card {
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Ping_Heng).execute(player.game!!, player, p)
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }

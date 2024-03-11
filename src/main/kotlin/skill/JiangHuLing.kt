@@ -173,15 +173,17 @@ class JiangHuLing : TriggeredSkill {
                         card = c
                     }
                 }
-                GameExecutor.post(p.game!!, {
-                    if (card != null) {
+                if (card != null) {
+                    GameExecutor.post(p.game!!, {
                         val builder = skill_jiang_hu_ling_b_tos.newBuilder()
                         builder.cardId = card.id
                         p.game!!.tryContinueResolveProtocol(p, builder.build())
-                    } else {
+                    }, 3, TimeUnit.SECONDS)
+                } else {
+                    GameExecutor.post(p.game!!, {
                         p.game!!.tryContinueResolveProtocol(p, end_receive_phase_tos.getDefaultInstance())
-                    }
-                }, 2, TimeUnit.SECONDS)
+                    }, 500, TimeUnit.MILLISECONDS)
+                }
             }
             return null
         }

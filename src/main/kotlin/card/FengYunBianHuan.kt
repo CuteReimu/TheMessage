@@ -233,7 +233,7 @@ class FengYunBianHuan : Card {
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
                 card.asCard(Feng_Yun_Bian_Huan).execute(player.game!!, player)
-            }, 2, TimeUnit.SECONDS)
+            }, 3, TimeUnit.SECONDS)
             return true
         }
     }
