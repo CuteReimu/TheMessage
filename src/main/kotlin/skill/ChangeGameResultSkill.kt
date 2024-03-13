@@ -21,7 +21,7 @@ interface ChangeGameResultSkill : Skill {
     )
 }
 
-fun Game.changeDrawCardCount(whoseTurn: Player, declaredWinners: MutableList<Player>, winners: MutableList<Player>) {
+fun Game.changeGameResult(whoseTurn: Player, declaredWinners: MutableList<Player>, winners: MutableList<Player>) {
     val beginLocation = whoseTurn.location
     var i = beginLocation
     do {

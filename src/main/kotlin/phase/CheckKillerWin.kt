@@ -7,7 +7,7 @@ import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.skill.changeDrawCardCount
+import com.fengsheng.skill.changeGameResult
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -46,7 +46,7 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             winner = arrayListOf(stealer)
         }
         if (declaredWinner.isNotEmpty()) {
-            whoseTurn.game!!.changeDrawCardCount(whoseTurn, declaredWinner, winner)
+            whoseTurn.game!!.changeGameResult(whoseTurn, declaredWinner, winner)
             logger.info("${declaredWinner.joinToString()}宣告胜利，胜利者有${winner.joinToString()}")
             whoseTurn.game!!.allPlayerSetRoleFaceUp()
             whoseTurn.game!!.end(declaredWinner, winner)

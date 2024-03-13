@@ -396,7 +396,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                 alivePlayers.toMutableList()
             }
         val declaredWinners = ArrayList<Player>()
-        changeDrawCardCount(whoseTurn, declaredWinners, winner)
+        changeGameResult(whoseTurn, declaredWinners, winner)
         logger.info("只剩下${alivePlayers.joinToString()}存活，胜利者有${winner.joinToString()}")
         allPlayerSetRoleFaceUp()
         end(declaredWinners, winner)

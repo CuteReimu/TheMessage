@@ -6,7 +6,7 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.secret_task.Disturber
 import com.fengsheng.skill.InvalidSkill
 import com.fengsheng.skill.OneTurnSkill
-import com.fengsheng.skill.changeDrawCardCount
+import com.fengsheng.skill.changeGameResult
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -43,7 +43,7 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
         if (players.any { it !== whoseTurn && it.alive && it.messageCards.countTrueCard() < 2 }) return false
         val declaredWinner = arrayListOf(whoseTurn)
         val winner = arrayListOf(whoseTurn)
-        game.changeDrawCardCount(whoseTurn, declaredWinner, winner)
+        game.changeGameResult(whoseTurn, declaredWinner, winner)
         logger.info("${declaredWinner.joinToString()}宣告胜利，胜利者有${winner.joinToString()}")
         game.allPlayerSetRoleFaceUp()
         game.end(declaredWinner, winner)

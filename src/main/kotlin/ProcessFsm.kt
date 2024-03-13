@@ -4,7 +4,7 @@ import com.fengsheng.card.count
 import com.fengsheng.phase.StartWaitForChengQing
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.skill.changeDrawCardCount
+import com.fengsheng.skill.changeGameResult
 import com.fengsheng.skill.checkWin
 import org.apache.logging.log4j.kotlin.logger
 import java.util.*
@@ -89,7 +89,7 @@ abstract class ProcessFsm : Fsm {
         }
         val declareWinners = declareWinner.values.toMutableList()
         val winners = winner.values.toMutableList()
-        whoseTurn.game!!.changeDrawCardCount(whoseTurn, declareWinners, winners)
+        whoseTurn.game!!.changeGameResult(whoseTurn, declareWinners, winners)
         if (declareWinner.isNotEmpty()) {
             logger.info("${declareWinners.joinToString()}宣告胜利，胜利者有${winners.joinToString()}")
             game.allPlayerSetRoleFaceUp()
