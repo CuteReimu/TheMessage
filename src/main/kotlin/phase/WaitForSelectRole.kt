@@ -148,7 +148,9 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             xiao_ling_dang,
             chen_da_er,
             sun_shou_mo,
-            huo_che_si_ji
+            huo_che_si_ji,
+            cp_xiao_jiu,
+            cp_han_mei,
         )
     }
 }

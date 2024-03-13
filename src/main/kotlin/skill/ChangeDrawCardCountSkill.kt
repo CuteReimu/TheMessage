@@ -11,12 +11,12 @@ interface ChangeDrawCardCountSkill : Skill {
      * @param oldCount 原数量
      * @return 新的数量
      */
-    fun changeGameResult(player: Player, oldCount: Int): Int
+    fun changeDrawCardCount(player: Player, oldCount: Int): Int
 }
 
 /**
  * 获取玩家摸牌阶段摸牌的数量
  */
 fun Player.getDrawCardCountEachTurn() = skills.fold(Config.HandCardCountEachTurn) { oldCount, skill ->
-    if (skill is ChangeDrawCardCountSkill) skill.changeGameResult(this, oldCount) else oldCount
+    if (skill is ChangeDrawCardCountSkill) skill.changeDrawCardCount(this, oldCount) else oldCount
 }

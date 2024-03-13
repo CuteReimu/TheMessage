@@ -21,7 +21,7 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
 
     override val isInitialSkill = true
 
-    override fun changeGameResult(player: Player, oldCount: Int) = oldCount + player.messageCards.countTrueCard()
+    override fun changeDrawCardCount(player: Player, oldCount: Int) = oldCount + player.messageCards.countTrueCard()
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         g.findEvent<SendCardEvent>(this) { event ->

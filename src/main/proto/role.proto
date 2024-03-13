@@ -1675,8 +1675,8 @@ message skill_zhuang_zhi_man_huai_toc {
 }
 
 // CP韩梅【暗藏杀机】：你接收蓝色情报或你传出的蓝色情报被接收后，可以选择一项：
-// 1. 将一张纯黑色情报置入其情报区。
-// 2. 你抽取其一张手牌牌。
+// 1. 将一张纯黑色手牌置入其情报区。
+// 2. 你抽取其一张手牌。
 message skill_an_cang_sha_ji_tos {
   uint32 card_id = 1; // 目标卡牌ID，为0就是选另一个选项
   uint32 seq = 2;
@@ -1687,5 +1687,5 @@ message skill_an_cang_sha_ji_toc {
   uint32 player_id = 1;
   card   card = 2; // 目标卡牌，为空就是选另一个选项
   uint32 target_player_id = 3;
-  card   hand_card = 4; // 抽取到的对方的手牌，和上面的card有且仅有一个为空
+  card   hand_card = 4; // 抽取到的对方的手牌，如果上面的card为空，对于CP韩梅和对方这个字段一定有值，其他人看不到这张牌。如果上面的card不为空，则这个字段为空
 }

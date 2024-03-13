@@ -4,7 +4,8 @@ import com.fengsheng.card.count
 import com.fengsheng.phase.StartWaitForChengQing
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.skill.changeGameResult
+import com.fengsheng.skill.changeDrawCardCount
+import com.fengsheng.skill.checkWin
 import org.apache.logging.log4j.kotlin.logger
 import java.util.*
 
@@ -49,9 +50,6 @@ abstract class ProcessFsm : Fsm {
             players.find { (it.alive || it.dieJustNow) && it.identity == Black && it.secretTask == Mutator }
         var declareWinner = HashMap<Int, Player>()
         var winner = HashMap<Int, Player>()
-        fun HashMap<Int, Player>.addPlayer(player: Player) = put(player.location, player)
-        fun HashMap<Int, Player>.addAllPlayers(players: Iterable<Player>) = players.forEach { addPlayer(it) }
-        fun HashMap<Int, Player>.containsPlayer(player: Player) = containsKey(player.location)
         players.forEach { player ->
             val red = player.messageCards.count(Red)
             val blue = player.messageCards.count(Blue)
@@ -84,13 +82,14 @@ abstract class ProcessFsm : Fsm {
                 }
             }
         }
+        whoseTurn.game!!.checkWin(whoseTurn, declareWinner, winner)
         if (declareWinner.isNotEmpty() && stealer != null && stealer === whoseTurn) {
             declareWinner = hashMapOf(stealer.location to stealer)
             winner = hashMapOf(stealer.location to stealer)
         }
         val declareWinners = declareWinner.values.toMutableList()
         val winners = winner.values.toMutableList()
-        whoseTurn.game!!.changeGameResult(whoseTurn, declareWinners, winners)
+        whoseTurn.game!!.changeDrawCardCount(whoseTurn, declareWinners, winners)
         if (declareWinner.isNotEmpty()) {
             logger.info("${declareWinners.joinToString()}宣告胜利，胜利者有${winners.joinToString()}")
             game.allPlayerSetRoleFaceUp()
@@ -113,3 +112,7 @@ abstract class ProcessFsm : Fsm {
 
     abstract fun resolve0(): ResolveResult?
 }
+
+fun MutableMap<Int, Player>.addPlayer(player: Player) = put(player.location, player)
+fun MutableMap<Int, Player>.addAllPlayers(players: Iterable<Player>) = players.forEach { addPlayer(it) }
+fun MutableMap<Int, Player>.containsPlayer(player: Player) = containsKey(player.location)
