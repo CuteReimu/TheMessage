@@ -290,7 +290,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         val newPlayers = ArrayList<Player>()
         do {
             val player = this.players[i]!!
-            if (player in players) newPlayers.add(player)
+            if (players.any { it === player }) newPlayers.add(player)
             i = (i + 1) % this.players.size
         } while (i != fromIndex % this.players.size)
         return newPlayers
