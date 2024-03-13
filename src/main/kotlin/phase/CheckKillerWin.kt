@@ -41,7 +41,7 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
             declaredWinner.add(pioneer)
             winner.add(pioneer)
         }
-        if (declaredWinner.isNotEmpty() && stealer != null && stealer === whoseTurn) {
+        if (declaredWinner.isNotEmpty() && stealer != null && stealer === whoseTurn && !winner.any { it === stealer }) {
             declaredWinner = arrayListOf(stealer)
             winner = arrayListOf(stealer)
         }

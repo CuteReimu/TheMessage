@@ -83,7 +83,7 @@ abstract class ProcessFsm : Fsm {
             }
         }
         whoseTurn.game!!.checkWin(whoseTurn, declareWinner, winner)
-        if (declareWinner.isNotEmpty() && stealer != null && stealer === whoseTurn) {
+        if (declareWinner.isNotEmpty() && stealer != null && stealer === whoseTurn && !winner.containsPlayer(stealer)) {
             declareWinner = hashMapOf(stealer.location to stealer)
             winner = hashMapOf(stealer.location to stealer)
         }
