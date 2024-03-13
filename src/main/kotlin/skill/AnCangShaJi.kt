@@ -31,7 +31,7 @@ class AnCangShaJi : TriggeredSkill {
             }
             event.sender.alive && event.inFrontOfWhom.alive || return@findEvent false
             Blue in event.messageCard.colors || return@findEvent false
-            askWhom.cards.any { it.isPureBlack() } || target.cards.isNotEmpty()
+            askWhom.cards.isNotEmpty() || target.cards.isNotEmpty()
         } ?: return null
         return ResolveResult(executeAnCangShaJi(g.fsm!!, event, askWhom, target), true)
     }
@@ -44,7 +44,7 @@ class AnCangShaJi : TriggeredSkill {
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players)
-                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, r)
             return null
         }
 
@@ -131,7 +131,7 @@ class AnCangShaJi : TriggeredSkill {
                 val v = p.calculateMessageCardValue(fsm0.event.whoseTurn, target, card)
                 if (v <= 0) card = null
             }
-            if (card != null || target.cards.isNotEmpty()) {
+            if (card != null || p !== target && target.cards.isNotEmpty()) {
                 GameExecutor.post(p.game!!, {
                     val builder = skill_an_cang_sha_ji_tos.newBuilder()
                     card?.let { builder.cardId = it.id }

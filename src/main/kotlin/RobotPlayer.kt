@@ -337,6 +337,8 @@ class RobotPlayer : Player() {
             LIAN_XIN to LianXin::ai,
             MI_XIN to MiXin::ai,
             JIAN_DI_FENG_XING to JianDiFengXing::ai,
+            ZHUANG_ZHI_MAN_HUAI to ZhuangZhiManHuai::ai,
+            AN_CANG_SHA_JI to AnCangShaJi::ai,
         )
         private val aiSkillWaitForChengQing = hashMapOf(
             JI_ZHI to JiZhi::ai2,

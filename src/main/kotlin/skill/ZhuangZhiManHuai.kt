@@ -32,7 +32,7 @@ class ZhuangZhiManHuai : TriggeredSkill {
     private data class executeZhuangZhiManHuai(val fsm: Fsm, val event: ReceiveCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players)
-                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
+                p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, r)
             return null
         }
 
