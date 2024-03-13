@@ -15,6 +15,7 @@ import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.*
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class RobotPlayer : Player() {
     override fun notifyAddHandCard(location: Int, unknownCount: Int, cards: List<Card>) {
@@ -152,6 +153,12 @@ class RobotPlayer : Player() {
     override fun notifyFightPhase(waitSecond: Int) {
         val fsm = game!!.fsm as FightPhaseIdle
         this === fsm.whoseFightTurn || return
+        if (!game!!.players.any { it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) > 0 }) {
+            if (Random.nextInt(4) != 0) { // 对于0分的新人，机器人有3/4的概率在争夺阶段不打牌
+                GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500, TimeUnit.MILLISECONDS)
+                return
+            }
+        }
         for (skill in skills) {
             val ai = aiSkillFightPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as? ActiveSkill)) return
