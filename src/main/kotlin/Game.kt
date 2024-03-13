@@ -178,46 +178,48 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         val addScoreMap = HashMap<String, Int>()
         val newScoreMap = HashMap<String, Int>()
         if (declaredWinners != null && winners != null) {
-            if (winners.isNotEmpty() && winners.size < players.size) {
-                val totalWinners = winners.sumOf { (Statistics.getScore(it.playerName) ?: 0).coerceIn(180..1900) }
-                val totalPlayers = players.sumOf { (Statistics.getScore(it!!.playerName) ?: 0).coerceIn(180..1900) }
-                val totalLoser = totalPlayers - totalWinners
-                val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
-                for ((i, p) in humanPlayers.withIndex()) {
-                    val score = p.calScore(players.filterNotNull(), winners, delta / 10)
-                    val (newScore, deltaScore) = Statistics.updateScore(
-                        p.playerName,
-                        score,
-                        i == humanPlayers.size - 1
-                    )
-                    logger.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
-                    addScoreMap[p.playerName] = deltaScore
-                    newScoreMap[p.playerName] = newScore
-                }
-            }
-            val playerGameResultList = ArrayList<PlayerGameResult>()
-            if (players.size == humanPlayers.size) {
-                val records = ArrayList<Statistics.Record>(players.size)
-                for (p in players) {
-                    records.add(
-                        Statistics.Record(
-                            p!!.originRole,
-                            winners.any { it === p },
-                            p.originIdentity,
-                            p.originSecretTask,
-                            players.size
+            if (players.size >= 5) {
+                if (winners.isNotEmpty() && winners.size < players.size) {
+                    val totalWinners = winners.sumOf { (Statistics.getScore(it.playerName) ?: 0).coerceIn(180..1900) }
+                    val totalPlayers = players.sumOf { (Statistics.getScore(it!!.playerName) ?: 0).coerceIn(180..1900) }
+                    val totalLoser = totalPlayers - totalWinners
+                    val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
+                    for ((i, p) in humanPlayers.withIndex()) {
+                        val score = p.calScore(players.filterNotNull(), winners, delta / 10)
+                        val (newScore, deltaScore) = Statistics.updateScore(
+                            p.playerName,
+                            score,
+                            i == humanPlayers.size - 1
                         )
-                    )
+                        logger.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
+                        addScoreMap[p.playerName] = deltaScore
+                        newScoreMap[p.playerName] = newScore
+                    }
                 }
-                Statistics.add(records)
+                val playerGameResultList = ArrayList<PlayerGameResult>()
+                if (players.size == humanPlayers.size) {
+                    val records = ArrayList<Statistics.Record>(players.size)
+                    for (p in players) {
+                        records.add(
+                            Statistics.Record(
+                                p!!.originRole,
+                                winners.any { it === p },
+                                p.originIdentity,
+                                p.originSecretTask,
+                                players.size
+                            )
+                        )
+                    }
+                    Statistics.add(records)
+                }
+                for (p in humanPlayers) {
+                    playerGameResultList.add(PlayerGameResult(p.playerName, winners.any { it === p }))
+                }
+                Statistics.addPlayerGameCount(playerGameResultList)
+                Statistics.calculateRankList()
+                if (humanPlayers.size > 1)
+                    MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
             }
-            for (p in humanPlayers) {
-                playerGameResultList.add(PlayerGameResult(p.playerName, winners.any { it === p }))
-            }
-            Statistics.addPlayerGameCount(playerGameResultList)
-            Statistics.calculateRankList()
-            if (humanPlayers.size > 1)
-                MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
             this.players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }
         }
         humanPlayers.forEach { it.saveRecord() }
