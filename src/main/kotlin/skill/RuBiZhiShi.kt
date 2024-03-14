@@ -57,6 +57,11 @@ class RuBiZhiShi : ActiveSkill {
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[如臂指使]，查看了${target}的手牌")
         g.playerSetRoleFaceUp(r, true)
+        if (target.cards.isEmpty()) {
+            if (fsm is FightPhaseIdle) g.resolve(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom))
+            else g.continueResolve()
+            return
+        }
         r.weiBiFailRate = 0
         g.resolve(executeRuBiZhiShi(fsm as ProcessFsm, r, target))
     }

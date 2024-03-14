@@ -57,7 +57,9 @@ class MiaoShou : ActiveSkill {
         if (target.cards.isEmpty() && target.messageCards.isEmpty()) {
             logger.info("${target}没有手牌，也没有情报，回合结束")
             g.resolve(NextTurn(fsm.whoseTurn))
+            return
         }
+        r.weiBiFailRate = 0
         g.resolve(executeMiaoShou(fsm, r, target))
     }
 

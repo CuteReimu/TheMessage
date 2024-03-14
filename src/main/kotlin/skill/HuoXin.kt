@@ -74,9 +74,12 @@ class HuoXin : MainPhaseSkill() {
                 p.send(builder.build())
             }
         }
+        if (target.cards.isEmpty()) {
+            g.continueResolve()
+            return
+        }
         r.weiBiFailRate = 0
-        if (target.cards.isEmpty()) g.continueResolve()
-        else g.resolve(executeHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))
+        g.resolve(executeHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))
     }
 
     private data class executeHuoXin(
