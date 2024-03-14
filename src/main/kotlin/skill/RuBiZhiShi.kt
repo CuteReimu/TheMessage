@@ -53,15 +53,15 @@ class RuBiZhiShi : ActiveSkill {
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
+        if (target.cards.isEmpty()) {
+            logger.error("目标没有手牌")
+            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
+            return
+        }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[如臂指使]，查看了${target}的手牌")
         g.playerSetRoleFaceUp(r, true)
-        if (target.cards.isEmpty()) {
-            if (fsm is FightPhaseIdle) g.resolve(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom))
-            else g.continueResolve()
-            return
-        }
         r.weiBiFailRate = 0
         g.resolve(executeRuBiZhiShi(fsm as ProcessFsm, r, target))
     }
@@ -150,10 +150,8 @@ class RuBiZhiShi : ActiveSkill {
                         }
                     }
                     val builder = skill_ru_bi_zhi_shi_b_tos.newBuilder()
-                    if (target.cards.isNotEmpty()) {
-                        builder.enable = true
-                        builder.cardId = target.cards.bestCard(r.identity).id
-                    }
+                    builder.enable = true
+                    builder.cardId = target.cards.bestCard(r.identity).id
                     g.tryContinueResolveProtocol(r, builder.build())
                 }, 3, TimeUnit.SECONDS)
             }

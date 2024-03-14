@@ -53,6 +53,11 @@ class JiaoJi : MainPhaseSkill() {
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
+        if (target.cards.isEmpty()) {
+            logger.error("目标没有手牌")
+            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
+            return
+        }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         val cards: List<Card>
@@ -76,28 +81,26 @@ class JiaoJi : MainPhaseSkill() {
                 } else {
                     builder.unknownCardCount = cards.size
                 }
-                if (cards.isNotEmpty()) {
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq = p.seq
-                        builder.seq = seq
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq)) {
-                                val builder2 = skill_jiao_ji_b_tos.newBuilder()
-                                for (c in r.cards) {
-                                    if (builder2.cardIdsCount >= needReturnCount.first) break
-                                    builder2.addCardIds(c.id)
-                                }
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(r, builder2.build())
+                builder.waitingSecond = Config.WaitSecond
+                if (p === r) {
+                    val seq = p.seq
+                    builder.seq = seq
+                    p.timeout = GameExecutor.post(g, {
+                        if (p.checkSeq(seq)) {
+                            val builder2 = skill_jiao_ji_b_tos.newBuilder()
+                            for (c in r.cards) {
+                                if (builder2.cardIdsCount >= needReturnCount.first) break
+                                builder2.addCardIds(c.id)
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
+                            builder2.seq = seq
+                            g.tryContinueResolveProtocol(r, builder2.build())
+                        }
+                    }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                 }
                 p.send(builder.build())
             }
         }
-        if (r is RobotPlayer && cards.isNotEmpty()) {
+        if (r is RobotPlayer) {
             GameExecutor.post(g, {
                 val builder2 = skill_jiao_ji_b_tos.newBuilder()
                 for (c in r.cards.sortCards(r.identity, true)) {
@@ -107,8 +110,7 @@ class JiaoJi : MainPhaseSkill() {
                 g.tryContinueResolveProtocol(r, builder2.build())
             }, 3, TimeUnit.SECONDS)
         }
-        if (cards.isEmpty()) g.continueResolve()
-        else g.resolve(executeJiaoJi(fsm, target, needReturnCount))
+        g.resolve(executeJiaoJi(fsm, target, needReturnCount))
     }
 
     private data class executeJiaoJi(val fsm: MainPhaseIdle, val target: Player, val needReturnCount: IntRange) :
