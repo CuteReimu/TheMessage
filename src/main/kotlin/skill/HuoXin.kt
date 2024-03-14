@@ -48,11 +48,6 @@ class HuoXin : MainPhaseSkill() {
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
-        if (target.cards.isEmpty()) {
-            logger.error("目标没有手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
-            return
-        }
         val showCards = g.deck.peek(1)
         if (showCards.isEmpty()) {
             logger.error("牌堆没牌了")
@@ -69,13 +64,19 @@ class HuoXin : MainPhaseSkill() {
                 builder.playerId = p.getAlternativeLocation(r.location)
                 builder.targetPlayerId = p.getAlternativeLocation(target.location)
                 builder.showCard = showCards[0].toPbCard()
-                builder.waitingSecond = waitingSecond
-                if (p === r) {
-                    target.cards.forEach { builder.addCards(it.toPbCard()) }
-                    builder.seq = p.seq
+                if (target.cards.isNotEmpty()) {
+                    builder.waitingSecond = waitingSecond
+                    if (p === r) {
+                        target.cards.forEach { builder.addCards(it.toPbCard()) }
+                        builder.seq = p.seq
+                    }
                 }
                 p.send(builder.build())
             }
+        }
+        if (target.cards.isEmpty()) {
+            g.continueResolve()
+            return
         }
         r.weiBiFailRate = 0
         g.resolve(executeHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))

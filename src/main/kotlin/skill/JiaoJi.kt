@@ -47,11 +47,6 @@ class JiaoJi : MainPhaseSkill() {
             (r as? HumanPlayer)?.sendErrorMessage("目标错误")
             return
         }
-        if (pb.targetPlayerId == 0) {
-            logger.error("不能以自己为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
-            return
-        }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")

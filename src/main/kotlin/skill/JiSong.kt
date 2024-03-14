@@ -51,11 +51,6 @@ class JiSong : ActiveSkill {
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
-        if (target === fsm.inFrontOfWhom) {
-            logger.error("情报本来就在他面前")
-            (r as? HumanPlayer)?.sendErrorMessage("情报本来就在他面前")
-            return
-        }
         val messageCard: Card?
         val cards: List<Card>?
         if (pb.cardIdsCount == 0 && pb.messageCard != 0) {
