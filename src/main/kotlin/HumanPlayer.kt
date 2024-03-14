@@ -2,14 +2,15 @@ package com.fengsheng
 
 import com.fengsheng.card.Card
 import com.fengsheng.phase.*
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Common.phase.*
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Errcode.error_message_toc
-import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.protos.Role.skill_leng_xue_xun_lian_a_tos
+import com.fengsheng.protos.Fengsheng.notify_player_update_toc
 import com.fengsheng.skill.ActiveSkill
-import com.fengsheng.skill.SkillId
+import com.fengsheng.skill.SkillId.*
 import com.fengsheng.skill.cannotPlayCardAndSkillForFightPhase
 import com.fengsheng.skill.mustReceiveMessage
 import com.google.protobuf.GeneratedMessageV3
@@ -59,7 +60,7 @@ class HumanPlayer(
      * 向玩家客户端发送[error_message_toc]
      */
     fun sendErrorMessage(message: String) {
-        send(error_message_toc.newBuilder().setMsg(message).build())
+        send(errorMessageToc { msg = message })
     }
 
     /**
@@ -142,100 +143,98 @@ class HumanPlayer(
                     GameExecutor.TimeWheel.newTimeout(timeout!!.task(), delay.toLong(), TimeUnit.SECONDS)
             }
         }
-        send("auto_play_toc", auto_play_toc.newBuilder().setEnable(autoPlay).build().toByteArray(), true)
+        send("auto_play_toc", autoPlayToc { enable = autoPlay }.toByteArray(), true)
         notifyPlayerUpdateStatus()
     }
 
     override fun init() {
         super.init()
-        val builder = init_toc.newBuilder()
-        builder.playerCount = game!!.players.size
-        builder.identity = identity
-        builder.secretTask = secretTask
-        var l = location
-        do {
-            val player = game!!.players[l]!!
-            builder.addRoles(if (player.roleFaceUp || l == location) player.role else unknown)
-            val name =
-                if (player.playerTitle.isEmpty()) player.playerName
-                else "${player.playerName}·${player.playerTitle}"
-            builder.addNames(name)
-            l = (l + 1) % game!!.players.size
-        } while (l != location)
-        builder.addAllPossibleSecretTask(game!!.possibleSecretTasks)
-        send(builder.build())
+        send(initToc {
+            playerCount = game!!.players.size
+            identity = this@HumanPlayer.identity
+            secretTask = this@HumanPlayer.secretTask
+            var l = location
+            do {
+                val player = game!!.players[l]!!
+                roles.add(if (player.roleFaceUp || l == location) player.role else unknown)
+                val name =
+                    if (player.playerTitle.isEmpty()) player.playerName
+                    else "${player.playerName}·${player.playerTitle}"
+                names.add(name)
+                l = (l + 1) % game!!.players.size
+            } while (l != location)
+            possibleSecretTask.addAll(game!!.possibleSecretTasks)
+        })
     }
 
     override fun notifyAddHandCard(location: Int, unknownCount: Int, cards: List<Card>) {
-        val builder = add_card_toc.newBuilder()
-        builder.playerId = getAlternativeLocation(location)
-        builder.unknownCardCount = unknownCount
-        cards.forEach { builder.addCards(it.toPbCard()) }
-        send(builder.build())
+        send(addCardToc {
+            playerId = getAlternativeLocation(location)
+            unknownCardCount = unknownCount
+            cards.forEach { this.cards.add(it.toPbCard()) }
+        })
     }
 
     override fun notifyDrawPhase() {
         val player = (game!!.fsm as DrawPhase).player
         val playerId = getAlternativeLocation(player.location)
-        val builder = notify_phase_toc.newBuilder()
-        builder.currentPlayerId = playerId
-        builder.currentPhase = Draw_Phase
-        builder.waitingPlayerId = playerId
-        send(builder.build())
+        send(notifyPhaseToc {
+            currentPlayerId = playerId
+            currentPhase = Draw_Phase
+            waitingPlayerId = playerId
+        })
     }
 
     override fun notifyMainPhase(waitSecond: Int) {
         val player = (game!!.fsm as MainPhaseIdle).whoseTurn
         val playerId = getAlternativeLocation(player.location)
-        val builder = notify_phase_toc.newBuilder()
-        builder.currentPlayerId = playerId
-        builder.currentPhase = Main_Phase
-        builder.waitingPlayerId = playerId
-        builder.waitingSecond = waitSecond
-        if (this === player) {
-            mainPhaseStartTime = System.currentTimeMillis()
-            builder.seq = seq
-            val seq2 = seq
-            timeout = GameExecutor.post(game!!, {
-                if (checkSeq(seq2)) {
-                    incrSeq()
-                    game!!.resolve(SendPhaseStart(player))
-                }
-            }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
-        }
-        send(builder.build())
+        send(notifyPhaseToc {
+            currentPlayerId = playerId
+            currentPhase = Main_Phase
+            waitingPlayerId = playerId
+            waitingSecond = waitSecond
+            if (this@HumanPlayer === player) {
+                mainPhaseStartTime = System.currentTimeMillis()
+                val seq2 = this@HumanPlayer.seq
+                seq = seq2
+                timeout = GameExecutor.post(game!!, {
+                    if (checkSeq(seq2)) {
+                        incrSeq()
+                        game!!.resolve(SendPhaseStart(player))
+                    }
+                }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+            }
+        })
     }
 
     override fun notifySendPhaseStart(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseStart
         val player = fsm.whoseTurn
         val playerId = getAlternativeLocation(player.location)
-        val builder = notify_phase_toc.newBuilder()
-        builder.currentPlayerId = playerId
-        builder.currentPhase = Send_Start_Phase
-        builder.waitingPlayerId = playerId
-        if (player.cards.isNotEmpty()) {
-            builder.waitingSecond = waitSecond
-            if (this === player && waitSecond > 0) {
-                builder.seq = seq
-                val seq2 = seq
-                timeout = GameExecutor.post(game!!, {
-                    if (checkSeq(seq2)) {
-                        incrSeq()
-                        autoSendMessageCard(this)
-                    }
-                }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+        send(notifyPhaseToc {
+            currentPlayerId = playerId
+            currentPhase = Send_Start_Phase
+            waitingPlayerId = playerId
+            if (player.cards.isNotEmpty()) {
+                waitingSecond = waitSecond
+                if (this@HumanPlayer === player && waitSecond > 0) {
+                    val seq2 = this@HumanPlayer.seq
+                    seq = seq2
+                    timeout = GameExecutor.post(game!!, {
+                        if (checkSeq(seq2)) {
+                            incrSeq()
+                            autoSendMessageCard(this@HumanPlayer)
+                        }
+                    }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+                }
             }
-        }
-        send(builder.build())
+        })
         if (this === player && player.cards.isEmpty() && waitSecond > 0) {
             val seq2 = seq
             timeout = GameExecutor.post(game!!, {
                 if (checkSeq(seq2)) {
-                    val skill = player.findSkill(SkillId.LENG_XUE_XUN_LIAN) as ActiveSkill
-                    val builder2 = skill_leng_xue_xun_lian_a_tos.newBuilder()
-                    builder2.seq = seq
-                    skill.executeProtocol(game!!, player, builder2.build())
+                    val skill = player.findSkill(LENG_XUE_XUN_LIAN) as ActiveSkill
+                    skill.executeProtocol(game!!, player, skillLengXueXunLianATos { seq = seq2 })
                 }
             }, 100, TimeUnit.MILLISECONDS)
         }
@@ -247,31 +246,31 @@ class HumanPlayer(
         targetPlayer: Player,
         lockedPlayers: List<Player>,
         messageCard: Card,
-        dir: direction?
+        dir: direction
     ) {
-        val builder = send_message_card_toc.newBuilder()
-        builder.playerId = getAlternativeLocation(whoseTurn.location)
-        builder.targetPlayerId = getAlternativeLocation(targetPlayer.location)
-        builder.cardDir = dir
-        builder.senderId = getAlternativeLocation(sender.location)
-        if (sender === this) builder.cardId = messageCard.id
-        for (p in lockedPlayers) builder.addLockPlayerIds(getAlternativeLocation(p.location))
-        send(builder.build())
+        send(sendMessageCardToc {
+            playerId = getAlternativeLocation(whoseTurn.location)
+            targetPlayerId = getAlternativeLocation(targetPlayer.location)
+            cardDir = dir
+            senderId = getAlternativeLocation(sender.location)
+            if (sender === this@HumanPlayer) cardId = messageCard.id
+            lockedPlayers.forEach { lockPlayerIds.add(getAlternativeLocation(it.location)) }
+        })
     }
 
     override fun notifySendPhase(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseIdle
-        val builder = notify_phase_toc.newBuilder()
-        builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
-        builder.currentPhase = Send_Phase
-        builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
-        builder.waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
-        builder.messageCardDir = fsm.dir
-        builder.waitingSecond = waitSecond
-        builder.senderId = getAlternativeLocation(fsm.sender.location)
-        if (fsm.isMessageCardFaceUp) builder.messageCard = fsm.messageCard.toPbCard()
-        if (this === fsm.inFrontOfWhom) builder.seq = seq
-        send(builder.build())
+        send(notifyPhaseToc {
+            currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
+            currentPhase = Send_Phase
+            messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
+            waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
+            messageCardDir = fsm.dir
+            waitingSecond = waitSecond
+            senderId = getAlternativeLocation(fsm.sender.location)
+            if (fsm.isMessageCardFaceUp) messageCard = fsm.messageCard.toPbCard()
+            if (this@HumanPlayer === fsm.inFrontOfWhom) seq = this@HumanPlayer.seq
+        })
     }
 
     override fun startSendPhaseTimer(waitSecond: Int) {
@@ -294,41 +293,41 @@ class HumanPlayer(
     }
 
     override fun notifyChooseReceiveCard(player: Player) {
-        send(choose_receive_toc.newBuilder().setPlayerId(getAlternativeLocation(player.location)).build())
+        send(chooseReceiveToc { playerId = getAlternativeLocation(player.location) })
     }
 
     override fun notifyFightPhase(waitSecond: Int) {
         val fsm = game!!.fsm as FightPhaseIdle
         val skip = cannotPlayCardAndSkillForFightPhase(fsm)
-        val builder = notify_phase_toc.newBuilder()
-        builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
-        builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
-        builder.waitingPlayerId = getAlternativeLocation(fsm.whoseFightTurn.location)
-        builder.currentPhase = Fight_Phase
-        builder.waitingSecond = waitSecond
-        if (fsm.isMessageCardFaceUp) builder.messageCard = fsm.messageCard.toPbCard()
-        if (this === fsm.whoseFightTurn) {
-            builder.seq = seq
-            val seq2 = seq
-            timeout = GameExecutor.post(game!!, {
-                if (checkSeq(seq2)) {
-                    incrSeq()
-                    game!!.resolve(FightPhaseNext(fsm))
-                }
-            }, if (skip) 1 else getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
-        }
-        send(builder.build())
+        send(notifyPhaseToc {
+            currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
+            messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
+            waitingPlayerId = getAlternativeLocation(fsm.whoseFightTurn.location)
+            currentPhase = Fight_Phase
+            waitingSecond = waitSecond
+            if (fsm.isMessageCardFaceUp) messageCard = fsm.messageCard.toPbCard()
+            if (this@HumanPlayer === fsm.whoseFightTurn) {
+                val seq2 = this@HumanPlayer.seq
+                seq = seq2
+                timeout = GameExecutor.post(game!!, {
+                    if (checkSeq(seq2)) {
+                        incrSeq()
+                        game!!.resolve(FightPhaseNext(fsm))
+                    }
+                }, if (skip) 1 else getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+            }
+        })
     }
 
     override fun notifyReceivePhase() {
         val fsm = game!!.fsm as OnReceiveCard
-        val builder = notify_phase_toc.newBuilder()
-        builder.currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
-        builder.messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
-        builder.waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
-        builder.currentPhase = Receive_Phase
-        builder.messageCard = fsm.messageCard.toPbCard()
-        send(builder.build())
+        send(notifyPhaseToc {
+            currentPlayerId = getAlternativeLocation(fsm.whoseTurn.location)
+            messagePlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
+            waitingPlayerId = getAlternativeLocation(fsm.inFrontOfWhom.location)
+            currentPhase = Receive_Phase
+            messageCard = fsm.messageCard.toPbCard()
+        })
     }
 
     override fun notifyReceivePhase(
@@ -338,39 +337,35 @@ class HumanPlayer(
         waitingPlayer: Player,
         waitSecond: Int
     ) {
-        val builder = notify_phase_toc.newBuilder()
-        builder.currentPlayerId = getAlternativeLocation(whoseTurn.location)
-        builder.messagePlayerId = getAlternativeLocation(inFrontOfWhom.location)
-        builder.waitingPlayerId = getAlternativeLocation(waitingPlayer.location)
-        builder.currentPhase = Receive_Phase
-        builder.messageCard = messageCard.toPbCard()
-        builder.waitingSecond = waitSecond
-        if (this === waitingPlayer) {
-            builder.seq = seq
-            val seq2 = seq
-            timeout = GameExecutor.post(game!!, {
-                if (checkSeq(seq2)) game!!.tryContinueResolveProtocol(
-                    this,
-                    end_receive_phase_tos.newBuilder().setSeq(seq2).build()
-                )
-            }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
-        }
-        send(builder.build())
+        send(notifyPhaseToc {
+            currentPlayerId = getAlternativeLocation(whoseTurn.location)
+            messagePlayerId = getAlternativeLocation(inFrontOfWhom.location)
+            waitingPlayerId = getAlternativeLocation(waitingPlayer.location)
+            currentPhase = Receive_Phase
+            this.messageCard = messageCard.toPbCard()
+            waitingSecond = waitSecond
+            if (this@HumanPlayer === waitingPlayer) {
+                val seq2 = this@HumanPlayer.seq
+                seq = seq2
+                timeout = GameExecutor.post(game!!, {
+                    if (checkSeq(seq2))
+                        game!!.tryContinueResolveProtocol(this@HumanPlayer, endReceivePhaseTos { seq = seq2 })
+                }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+            }
+        })
     }
 
     override fun notifyDying(location: Int, loseGame: Boolean) {
         super.notifyDying(location, loseGame)
-        val builder = notify_dying_toc.newBuilder()
-        builder.playerId = getAlternativeLocation(location)
-        builder.loseGame = loseGame
-        send(builder.build())
+        send(notifyDyingToc {
+            playerId = getAlternativeLocation(location)
+            this.loseGame = loseGame
+        })
     }
 
     override fun notifyDie(location: Int) {
         super.notifyDie(location)
-        val builder = notify_die_toc.newBuilder()
-        builder.playerId = getAlternativeLocation(location)
-        send(builder.build())
+        send(notifyDieToc { playerId = getAlternativeLocation(location) })
     }
 
     override fun notifyWin(
@@ -379,60 +374,60 @@ class HumanPlayer(
         addScoreMap: HashMap<String, Int>,
         newScoreMap: HashMap<String, Int>
     ) {
-        val builder = notify_winner_toc.newBuilder()
-        builder.addAllDeclarePlayerIds(declareWinners.map { getAlternativeLocation(it.location) }.sorted())
-        builder.addAllWinnerIds(winners.map { getAlternativeLocation(it.location) }.sorted())
-        game!!.players.indices.forEach {
-            val player = game!!.players[getAbstractLocation(it)]!!
-            builder.addIdentity(player.identity)
-            builder.addSecretTasks(player.secretTask)
-            if (player is HumanPlayer) {
-                builder.addAddScore(addScoreMap[player.playerName] ?: 0)
-                val newScore = newScoreMap[player.playerName] ?: Statistics.getScore(playerName) ?: 0
-                builder.addNewScore(newScore)
-                builder.addNewRank(ScoreFactory.getRankNameByScore(newScore))
-            } else {
-                builder.addAddScore(0)
-                builder.addNewScore(0)
-                builder.addNewRank("")
+        send(notifyWinnerToc {
+            declarePlayerIds.addAll(declareWinners.map { getAlternativeLocation(it.location) }.sorted())
+            winnerIds.addAll(winners.map { getAlternativeLocation(it.location) }.sorted())
+            game!!.players.indices.forEach {
+                val player = game!!.players[getAbstractLocation(it)]!!
+                identity.add(player.identity)
+                secretTasks.add(player.secretTask)
+                if (player is HumanPlayer) {
+                    val ns = newScoreMap[player.playerName] ?: Statistics.getScore(player.playerName) ?: 0
+                    addScore.add(addScoreMap[player.playerName] ?: 0)
+                    newScore.add(ns)
+                    newRank.add(ScoreFactory.getRankNameByScore(ns))
+                } else {
+                    addScore.add(0)
+                    newScore.add(0)
+                    newRank.add("")
+                }
             }
-        }
-        send(builder.build())
+        })
     }
 
     override fun notifyAskForChengQing(whoseTurn: Player, whoDie: Player, askWhom: Player, waitSecond: Int) {
-        val builder = wait_for_cheng_qing_toc.newBuilder()
-        builder.diePlayerId = getAlternativeLocation(whoDie.location)
-        builder.waitingPlayerId = getAlternativeLocation(askWhom.location)
-        builder.waitingSecond = waitSecond
-        if (askWhom === this) {
-            builder.seq = seq
-            val seq2 = seq
-            timeout = GameExecutor.post(game!!, {
-                if (checkSeq(seq2)) {
-                    incrSeq()
-                    game!!.resolve(WaitNextForChengQing(game!!.fsm as WaitForChengQing))
-                }
-            }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
-        }
-        send(builder.build())
+        send(waitForChengQingToc {
+            diePlayerId = getAlternativeLocation(whoDie.location)
+            waitingPlayerId = getAlternativeLocation(askWhom.location)
+            waitingSecond = waitSecond
+            if (askWhom === this@HumanPlayer) {
+                val seq2 = this@HumanPlayer.seq
+                seq = seq2
+                timeout = GameExecutor.post(game!!, {
+                    if (checkSeq(seq2)) {
+                        incrSeq()
+                        game!!.resolve(WaitNextForChengQing(game!!.fsm as WaitForChengQing))
+                    }
+                }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+            }
+        })
     }
 
     override fun waitForDieGiveCard(whoDie: Player, waitSecond: Int) {
-        val builder = wait_for_die_give_card_toc.newBuilder()
-        builder.playerId = getAlternativeLocation(whoDie.location)
-        builder.waitingSecond = waitSecond
-        if (whoDie === this) {
-            builder.seq = seq
-            val seq2 = seq
-            timeout = GameExecutor.post(game!!, {
-                if (checkSeq(seq2)) {
-                    incrSeq()
-                    game!!.resolve(AfterDieGiveCard(game!!.fsm as WaitForDieGiveCard))
-                }
-            }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
-        }
-        send(builder.build())
+        send(waitForDieGiveCardToc {
+            playerId = getAlternativeLocation(whoDie.location)
+            waitingSecond = waitSecond
+            if (whoDie === this@HumanPlayer) {
+                val seq2 = this@HumanPlayer.seq
+                seq = seq2
+                timeout = GameExecutor.post(game!!, {
+                    if (checkSeq(seq2)) {
+                        incrSeq()
+                        game!!.resolve(AfterDieGiveCard(game!!.fsm as WaitForDieGiveCard))
+                    }
+                }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
+            }
+        })
     }
 
     /**
@@ -441,11 +436,11 @@ class HumanPlayer(
     fun notifyPlayerUpdateStatus() {
         for (p in game!!.players) {
             if (p is HumanPlayer) {
-                val builder = notify_player_update_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(location)
-                builder.isAuto = autoPlay
-                builder.isOffline = !isActive
-                p.send(builder.build())
+                p.send(notifyPlayerUpdateToc {
+                    playerId = p.getAlternativeLocation(location)
+                    isAuto = autoPlay
+                    isOffline = !isActive
+                })
             }
         }
     }
@@ -456,11 +451,11 @@ class HumanPlayer(
     private fun notifyOtherPlayerStatus() {
         for (p in game!!.players) {
             if (p is HumanPlayer && p !== this && (!p.isActive || p.autoPlay)) {
-                val builder = notify_player_update_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(location)
-                builder.isAuto = autoPlay
-                builder.isOffline = !isActive
-                send(builder.build())
+                send(notifyPlayerUpdateToc {
+                    playerId = p.getAlternativeLocation(location)
+                    isAuto = autoPlay
+                    isOffline = !isActive
+                })
             }
         }
     }
@@ -500,15 +495,15 @@ class HumanPlayer(
          */
         private fun autoSendMessageCard(r: Player) {
             val card =
-                if (r.findSkill(SkillId.HAN_HOU_LAO_SHI) == null) r.cards.first()
+                if (r.findSkill(HAN_HOU_LAO_SHI) == null) r.cards.first()
                 else r.cards.firstOrNull { !it.isPureBlack() } ?: r.cards.first()
             val dir =
-                if (r.findSkill(SkillId.LIAN_LUO) == null) card.direction
-                else listOf(direction.Up, direction.Left, direction.Right).random()
+                if (r.findSkill(LIAN_LUO) == null) card.direction
+                else listOf(Up, Left, Right).random()
             val availableTargets = r.game!!.players.filter { it !== r && it!!.alive }
             val target = when (dir) {
-                direction.Up -> availableTargets.random()!!
-                direction.Left -> r.getNextLeftAlivePlayer()
+                Up -> availableTargets.random()!!
+                Left -> r.getNextLeftAlivePlayer()
                 else -> r.getNextRightAlivePlayer()
             }
             r.game!!.resolve(OnSendCard(r, r, card, dir, target, emptyList()))

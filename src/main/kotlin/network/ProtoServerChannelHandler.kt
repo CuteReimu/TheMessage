@@ -3,8 +3,8 @@ package com.fengsheng.network
 import com.fengsheng.*
 import com.fengsheng.handler.ProtoHandler
 import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.leave_room_toc
 import com.fengsheng.protos.Role
+import com.fengsheng.protos.leaveRoomToc
 import com.google.protobuf.Descriptors
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
@@ -60,7 +60,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                 game.players = game.players.toMutableList().apply { set(player.location, null) }
                 player.game = null
                 Game.playerNameCache.remove(player.playerName, player)
-                val reply = leave_room_toc.newBuilder().setPosition(player.location).build()
+                val reply = leaveRoomToc { position = player.location }
                 game.players.forEach { (it as? HumanPlayer)?.send(reply) }
                 game.cancelStartTimer()
             }

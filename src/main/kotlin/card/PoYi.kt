@@ -7,7 +7,10 @@ import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.card_type.Po_Yi
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Fengsheng.po_yi_show_tos
+import com.fengsheng.protos.poYiShowToc
+import com.fengsheng.protos.poYiShowTos
+import com.fengsheng.protos.usePoYiToc
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
@@ -56,30 +59,28 @@ class PoYi : Card {
             val r = sendPhase.inFrontOfWhom
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
-                    val builder = use_po_yi_toc.newBuilder()
-                    builder.card = card.toPbCard()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    if (!sendPhase.isMessageCardFaceUp) builder.waitingSecond = Config.WaitSecond
-                    if (player === r) {
-                        val seq2 = player.seq
-                        builder.messageCard = sendPhase.messageCard.toPbCard()
-                        builder.seq = seq2
-                        val waitingSecond =
-                            if (builder.waitingSecond == 0) 0
-                            else player.getWaitSeconds(builder.waitingSecond + 2)
-                        player.timeout = GameExecutor.post(r.game!!, {
-                            if (player.checkSeq(seq2))
-                                r.game!!.tryContinueResolveProtocol(r, po_yi_show_tos.getDefaultInstance())
-                        }, waitingSecond.toLong(), TimeUnit.SECONDS)
-                    }
-                    player.send(builder.build())
+                    player.send(usePoYiToc {
+                        card = this@executePoYi.card.toPbCard()
+                        playerId = player.getAlternativeLocation(r.location)
+                        if (!sendPhase.isMessageCardFaceUp) waitingSecond = Config.WaitSecond
+                        if (player === r) {
+                            val seq2 = player.seq
+                            messageCard = sendPhase.messageCard.toPbCard()
+                            seq = seq2
+                            val waitingSecond =
+                                if (this.waitingSecond == 0) 0
+                                else player.getWaitSeconds(this.waitingSecond + 2)
+                            player.timeout = GameExecutor.post(r.game!!, {
+                                if (player.checkSeq(seq2))
+                                    r.game!!.tryContinueResolveProtocol(r, po_yi_show_tos.getDefaultInstance())
+                            }, waitingSecond.toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = po_yi_show_tos.newBuilder()
-                    builder2.show = sendPhase.messageCard.isBlack()
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, poYiShowTos { show = sendPhase.messageCard.isBlack() })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
@@ -118,11 +119,11 @@ class PoYi : Card {
             }
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
-                    val builder = po_yi_show_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.show = show
-                    if (show) builder.messageCard = sendPhase.messageCard.toPbCard()
-                    player.send(builder.build())
+                    player.send(poYiShowToc {
+                        playerId = player.getAlternativeLocation(r.location)
+                        this.show = show
+                        if (show) messageCard = sendPhase.messageCard.toPbCard()
+                    })
                 }
             }
         }

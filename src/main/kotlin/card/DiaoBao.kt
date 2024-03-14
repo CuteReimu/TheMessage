@@ -6,10 +6,12 @@ import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
-import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Diao_Bao
-import com.fengsheng.protos.Fengsheng.notify_phase_toc
-import com.fengsheng.protos.Fengsheng.use_diao_bao_toc
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.phase.Fight_Phase
+import com.fengsheng.protos.notifyPhaseToc
+import com.fengsheng.protos.useDiaoBaoToc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 
@@ -49,11 +51,11 @@ class DiaoBao : Card {
             g.deck.discard(oldCard)
             for (player in g.players) {
                 if (player is HumanPlayer) {
-                    val builder = use_diao_bao_toc.newBuilder()
-                    builder.oldMessageCard = oldCard.toPbCard()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    if (player === r) builder.cardId = id
-                    player.send(builder.build())
+                    player.send(useDiaoBaoToc {
+                        oldMessageCard = oldCard.toPbCard()
+                        playerId = player.getAlternativeLocation(r.location)
+                        if (player === r) cardId = id
+                    })
                 }
             }
             val newFsm = fsm.copy(
@@ -63,12 +65,12 @@ class DiaoBao : Card {
             )
             for (p in g.players) { // 解决客户端动画问题
                 if (p is HumanPlayer) {
-                    val builder = notify_phase_toc.newBuilder()
-                    builder.currentPlayerId = p.getAlternativeLocation(newFsm.whoseTurn.location)
-                    builder.messagePlayerId = p.getAlternativeLocation(newFsm.inFrontOfWhom.location)
-                    builder.waitingPlayerId = p.getAlternativeLocation(newFsm.whoseFightTurn.location)
-                    builder.currentPhase = phase.Fight_Phase
-                    p.send(builder.build())
+                    p.send(notifyPhaseToc {
+                        currentPlayerId = p.getAlternativeLocation(newFsm.whoseTurn.location)
+                        messagePlayerId = p.getAlternativeLocation(newFsm.inFrontOfWhom.location)
+                        waitingPlayerId = p.getAlternativeLocation(newFsm.whoseFightTurn.location)
+                        currentPhase = Fight_Phase
+                    })
                 }
             }
             OnFinishResolveCard(

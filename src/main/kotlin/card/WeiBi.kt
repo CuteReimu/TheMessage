@@ -7,7 +7,11 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Fengsheng.wei_bi_give_card_tos
+import com.fengsheng.protos.weiBiGiveCardToc
+import com.fengsheng.protos.weiBiGiveCardTos
+import com.fengsheng.protos.weiBiShowHandCardToc
+import com.fengsheng.protos.weiBiWaitForGiveCardToc
 import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
 import com.google.protobuf.GeneratedMessageV3
@@ -58,22 +62,22 @@ class WeiBi : Card {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = wei_bi_wait_for_give_card_toc.newBuilder()
-                    if (card != null) builder.card = card.toPbCard()
-                    builder.wantType = wantType
-                    builder.waitingSecond = Config.WaitSecond
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === target) {
-                        val seq = p.seq
-                        builder.seq = seq
-                        p.timeout = GameExecutor.post(r.game!!, {
-                            if (p.checkSeq(seq)) {
-                                autoSelect()
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(weiBiWaitForGiveCardToc {
+                        if (this@executeWeiBi.card != null) card = this@executeWeiBi.card.toPbCard()
+                        wantType = this@executeWeiBi.wantType
+                        waitingSecond = Config.WaitSecond
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        if (p === target) {
+                            val seq = p.seq
+                            this.seq = seq
+                            p.timeout = GameExecutor.post(r.game!!, {
+                                if (p.checkSeq(seq)) {
+                                    autoSelect()
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (target is RobotPlayer) {
@@ -108,11 +112,11 @@ class WeiBi : Card {
             r.cards.add(c)
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = wei_bi_give_card_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = c.toPbCard()
-                    p.send(builder.build())
+                    p.send(weiBiGiveCardToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        if (p === r || p === target) card = c.toPbCard()
+                    })
                 }
             }
             r.game!!.addEvent(GiveCardEvent(r, target, r))
@@ -125,10 +129,10 @@ class WeiBi : Card {
             val card = target.cards.filter { it.type == wantType }.run {
                 if (isRobot) bestCard(target.identity, true) else random()
             }
-            val builder = wei_bi_give_card_tos.newBuilder()
-            builder.cardId = card.id
-            if (target is HumanPlayer) builder.seq = target.seq
-            target.game!!.tryContinueResolveProtocol(target, builder.build())
+            target.game!!.tryContinueResolveProtocol(target, weiBiGiveCardTos {
+                cardId = card.id
+                if (target is HumanPlayer) seq = target.seq
+            })
         }
     }
 
@@ -179,15 +183,13 @@ class WeiBi : Card {
                     logger.info("${target}向${r}展示了所有手牌")
                     for (p in g.players) {
                         if (p is HumanPlayer) {
-                            val builder = wei_bi_show_hand_card_toc.newBuilder()
-                            if (card != null) builder.card = card.toPbCard()
-                            builder.wantType = wantType
-                            builder.playerId = p.getAlternativeLocation(r.location)
-                            builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                            if (p === r) {
-                                for (c in target.cards) builder.addCards(c.toPbCard())
-                            }
-                            p.send(builder.build())
+                            p.send(weiBiShowHandCardToc {
+                                if (card != null) this.card = card.toPbCard()
+                                this.wantType = wantType
+                                playerId = p.getAlternativeLocation(r.location)
+                                targetPlayerId = p.getAlternativeLocation(target.location)
+                                if (p === r) target.cards.forEach { cards.add(it.toPbCard()) }
+                            })
                         }
                     }
                     OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm)

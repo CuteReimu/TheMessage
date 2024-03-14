@@ -7,7 +7,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.use_li_you_toc
+import com.fengsheng.protos.useLiYouToc
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.SkillId.HUO_XIN
 import com.fengsheng.skill.SkillId.YUN_CHOU_WEI_WO
@@ -86,13 +86,13 @@ class LiYou : Card {
                 }
                 for (player in g.players) {
                     if (player is HumanPlayer) {
-                        val builder = use_li_you_toc.newBuilder()
-                        builder.playerId = player.getAlternativeLocation(r.location)
-                        builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                        if (card != null) builder.liYouCard = card.toPbCard()
-                        builder.joinIntoHand = joinIntoHand
-                        if (deckCards.isNotEmpty()) builder.messageCard = deckCards[0].toPbCard()
-                        player.send(builder.build())
+                        player.send(useLiYouToc {
+                            playerId = player.getAlternativeLocation(r.location)
+                            targetPlayerId = player.getAlternativeLocation(target.location)
+                            if (card != null) liYouCard = card.toPbCard()
+                            if (deckCards.isNotEmpty()) messageCard = deckCards[0].toPbCard()
+                            this.joinIntoHand = joinIntoHand
+                        })
                     }
                 }
                 if (!joinIntoHand) r.game!!.addEvent(AddMessageCardEvent(r, false))

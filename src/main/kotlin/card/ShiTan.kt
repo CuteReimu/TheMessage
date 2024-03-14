@@ -5,10 +5,11 @@ import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Shi_Tan
 import com.fengsheng.protos.Common.color.*
-import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Fengsheng.execute_shi_tan_tos
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.SkillId.*
 import com.fengsheng.skill.cannotPlayCard
@@ -64,11 +65,11 @@ class ShiTan : Card {
             if (valid) {
                 for (p in g.players) {
                     if (p is HumanPlayer) {
-                        val builder = use_shi_tan_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                        if (p === r) builder.cardId = id
-                        p.send(builder.build())
+                        p.send(useShiTanToc {
+                            playerId = p.getAlternativeLocation(r.location)
+                            targetPlayerId = p.getAlternativeLocation(target.location)
+                            if (p === r) cardId = id
+                        })
                     }
                 }
                 executeShiTan(fsm, r, target, this@ShiTan)
@@ -90,10 +91,10 @@ class ShiTan : Card {
     private fun notifyResult(target: Player, draw: Boolean) {
         for (player in target.game!!.players) {
             if (player is HumanPlayer) {
-                val builder = execute_shi_tan_toc.newBuilder()
-                builder.playerId = player.getAlternativeLocation(target.location)
-                builder.isDrawCard = draw
-                player.send(builder.build())
+                player.send(executeShiTanToc {
+                    playerId = player.getAlternativeLocation(target.location)
+                    isDrawCard = draw
+                })
             }
         }
     }
@@ -107,22 +108,23 @@ class ShiTan : Card {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = show_shi_tan_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === target) {
-                        val seq2 = p.seq
-                        builder.setSeq(seq2).card = card.toPbCard()
-                        p.timeout = GameExecutor.post(r.game!!, {
-                            if (p.checkSeq(seq2)) {
-                                autoSelect()
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    } else if (p === r) {
-                        builder.card = card.toPbCard()
-                    }
-                    p.send(builder.build())
+                    p.send(showShiTanToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        waitingSecond = Config.WaitSecond
+                        if (p === target) {
+                            val seq2 = p.seq
+                            seq = seq2
+                            card = this@executeShiTan.card.toPbCard()
+                            p.timeout = GameExecutor.post(r.game!!, {
+                                if (p.checkSeq(seq2)) {
+                                    autoSelect()
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        } else if (p === r) {
+                            card = this@executeShiTan.card.toPbCard()
+                        }
+                    })
                 }
             }
             if (target is RobotPlayer) {
@@ -193,24 +195,24 @@ class ShiTan : Card {
         }
 
         private fun autoSelect(isRobot: Boolean = false) {
-            val builder = execute_shi_tan_tos.newBuilder()
-            if (!card.checkDrawCard(target) && target.cards.isNotEmpty()) {
-                if (isRobot) builder.addCardId(target.cards.bestCard(target.identity, true).id)
-                else builder.addCardId(target.cards.random().id)
-            }
-            target.game!!.tryContinueResolveProtocol(target, builder.build())
+            target.game!!.tryContinueResolveProtocol(target, executeShiTanTos {
+                if (!card.checkDrawCard(target) && target.cards.isNotEmpty()) {
+                    if (isRobot) cardId.add(target.cards.bestCard(target.identity, true).id)
+                    else cardId.add(target.cards.random().id)
+                }
+            })
         }
     }
 
     override fun toPbCard(): card {
-        val builder = card.newBuilder()
-        builder.cardId = id
-        builder.cardDir = direction
-        builder.canLock = lockable
-        builder.cardType = type
-        builder.addAllCardColor(colors)
-        builder.addAllWhoDrawCard(whoDrawCard)
-        return builder.build()
+        return card {
+            cardId = id
+            cardDir = direction
+            canLock = lockable
+            cardType = type
+            cardColor.addAll(colors)
+            whoDrawCard.addAll(this@ShiTan.whoDrawCard)
+        }
     }
 
     override fun toString(): String {

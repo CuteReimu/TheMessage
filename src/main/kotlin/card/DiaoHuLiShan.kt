@@ -10,7 +10,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Diao_Hu_Li_Shan
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.use_diao_hu_li_shan_toc
+import com.fengsheng.protos.useDiaoHuLiShanToc
 import com.fengsheng.skill.CannotPlayCard
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.InvalidSkill
@@ -61,12 +61,12 @@ class DiaoHuLiShan : Card {
         val resolveFunc = { _: Boolean ->
             for (player in g.players) {
                 if (player is HumanPlayer) {
-                    val builder = use_diao_hu_li_shan_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    builder.card = toPbCard()
-                    builder.isSkill = isSkill
-                    player.send(builder.build())
+                    player.send(useDiaoHuLiShanToc {
+                        playerId = player.getAlternativeLocation(r.location)
+                        targetPlayerId = player.getAlternativeLocation(target.location)
+                        card = toPbCard()
+                        this.isSkill = isSkill
+                    })
                 }
             }
             if (isSkill) InvalidSkill.deal(target)

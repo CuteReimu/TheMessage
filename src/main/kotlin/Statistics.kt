@@ -2,7 +2,7 @@ package com.fengsheng
 
 import com.fengsheng.ScoreFactory.addScore
 import com.fengsheng.protos.Common.*
-import com.fengsheng.protos.Fengsheng.get_record_list_toc
+import com.fengsheng.protos.getRecordListToc
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.apache.logging.log4j.kotlin.logger
@@ -310,23 +310,23 @@ object Statistics {
 
     fun displayRecordList(player: HumanPlayer) {
         pool.trySend {
-            val builder = get_record_list_toc.newBuilder()
             val dir = File("records")
             val files = dir.list()
-            if (files != null) {
-                files.sort()
-                var lastPrefix: String? = null
-                var j = 0
-                for (i in files.indices.reversed()) {
-                    if (files[i].length < 19) continue
-                    if (lastPrefix == null || !files[i].startsWith(lastPrefix)) {
-                        if (++j > Config.RecordListSize) break
-                        lastPrefix = files[i].substring(0, 19)
+            player.send(getRecordListToc {
+                if (files != null) {
+                    files.sort()
+                    var lastPrefix: String? = null
+                    var j = 0
+                    for (i in files.indices.reversed()) {
+                        if (files[i].length < 19) continue
+                        if (lastPrefix == null || !files[i].startsWith(lastPrefix)) {
+                            if (++j > Config.RecordListSize) break
+                            lastPrefix = files[i].substring(0, 19)
+                        }
+                        records.add(files[i])
                     }
-                    builder.addRecords(files[i])
                 }
-            }
-            player.send(builder.build())
+            })
         }
     }
 

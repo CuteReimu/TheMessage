@@ -7,7 +7,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Ping_Heng
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.use_ping_heng_toc
+import com.fengsheng.protos.usePingHengToc
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -59,11 +59,11 @@ class PingHeng : Card {
         val resolveFunc = { _: Boolean ->
             for (player in g.players) {
                 if (player is HumanPlayer) {
-                    val builder = use_ping_heng_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    builder.pingHengCard = toPbCard()
-                    player.send(builder.build())
+                    player.send(usePingHengToc {
+                        playerId = player.getAlternativeLocation(r.location)
+                        targetPlayerId = player.getAlternativeLocation(target.location)
+                        pingHengCard = toPbCard()
+                    })
                 }
             }
             if (r.cards.isNotEmpty()) r.game!!.addEvent(DiscardCardEvent(r, r))

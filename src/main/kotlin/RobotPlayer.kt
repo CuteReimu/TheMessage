@@ -9,8 +9,8 @@ import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Right
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.notify_die_give_card_toc
+import com.fengsheng.protos.endReceivePhaseTos
+import com.fengsheng.protos.notifyDieGiveCardToc
 import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.*
 import org.apache.logging.log4j.kotlin.logger
@@ -88,7 +88,7 @@ class RobotPlayer : Player() {
         targetPlayer: Player,
         lockedPlayers: List<Player>,
         messageCard: Card,
-        dir: direction?
+        dir: direction
     ) {
         // Do nothing
     }
@@ -203,10 +203,7 @@ class RobotPlayer : Player() {
             if (ai(game!!.fsm!!)) return
         }
         GameExecutor.TimeWheel.newTimeout({
-            game!!.tryContinueResolveProtocol(
-                this,
-                Fengsheng.end_receive_phase_tos.getDefaultInstance()
-            )
+            game!!.tryContinueResolveProtocol(this, endReceivePhaseTos {})
         }, 100, TimeUnit.MILLISECONDS)
     }
 
@@ -261,15 +258,12 @@ class RobotPlayer : Player() {
                         logger.info("${this}给了${target}${giveCards.joinToString()}")
                         for (p in game!!.players) {
                             if (p is HumanPlayer) {
-                                val builder = notify_die_give_card_toc.newBuilder()
-                                builder.playerId = p.getAlternativeLocation(location)
-                                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                                if (p === target) {
-                                    giveCards.forEach { builder.addCard(it.toPbCard()) }
-                                } else {
-                                    builder.unknownCardCount = giveCards.size
-                                }
-                                p.send(builder.build())
+                                p.send(notifyDieGiveCardToc {
+                                    playerId = p.getAlternativeLocation(location)
+                                    targetPlayerId = p.getAlternativeLocation(target.location)
+                                    if (p === target) giveCards.forEach { card.add(it.toPbCard()) }
+                                    else unknownCardCount = giveCards.size
+                                })
                             }
                         }
                     }

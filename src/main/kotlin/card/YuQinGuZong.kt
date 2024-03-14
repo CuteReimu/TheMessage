@@ -5,9 +5,10 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
-import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Yu_Qin_Gu_Zong
-import com.fengsheng.protos.Fengsheng.use_yu_qin_gu_zong_toc
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.useYuQinGuZongToc
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -51,13 +52,13 @@ class YuQinGuZong : Card {
         val resolveFunc = { _: Boolean ->
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = use_yu_qin_gu_zong_toc.newBuilder()
-                    builder.card = toPbCard()
-                    builder.messageCardId = messageCard.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    lockPlayers.forEach { builder.addLockPlayerIds(p.getAlternativeLocation(it.location)) }
-                    p.send(builder.build())
+                    p.send(useYuQinGuZongToc {
+                        card = toPbCard()
+                        messageCardId = messageCard.id
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        lockPlayers.forEach { lockPlayerIds.add(p.getAlternativeLocation(it.location)) }
+                    })
                 }
             }
             r.deleteMessageCard(messageCard.id) // 欲擒故纵可能传出面前的情报
@@ -70,16 +71,6 @@ class YuQinGuZong : Card {
             )
         }
         g.resolve(ResolveCard(r, r, target, getOriginCard(), Yu_Qin_Gu_Zong, resolveFunc, fsm))
-    }
-
-    override fun toPbCard(): card {
-        val builder = card.newBuilder()
-        builder.cardId = id
-        builder.cardDir = direction
-        builder.canLock = lockable
-        builder.cardType = type
-        builder.addAllCardColor(colors)
-        return builder.build()
     }
 
     override fun toString(): String {

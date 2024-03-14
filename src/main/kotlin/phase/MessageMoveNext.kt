@@ -3,9 +3,10 @@ package com.fengsheng.phase
 import com.fengsheng.Fsm
 import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
-import com.fengsheng.protos.Common
-import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.notify_phase_toc
+import com.fengsheng.protos.Common.direction.Left
+import com.fengsheng.protos.Common.direction.Up
+import com.fengsheng.protos.Common.phase.Send_Phase
+import com.fengsheng.protos.notifyPhaseToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -15,7 +16,7 @@ import org.apache.logging.log4j.kotlin.logger
  */
 data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
     override fun resolve(): ResolveResult {
-        if (sendPhase.dir == direction.Up) {
+        if (sendPhase.dir == Up) {
             return if (sendPhase.sender.alive) {
                 logger.info("情报到达${sendPhase.sender}面前")
                 ResolveResult(sendPhase.copy(inFrontOfWhom = sendPhase.sender), true)
@@ -27,7 +28,7 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
             var inFrontOfWhom = sendPhase.inFrontOfWhom.location
             while (true) {
                 inFrontOfWhom =
-                    if (sendPhase.dir == direction.Left) (inFrontOfWhom + players.size - 1) % players.size
+                    if (sendPhase.dir == Left) (inFrontOfWhom + players.size - 1) % players.size
                     else (inFrontOfWhom + 1) % players.size
                 if (players[inFrontOfWhom]!!.alive) {
                     logger.info("情报到达${players[inFrontOfWhom]}面前")
@@ -45,15 +46,15 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
             val players = sendPhase.whoseTurn.game!!.players
             for (player in players) {
                 if (player is HumanPlayer) {
-                    val builder = notify_phase_toc.newBuilder()
-                    builder.currentPlayerId = player.getAlternativeLocation(sendPhase.whoseTurn.location)
-                    builder.currentPhase = Common.phase.Send_Phase
-                    builder.messagePlayerId = player.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
-                    builder.messageCardDir = sendPhase.dir
-                    builder.messageCard = sendPhase.messageCard.toPbCard()
-                    builder.senderId = player.getAlternativeLocation(sendPhase.sender.location)
-                    builder.waitingPlayerId = player.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
-                    player.send(builder.build())
+                    player.send(notifyPhaseToc {
+                        currentPlayerId = player.getAlternativeLocation(sendPhase.whoseTurn.location)
+                        currentPhase = Send_Phase
+                        messagePlayerId = player.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
+                        messageCardDir = sendPhase.dir
+                        messageCard = sendPhase.messageCard.toPbCard()
+                        senderId = player.getAlternativeLocation(sendPhase.sender.location)
+                        waitingPlayerId = player.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
+                    })
                 }
             }
         }

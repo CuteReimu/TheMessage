@@ -6,12 +6,13 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.phase.SendPhaseStart
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Mi_Ling
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction.*
-import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.protos.Role
+import com.fengsheng.protos.Fengsheng.mi_ling_choose_card_tos
+import com.fengsheng.protos.Fengsheng.send_message_card_tos
 import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.LENG_XUE_XUN_LIAN
 import com.google.protobuf.GeneratedMessageV3
@@ -74,19 +75,18 @@ class MiLing : Card {
         val resolveFunc = { _: Boolean ->
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = use_mi_ling_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.secret = secret
-                    if (p === r || p === target) builder.card = toPbCard()
-                    builder.hasColor = hasColor
-                    builder.waitingSecond = timeout
-                    if (!hasColor && p === r)
-                        target.cards.forEach { builder.addHandCards(it.toPbCard()) }
-                    if (hasColor && p === target || !hasColor && p === r) {
-                        builder.seq = p.seq
-                    }
-                    p.send(builder.build())
+                    p.send(useMiLingToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        this.secret = secret
+                        if (p === r || p === target) card = toPbCard()
+                        this.hasColor = hasColor
+                        waitingSecond = timeout
+                        if (!hasColor && p === r)
+                            target.cards.forEach { handCards.add(it.toPbCard()) }
+                        if (hasColor && p === target || !hasColor && p === r)
+                            seq = p.seq
+                    })
                 }
             }
             if (hasColor)
@@ -111,15 +111,14 @@ class MiLing : Card {
                 val seq2 = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq2)) {
-                        val builder = mi_ling_choose_card_tos.newBuilder()
-                        builder.cardId = target.cards.random().id
-                        builder.seq = seq2
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, miLingChooseCardTos {
+                            cardId = target.cards.random().id
+                            seq = seq2
+                        })
                     }
                 }, r.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
-                    val builder = mi_ling_choose_card_tos.newBuilder()
                     var value = Double.POSITIVE_INFINITY
                     var card = target.cards.first()
                     for (c in target.cards.sortCards(target.identity, true)) {
@@ -129,8 +128,7 @@ class MiLing : Card {
                             card = c
                         }
                     }
-                    builder.cardId = card.id
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, miLingChooseCardTos { cardId = card.id })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -157,15 +155,13 @@ class MiLing : Card {
             val timeout = Config.WaitSecond
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = mi_ling_choose_card_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = timeout
-                    if (p === player || p === target)
-                        builder.card = card.toPbCard()
-                    if (p === target)
-                        builder.seq = p.seq
-                    p.send(builder.build())
+                    p.send(miLingChooseCardToc {
+                        playerId = p.getAlternativeLocation(player.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        waitingSecond = timeout
+                        if (p === player || p === target) this.card = card.toPbCard()
+                        if (p === target) seq = p.seq
+                    })
                 }
             }
             return ResolveResult(executeMiLing(this.card, target, secret, card, sendPhase, timeout), true)
@@ -191,12 +187,12 @@ class MiLing : Card {
                             Right -> target.getNextRightAlivePlayer()
                             else -> target.game!!.players.filter { target !== it && it!!.alive }.random()!!
                         }
-                        val builder = send_message_card_tos.newBuilder()
-                        builder.cardId = card.id
-                        builder.targetPlayerId = target.getAlternativeLocation(messageTarget.location)
-                        builder.cardDir = card.direction
-                        builder.seq = seq2
-                        target.game!!.tryContinueResolveProtocol(target, builder.build())
+                        target.game!!.tryContinueResolveProtocol(target, sendMessageCardTos {
+                            cardId = card.id
+                            targetPlayerId = target.getAlternativeLocation(messageTarget.location)
+                            cardDir = card.direction
+                            seq = seq2
+                        })
                     }
                 }, target.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -217,12 +213,12 @@ class MiLing : Card {
                             if (messageCard != null) listOf(messageCard)
                             else target.cards.filter(this.card.secret[secret])
                         val result = target.calSendMessageCard(sendPhase.whoseTurn, availableCards)
-                        val builder = send_message_card_tos.newBuilder()
-                        builder.cardId = result.card.id
-                        builder.targetPlayerId = target.getAlternativeLocation(result.target.location)
-                        builder.cardDir = result.dir
-                        builder.addAllLockPlayerId(result.lockedPlayers.map { target.getAlternativeLocation(it.location) })
-                        target.game!!.tryContinueResolveProtocol(target, builder.build())
+                        target.game!!.tryContinueResolveProtocol(target, sendMessageCardTos {
+                            cardId = result.card.id
+                            targetPlayerId = target.getAlternativeLocation(result.target.location)
+                            cardDir = result.dir
+                            result.lockedPlayers.forEach { lockPlayerId.add(target.getAlternativeLocation(it.location)) }
+                        })
                     }
                 }, delay, TimeUnit.MILLISECONDS)
             }
@@ -299,14 +295,14 @@ class MiLing : Card {
     }
 
     override fun toPbCard(): card {
-        val builder = card.newBuilder()
-        builder.cardId = id
-        builder.cardDir = direction
-        builder.canLock = lockable
-        builder.cardType = type
-        builder.addAllCardColor(colors)
-        builder.addAllSecretColor(secret)
-        return builder.build()
+        return card {
+            cardId = id
+            cardDir = direction
+            canLock = lockable
+            cardType = type
+            cardColor.addAll(colors)
+            secretColor.addAll(secret)
+        }
     }
 
     override fun toString(): String {

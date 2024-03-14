@@ -7,7 +7,7 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.protos.Fengsheng.use_cheng_qing_toc
+import com.fengsheng.protos.useChengQingToc
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -88,12 +88,12 @@ class ChengQing : Card {
             g.deck.discard(targetCard)
             for (player in g.players) {
                 if (player is HumanPlayer) {
-                    val builder = use_cheng_qing_toc.newBuilder()
-                    builder.card = toPbCard()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    builder.targetCardId = targetCardId
-                    player.send(builder.build())
+                    player.send(useChengQingToc {
+                        card = toPbCard()
+                        playerId = player.getAlternativeLocation(r.location)
+                        targetPlayerId = player.getAlternativeLocation(target.location)
+                        this.targetCardId = targetCardId
+                    })
                 }
             }
             if (fsm is MainPhaseIdle) {
