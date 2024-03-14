@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation("com.typesafe.akka:akka-actor_2.13:2.8.5")
     implementation("io.netty:netty-all:4.1.107.Final")
-    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
     implementation("org.apache.logging.log4j:log4j-api:2.23.1")
     implementation("org.apache.logging.log4j:log4j-api-kotlin:1.4.0")
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
@@ -32,6 +32,14 @@ dependencies {
 protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:3.25.3"
+    }
+
+    generateProtoTasks {
+        all().configureEach {
+            builtins {
+                create("kotlin")
+            }
+        }
     }
 }
 
