@@ -3,6 +3,7 @@ package com.fengsheng.handler
 import com.fengsheng.Config
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.removeOnePositionToc
 import org.apache.logging.log4j.kotlin.logger
 
 class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_position_tos>() {
@@ -30,7 +31,7 @@ class remove_one_position_tos : AbstractProtoHandler<Fengsheng.remove_one_positi
         r.game!!.players = players
         players.forEachIndexed { i, p ->
             p?.location = i
-            (p as? HumanPlayer)?.send(Fengsheng.remove_one_position_toc.newBuilder().setPosition(index).build())
+            (p as? HumanPlayer)?.send(removeOnePositionToc { position = index })
         }
         if (players.any { it == null }) return
         logger.info("已满${players.size}个人，游戏将在5秒内开始。。。")

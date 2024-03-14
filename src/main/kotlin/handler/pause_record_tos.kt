@@ -2,6 +2,7 @@ package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.pauseRecordToc
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 
@@ -19,6 +20,6 @@ class pause_record_tos : ProtoHandler {
         }
         val pb = message as Fengsheng.pause_record_tos
         player.pauseRecord(pb.pause)
-        player.send(Fengsheng.pause_record_toc.newBuilder().setPause(pb.pause).build())
+        player.send(pauseRecordToc { pause = pb.pause })
     }
 }
