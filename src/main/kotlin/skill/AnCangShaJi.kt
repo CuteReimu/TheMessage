@@ -5,8 +5,8 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_an_cang_sha_ji_toc
 import com.fengsheng.protos.Role.skill_an_cang_sha_ji_tos
+import com.fengsheng.protos.skillAnCangShaJiToc
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -109,12 +109,12 @@ class AnCangShaJi : TriggeredSkill {
             }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_an_cang_sha_ji_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    card?.let { builder.card = it.toPbCard() }
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) handCard?.let { builder.handCard = it.toPbCard() }
-                    p.send(builder.build())
+                    p.send(skillAnCangShaJiToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        card?.let { this.card = it.toPbCard() }
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        if (p === r || p === target) handCard?.let { this.handCard = it.toPbCard() }
+                    })
                 }
             }
             return ResolveResult(fsm, true)

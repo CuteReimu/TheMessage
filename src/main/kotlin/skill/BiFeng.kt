@@ -4,7 +4,10 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_bi_feng_tos
+import com.fengsheng.protos.skillBiFengToc
+import com.fengsheng.protos.skillBiFengTos
+import com.fengsheng.protos.waitForSkillBiFengToc
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -31,29 +34,27 @@ class BiFeng : TriggeredSkill {
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = wait_for_skill_bi_feng_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq = p.seq
-                        builder.seq = seq
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq)) {
-                                val builder2 = skill_bi_feng_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(p, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(waitForSkillBiFengToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq = p.seq
+                            this.seq = seq
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq)) {
+                                    g.tryContinueResolveProtocol(p, skillBiFengTos {
+                                        enable = false
+                                        this.seq = seq
+                                    })
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder2 = skill_bi_feng_tos.newBuilder()
-                    builder2.enable = true
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillBiFengTos { enable = true })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -83,11 +84,11 @@ class BiFeng : TriggeredSkill {
             r.addSkillUseCount(SkillId.BI_FENG)
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_bi_feng_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.card = event.card!!.toPbCard()
-                    event.targetPlayer?.also { builder.targetPlayerId = p.getAlternativeLocation(it.location) }
-                    p.send(builder.build())
+                    p.send(skillBiFengToc {
+                        playerId = p.getAlternativeLocation(player.location)
+                        event.card?.let { this.card = it.toPbCard() }
+                        event.targetPlayer?.let { targetPlayerId = p.getAlternativeLocation(it.location) }
+                    })
                 }
             }
             r.draw(2)

@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.protos.Role.skill_fu_hei_toc
+import com.fengsheng.protos.skillFuHeiToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -19,11 +19,7 @@ class FuHei : TriggeredSkill {
         } ?: return null
         logger.info("${askWhom}发动了[腹黑]")
         for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_fu_hei_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(event.sender.location)
-                p.send(builder.build())
-            }
+            (p as? HumanPlayer)?.send(skillFuHeiToc { playerId = p.getAlternativeLocation(event.sender.location) })
         }
         event.sender.draw(1)
         return null

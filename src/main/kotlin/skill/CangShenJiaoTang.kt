@@ -7,6 +7,10 @@ import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.skillCangShenJiaoTangAToc
+import com.fengsheng.protos.skillCangShenJiaoTangBToc
+import com.fengsheng.protos.skillCangShenJiaoTangBTos
+import com.fengsheng.protos.skillCangShenJiaoTangCTos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -28,15 +32,15 @@ class CangShenJiaoTang : TriggeredSkill {
         val timeoutSecond = Config.WaitSecond
         for (player in g.players) {
             if (player is HumanPlayer) {
-                val builder = skill_cang_shen_jiao_tang_a_toc.newBuilder()
-                builder.playerId = player.getAlternativeLocation(askWhom.location)
-                builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                builder.isHiddenRole = isHiddenRole
-                if (isHiddenRole && target.roleFaceUp || !isHiddenRole && target.messageCards.count(Black) > 0) {
-                    builder.waitingSecond = timeoutSecond
-                    if (player === askWhom) builder.seq = player.seq
-                }
-                player.send(builder.build())
+                player.send(skillCangShenJiaoTangAToc {
+                    playerId = player.getAlternativeLocation(askWhom.location)
+                    targetPlayerId = player.getAlternativeLocation(target.location)
+                    this.isHiddenRole = isHiddenRole
+                    if (isHiddenRole && target.roleFaceUp || !isHiddenRole && target.messageCards.any { it.isBlack() }) {
+                        waitingSecond = timeoutSecond
+                        if (player === askWhom) seq = player.seq
+                    }
+                })
             }
         }
         if (isHiddenRole) {
@@ -60,18 +64,14 @@ class CangShenJiaoTang : TriggeredSkill {
             if (r is HumanPlayer) {
                 val seq2 = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
-                    if (r.checkSeq(seq2)) {
-                        val builder = skill_cang_shen_jiao_tang_b_tos.newBuilder()
-                        builder.enable = false
-                        builder.seq = seq2
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
-                    }
+                    if (r.checkSeq(seq2))
+                        r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangBTos { seq = seq2 })
                 }, r.getWaitSeconds(timeoutSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_cang_shen_jiao_tang_b_tos.newBuilder()
-                    builder.enable = r.isPartnerOrSelf(event.inFrontOfWhom)
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangBTos {
+                        enable = r.isPartnerOrSelf(event.inFrontOfWhom)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -98,11 +98,11 @@ class CangShenJiaoTang : TriggeredSkill {
             if (message.enable) player.game!!.playerSetRoleFaceUp(target, false)
             for (p in player.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_cang_shen_jiao_tang_b_toc.newBuilder()
-                    builder.enable = message.enable
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+                    p.send(skillCangShenJiaoTangBToc {
+                        enable = message.enable
+                        playerId = p.getAlternativeLocation(player.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                    })
                 }
             }
             return ResolveResult(fsm, true)
@@ -120,10 +120,10 @@ class CangShenJiaoTang : TriggeredSkill {
                 val seq2 = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq2)) {
-                        val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
-                        builder.enable = false
-                        builder.seq = seq2
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangCTos {
+                            enable = false
+                            seq = seq2
+                        })
                     }
                 }, r.getWaitSeconds(timeoutSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -147,13 +147,13 @@ class CangShenJiaoTang : TriggeredSkill {
                             asMessageCard = true
                         }
                     }
-                    val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
-                    if (selectedCard != null) {
-                        builder.enable = true
-                        builder.cardId = selectedCard.id
-                        builder.asMessageCard = asMessageCard
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangCTos {
+                        if (selectedCard != null) {
+                            enable = true
+                            cardId = selectedCard.id
+                            this.asMessageCard = asMessageCard
+                        }
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null

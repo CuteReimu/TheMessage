@@ -5,7 +5,9 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.card.WeiBi
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.*
+import com.fengsheng.protos.Role.skill_guang_fa_bao_a_tos
+import com.fengsheng.protos.Role.skill_guang_fa_bao_b_tos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -43,11 +45,7 @@ class GuangFaBao : ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[广发报]")
         for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_guang_fa_bao_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                p.send(builder.build())
-            }
+            (p as? HumanPlayer)?.send(skillGuangFaBaoAToc { playerId = p.getAlternativeLocation(r.location) })
         }
         r.draw(3)
         g.resolve(executeGuangFaBao(fsm, r, false))
@@ -58,22 +56,18 @@ class GuangFaBao : ActiveSkill {
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_wait_for_guang_fa_bao_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond * 4 / 3
-                    if (p === r) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_guang_fa_bao_b_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(skillWaitForGuangFaBaoBToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        waitingSecond = Config.WaitSecond * 4 / 3
+                        if (p === r) {
+                            val seq2 = p.seq
+                            seq = seq2
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq2))
+                                    g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos { seq = seq2 })
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
@@ -111,11 +105,11 @@ class GuangFaBao : ActiveSkill {
                         }
                     }
                     if (card != null && target != null) {
-                        val builder = skill_guang_fa_bao_b_tos.newBuilder()
-                        builder.enable = true
-                        builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                        builder.addCardIds(card.id)
-                        g.tryContinueResolveProtocol(r, builder.build())
+                        g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos {
+                            enable = true
+                            targetPlayerId = r.getAlternativeLocation(target.location)
+                            cardIds.add(card.id)
+                        })
                         return@post
                     }
                     g.tryContinueResolveProtocol(r, skill_guang_fa_bao_b_tos.getDefaultInstance())
@@ -145,10 +139,10 @@ class GuangFaBao : ActiveSkill {
                 r.incrSeq()
                 for (p in g.players) {
                     if (p is HumanPlayer) {
-                        val builder = skill_guang_fa_bao_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                        p.send(skillGuangFaBaoBToc {
+                            playerId = p.getAlternativeLocation(r.location)
+                            enable = false
+                        })
                     }
                 }
                 if (putCard) g.addEvent(AddMessageCardEvent(fsm.whoseTurn))
@@ -191,12 +185,12 @@ class GuangFaBao : ActiveSkill {
             target.messageCards.addAll(cards)
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_guang_fa_bao_b_toc.newBuilder()
-                    builder.enable = true
-                    cards.forEach { builder.addCards(it.toPbCard()) }
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+                    p.send(skillGuangFaBaoBToc {
+                        enable = true
+                        cards.forEach { this.cards.add(it.toPbCard()) }
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                    })
                 }
             }
             if (r.cards.isNotEmpty())
@@ -213,7 +207,7 @@ class GuangFaBao : ActiveSkill {
             !player.roleFaceUp || return false
             player === e.whoseTurn || player.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_guang_fa_bao_a_tos.newBuilder().build())
+                skill.executeProtocol(player.game!!, player, skillGuangFaBaoATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

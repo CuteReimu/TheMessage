@@ -5,8 +5,9 @@ import com.fengsheng.RobotPlayer.Companion.betterThan
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_toc
 import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_tos
+import com.fengsheng.protos.skillHouZiQieXinToc
+import com.fengsheng.protos.skillHouZiQieXinTos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -85,14 +86,12 @@ class HouZiQieXin : MainPhaseSkill() {
         r.cards.add(messageCard)
         target.messageCards.add(handCard)
         for (p in r.game!!.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_hou_zi_qie_xin_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.handCard = handCard.toPbCard()
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.messageCardId = message.messageCardId
-                p.send(builder.build())
-            }
+            (p as? HumanPlayer)?.send(skillHouZiQieXinToc {
+                playerId = p.getAlternativeLocation(r.location)
+                this.handCard = handCard.toPbCard()
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                messageCardId = message.messageCardId
+            })
         }
         g.addEvent(AddMessageCardEvent(r))
         g.continueResolve()
@@ -124,11 +123,11 @@ class HouZiQieXin : MainPhaseSkill() {
                 playerAndCard.card.betterThan(it) && it.colorExactlyTheSame(playerAndCard.card)
             }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_hou_zi_qie_xin_tos.newBuilder()
-                builder.handCardId = card.id
-                builder.targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
-                builder.messageCardId = playerAndCard.card.id
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillHouZiQieXinTos {
+                    handCardId = card.id
+                    targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
+                    messageCardId = playerAndCard.card.id
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

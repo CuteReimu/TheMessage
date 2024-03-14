@@ -4,7 +4,12 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_huo_xin_a_tos
+import com.fengsheng.protos.Role.skill_huo_xin_b_tos
+import com.fengsheng.protos.skillHuoXinAToc
+import com.fengsheng.protos.skillHuoXinATos
+import com.fengsheng.protos.skillHuoXinBToc
+import com.fengsheng.protos.skillHuoXinBTos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -59,20 +64,18 @@ class HuoXin : MainPhaseSkill() {
         logger.info("${r}发动了[惑心]，展示了牌堆顶的${showCards[0]}，查看了${target}的手牌")
         val waitingSecond = Config.WaitSecond
         for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_huo_xin_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.showCard = showCards[0].toPbCard()
+            (p as? HumanPlayer)?.send(skillHuoXinAToc {
+                playerId = p.getAlternativeLocation(r.location)
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                showCard = showCards[0].toPbCard()
                 if (target.cards.isNotEmpty()) {
-                    builder.waitingSecond = waitingSecond
+                    this.waitingSecond = waitingSecond
                     if (p === r) {
-                        target.cards.forEach { builder.addCards(it.toPbCard()) }
-                        builder.seq = p.seq
+                        target.cards.forEach { cards.add(it.toPbCard()) }
+                        seq = p.seq
                     }
                 }
-                p.send(builder.build())
-            }
+            })
         }
         if (target.cards.isEmpty()) {
             g.continueResolve()
@@ -95,10 +98,10 @@ class HuoXin : MainPhaseSkill() {
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
-                        val builder = skill_huo_xin_b_tos.newBuilder()
-                        builder.discardCardId = card.id
-                        builder.seq = seq
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillHuoXinBTos {
+                            discardCardId = card.id
+                            this.seq = seq
+                        })
                     }
                 }, r.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -106,9 +109,7 @@ class HuoXin : MainPhaseSkill() {
                     filter { it.hasSameColor(showCard) }.ifEmpty { this }.bestCard(r.identity)
                 }
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_huo_xin_b_tos.newBuilder()
-                    builder.discardCardId = card.id
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillHuoXinBTos { discardCardId = card.id })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -146,14 +147,12 @@ class HuoXin : MainPhaseSkill() {
                 r.game!!.deck.discard(card)
             }
             for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_huo_xin_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.discardCard = card.toPbCard()
-                    builder.joinIntoHand = joinIntoHand
-                    p.send(builder.build())
-                }
+                (p as? HumanPlayer)?.send(skillHuoXinBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    discardCard = card.toPbCard()
+                    this.joinIntoHand = joinIntoHand
+                })
             }
             r.game!!.addEvent(DiscardCardEvent(r, target))
             return ResolveResult(fsm, true)
@@ -168,9 +167,9 @@ class HuoXin : MainPhaseSkill() {
                 it !== e.whoseTurn && it!!.alive && (isEarly || it.isEnemy(e.whoseTurn)) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_huo_xin_a_tos.newBuilder()
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillHuoXinATos {
+                    targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

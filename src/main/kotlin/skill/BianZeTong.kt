@@ -7,7 +7,10 @@ import com.fengsheng.card.PoYi
 import com.fengsheng.card.WuDao
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_bian_ze_tong_tos
+import com.fengsheng.protos.skillBianZeTongToc
+import com.fengsheng.protos.skillBianZeTongTos
+import com.fengsheng.protos.skillWaitForBianZeTongToc
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -34,33 +37,33 @@ class BianZeTong : TriggeredSkill {
             logger.info("${r}发动了[变则通]")
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_wait_for_bian_ze_tong_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq = p.seq
-                        builder.seq = seq
-                        p.timeout = GameExecutor.post(p.game!!, {
-                            if (p.checkSeq(seq)) {
-                                val builder2 = skill_bian_ze_tong_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(skillWaitForBianZeTongToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq = p.seq
+                            this.seq = seq
+                            p.timeout = GameExecutor.post(p.game!!, {
+                                if (p.checkSeq(seq)) {
+                                    p.game!!.tryContinueResolveProtocol(p, skillBianZeTongTos {
+                                        enable = false
+                                        this.seq = seq
+                                    })
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_bian_ze_tong_tos.newBuilder()
-                    builder2.enable = true
-                    builder2.cardTypeA = listOf(Diao_Bao, Wu_Dao, Jie_Huo).run {
-                        filter { type -> r.cards.all { it.type != type } }.ifEmpty { this }
-                    }.random()
-                    builder2.cardTypeB = Po_Yi
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillBianZeTongTos {
+                        enable = true
+                        cardTypeA = listOf(Diao_Bao, Wu_Dao, Jie_Huo).run {
+                            filter { type -> r.cards.all { it.type != type } }.ifEmpty { this }
+                        }.random()
+                        cardTypeB = Po_Yi
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             r.draw(1)
@@ -87,10 +90,10 @@ class BianZeTong : TriggeredSkill {
                 r.incrSeq()
                 for (p in r.game!!.players) {
                     if (p is HumanPlayer) {
-                        val builder = skill_bian_ze_tong_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                        p.send(skillBianZeTongToc {
+                            playerId = p.getAlternativeLocation(r.location)
+                            enable = false
+                        })
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -110,12 +113,12 @@ class BianZeTong : TriggeredSkill {
             r.game!!.players.forEach { it!!.skills += BianZeTong2(message.cardTypeA, message.cardTypeB) }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_bian_ze_tong_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.enable = true
-                    builder.cardTypeA = message.cardTypeA
-                    builder.cardTypeB = message.cardTypeB
-                    p.send(builder.build())
+                    p.send(skillBianZeTongToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        enable = true
+                        cardTypeA = message.cardTypeA
+                        cardTypeB = message.cardTypeB
+                    })
                 }
             }
             return ResolveResult(fsm, true)

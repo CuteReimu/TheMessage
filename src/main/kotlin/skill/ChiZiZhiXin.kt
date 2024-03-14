@@ -4,7 +4,11 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_chi_zi_zhi_xin_a_tos
+import com.fengsheng.protos.Role.skill_chi_zi_zhi_xin_b_tos
+import com.fengsheng.protos.skillChiZiZhiXinAToc
+import com.fengsheng.protos.skillChiZiZhiXinBToc
+import com.fengsheng.protos.skillChiZiZhiXinBTos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -74,23 +78,23 @@ class ChiZiZhiXin : TriggeredSkill {
             val r = event.sender
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_chi_zi_zhi_xin_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.messageCard = event.messageCard.toPbCard()
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq = r.seq
-                        builder.seq = seq
-                        p.timeout = GameExecutor.post(r.game!!, {
-                            if (p.checkSeq(seq)) {
-                                val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
-                                builder2.drawCard = true
-                                builder2.seq = seq
-                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(skillChiZiZhiXinAToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        messageCard = event.messageCard.toPbCard()
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq = r.seq
+                            this.seq = seq
+                            p.timeout = GameExecutor.post(r.game!!, {
+                                if (p.checkSeq(seq)) {
+                                    p.game!!.tryContinueResolveProtocol(p, skillChiZiZhiXinBTos {
+                                        drawCard = true
+                                        this.seq = seq
+                                    })
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
@@ -104,13 +108,13 @@ class ChiZiZhiXin : TriggeredSkill {
                             card = c
                         }
                     }
-                    val builder2 = skill_chi_zi_zhi_xin_b_tos.newBuilder()
-                    builder2.drawCard = true
-                    card?.let {
-                        builder2.drawCard = false
-                        builder2.cardId = it.id
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillChiZiZhiXinBTos {
+                        drawCard = true
+                        card?.let {
+                            drawCard = false
+                            cardId = it.id
+                        }
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -157,11 +161,11 @@ class ChiZiZhiXin : TriggeredSkill {
             }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_chi_zi_zhi_xin_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.drawCard = message.drawCard
-                    if (card != null) builder.card = card.toPbCard()
-                    p.send(builder.build())
+                    p.send(skillChiZiZhiXinBToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        drawCard = message.drawCard
+                        card?.let { this.card = it.toPbCard() }
+                    })
                 }
             }
             if (message.drawCard) r.draw(2)

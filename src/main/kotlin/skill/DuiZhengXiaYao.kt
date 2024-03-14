@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -51,22 +52,22 @@ class DuiZhengXiaYao : ActiveSkill {
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_dui_zheng_xia_yao_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_dui_zheng_xia_yao_b_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(skillDuiZhengXiaYaoAToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq2 = p.seq
+                            seq = seq2
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq2)) {
+                                    g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos {
+                                        enable = false
+                                        seq = seq2
+                                    })
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
@@ -81,13 +82,10 @@ class DuiZhengXiaYao : ActiveSkill {
                     }
                     for ((key, cards) in cache) {
                         if (cards.size >= 2 && findColorMessageCard(g, listOf(key)) != null) {
-                            val builder = skill_dui_zheng_xia_yao_b_tos.newBuilder()
-                            builder.enable = true
-                            for (card in cards) {
-                                builder.addCardIds(card.id)
-                                if (builder.cardIdsCount >= 2) break
-                            }
-                            g.tryContinueResolveProtocol(r, builder.build())
+                            g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos {
+                                enable = true
+                                cards.take(2).forEach { cardIds.add(it.id) }
+                            })
                             return@post
                         }
                     }
@@ -117,12 +115,10 @@ class DuiZhengXiaYao : ActiveSkill {
             if (!message.enable) {
                 r.incrSeq()
                 for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_dui_zheng_xia_yao_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
-                    }
+                    (p as? HumanPlayer)?.send(skillDuiZhengXiaYaoBToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        enable = false
+                    })
                 }
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
@@ -169,32 +165,32 @@ class DuiZhengXiaYao : ActiveSkill {
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_dui_zheng_xia_yao_b_toc.newBuilder().setEnable(true)
-                    for (card in cards) builder.addCards(card.toPbCard())
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_dui_zheng_xia_yao_c_tos.newBuilder()
-                                builder2.targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)
-                                builder2.messageCardId = defaultSelection.card.id
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(skillDuiZhengXiaYaoBToc {
+                        this@executeDuiZhengXiaYaoB.cards.forEach { cards.add(it.toPbCard()) }
+                        playerId = p.getAlternativeLocation(r.location)
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq2 = p.seq
+                            seq = seq2
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq2)) {
+                                    g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoCTos {
+                                        targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)
+                                        messageCardId = defaultSelection.card.id
+                                        seq = seq2
+                                    })
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder = skill_dui_zheng_xia_yao_c_tos.newBuilder()
-                    builder.targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)
-                    builder.messageCardId = defaultSelection.card.id
-                    g.tryContinueResolveProtocol(r, builder.build())
+                    g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoCTos {
+                        targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)
+                        messageCardId = defaultSelection.card.id
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -251,11 +247,11 @@ class DuiZhengXiaYao : ActiveSkill {
             g.deck.discard(target.deleteMessageCard(card.id)!!)
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_dui_zheng_xia_yao_c_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.messageCardId = card.id
-                    p.send(builder.build())
+                    p.send(skillDuiZhengXiaYaoCToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        messageCardId = card.id
+                    })
                 }
             }
             return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)

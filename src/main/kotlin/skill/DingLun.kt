@@ -4,8 +4,8 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.phase.OnReceiveCard
-import com.fengsheng.protos.Role.skill_ding_lun_toc
 import com.fengsheng.protos.Role.skill_ding_lun_tos
+import com.fengsheng.protos.skillDingLunToc
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -51,11 +51,11 @@ class DingLun : ActiveSkill {
         val joinIntoHand = r.checkThreeSameMessageCard(fsm.messageCard)
         for (p in g.players) {
             if (p is HumanPlayer) {
-                val builder = skill_ding_lun_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.card = fsm.messageCard.toPbCard()
-                builder.joinIntoHand = joinIntoHand
-                p.send(builder.build())
+                p.send(skillDingLunToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    card = fsm.messageCard.toPbCard()
+                    this.joinIntoHand = joinIntoHand
+                })
             }
         }
         if (joinIntoHand) {

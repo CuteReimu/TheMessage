@@ -2,8 +2,8 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.skill_gong_fen_toc
 import com.fengsheng.protos.Role.skill_gong_fen_tos
+import com.fengsheng.protos.skillGongFenToc
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -74,11 +74,11 @@ class GongFen : ActiveSkill {
             }
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_gong_fen_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.card = card.toPbCard()
-                    p.send(builder.build())
+                    p.send(skillGongFenToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        this.card = card.toPbCard()
+                    })
                 }
             }
             GameExecutor.post(g, {

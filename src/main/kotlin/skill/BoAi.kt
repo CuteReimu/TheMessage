@@ -3,7 +3,11 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_bo_ai_a_tos
+import com.fengsheng.protos.Role.skill_bo_ai_b_tos
+import com.fengsheng.protos.skillBoAiAToc
+import com.fengsheng.protos.skillBoAiBToc
+import com.fengsheng.protos.skillBoAiBTos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -44,36 +48,32 @@ class BoAi : MainPhaseSkill() {
             logger.info("${r}发动了[博爱]")
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_bo_ai_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq2 = p.seq
-                        builder.seq = seq2
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_bo_ai_b_tos.newBuilder()
-                                builder2.cardId = 0
-                                builder2.seq = seq2
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(skillBoAiAToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq2 = p.seq
+                            seq = seq2
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq2))
+                                    r.game!!.tryContinueResolveProtocol(r, skillBoAiBTos { seq = seq2 })
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             r.draw(1)
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder = skill_bo_ai_b_tos.newBuilder()
-                    if (!g.isEarly) {
-                        val player = r.game!!.players.find { it!!.alive && it.isPartner(r) && it.isFemale }
-                        if (player != null) {
-                            builder.cardId = r.cards.bestCard(r.identity, true).id
-                            builder.targetPlayerId = r.getAlternativeLocation(player.location)
+                    r.game!!.tryContinueResolveProtocol(r, skillBoAiBTos {
+                        if (!g.isEarly) {
+                            val player = r.game!!.players.find { it!!.alive && it.isPartner(r) && it.isFemale }
+                            if (player != null) {
+                                targetPlayerId = r.getAlternativeLocation(player.location)
+                                cardId = r.cards.bestCard(r.identity, true).id
+                            }
                         }
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
@@ -100,10 +100,10 @@ class BoAi : MainPhaseSkill() {
                 r.incrSeq()
                 for (p in g.players) {
                     if (p is HumanPlayer) {
-                        val builder = skill_bo_ai_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                        p.send(skillBoAiBToc {
+                            playerId = p.getAlternativeLocation(r.location)
+                            enable = false
+                        })
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -136,12 +136,12 @@ class BoAi : MainPhaseSkill() {
             target.cards.add(card)
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_bo_ai_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.enable = true
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = card.toPbCard()
-                    p.send(builder.build())
+                    p.send(skillBoAiBToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        enable = true
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        if (p === r || p === target) this.card = card.toPbCard()
+                    })
                 }
             }
             if (target.isFemale) r.draw(1)

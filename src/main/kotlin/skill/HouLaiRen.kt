@@ -5,7 +5,11 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.UseChengQingOnDying
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.role.unknown
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_hou_lai_ren_a_tos
+import com.fengsheng.protos.Role.skill_hou_lai_ren_b_tos
+import com.fengsheng.protos.skillHouLaiRenAToc
+import com.fengsheng.protos.skillHouLaiRenBToc
+import com.fengsheng.protos.skillHouLaiRenBTos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -72,31 +76,29 @@ class HouLaiRen : ActiveSkill {
             val g = r.game!!
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_hou_lai_ren_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.remainCardId = remainCardId
-                    builder.waitingSecond = Config.WaitSecond * 2
-                    if (p === r) {
-                        roles.forEach { builder.addRoles(it.role) }
-                        val seq2 = p.seq
-                        builder.seq = seq2
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_hou_lai_ren_b_tos.newBuilder()
-                                builder2.role = roles.first().role
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(skillHouLaiRenAToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        remainCardId = this@executeHouLaiRen.remainCardId
+                        waitingSecond = Config.WaitSecond * 2
+                        if (p === r) {
+                            this@executeHouLaiRen.roles.forEach { roles.add(it.role) }
+                            val seq2 = p.seq
+                            seq = seq2
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq2)) {
+                                    g.tryContinueResolveProtocol(r, skillHouLaiRenBTos {
+                                        role = this@executeHouLaiRen.roles.first().role
+                                        seq = seq2
+                                    })
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder2 = skill_hou_lai_ren_b_tos.newBuilder()
-                    builder2.role = roles.first().role
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillHouLaiRenBTos { role = roles.first().role })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -130,10 +132,10 @@ class HouLaiRen : ActiveSkill {
             r.roleSkillsData = roleSkillsData
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_hou_lai_ren_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.role = if (r.roleFaceUp || p === r) r.role else unknown
-                    p.send(builder.build())
+                    p.send(skillHouLaiRenBToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        role = if (r.roleFaceUp || p === r) r.role else unknown
+                    })
                 }
             }
             return ResolveResult(UseChengQingOnDying(fsm), true)

@@ -2,7 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_cong_rong_ying_dui_tos
+import com.fengsheng.protos.skillCongRongYingDuiToc
+import com.fengsheng.protos.skillCongRongYingDuiTos
+import com.fengsheng.protos.waitForSkillCongRongYingDuiToc
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -34,32 +37,31 @@ class CongRongYingDui : TriggeredSkill {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
-                    val builder = wait_for_skill_cong_rong_ying_dui_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    if (player === r) {
-                        val seq = player.seq
-                        builder.seq = seq
-                        player.timeout = GameExecutor.post(r.game!!, {
-                            if (player.checkSeq(seq)) {
-                                val builder2 = skill_cong_rong_ying_dui_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                r.game!!.tryContinueResolveProtocol(player, builder2.build())
-                            }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    player.send(builder.build())
+                    player.send(waitForSkillCongRongYingDuiToc {
+                        playerId = player.getAlternativeLocation(r.location)
+                        targetPlayerId = player.getAlternativeLocation(target.location)
+                        waitingSecond = Config.WaitSecond
+                        if (player === r) {
+                            val seq = player.seq
+                            this.seq = seq
+                            player.timeout = GameExecutor.post(r.game!!, {
+                                if (player.checkSeq(seq)) {
+                                    r.game!!.tryContinueResolveProtocol(player, skillCongRongYingDuiTos {
+                                        enable = false
+                                        this.seq = seq
+                                    })
+                                }
+                            }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_cong_rong_ying_dui_tos.newBuilder()
-                    builder2.enable = true
-                    if (target.cards.isEmpty() || target.isPartnerOrSelf(r))
-                        builder2.drawCard = true
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillCongRongYingDuiTos {
+                        enable = true
+                        drawCard = target.cards.isEmpty() || target.isPartnerOrSelf(r)
+                    })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
@@ -99,13 +101,13 @@ class CongRongYingDui : TriggeredSkill {
             }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_cong_rong_ying_dui_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.enable = message.enable
-                    builder.drawCard = message.drawCard
-                    if (card != null && (p === r || p === target)) builder.card = card.toPbCard()
-                    p.send(builder.build())
+                    p.send(skillCongRongYingDuiToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        enable = message.enable
+                        drawCard = message.drawCard
+                        if (p === r || p === target) card?.let { this.card = it.toPbCard() }
+                    })
                 }
             }
             if (message.drawCard)

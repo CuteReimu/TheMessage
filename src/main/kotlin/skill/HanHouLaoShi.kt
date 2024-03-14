@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.protos.Role.skill_han_hou_lao_shi_toc
+import com.fengsheng.protos.skillHanHouLaoShiToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -25,11 +25,11 @@ class HanHouLaoShi : TriggeredSkill {
         target.cards.add(card)
         for (p in g.players) {
             if (p is HumanPlayer) {
-                val builder = skill_han_hou_lao_shi_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(askWhom.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                if (askWhom === p || target === p) builder.card = card.toPbCard()
-                p.send(builder.build())
+                p.send(skillHanHouLaoShiToc {
+                    playerId = p.getAlternativeLocation(askWhom.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (askWhom === p || target === p) this.card = card.toPbCard()
+                })
             }
         }
         return null

@@ -4,9 +4,11 @@ import com.fengsheng.*
 import com.fengsheng.card.LiYou
 import com.fengsheng.card.WeiBi
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Common.card_type
-import com.fengsheng.protos.Role.skill_gui_zha_toc
+import com.fengsheng.protos.Common.card_type.Li_You
+import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Role.skill_gui_zha_tos
+import com.fengsheng.protos.skillGuiZhaToc
+import com.fengsheng.protos.skillGuiZhaTos
 import com.google.protobuf.GeneratedMessageV3
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -47,29 +49,29 @@ class GuiZha : MainPhaseSkill() {
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
-        if (pb.cardType == card_type.Wei_Bi) {
-            if (!WeiBi.canUse(g, r, target, pb.wantType)) return
-        } else if (pb.cardType == card_type.Li_You) {
-            if (!LiYou.canUse(g, r, target)) return
-        } else {
-            logger.error("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
-            (r as? HumanPlayer)?.sendErrorMessage("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
-            return
+        when (pb.cardType) {
+            Wei_Bi -> if (!WeiBi.canUse(g, r, target, pb.wantType)) return
+            Li_You -> if (!LiYou.canUse(g, r, target)) return
+            else -> {
+                logger.error("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
+                (r as? HumanPlayer)?.sendErrorMessage("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
+                return
+            }
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}对${target}发动了[诡诈]")
         for (p in g.players) {
             if (p is HumanPlayer) {
-                val builder = skill_gui_zha_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.cardType = pb.cardType
-                p.send(builder.build())
+                p.send(skillGuiZhaToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    cardType = pb.cardType
+                })
             }
         }
-        if (pb.cardType == card_type.Wei_Bi) WeiBi.execute(null, g, r, target, pb.wantType)
-        else if (pb.cardType == card_type.Li_You) LiYou.execute(null, g, r, target)
+        if (pb.cardType == Wei_Bi) WeiBi.execute(null, g, r, target, pb.wantType)
+        else if (pb.cardType == Li_You) LiYou.execute(null, g, r, target)
     }
 
     companion object {
@@ -90,10 +92,10 @@ class GuiZha : MainPhaseSkill() {
                 }
             }
             GameExecutor.post(game, {
-                val builder = skill_gui_zha_tos.newBuilder()
-                builder.cardType = card_type.Li_You
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
-                skill.executeProtocol(game, e.whoseTurn, builder.build())
+                skill.executeProtocol(game, e.whoseTurn, skillGuiZhaTos {
+                    cardType = Li_You
+                    targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }
