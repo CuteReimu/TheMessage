@@ -189,11 +189,6 @@ class CangShenJiaoTang : TriggeredSkill {
                     return null
                 }
                 if (message.asMessageCard) {
-                    if (target === player) {
-                        logger.error("你不能把情报从自己面前移到自己面前")
-                        (player as? HumanPlayer)?.sendErrorMessage("你不能把情报从自己面前移到自己面前")
-                        return null
-                    }
                     logger.info("${player}发动了[藏身教堂]，将${target}面前的${card}移到自己面前")
                     target.deleteMessageCard(message.cardId)
                     player.messageCards.add(card)

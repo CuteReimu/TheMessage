@@ -120,7 +120,7 @@ class FinishResolveCardEvent(private val finishResolveCard: OnFinishResolveCard)
 }
 
 /**
- * 一名玩家给另一名玩家一张牌事件
+ * 一名玩家给另一名玩家一张牌事件（可以自己给自己牌）
  */
 class GiveCardEvent(override val whoseTurn: Player, val fromPlayer: Player, val toPlayer: Player) : Event()
 

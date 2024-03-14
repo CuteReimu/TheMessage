@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessageV3
@@ -49,15 +50,14 @@ class MiaoShou : ActiveSkill {
             (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
             return
         }
-        if (target.cards.isEmpty() && target.messageCards.isEmpty()) {
-            logger.error("目标没有手牌，也没有情报牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌，也没有情报牌")
-            return
-        }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         g.deck.discard(fsm.messageCard)
+        if (target.cards.isEmpty() && target.messageCards.isEmpty()) {
+            logger.info("${target}没有手牌，也没有情报，回合结束")
+            g.resolve(NextTurn(fsm.whoseTurn))
+        }
         g.resolve(executeMiaoShou(fsm, r, target))
     }
 

@@ -9,7 +9,7 @@ import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 程小蝶技能【惊梦】：你接收黑色情报后，可以查看一名角色的手牌。然后弃置其中一张牌，然后从中选择一张弃置。
+ * 程小蝶技能【惊梦】：你接收黑色情报后，可以查看一名角色的手牌，然后从中选择一张弃置。
  */
 class JingMeng : TriggeredSkill {
     override val skillId = SkillId.JING_MENG
@@ -19,7 +19,6 @@ class JingMeng : TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->
             askWhom === event.inFrontOfWhom || return@findEvent false
-            g.players.any { it!!.alive && it.cards.isNotEmpty() }
             event.messageCard.isBlack()
         } ?: return null
         return ResolveResult(executeJingMengA(g.fsm!!, event), true)
@@ -70,15 +69,11 @@ class JingMeng : TriggeredSkill {
                 (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
                 return null
             }
-            if (target.cards.isEmpty()) {
-                logger.error("目标没有手牌")
-                (player as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
-                return null
-            }
             r.incrSeq()
             logger.info("${r}发动了[惊梦]，查看了${target}的手牌")
             r.weiBiFailRate = 0
-            return ResolveResult(executeJingMengB(fsm, event, target), true)
+            return if (target.cards.isEmpty()) ResolveResult(fsm, true)
+            else ResolveResult(executeJingMengB(fsm, event, target), true)
         }
     }
 
