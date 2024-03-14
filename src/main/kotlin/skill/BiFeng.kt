@@ -8,7 +8,7 @@ import com.fengsheng.protos.Role.skill_bi_feng_tos
 import com.fengsheng.protos.skillBiFengToc
 import com.fengsheng.protos.skillBiFengTos
 import com.fengsheng.protos.waitForSkillBiFengToc
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -60,7 +60,7 @@ class BiFeng : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             val pb = message as? skill_bi_feng_tos
             if (pb == null) {
                 logger.error("错误的协议")

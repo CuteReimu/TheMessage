@@ -11,7 +11,7 @@ import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.card_type.Mi_Ling
 import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -25,7 +25,7 @@ class LengXueXunLian : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         message as skill_leng_xue_xun_lian_a_tos
         if (r is HumanPlayer && !r.checkSeq(message.seq)) {
             logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -115,7 +115,7 @@ class LengXueXunLian : ActiveSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             val pb = message as? skill_leng_xue_xun_lian_b_tos
             if (pb == null) {
                 logger.error("现在正在结算[冷血训练]")

@@ -6,7 +6,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_toc
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -23,7 +23,7 @@ class ZiZhengQingBai : MainPhaseSkill() {
                 r.identity == Black && r.cards.isNotEmpty() ||
                         r.identity != Black && r.cards.any { r.identity !in it.colors })
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")

@@ -8,7 +8,7 @@ import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_toc
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -23,7 +23,7 @@ class YouDiShenRu : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         message as skill_you_di_shen_ru_tos
         if (r is HumanPlayer && !r.checkSeq(message.seq)) {
             logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")

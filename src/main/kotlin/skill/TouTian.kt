@@ -8,7 +8,7 @@ import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.skill_tou_tian_toc
 import com.fengsheng.protos.Role.skill_tou_tian_tos
 import com.fengsheng.skill.SkillId.TOU_TIAN
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -22,7 +22,7 @@ class TouTian : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (!JieHuo.canUse(g, r)) return
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[偷天]")

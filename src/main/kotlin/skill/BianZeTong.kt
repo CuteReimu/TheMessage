@@ -11,7 +11,7 @@ import com.fengsheng.protos.Role.skill_bian_ze_tong_tos
 import com.fengsheng.protos.skillBianZeTongToc
 import com.fengsheng.protos.skillBianZeTongTos
 import com.fengsheng.protos.skillWaitForBianZeTongToc
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -70,7 +70,7 @@ class BianZeTong : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

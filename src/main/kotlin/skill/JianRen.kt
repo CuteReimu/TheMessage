@@ -6,7 +6,7 @@ import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -33,7 +33,7 @@ class JianRen : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             val r = event.inFrontOfWhom
             if (player !== r) {
                 logger.error("不是你发技能的时机")
@@ -119,7 +119,7 @@ class JianRen : TriggeredSkill {
             return if (isBlack && autoChoose != null) null else ResolveResult(fsm, true)
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

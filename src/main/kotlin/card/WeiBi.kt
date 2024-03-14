@@ -14,7 +14,7 @@ import com.fengsheng.protos.weiBiShowHandCardToc
 import com.fengsheng.protos.weiBiWaitForGiveCardToc
 import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -88,7 +88,7 @@ class WeiBi : Card {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is wei_bi_give_card_tos) {
                 logger.error("现在正在结算威逼")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算威逼")

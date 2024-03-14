@@ -16,7 +16,7 @@ import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.feng_yun_bian_huan_choose_card_tos
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -127,7 +127,7 @@ class FengYunBianHuan : Card {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is feng_yun_bian_huan_choose_card_tos) {
                 logger.error("现在正在结算风云变幻")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算风云变幻")

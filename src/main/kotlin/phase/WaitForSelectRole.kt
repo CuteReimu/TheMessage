@@ -9,7 +9,7 @@ import com.fengsheng.protos.selectRoleTos
 import com.fengsheng.protos.waitForSelectRoleToc
 import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.RoleSkillsData
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -51,7 +51,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         return ResolveResult(StartGame(game, whoseTurn), true)
     }
 
-    override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+    override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
         if (message !is select_role_tos) {
             logger.error("正在等待选择角色")
             (player as? HumanPlayer)?.sendErrorMessage("正在等待选择角色")

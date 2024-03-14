@@ -9,7 +9,7 @@ import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Role.skill_gui_zha_tos
 import com.fengsheng.protos.skillGuiZhaToc
 import com.fengsheng.protos.skillGuiZhaTos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -21,7 +21,7 @@ class GuiZha : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")

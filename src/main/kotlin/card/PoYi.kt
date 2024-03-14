@@ -12,7 +12,7 @@ import com.fengsheng.protos.poYiShowToc
 import com.fengsheng.protos.poYiShowTos
 import com.fengsheng.protos.usePoYiToc
 import com.fengsheng.skill.cannotPlayCard
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -86,7 +86,7 @@ class PoYi : Card {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is po_yi_show_tos) {
                 logger.error("现在正在结算破译")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算破译")

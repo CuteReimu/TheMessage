@@ -11,7 +11,7 @@ import com.fengsheng.protos.skillCangShenJiaoTangAToc
 import com.fengsheng.protos.skillCangShenJiaoTangBToc
 import com.fengsheng.protos.skillCangShenJiaoTangBTos
 import com.fengsheng.protos.skillCangShenJiaoTangCTos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -77,7 +77,7 @@ class CangShenJiaoTang : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
@@ -159,7 +159,7 @@ class CangShenJiaoTang : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

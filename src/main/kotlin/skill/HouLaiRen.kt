@@ -10,7 +10,7 @@ import com.fengsheng.protos.Role.skill_hou_lai_ren_b_tos
 import com.fengsheng.protos.skillHouLaiRenAToc
 import com.fengsheng.protos.skillHouLaiRenBToc
 import com.fengsheng.protos.skillHouLaiRenBTos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -24,7 +24,7 @@ class HouLaiRen : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? WaitForChengQing
         if (fsm == null || r !== fsm.askWhom || r !== fsm.whoDie) {
             logger.error("还没有结算到你濒死")
@@ -104,7 +104,7 @@ class HouLaiRen : ActiveSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

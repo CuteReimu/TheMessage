@@ -9,7 +9,7 @@ import com.fengsheng.protos.Role.skill_chi_zi_zhi_xin_b_tos
 import com.fengsheng.protos.skillChiZiZhiXinAToc
 import com.fengsheng.protos.skillChiZiZhiXinBToc
 import com.fengsheng.protos.skillChiZiZhiXinBTos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -42,7 +42,7 @@ class ChiZiZhiXin : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
@@ -120,7 +120,7 @@ class ChiZiZhiXin : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

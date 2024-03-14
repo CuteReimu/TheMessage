@@ -5,7 +5,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Role.skill_ji_zhi_toc
 import com.fengsheng.protos.Role.skill_ji_zhi_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -19,7 +19,7 @@ class JiZhi : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm
         if ((fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) && (fsm !is WaitForChengQing || r !== fsm.askWhom)) {
             logger.error("现在不是发动[急智]的时机")

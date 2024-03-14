@@ -5,13 +5,13 @@ import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.getRoomInfoToc
 import com.fengsheng.protos.leaveRoomToc
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.logger
 import java.nio.charset.StandardCharsets
 
 class join_room_tos : ProtoHandler {
-    override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
+    override fun handle(player: HumanPlayer, message: GeneratedMessage) {
         if (player.game != null || player.isLoadingRecord) {
             logger.error("player is already in a room")
             player.sendErrorMessage("你已经在房间里了")

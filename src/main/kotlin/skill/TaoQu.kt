@@ -8,7 +8,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -27,7 +27,7 @@ class TaoQu : MainPhaseSkill() {
             }
         }
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? MainPhaseIdle
         if (r !== fsm?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
@@ -137,7 +137,7 @@ class TaoQu : MainPhaseSkill() {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== fsm.whoseTurn) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

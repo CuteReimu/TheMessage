@@ -13,7 +13,7 @@ import com.fengsheng.protos.Fengsheng.execute_shi_tan_tos
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.SkillId.*
 import com.fengsheng.skill.cannotPlayCard
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -141,7 +141,7 @@ class ShiTan : Card {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is execute_shi_tan_tos) {
                 logger.error("现在正在结算试探：$card")
                 (target as? HumanPlayer)?.sendErrorMessage("现在正在结算试探：$card")

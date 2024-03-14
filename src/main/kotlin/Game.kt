@@ -14,7 +14,7 @@ import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.*
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import com.google.protobuf.TextFormat
 import io.netty.util.Timeout
 import org.apache.logging.log4j.kotlin.logger
@@ -314,7 +314,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     /**
      * 对于[WaitingFsm]，当收到玩家协议时，继续处理当前状态机
      */
-    fun tryContinueResolveProtocol(player: Player, pb: GeneratedMessageV3) {
+    fun tryContinueResolveProtocol(player: Player, pb: GeneratedMessage) {
         GameExecutor.post(this) {
             if (fsm !is WaitingFsm) {
                 logger.error(

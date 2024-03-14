@@ -6,7 +6,7 @@ import com.fengsheng.phase.NextTurn
 import com.fengsheng.phase.OnReceiveCard
 import com.fengsheng.protos.Role.skill_ding_lun_tos
 import com.fengsheng.protos.skillDingLunToc
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -21,7 +21,7 @@ class DingLun : ActiveSkill {
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean =
         !r.roleFaceUp && fightPhase.inFrontOfWhom === r
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("不是你发技能的时机")

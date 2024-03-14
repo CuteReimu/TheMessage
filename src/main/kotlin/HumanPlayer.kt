@@ -13,7 +13,7 @@ import com.fengsheng.skill.ActiveSkill
 import com.fengsheng.skill.SkillId.*
 import com.fengsheng.skill.cannotPlayCardAndSkillForFightPhase
 import com.fengsheng.skill.mustReceiveMessage
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import com.google.protobuf.TextFormat
 import io.netty.channel.Channel
 import io.netty.channel.ChannelFuture
@@ -66,7 +66,7 @@ class HumanPlayer(
     /**
      * 向玩家客户端发送协议
      */
-    fun send(message: GeneratedMessageV3) {
+    fun send(message: GeneratedMessage) {
         val buf = message.toByteArray()
         val name = message.descriptorForType.name
         recorder.add(name, buf)

@@ -15,7 +15,7 @@ import com.fengsheng.protos.Fengsheng.mi_ling_choose_card_tos
 import com.fengsheng.protos.Fengsheng.send_message_card_tos
 import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.LENG_XUE_XUN_LIAN
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -134,7 +134,7 @@ class MiLing : Card {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is mi_ling_choose_card_tos) {
                 logger.error("现在正在结算密令")
                 (player as? HumanPlayer)?.sendErrorMessage("现在正在结算密令")
@@ -225,7 +225,7 @@ class MiLing : Card {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             val pb = message as? send_message_card_tos
             if (pb == null) {
                 logger.error("现在正在结算密令")

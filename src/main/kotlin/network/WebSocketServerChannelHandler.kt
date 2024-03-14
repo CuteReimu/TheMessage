@@ -6,7 +6,7 @@ import com.fengsheng.protos.Fengsheng
 import com.fengsheng.protos.Role
 import com.fengsheng.protos.leaveRoomToc
 import com.google.protobuf.Descriptors
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import com.google.protobuf.Parser
 import com.google.protobuf.TextFormat
 import io.netty.buffer.Unpooled
@@ -43,7 +43,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         }
         val buf = ByteArray(msg.readableBytes())
         msg.readBytes(buf)
-        val message = protoInfo.parser.parseFrom(buf) as GeneratedMessageV3
+        val message = protoInfo.parser.parseFrom(buf) as GeneratedMessage
         if ("heart_tos" != protoName && "auto_play_tos" != protoName) {
             logger.debug(
                 "recv@%s len: %d %s | %s".format(

@@ -7,7 +7,7 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_ji_song_toc
 import com.fengsheng.protos.Role.skill_ji_song_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -22,7 +22,7 @@ class JiSong : ActiveSkill {
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean =
         (r.cards.size >= 2 || r.messageCards.any { !it.isBlack() }) && r.getSkillUseCount(skillId) == 0
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
             logger.error("现在不是发动[急送]的时机")

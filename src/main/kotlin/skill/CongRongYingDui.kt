@@ -6,7 +6,7 @@ import com.fengsheng.protos.Role.skill_cong_rong_ying_dui_tos
 import com.fengsheng.protos.skillCongRongYingDuiToc
 import com.fengsheng.protos.skillCongRongYingDuiTos
 import com.fengsheng.protos.waitForSkillCongRongYingDuiToc
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -67,7 +67,7 @@ class CongRongYingDui : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is skill_cong_rong_ying_dui_tos) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

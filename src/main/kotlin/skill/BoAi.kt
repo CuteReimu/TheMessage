@@ -8,7 +8,7 @@ import com.fengsheng.protos.Role.skill_bo_ai_b_tos
 import com.fengsheng.protos.skillBoAiAToc
 import com.fengsheng.protos.skillBoAiBToc
 import com.fengsheng.protos.skillBoAiBTos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -20,7 +20,7 @@ class BoAi : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
             (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
@@ -79,7 +79,7 @@ class BoAi : MainPhaseSkill() {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

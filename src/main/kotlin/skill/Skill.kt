@@ -5,7 +5,7 @@ import com.fengsheng.Game
 import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.phase.FightPhaseIdle
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 
 /**
  * 技能的基类
@@ -74,7 +74,7 @@ interface ActiveSkill : Skill {
     /**
      * 玩家协议或机器人请求发动技能时调用
      */
-    fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3)
+    fun executeProtocol(g: Game, r: Player, message: GeneratedMessage)
 }
 
 /**

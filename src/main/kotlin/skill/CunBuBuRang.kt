@@ -5,7 +5,7 @@ import com.fengsheng.protos.Role.skill_cun_bu_bu_rang_tos
 import com.fengsheng.protos.skillCunBuBuRangToc
 import com.fengsheng.protos.skillCunBuBuRangTos
 import com.fengsheng.protos.skillWaitForCunBuBuRangToc
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -74,7 +74,7 @@ class CunBuBuRang : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
                 (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")

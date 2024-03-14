@@ -2,11 +2,11 @@ package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
 import com.fengsheng.phase.WaitForSelectRole
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 
 class game_init_finish_tos : ProtoHandler {
-    override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
+    override fun handle(player: HumanPlayer, message: GeneratedMessage) {
         if (player.isLoadingRecord) {
             player.displayRecord()
         } else if (player.isReconnecting) {

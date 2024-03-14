@@ -8,7 +8,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.skill_hou_zi_qie_xin_tos
 import com.fengsheng.protos.skillHouZiQieXinToc
 import com.fengsheng.protos.skillHouZiQieXinTos
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -27,7 +27,7 @@ class HouZiQieXin : MainPhaseSkill() {
             }
         }
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? MainPhaseIdle
         if (r !== fsm?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
