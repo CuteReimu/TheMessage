@@ -2,9 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_toc
 import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillZuoYouFengYuanToc
+import com.fengsheng.protos.skillZuoYouFengYuanTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -18,16 +19,16 @@ class ZuoYouFengYuan : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || fsm.whoseFightTurn !== r) {
             logger.error("没有轮到你操作")
-            (r as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
+            r.sendErrorMessage("没有轮到你操作")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[左右逢源]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[左右逢源]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[左右逢源]")
             return
         }
         val pb = message as skill_zuo_you_feng_yuan_tos
@@ -38,19 +39,19 @@ class ZuoYouFengYuan : ActiveSkill {
         }
         if (pb.targetPlayerIdsCount != 2) {
             logger.error("必须选择两个目标")
-            (r as? HumanPlayer)?.sendErrorMessage("必须选择两个目标")
+            r.sendErrorMessage("必须选择两个目标")
             return
         }
         val targets = pb.targetPlayerIdsList.map {
             if (it < 0 || it >= g.players.size) {
                 logger.error("目标错误：$it")
-                (r as? HumanPlayer)?.sendErrorMessage("目标错误：$it")
+                r.sendErrorMessage("目标错误：$it")
                 return
             }
             val target = g.players[r.getAbstractLocation(it)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                r.sendErrorMessage("目标已死亡")
                 return
             }
             target
@@ -58,12 +59,10 @@ class ZuoYouFengYuan : ActiveSkill {
         r.incrSeq()
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}对${targets.joinToString()}发动了[左右逢源]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_zuo_you_feng_yuan_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.addAllTargetPlayerIds(pb.targetPlayerIdsList)
-                p.send(builder.build())
+        g.players.send {
+            skillZuoYouFengYuanToc {
+                playerId = it.getAlternativeLocation(r.location)
+                targetPlayerIds.addAll(pb.targetPlayerIdsList)
             }
         }
         targets.forEach {
@@ -99,10 +98,10 @@ class ZuoYouFengYuan : ActiveSkill {
                 players.shuffle()
             }
             GameExecutor.post(r.game!!, {
-                val builder = skill_zuo_you_feng_yuan_tos.newBuilder()
-                builder.addTargetPlayerIds(r.getAlternativeLocation(players[0]!!.location))
-                builder.addTargetPlayerIds(r.getAlternativeLocation(players[1]!!.location))
-                skill.executeProtocol(r.game!!, r, builder.build())
+                skill.executeProtocol(r.game!!, r, skillZuoYouFengYuanTos {
+                    targetPlayerIds.add(r.getAlternativeLocation(players[0]!!.location))
+                    targetPlayerIds.add(r.getAlternativeLocation(players[1]!!.location))
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

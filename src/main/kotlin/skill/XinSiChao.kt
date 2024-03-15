@@ -3,9 +3,10 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Role.skill_xin_si_chao_toc
 import com.fengsheng.protos.Role.skill_xin_si_chao_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillXinSiChaoToc
+import com.fengsheng.protos.skillXinSiChaoTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -20,15 +21,15 @@ class XinSiChao : MainPhaseSkill() {
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[新思潮]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[新思潮]一回合只能发动一次")
+            r.sendErrorMessage("[新思潮]一回合只能发动一次")
             return
         }
         val pb = message as skill_xin_si_chao_tos
@@ -40,19 +41,13 @@ class XinSiChao : MainPhaseSkill() {
         val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张卡")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+            r.sendErrorMessage("没有这张卡")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[新思潮]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_xin_si_chao_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillXinSiChaoToc { playerId = it.getAlternativeLocation(r.location) } }
         g.playerDiscardCard(r, card)
         r.draw(2)
         g.addEvent(DiscardCardEvent(r, r))
@@ -65,9 +60,7 @@ class XinSiChao : MainPhaseSkill() {
             val card = e.whoseTurn.cards.ifEmpty { return false }
             val cardId = card.bestCard(e.whoseTurn.identity, true).id
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_xin_si_chao_tos.newBuilder()
-                builder.cardId = cardId
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillXinSiChaoTos { this.cardId = cardId })
             }, 3, TimeUnit.SECONDS)
             return true
         }

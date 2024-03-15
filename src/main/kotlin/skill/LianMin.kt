@@ -4,9 +4,10 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_lian_min_toc
 import com.fengsheng.protos.Role.skill_lian_min_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillLianMinToc
+import com.fengsheng.protos.skillLianMinTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -34,10 +35,10 @@ class LianMin : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -51,7 +52,7 @@ class LianMin : TriggeredSkill {
             }
             if (message !is skill_lian_min_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.sender
@@ -62,42 +63,40 @@ class LianMin : TriggeredSkill {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= r.game!!.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = r.game!!.players[r.getAbstractLocation(message.targetPlayerId)]
             if (target !== r && target !== event.inFrontOfWhom) {
                 logger.error("只能以自己或者情报接收者为目标")
-                (player as? HumanPlayer)?.sendErrorMessage("只能以自己或者情报接收者为目标")
+                player.sendErrorMessage("只能以自己或者情报接收者为目标")
                 return null
             }
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             if (!card.isBlack()) {
                 logger.error("你选择的不是黑色情报")
-                (player as? HumanPlayer)?.sendErrorMessage("你选择的不是黑色情报")
+                player.sendErrorMessage("你选择的不是黑色情报")
                 return null
             }
             r.incrSeq()
             logger.info("${r}发动了[怜悯]，将${target}面前的${card}加入了手牌")
             target.deleteMessageCard(card.id)
             r.cards.add(card)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_lian_min_toc.newBuilder()
-                    builder.cardId = card.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillLianMinToc {
+                    cardId = card.id
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             return ResolveResult(fsm, true)
@@ -126,10 +125,10 @@ class LianMin : TriggeredSkill {
             }
             if (card != null && targetPlayer != null) {
                 GameExecutor.post(p.game!!, {
-                    val builder = skill_lian_min_tos.newBuilder()
-                    builder.cardId = card.id
-                    builder.targetPlayerId = p.getAlternativeLocation(targetPlayer.location)
-                    p.game!!.tryContinueResolveProtocol(p, builder.build())
+                    p.game!!.tryContinueResolveProtocol(p, skillLianMinTos {
+                        cardId = card.id
+                        targetPlayerId = p.getAlternativeLocation(targetPlayer.location)
+                    })
                 }, 3, TimeUnit.SECONDS)
                 return true
             }

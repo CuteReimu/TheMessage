@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.Shi_Tan
 import com.fengsheng.protos.Common.card_type.Wei_Bi
-import com.fengsheng.protos.Role.skill_shou_kou_ru_ping_toc
+import com.fengsheng.protos.skillShouKouRuPingToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -25,20 +25,18 @@ class ShouKouRuPing : TriggeredSkill {
         askWhom.addSkillUseCount(skillId)
         logger.info("${askWhom}发动了[守口如瓶]，${event.cardType}无效")
         if (event.valid) {
-            for (p in askWhom.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_shou_kou_ru_ping_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(askWhom.location)
-                    builder.cardPlayerId = p.getAlternativeLocation(event.player.location)
-                    builder.cardTargetPlayerId = p.getAlternativeLocation(event.targetPlayer!!.location)
-                    builder.cardType = event.cardType
+            askWhom.game!!.players.send { p ->
+                skillShouKouRuPingToc {
+                    playerId = p.getAlternativeLocation(askWhom.location)
+                    cardPlayerId = p.getAlternativeLocation(event.player.location)
+                    cardTargetPlayerId = p.getAlternativeLocation(event.targetPlayer!!.location)
+                    cardType = event.cardType
                     event.card?.let { card ->
                         if (event.cardType != Shi_Tan || p === event.player)
-                            builder.card = card.toPbCard()
+                            this.card = card.toPbCard()
                         else
-                            builder.unknownCardCount = 1
+                            unknownCardCount = 1
                     }
-                    p.send(builder.build())
                 }
             }
         }

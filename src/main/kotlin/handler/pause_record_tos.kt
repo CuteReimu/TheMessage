@@ -2,11 +2,12 @@ package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Fengsheng
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.pauseRecordToc
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 
 class pause_record_tos : ProtoHandler {
-    override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
+    override fun handle(player: HumanPlayer, message: GeneratedMessage) {
         if (player.game != null) {
             logger.error("player is already in a room")
             player.sendErrorMessage("已经在房间里了")
@@ -19,6 +20,6 @@ class pause_record_tos : ProtoHandler {
         }
         val pb = message as Fengsheng.pause_record_tos
         player.pauseRecord(pb.pause)
-        player.send(Fengsheng.pause_record_toc.newBuilder().setPause(pb.pause).build())
+        player.send(pauseRecordToc { pause = pb.pause })
     }
 }

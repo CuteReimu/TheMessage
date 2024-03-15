@@ -2,14 +2,14 @@ package com.fengsheng.handler
 
 import com.fengsheng.*
 import com.fengsheng.Statistics.PlayerGameCount
-import com.fengsheng.protos.Fengsheng
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.*
+import com.google.protobuf.GeneratedMessage
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.logger
 import java.nio.charset.StandardCharsets
 
 class join_room_tos : ProtoHandler {
-    override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
+    override fun handle(player: HumanPlayer, message: GeneratedMessage) {
         if (player.game != null || player.isLoadingRecord) {
             logger.error("player is already in a room")
             player.sendErrorMessage("你已经在房间里了")
@@ -44,12 +44,12 @@ class join_room_tos : ProtoHandler {
                         oldPlayer.sendErrorMessage("登录异常，请稍后重试")
                         false
                     } else if (game.isStarted && !game.isEnd) { // 断线重连
-                        oldPlayer.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
+                        oldPlayer.send(notifyKickedToc { })
                         Game.exchangePlayer(oldPlayer, player)
                         oldPlayer.setAutoPlay(false)
                         if (oldPlayer.needWaitLoad) {
                             oldPlayer.isReconnecting = true
-                            player.send(Fengsheng.game_start_toc.getDefaultInstance())
+                            player.send(gameStartToc { })
                         } else {
                             oldPlayer.reconnect()
                         }
@@ -98,11 +98,9 @@ class join_room_tos : ProtoHandler {
                 newGame.players = newGame.players.toMutableList().apply { set(location, null) }
                 newGame.cancelStartTimer()
                 this.game = null
-                send(Fengsheng.notify_kicked_toc.getDefaultInstance())
-                val builder = Fengsheng.leave_room_toc.newBuilder()
-                builder.position = location
-                val reply = builder.build()
-                newGame.players.forEach { (it as? HumanPlayer)?.send(reply) }
+                send(notifyKickedToc { })
+                val reply = leaveRoomToc { position = location }
+                newGame.players.send { reply }
             }
             if (!Config.IsGmEnable) {
                 val humanCount = newGame.players.count { it is HumanPlayer }
@@ -117,32 +115,32 @@ class join_room_tos : ProtoHandler {
                 return@post
             }
             player.game = newGame
-            val builder = Fengsheng.get_room_info_toc.newBuilder()
-            builder.myPosition = player.location
-            builder.onlineCount = Game.onlineCount
-            for (p in player.game!!.players) {
-                if (p == null) {
-                    builder.addNames("")
-                    builder.addWinCounts(0)
-                    builder.addGameCounts(0)
-                    builder.addRanks("")
-                    builder.addScores(0)
-                    continue
+            player.send(getRoomInfoToc {
+                myPosition = player.location
+                onlineCount = Game.onlineCount
+                for (p in player.game!!.players) {
+                    if (p == null) {
+                        names.add("")
+                        winCounts.add(0)
+                        gameCounts.add(0)
+                        ranks.add("")
+                        scores.add(0)
+                        continue
+                    }
+                    val name = p.playerName
+                    val score = Statistics.getScore(name) ?: 0
+                    val rank = if (p is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
+                    names.add(name)
+                    val c =
+                        if (p is HumanPlayer) Statistics.getPlayerGameCount(p.playerName)
+                        else Statistics.totalPlayerGameCount.random()
+                    winCounts.add(c.winCount)
+                    gameCounts.add(c.gameCount)
+                    ranks.add(rank)
+                    scores.add(score)
                 }
-                val name = p.playerName
-                val score = Statistics.getScore(name) ?: 0
-                val rank = if (p is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
-                builder.addNames(name)
-                val c =
-                    if (p is HumanPlayer) Statistics.getPlayerGameCount(p.playerName)
-                    else Statistics.totalPlayerGameCount.random()
-                builder.addWinCounts(c.winCount)
-                builder.addGameCounts(c.gameCount)
-                builder.addRanks(rank)
-                builder.addScores(score)
-            }
-            builder.notice = Config.Notice.get() + "\n\n" + Statistics.rankList25.get()
-            player.send(builder.build())
+                notice = "${Config.Notice.get()}\n\n${Statistics.rankList25.get()}"
+            })
         }
     }
 
@@ -152,14 +150,8 @@ class join_room_tos : ProtoHandler {
                 if (robotPlayer is RobotPlayer) {
                     players = players.toMutableList().apply { set(index, null) }
                     logger.info("${robotPlayer.playerName}离开了房间")
-                    val builder = Fengsheng.leave_room_toc.newBuilder()
-                    builder.position = robotPlayer.location
-                    val reply = builder.build()
-                    for (p in players) {
-                        if (p is HumanPlayer) {
-                            p.send(reply)
-                        }
-                    }
+                    val reply = leaveRoomToc { position = robotPlayer.location }
+                    players.send { reply }
                 }
             }
         }

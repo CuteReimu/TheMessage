@@ -6,9 +6,10 @@ import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.skill_you_di_shen_ru_toc
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillYouDiShenRuToc
+import com.fengsheng.protos.skillYouDiShenRuTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -23,7 +24,7 @@ class YouDiShenRu : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         message as skill_you_di_shen_ru_tos
         if (r is HumanPlayer && !r.checkSeq(message.seq)) {
             logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -33,25 +34,25 @@ class YouDiShenRu : ActiveSkill {
         val fsm = g.fsm as? SendPhaseStart
         if (fsm == null) {
             logger.error("[诱敌深入]的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("[诱敌深入]的使用时机不对")
+            r.sendErrorMessage("[诱敌深入]的使用时机不对")
             return
         }
         val card = r.findCard(message.cardId)
         if (card == null) {
             logger.error("没有这张牌")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+            r.sendErrorMessage("没有这张牌")
             return
         }
         if (message.targetPlayerId <= 0 || message.targetPlayerId >= r.game!!.players.size) {
             logger.error("目标错误: ${message.targetPlayerId}")
-            (r as? HumanPlayer)?.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
+            r.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
             return
         }
         val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
         val lockPlayers = message.lockPlayerIdList.map {
             if (it < 0 || it >= g.players.size) {
                 logger.error("锁定目标错误: $it")
-                (r as? HumanPlayer)?.sendErrorMessage("锁定目标错误: $it")
+                r.sendErrorMessage("锁定目标错误: $it")
                 return
             }
             g.players[r.getAbstractLocation(it)]!!
@@ -59,7 +60,7 @@ class YouDiShenRu : ActiveSkill {
         val sendCardError = r.canSendCard(r, card, r.cards, message.cardDir, target, lockPlayers)
         if (sendCardError != null) {
             logger.error(sendCardError)
-            (r as? HumanPlayer)?.sendErrorMessage(sendCardError)
+            r.sendErrorMessage(sendCardError)
             return
         }
         r.incrSeq()
@@ -68,15 +69,13 @@ class YouDiShenRu : ActiveSkill {
         logger.info("${r}发动了[诱敌深入]")
         r.deleteCard(card.id)
         g.players.forEach { it!!.skills += YouDiShenRu2() }
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_you_di_shen_ru_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.card = card.toPbCard()
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                lockPlayers.forEach { builder.addLockPlayerIds(p.getAlternativeLocation(it.location)) }
-                builder.cardDir = message.cardDir
-                p.send(builder.build())
+        g.players.send { p ->
+            skillYouDiShenRuToc {
+                playerId = p.getAlternativeLocation(r.location)
+                this.card = card.toPbCard()
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                lockPlayers.forEach { lockPlayerIds.add(p.getAlternativeLocation(it.location)) }
+                cardDir = message.cardDir
             }
         }
         g.resolve(
@@ -103,12 +102,12 @@ class YouDiShenRu : ActiveSkill {
             val game = player.game!!
             val result = player.calSendMessageCard()
             GameExecutor.post(game, {
-                val builder = skill_you_di_shen_ru_tos.newBuilder()
-                builder.cardId = result.card.id
-                builder.targetPlayerId = player.getAlternativeLocation(result.target.location)
-                builder.cardDir = result.dir
-                builder.addAllLockPlayerId(result.lockedPlayers.map { player.getAlternativeLocation(it.location) })
-                skill.executeProtocol(game, player, builder.build())
+                skill.executeProtocol(game, player, skillYouDiShenRuTos {
+                    cardId = result.card.id
+                    targetPlayerId = player.getAlternativeLocation(result.target.location)
+                    cardDir = result.dir
+                    result.lockedPlayers.forEach { lockPlayerId.add(player.getAlternativeLocation(it.location)) }
+                })
             }, 1, TimeUnit.SECONDS)
             return true
         }

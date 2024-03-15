@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
-import com.fengsheng.protos.Role.skill_zhen_li_toc
+import com.fengsheng.protos.skillZhenLiToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -22,13 +22,7 @@ class ZhenLi : TriggeredSkill {
             Red in event.messageCard.colors || Blue in event.messageCard.colors
         } ?: return null
         logger.info("${askWhom}发动了[真理]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_zhen_li_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(askWhom.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillZhenLiToc { playerId = it.getAlternativeLocation(askWhom.location) } }
         askWhom.draw(2)
         g.playerSetRoleFaceUp(askWhom, false)
         return null

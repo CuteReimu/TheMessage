@@ -5,9 +5,10 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_yi_ya_huan_ya_toc
 import com.fengsheng.protos.Role.skill_yi_ya_huan_ya_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillYiYaHuanYaToc
+import com.fengsheng.protos.skillYiYaHuanYaTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -35,10 +36,10 @@ class YiYaHuanYa : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -52,7 +53,7 @@ class YiYaHuanYa : TriggeredSkill {
             }
             if (message !is skill_yi_ya_huan_ya_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
@@ -65,41 +66,39 @@ class YiYaHuanYa : TriggeredSkill {
             val card = r.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             if (!card.colors.contains(color.Black)) {
                 logger.error("你只能选择黑色手牌")
-                (player as? HumanPlayer)?.sendErrorMessage("你只能选择黑色手牌")
+                player.sendErrorMessage("你只能选择黑色手牌")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target !== event.sender && target !== event.sender.getNextLeftAlivePlayer() && target !== event.sender.getNextRightAlivePlayer()) {
                 logger.error("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
-                (player as? HumanPlayer)?.sendErrorMessage("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
+                player.sendErrorMessage("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
                 return null
             }
             r.incrSeq()
             logger.info("${r}发动了[以牙还牙]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yi_ya_huan_ya_toc.newBuilder()
-                    builder.card = card.toPbCard()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillYiYaHuanYaToc {
+                    this.card = card.toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             r.draw(1)
@@ -127,10 +126,10 @@ class YiYaHuanYa : TriggeredSkill {
             }
             playerAndCard ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_yi_ya_huan_ya_tos.newBuilder()
-                builder.cardId = playerAndCard.card.id
-                builder.targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
-                player.game!!.tryContinueResolveProtocol(player, builder.build())
+                player.game!!.tryContinueResolveProtocol(player, skillYiYaHuanYaTos {
+                    cardId = playerAndCard.card.id
+                    targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

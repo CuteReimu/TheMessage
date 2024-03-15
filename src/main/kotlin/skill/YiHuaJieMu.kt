@@ -2,8 +2,12 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_yi_hua_jie_mu_b_tos
+import com.fengsheng.protos.skillYiHuaJieMuAToc
+import com.fengsheng.protos.skillYiHuaJieMuATos
+import com.fengsheng.protos.skillYiHuaJieMuBToc
+import com.fengsheng.protos.skillYiHuaJieMuBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -17,26 +21,26 @@ class YiHuaJieMu : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
             logger.error("[移花接木]的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("[移花接木]的使用时机不对")
+            r.sendErrorMessage("[移花接木]的使用时机不对")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[移花接木]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[移花接木]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[移花接木]")
             return
         }
         if (g.players.all { !it!!.alive || it.messageCards.isEmpty() }) {
             logger.error("场上没有情报，不能发动[移花接木]")
-            (r as? HumanPlayer)?.sendErrorMessage("场上没有情报，不能发动[移花接木]")
+            r.sendErrorMessage("场上没有情报，不能发动[移花接木]")
             return
         }
         if (g.players.count { it!!.alive } < 2) {
             logger.error("场上没有两名存活的角色，不能发动[移花接木]")
-            (r as? HumanPlayer)?.sendErrorMessage("场上没有两名存活的角色，不能发动[移花接木]")
+            r.sendErrorMessage("场上没有两名存活的角色，不能发动[移花接木]")
             return
         }
         r.incrSeq()
@@ -52,49 +56,47 @@ class YiHuaJieMu : ActiveSkill {
             val fromPlayer = alivePlayers.filter { it.messageCards.isNotEmpty() }.random()
             val card = fromPlayer.messageCards.random()
             val toPlayer = alivePlayers.filter { it !== fromPlayer }.random()
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yi_hua_jie_mu_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond * 2
+            r.game!!.players.send { p ->
+                skillYiHuaJieMuAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(p.game!!, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_yi_hua_jie_mu_b_tos.newBuilder()
-                                builder2.fromPlayerId = p.getAlternativeLocation(fromPlayer.location)
-                                builder2.cardId = card.id
-                                builder2.toPlayerId = p.getAlternativeLocation(toPlayer.location)
-                                builder2.seq = seq
-                                r.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                r.game!!.tryContinueResolveProtocol(p, skillYiHuaJieMuBTos {
+                                    fromPlayerId = p.getAlternativeLocation(fromPlayer.location)
+                                    cardId = card.id
+                                    toPlayerId = p.getAlternativeLocation(toPlayer.location)
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_yi_hua_jie_mu_b_tos.newBuilder()
-                    builder2.fromPlayerId = r.getAlternativeLocation(fromPlayer.location)
-                    builder2.cardId = card.id
-                    builder2.toPlayerId = r.getAlternativeLocation(toPlayer.location)
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillYiHuaJieMuBTos {
+                        fromPlayerId = r.getAlternativeLocation(fromPlayer.location)
+                        cardId = card.id
+                        toPlayerId = r.getAlternativeLocation(toPlayer.location)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (r !== player) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yi_hua_jie_mu_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -104,35 +106,35 @@ class YiHuaJieMu : ActiveSkill {
             }
             if (message.fromPlayerId < 0 || message.fromPlayerId >= player.game!!.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val fromPlayer = player.game!!.players[player.getAbstractLocation(message.fromPlayerId)]!!
             if (!fromPlayer.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.toPlayerId < 0 || message.toPlayerId >= player.game!!.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val toPlayer = player.game!!.players[player.getAbstractLocation(message.toPlayerId)]!!
             if (!toPlayer.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.fromPlayerId == message.toPlayerId) {
                 logger.error("选择的两个目标不能相同")
-                (player as? HumanPlayer)?.sendErrorMessage("选择的两个目标不能相同")
+                player.sendErrorMessage("选择的两个目标不能相同")
                 return null
             }
             val card = fromPlayer.findMessageCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             player.incrSeq()
@@ -146,15 +148,13 @@ class YiHuaJieMu : ActiveSkill {
                 player.game!!.addEvent(AddMessageCardEvent(fsm.whoseTurn))
                 logger.info("${fromPlayer}面前的${card}加入了${toPlayer}的情报区")
             }
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yi_hua_jie_mu_b_toc.newBuilder()
-                    builder.cardId = card.id
-                    builder.joinIntoHand = joinIntoHand
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.fromPlayerId = p.getAlternativeLocation(fromPlayer.location)
-                    builder.toPlayerId = p.getAlternativeLocation(toPlayer.location)
-                    p.send(builder.build())
+            player.game!!.players.send {
+                skillYiHuaJieMuBToc {
+                    cardId = card.id
+                    this.joinIntoHand = joinIntoHand
+                    playerId = it.getAlternativeLocation(player.location)
+                    fromPlayerId = it.getAlternativeLocation(fromPlayer.location)
+                    toPlayerId = it.getAlternativeLocation(toPlayer.location)
                 }
             }
             return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
@@ -169,7 +169,7 @@ class YiHuaJieMu : ActiveSkill {
             if (g.players.all { !it!!.alive || it.messageCards.isEmpty() }) return false
             if (g.players.count { it!!.alive } < 2) return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
-                skill.executeProtocol(g, e.whoseFightTurn, skill_yi_hua_jie_mu_a_tos.getDefaultInstance())
+                skill.executeProtocol(g, e.whoseFightTurn, skillYiHuaJieMuATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

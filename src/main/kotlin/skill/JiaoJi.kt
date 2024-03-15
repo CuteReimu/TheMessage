@@ -7,9 +7,14 @@ import com.fengsheng.card.WeiBi
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_jiao_ji_a_tos
+import com.fengsheng.protos.Role.skill_jiao_ji_b_tos
+import com.fengsheng.protos.skillJiaoJiAToc
+import com.fengsheng.protos.skillJiaoJiATos
+import com.fengsheng.protos.skillJiaoJiBToc
+import com.fengsheng.protos.skillJiaoJiBTos
 import com.fengsheng.skill.SkillId.JIAO_JI
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -24,16 +29,16 @@ class JiaoJi : MainPhaseSkill() {
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && r.game!!.players.any { it !== r && it!!.alive && it.cards.isNotEmpty() }
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? MainPhaseIdle
         if (r !== fsm?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[交际]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[交际]一回合只能发动一次")
+            r.sendErrorMessage("[交际]一回合只能发动一次")
             return
         }
         val pb = message as skill_jiao_ji_a_tos
@@ -44,18 +49,18 @@ class JiaoJi : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         if (target.cards.isEmpty()) {
             logger.error("目标没有手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
+            r.sendErrorMessage("目标没有手牌")
             return
         }
         r.incrSeq()
@@ -71,43 +76,34 @@ class JiaoJi : MainPhaseSkill() {
         r.cards.addAll(cards)
         val black = r.messageCards.count(color.Black)
         val needReturnCount = (cards.size - black).coerceAtLeast(0)..cards.size
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_jiao_ji_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                if (p === r || p === target) {
-                    for (card in cards) builder.addCards(card.toPbCard())
-                } else {
-                    builder.unknownCardCount = cards.size
-                }
-                builder.waitingSecond = Config.WaitSecond
+        g.players.send { p ->
+            skillJiaoJiAToc {
+                playerId = p.getAlternativeLocation(r.location)
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                if (p === r || p === target)
+                    cards.forEach { this.cards.add(it.toPbCard()) }
+                else
+                    unknownCardCount = cards.size
+                waitingSecond = Config.WaitSecond
                 if (p === r) {
                     val seq = p.seq
-                    builder.seq = seq
+                    this.seq = seq
                     p.timeout = GameExecutor.post(g, {
                         if (p.checkSeq(seq)) {
-                            val builder2 = skill_jiao_ji_b_tos.newBuilder()
-                            for (c in r.cards) {
-                                if (builder2.cardIdsCount >= needReturnCount.first) break
-                                builder2.addCardIds(c.id)
-                            }
-                            builder2.seq = seq
-                            g.tryContinueResolveProtocol(r, builder2.build())
+                            g.tryContinueResolveProtocol(r, skillJiaoJiBTos {
+                                r.cards.take(needReturnCount.first).forEach { cardIds.add(it.id) }
+                                this.seq = seq
+                            })
                         }
-                    }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                 }
-                p.send(builder.build())
             }
         }
         if (r is RobotPlayer) {
             GameExecutor.post(g, {
-                val builder2 = skill_jiao_ji_b_tos.newBuilder()
-                for (c in r.cards.sortCards(r.identity, true)) {
-                    if (builder2.cardIdsCount >= needReturnCount.first) break
-                    builder2.addCardIds(c.id)
-                }
-                g.tryContinueResolveProtocol(r, builder2.build())
+                g.tryContinueResolveProtocol(r, skillJiaoJiBTos {
+                    r.cards.sortCards(r.identity, true).take(needReturnCount.first).forEach { cardIds.add(it.id) }
+                })
             }, 3, TimeUnit.SECONDS)
         }
         g.resolve(executeJiaoJi(fsm, target, needReturnCount))
@@ -119,20 +115,20 @@ class JiaoJi : MainPhaseSkill() {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== fsm.whoseTurn) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jiao_ji_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (message.cardIdsCount !in needReturnCount) {
                 logger.error("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
-                (player as? HumanPlayer)?.sendErrorMessage("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
+                player.sendErrorMessage("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
                 return null
             }
             val r = fsm.whoseTurn
@@ -146,7 +142,7 @@ class JiaoJi : MainPhaseSkill() {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张卡")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                    player.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card
@@ -155,17 +151,14 @@ class JiaoJi : MainPhaseSkill() {
             logger.info("${r}将${cards.joinToString()}还给$target")
             r.cards.removeAll(cards.toSet())
             target.cards.addAll(cards)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jiao_ji_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) {
-                        for (card in cards) builder.addCards(card.toPbCard())
-                    } else {
-                        builder.unknownCardCount = cards.size
-                    }
-                    p.send(builder.build())
+            g.players.send { p ->
+                skillJiaoJiBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target)
+                        cards.forEach { this.cards.add(it.toPbCard()) }
+                    else
+                        unknownCardCount = cards.size
                 }
             }
             g.addEvent(GiveCardEvent(r, target, r))
@@ -186,9 +179,9 @@ class JiaoJi : MainPhaseSkill() {
                 .ifEmpty { players.filter { player.isEnemy(it!!) } }
                 .ifEmpty { players }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_jiao_ji_a_tos.newBuilder()
-                builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillJiaoJiATos {
+                    targetPlayerId = player.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

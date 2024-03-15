@@ -2,8 +2,11 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_ru_gui_tos
+import com.fengsheng.protos.skillRuGuiToc
+import com.fengsheng.protos.skillRuGuiTos
+import com.fengsheng.protos.skillWaitForRuGuiToc
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -27,24 +30,18 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
 
     private data class executeRuGui(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_ru_gui_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                skillWaitForRuGuiToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq = player.seq
-                        builder.seq = seq
+                        this.seq = seq
                         player.timeout = GameExecutor.post(r.game!!, {
-                            if (r.checkSeq(seq)) {
-                                val builder2 = skill_ru_gui_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            if (r.checkSeq(seq))
+                                r.game!!.tryContinueResolveProtocol(r, skillRuGuiTos { this.seq = seq })
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -57,34 +54,27 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
                         card = c
                     }
                 }
-                GameExecutor.post(
-                    r.game!!,
-                    {
-                        val builder = skill_ru_gui_tos.newBuilder()
-                        if (card != null) {
-                            builder.enable = true
-                            builder.cardId = card.id
-                        } else {
-                            builder.enable = false
+                GameExecutor.post(r.game!!, {
+                    r.game!!.tryContinueResolveProtocol(r, skillRuGuiTos {
+                        card?.let {
+                            enable = true
+                            cardId = it.id
                         }
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
-                    },
-                    2,
-                    TimeUnit.SECONDS
-                )
+                    })
+                }, 2, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_ru_gui_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -95,21 +85,19 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    (p as? HumanPlayer)?.send(skill_ru_gui_toc.newBuilder().setEnable(false).build())
-                }
+                g.players.send { skillRuGuiToc {} }
                 return ResolveResult(fsm, true)
             }
             val card = r.findMessageCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             val target = event.whoseTurn
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()
@@ -117,13 +105,11 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
             r.deleteMessageCard(card.id)
             target.messageCards.add(card)
             logger.info("${r}面前的${card}移到了${target}面前")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_ru_gui_toc.newBuilder()
-                    builder.enable = true
-                    builder.cardId = card.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillRuGuiToc {
+                    enable = true
+                    cardId = card.id
+                    playerId = it.getAlternativeLocation(r.location)
                 }
             }
             g.addEvent(AddMessageCardEvent(event.whoseTurn))

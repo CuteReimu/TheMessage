@@ -3,10 +3,10 @@ package com.fengsheng.network
 import com.fengsheng.*
 import com.fengsheng.handler.ProtoHandler
 import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.leave_room_toc
 import com.fengsheng.protos.Role
+import com.fengsheng.protos.leaveRoomToc
 import com.google.protobuf.Descriptors
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import com.google.protobuf.Parser
 import com.google.protobuf.TextFormat
 import io.netty.buffer.ByteBuf
@@ -60,8 +60,8 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                 game.players = game.players.toMutableList().apply { set(player.location, null) }
                 player.game = null
                 Game.playerNameCache.remove(player.playerName, player)
-                val reply = leave_room_toc.newBuilder().setPosition(player.location).build()
-                game.players.forEach { (it as? HumanPlayer)?.send(reply) }
+                val reply = leaveRoomToc { position = player.location }
+                game.players.send { reply }
                 game.cancelStartTimer()
             }
         }
@@ -84,7 +84,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         }
         val buf = ByteArray(msgLen - 2)
         msg.readBytes(buf)
-        val message = protoInfo.parser.parseFrom(buf) as GeneratedMessageV3
+        val message = protoInfo.parser.parseFrom(buf) as GeneratedMessage
         if (id != heartMsgId && id != autoPlayMsgId) {
             logger.debug(
                 "recv@${ctx.channel().id().asShortText()} len: ${msgLen - 2} ${protoInfo.name} | " +

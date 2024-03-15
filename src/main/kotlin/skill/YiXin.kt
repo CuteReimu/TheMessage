@@ -2,8 +2,11 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.PlayerAndCard
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_yi_xin_tos
+import com.fengsheng.protos.skillWaitForYiXinToc
+import com.fengsheng.protos.skillYiXinToc
+import com.fengsheng.protos.skillYiXinTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -27,27 +30,17 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
 
     private data class executeYiXin(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_yi_xin_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                skillWaitForYiXinToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player == r) {
                         val seq2 = player.seq
-                        builder.seq = seq2
-                        player.timeout = GameExecutor.post(
-                            r.game!!,
-                            {
-                                val builder2 = skill_yi_xin_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            },
-                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                        seq = seq2
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            r.game!!.tryContinueResolveProtocol(r, skillYiXinTos { seq = seq2 })
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -65,27 +58,27 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
                     }
                 }
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_yi_xin_tos.newBuilder()
-                    if (playerAndCard != null) {
-                        builder.enable = true
-                        builder.cardId = playerAndCard.card.id
-                        builder.targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillYiXinTos {
+                        playerAndCard?.let {
+                            enable = true
+                            cardId = it.card.id
+                            targetPlayerId = r.getAlternativeLocation(it.player.location)
+                        }
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yi_xin_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -96,31 +89,29 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    (p as? HumanPlayer)?.send(skill_yi_xin_toc.newBuilder().setEnable(false).build())
-                }
+                g.players.send { skillYiXinToc {} }
                 return ResolveResult(fsm, true)
             }
             val card = r.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             if (message.targetPlayerId == 0) {
                 logger.error("不能以自己为目标")
-                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+                player.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()
@@ -128,14 +119,12 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
             r.deleteCard(card.id)
             target.messageCards.add(card)
             logger.info("${r}将${card}放置在${target}面前")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yi_xin_toc.newBuilder()
-                    builder.enable = true
-                    builder.card = card.toPbCard()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillYiXinToc {
+                    enable = true
+                    this.card = card.toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             g.addEvent(AddMessageCardEvent(event.whoseTurn))

@@ -1,8 +1,11 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_cun_bu_bu_rang_tos
+import com.fengsheng.protos.skillCunBuBuRangToc
+import com.fengsheng.protos.skillCunBuBuRangTos
+import com.fengsheng.protos.skillWaitForCunBuBuRangToc
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -35,47 +38,51 @@ class CunBuBuRang : TriggeredSkill {
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {
-                    val builder = skill_wait_for_cun_bu_bu_rang_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond
                     if (player === r) {
-                        val seq = player.seq
-                        builder.seq = seq
-                        player.timeout = GameExecutor.post(r.game!!, {
-                            if (r.checkSeq(seq)) {
-                                val builder2 = skill_cun_bu_bu_rang_tos.newBuilder()
-                                builder2.enable = true
-                                builder2.seq = seq
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         // 晚一秒提示凌素秋，以防客户端动画bug
-                        GameExecutor.post(r.game!!, { player.send(builder.build()) }, 1, TimeUnit.SECONDS)
+                        GameExecutor.post(r.game!!, {
+                            player.send(skillWaitForCunBuBuRangToc {
+                                playerId = player.getAlternativeLocation(r.location)
+                                targetPlayerId = player.getAlternativeLocation(target.location)
+                                waitingSecond = Config.WaitSecond
+                                val seq = player.seq
+                                this.seq = seq
+                                player.timeout = GameExecutor.post(r.game!!, {
+                                    if (r.checkSeq(seq)) {
+                                        r.game!!.tryContinueResolveProtocol(r, skillCunBuBuRangTos {
+                                            enable = true
+                                            this.seq = seq
+                                        })
+                                    }
+                                }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            })
+                        }, 1, TimeUnit.SECONDS)
                     } else {
-                        player.send(builder.build())
+                        player.send(skillWaitForCunBuBuRangToc {
+                            playerId = player.getAlternativeLocation(r.location)
+                            targetPlayerId = player.getAlternativeLocation(target.location)
+                            waitingSecond = Config.WaitSecond
+                        })
                     }
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_cun_bu_bu_rang_tos.newBuilder()
-                    builder.enable = true
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillCunBuBuRangTos { enable = true })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cun_bu_bu_rang_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -86,9 +93,7 @@ class CunBuBuRang : TriggeredSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    (p as? HumanPlayer)?.send(skill_cun_bu_bu_rang_toc.newBuilder().setEnable(false).build())
-                }
+                g.players.send { skillCunBuBuRangToc { enable = false } }
                 return ResolveResult(fsm, true)
             }
             val card = target.cards.random()
@@ -96,14 +101,12 @@ class CunBuBuRang : TriggeredSkill {
             logger.info("${r}对${target}发动了[寸步不让]，抽取了$card")
             target.deleteCard(card.id)
             r.cards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_cun_bu_bu_rang_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.enable = true
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send {
+                skillCunBuBuRangToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    if (it === r || it === target) this.card = card.toPbCard()
                 }
             }
             g.addEvent(GiveCardEvent(whoseTurn, target, r))

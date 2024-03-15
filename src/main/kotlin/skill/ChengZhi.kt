@@ -6,8 +6,11 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_cheng_zhi_tos
+import com.fengsheng.protos.skillChengZhiToc
+import com.fengsheng.protos.skillChengZhiTos
+import com.fengsheng.protos.skillWaitForChengZhiToc
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -50,33 +53,30 @@ class ChengZhi : TriggeredSkill {
             } else {
                 logger.info("${r}发动了[承志]，查看了${whoDie}的身份牌")
             }
-            if (whoDie.identity == color.Has_No_Identity) return ResolveResult(fsm, true)
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_cheng_zhi_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    builder.diePlayerId = player.getAlternativeLocation(whoDie.location)
+            if (whoDie.identity == Has_No_Identity) return ResolveResult(fsm, true)
+            r.game!!.players.send { player ->
+                skillWaitForChengZhiToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    diePlayerId = player.getAlternativeLocation(whoDie.location)
                     if (player === r) {
-                        for (card in cards) builder.addCards(card.toPbCard())
-                        builder.identity = whoDie.identity
-                        builder.secretTask = whoDie.secretTask
+                        cards.forEach { this.cards.add(it.toPbCard()) }
+                        identity = whoDie.identity
+                        secretTask = whoDie.secretTask
                         val seq2 = player.seq
-                        builder.seq = seq2
+                        seq = seq2
                         player.timeout = GameExecutor.post(r.game!!, {
                             if (r.checkSeq(seq2)) {
-                                val builder2 = skill_cheng_zhi_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                                r.game!!.tryContinueResolveProtocol(r, skillChengZhiTos {
+                                    enable = false
+                                    seq = seq2
+                                })
                             }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) GameExecutor.post(r.game!!, {
-                val builder = skill_cheng_zhi_tos.newBuilder()
                 fun Player.process(identity: color, secretTask: secret_task) =
                     if (identity != Black) {
                         maxOf(game!!.players.filter { it!!.alive && it.identity == identity }
@@ -91,21 +91,22 @@ class ChengZhi : TriggeredSkill {
                         Pioneer -> messageCards.count(Black) * 10 - 1
                         else -> -100
                     }
-                builder.enable = r.process(whoDie.identity, whoDie.secretTask) > r.process(r.identity, r.secretTask)
-                r.game!!.tryContinueResolveProtocol(r, builder.build())
+                r.game!!.tryContinueResolveProtocol(r, skillChengZhiTos {
+                    enable = r.process(whoDie.identity, whoDie.secretTask) > r.process(r.identity, r.secretTask)
+                })
             }, 3, TimeUnit.SECONDS)
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cheng_zhi_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -116,13 +117,11 @@ class ChengZhi : TriggeredSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_cheng_zhi_toc.newBuilder()
-                        builder.enable = false
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.diePlayerId = p.getAlternativeLocation(whoDie.location)
-                        p.send(builder.build())
+                g.players.send {
+                    skillChengZhiToc {
+                        enable = false
+                        playerId = it.getAlternativeLocation(r.location)
+                        diePlayerId = it.getAlternativeLocation(whoDie.location)
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -130,15 +129,13 @@ class ChengZhi : TriggeredSkill {
             r.incrSeq()
             r.identity = whoDie.identity
             r.secretTask = whoDie.secretTask
-            whoDie.identity = color.Has_No_Identity
+            whoDie.identity = Has_No_Identity
             logger.info("${r}获得了${whoDie}的身份牌")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_cheng_zhi_toc.newBuilder()
-                    builder.enable = true
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.diePlayerId = p.getAlternativeLocation(whoDie.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillChengZhiToc {
+                    enable = true
+                    playerId = it.getAlternativeLocation(r.location)
+                    diePlayerId = it.getAlternativeLocation(whoDie.location)
                 }
             }
             return ResolveResult(fsm, true)

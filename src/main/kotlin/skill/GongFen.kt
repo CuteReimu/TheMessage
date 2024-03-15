@@ -2,9 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.skill_gong_fen_toc
 import com.fengsheng.protos.Role.skill_gong_fen_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillGongFenToc
+import com.fengsheng.protos.skillGongFenTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -18,16 +19,16 @@ class GongFen : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[共焚]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[共焚]的时机")
+            r.sendErrorMessage("现在不是发动[共焚]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[共焚]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[共焚]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[共焚]")
             return
         }
         val pb = message as skill_gong_fen_tos
@@ -72,13 +73,11 @@ class GongFen : ActiveSkill {
                 logger.info("${card}加入${r}的手牌")
                 r.cards.add(card)
             }
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_gong_fen_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send {
+                skillGongFenToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.card = card.toPbCard()
                 }
             }
             GameExecutor.post(g, {
@@ -94,7 +93,7 @@ class GongFen : ActiveSkill {
             !player.roleFaceUp || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_gong_fen_tos.getDefaultInstance())
+                skill.executeProtocol(player.game!!, player, skillGongFenTos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

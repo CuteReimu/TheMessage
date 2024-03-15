@@ -5,8 +5,13 @@ import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_tan_xu_bian_shi_a_tos
+import com.fengsheng.protos.Role.skill_tan_xu_bian_shi_b_tos
+import com.fengsheng.protos.skillTanXuBianShiAToc
+import com.fengsheng.protos.skillTanXuBianShiATos
+import com.fengsheng.protos.skillTanXuBianShiBToc
+import com.fengsheng.protos.skillTanXuBianShiBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -21,15 +26,15 @@ class TanXuBianShi : MainPhaseSkill() {
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[探虚辨实]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[探虚辨实]一回合只能发动一次")
+            r.sendErrorMessage("[探虚辨实]一回合只能发动一次")
             return
         }
         val pb = message as skill_tan_xu_bian_shi_a_tos
@@ -40,24 +45,24 @@ class TanXuBianShi : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             logger.error("不能以自己为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+            r.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张牌")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+            r.sendErrorMessage("没有这张牌")
             return
         }
         r.incrSeq()
@@ -78,50 +83,48 @@ class TanXuBianShi : MainPhaseSkill() {
             val mustGiveColor =
                 if (target.identity == Black || target.cards.all { target.identity !in it.colors }) null
                 else target.identity
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tan_xu_bian_shi_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = card.toPbCard()
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { p ->
+                skillTanXuBianShiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target) card = this@executeTanXuBianShi.card.toPbCard()
+                    waitingSecond = Config.WaitSecond
                     if (p === target) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(p.game!!, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_tan_xu_bian_shi_b_tos.newBuilder()
-                                builder2.cardId =
-                                    if (mustGiveColor == null) target.cards.first().id
-                                    else target.cards.first { mustGiveColor in it.colors }.id
-                                builder2.seq = seq
-                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                p.game!!.tryContinueResolveProtocol(p, skillTanXuBianShiBTos {
+                                    cardId =
+                                        if (mustGiveColor == null) target.cards.first().id
+                                        else target.cards.first { mustGiveColor in it.colors }.id
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (target is RobotPlayer)
                 GameExecutor.post(target.game!!, {
-                    val builder2 = skill_tan_xu_bian_shi_b_tos.newBuilder()
-                    builder2.cardId =
-                        if (mustGiveColor == null) target.cards.bestCard(target.identity, true).id
-                        else target.cards.filter { mustGiveColor in it.colors }.bestCard(target.identity, true).id
-                    target.game!!.tryContinueResolveProtocol(target, builder2.build())
+                    target.game!!.tryContinueResolveProtocol(target, skillTanXuBianShiBTos {
+                        cardId =
+                            if (mustGiveColor == null) target.cards.bestCard(target.identity, true).id
+                            else target.cards.filter { mustGiveColor in it.colors }.bestCard(target.identity, true).id
+                    })
                 }, 3, TimeUnit.SECONDS)
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== target) {
                 logger.error("你不是被探虚辨实的目标")
-                (player as? HumanPlayer)?.sendErrorMessage("你不是被探虚辨实的目标")
+                player.sendErrorMessage("你不是被探虚辨实的目标")
                 return null
             }
             if (message !is skill_tan_xu_bian_shi_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = target.game!!
@@ -133,7 +136,7 @@ class TanXuBianShi : MainPhaseSkill() {
             val card = target.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             val mustGiveColor =
@@ -141,20 +144,18 @@ class TanXuBianShi : MainPhaseSkill() {
                 else target.identity
             if (mustGiveColor != null && mustGiveColor !in card.colors) {
                 logger.error("你必须选择含你身份颜色的牌")
-                (player as? HumanPlayer)?.sendErrorMessage("你必须选择含你身份颜色的牌")
+                player.sendErrorMessage("你必须选择含你身份颜色的牌")
                 return null
             }
             target.incrSeq()
             target.deleteCard(card.id)
             r.cards.add(card)
             logger.info("${target}给了${r}$card")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tan_xu_bian_shi_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send { p ->
+                skillTanXuBianShiBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target) this.card = card.toPbCard()
                 }
             }
             r.game!!.addEvent(GiveCardEvent(r, r, target))
@@ -174,10 +175,10 @@ class TanXuBianShi : MainPhaseSkill() {
                 else filter { it!!.isEnemy(e.whoseTurn) }.ifEmpty { this }
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_tan_xu_bian_shi_a_tos.newBuilder()
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
-                builder.cardId = card.id
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillTanXuBianShiATos {
+                    targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
+                    cardId = card.id
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

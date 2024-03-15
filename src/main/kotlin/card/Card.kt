@@ -5,6 +5,7 @@ import com.fengsheng.Player
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.card
 
 /**
  * 注意：一张卡牌一定是不能修改的
@@ -104,13 +105,13 @@ abstract class Card {
 
     open fun toPbCard(): card {
         val c = getOriginCard()
-        val builder = card.newBuilder()
-        builder.cardId = c.id
-        builder.cardDir = c.direction
-        builder.canLock = c.lockable
-        builder.cardType = c.type
-        builder.addAllCardColor(c.colors)
-        return builder.build()
+        return card {
+            cardId = c.id
+            cardDir = c.direction
+            canLock = c.lockable
+            cardType = c.type
+            cardColor.addAll(c.colors)
+        }
     }
 
     fun isBlack(): Boolean = Black in colors

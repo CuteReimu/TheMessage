@@ -7,7 +7,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Ping_Heng
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.use_ping_heng_toc
+import com.fengsheng.protos.usePingHengToc
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
@@ -29,23 +29,23 @@ class PingHeng : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用平衡")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用平衡")
+            r.sendErrorMessage("你被禁止使用平衡")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("平衡的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("平衡的使用时机不对")
+            r.sendErrorMessage("平衡的使用时机不对")
             return false
         }
         val target = args[0] as Player
         if (r === target) {
             logger.error("平衡不能对自己使用")
-            (r as? HumanPlayer)?.sendErrorMessage("平衡不能对自己使用")
+            r.sendErrorMessage("平衡不能对自己使用")
             return false
         }
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return false
         }
         return true
@@ -57,13 +57,11 @@ class PingHeng : Card {
         logger.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    val builder = use_ping_heng_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                    builder.pingHengCard = toPbCard()
-                    player.send(builder.build())
+            g.players.send {
+                usePingHengToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    pingHengCard = toPbCard()
                 }
             }
             if (r.cards.isNotEmpty()) r.game!!.addEvent(DiscardCardEvent(r, r))

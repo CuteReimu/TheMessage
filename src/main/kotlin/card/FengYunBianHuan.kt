@@ -5,6 +5,7 @@ import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
 import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Common.color
@@ -12,10 +13,10 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.phase.Main_Phase
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Fengsheng.feng_yun_bian_huan_choose_card_tos
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -36,12 +37,12 @@ class FengYunBianHuan : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用风云变幻")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用风云变幻")
+            r.sendErrorMessage("你被禁止使用风云变幻")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("风云变幻的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("风云变幻的使用时机不对")
+            r.sendErrorMessage("风云变幻的使用时机不对")
             return false
         }
         return true
@@ -61,15 +62,11 @@ class FengYunBianHuan : Card {
         }
         g.turn += g.players.size
         logger.info("${r}使用了${this}，翻开了${drawCards.joinToString()}")
-        for (player in r.game!!.players) {
-            if (player is HumanPlayer) {
-                val builder = use_feng_yun_bian_huan_toc.newBuilder()
-                builder.card = toPbCard()
-                builder.playerId = player.getAlternativeLocation(r.location)
-                for (c in drawCards) {
-                    builder.addShowCards(c.toPbCard())
-                }
-                player.send(builder.build())
+        r.game!!.players.send {
+            useFengYunBianHuanToc {
+                card = toPbCard()
+                playerId = it.getAlternativeLocation(r.location)
+                drawCards.forEach { showCards.add(it.toPbCard()) }
             }
         }
         val resolveFunc = { _: Boolean ->
@@ -92,34 +89,30 @@ class FengYunBianHuan : Card {
             if (r == null) {
                 p.game!!.deck.discard(drawCards)
                 // 向客户端发送notify_phase_toc，客户端关闭风云变幻的弹窗
-                for (player in p.game!!.players) {
-                    if (player is HumanPlayer) {
-                        val builder = notify_phase_toc.newBuilder()
-                        builder.currentPlayerId = player.getAlternativeLocation(p.location)
-                        builder.currentPhase = Main_Phase
-                        player.send(builder.build())
+                p.game!!.players.send {
+                    notifyPhaseToc {
+                        currentPlayerId = it.getAlternativeLocation(p.location)
+                        currentPhase = Main_Phase
                     }
                 }
                 if (asMessageCard) p.game!!.addEvent(AddMessageCardEvent(p, false))
                 val newFsm = OnFinishResolveCard(p, p, null, card.getOriginCard(), Feng_Yun_Bian_Huan, mainPhaseIdle)
                 return ResolveResult(newFsm, true)
             }
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = wait_for_feng_yun_bian_huan_choose_card_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                waitForFengYunBianHuanChooseCardToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player === r) {
-                        val seq2: Int = player.seq
-                        builder.seq = seq2
+                        val seq2 = player.seq
+                        seq = seq2
                         player.timeout = GameExecutor.post(r.game!!, {
                             if (player.checkSeq(seq2)) {
                                 player.incrSeq()
                                 autoChooseCard()
                             }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -128,28 +121,28 @@ class FengYunBianHuan : Card {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is feng_yun_bian_huan_choose_card_tos) {
                 logger.error("现在正在结算风云变幻")
-                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算风云变幻")
+                player.sendErrorMessage("现在正在结算风云变幻")
                 return null
             }
             val chooseCard = drawCards.find { c -> c.id == message.cardId }
             if (chooseCard == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (player !== players.first()) {
                 logger.error("还没轮到你选牌")
-                (player as? HumanPlayer)?.sendErrorMessage("还没轮到你选牌")
+                player.sendErrorMessage("还没轮到你选牌")
                 return null
             }
             if (message.asMessageCard) {
                 val containsSame = player.messageCards.any { c -> c.hasSameColor(chooseCard) }
                 if (containsSame) {
                     logger.error("已有相同颜色情报，不能作为情报牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("已有相同颜色情报，不能作为情报牌")
+                    player.sendErrorMessage("已有相同颜色情报，不能作为情报牌")
                     return null
                 }
             }
@@ -163,13 +156,11 @@ class FengYunBianHuan : Card {
                 logger.info("${player}把${chooseCard}加入手牌")
                 player.cards.add(chooseCard)
             }
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = feng_yun_bian_huan_choose_card_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.cardId = message.cardId
-                    builder.asMessageCard = message.asMessageCard
-                    p.send(builder.build())
+            player.game!!.players.send {
+                fengYunBianHuanChooseCardToc {
+                    playerId = it.getAlternativeLocation(player.location)
+                    cardId = message.cardId
+                    asMessageCard = message.asMessageCard
                 }
             }
             if (!asMessageCard && message.asMessageCard)
@@ -179,11 +170,12 @@ class FengYunBianHuan : Card {
 
         private fun autoChooseCard() {
             val r = players.first()
-            val builder = feng_yun_bian_huan_choose_card_tos.newBuilder()
             if (r is HumanPlayer) {
-                builder.cardId = drawCards.first().id
-                builder.asMessageCard = false
-                builder.seq = r.seq
+                r.game!!.tryContinueResolveProtocol(r, fengYunBianHuanChooseCardTos {
+                    cardId = drawCards.first().id
+                    asMessageCard = false
+                    seq = r.seq
+                })
             } else {
                 var value = 0
                 var card: Card? = null
@@ -195,21 +187,22 @@ class FengYunBianHuan : Card {
                         card = c
                     }
                 }
-                if (card != null) {
-                    builder.cardId = card.id
-                    builder.asMessageCard = true
-                } else {
-                    if (r === mainPhaseIdle.whoseTurn) {
-                        builder.cardId = drawCards.filter { it.type == Wei_Bi }
-                            .ifEmpty { drawCards }.bestCard(r.identity).id
-                        builder.asMessageCard = false
+                r.game!!.tryContinueResolveProtocol(r, fengYunBianHuanChooseCardTos {
+                    if (card != null) {
+                        cardId = card.id
+                        asMessageCard = true
                     } else {
-                        builder.cardId = drawCards.bestCard(r.identity).id
-                        builder.asMessageCard = false
+                        if (r === mainPhaseIdle.whoseTurn) {
+                            cardId = drawCards.filter { it.type == Wei_Bi }
+                                .ifEmpty { drawCards }.bestCard(r.identity).id
+                            asMessageCard = false
+                        } else {
+                            cardId = drawCards.bestCard(r.identity).id
+                            asMessageCard = false
+                        }
                     }
-                }
+                })
             }
-            r.game!!.tryContinueResolveProtocol(r, builder.build())
         }
     }
 

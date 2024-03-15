@@ -3,9 +3,10 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.WaitForChengQing
-import com.fengsheng.protos.Role.skill_ji_zhi_toc
 import com.fengsheng.protos.Role.skill_ji_zhi_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillJiZhiToc
+import com.fengsheng.protos.skillJiZhiTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -19,16 +20,16 @@ class JiZhi : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm
         if ((fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) && (fsm !is WaitForChengQing || r !== fsm.askWhom)) {
             logger.error("现在不是发动[急智]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[急智]的时机")
+            r.sendErrorMessage("现在不是发动[急智]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("角色面朝上时不能发动[急智]")
-            (r as? HumanPlayer)?.sendErrorMessage("角色面朝上时不能发动[急智]")
+            r.sendErrorMessage("角色面朝上时不能发动[急智]")
             return
         }
         val pb = message as skill_ji_zhi_tos
@@ -40,13 +41,7 @@ class JiZhi : ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[急智]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_ji_zhi_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillJiZhiToc { playerId = it.getAlternativeLocation(r.location) } }
         g.playerSetRoleFaceUp(r, true)
         r.draw(4)
         g.resolve(if (fsm is FightPhaseIdle) fsm.copy(whoseFightTurn = fsm.inFrontOfWhom) else fsm)
@@ -58,7 +53,7 @@ class JiZhi : ActiveSkill {
             !p.roleFaceUp || return false
             p.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(p.game!!, {
-                skill.executeProtocol(p.game!!, p, skill_ji_zhi_tos.getDefaultInstance())
+                skill.executeProtocol(p.game!!, p, skillJiZhiTos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }
@@ -67,7 +62,7 @@ class JiZhi : ActiveSkill {
             val p = e.askWhom
             !p.roleFaceUp || return false
             GameExecutor.post(p.game!!, {
-                skill.executeProtocol(p.game!!, p, skill_ji_zhi_tos.getDefaultInstance())
+                skill.executeProtocol(p.game!!, p, skillJiZhiTos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

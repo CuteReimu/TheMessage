@@ -10,8 +10,13 @@ import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.card_type.Mi_Ling
 import com.fengsheng.protos.Common.direction.*
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_leng_xue_xun_lian_a_tos
+import com.fengsheng.protos.Role.skill_leng_xue_xun_lian_b_tos
+import com.fengsheng.protos.skillLengXueXunLianAToc
+import com.fengsheng.protos.skillLengXueXunLianATos
+import com.fengsheng.protos.skillLengXueXunLianBToc
+import com.fengsheng.protos.skillLengXueXunLianBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -25,7 +30,7 @@ class LengXueXunLian : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         message as skill_leng_xue_xun_lian_a_tos
         if (r is HumanPlayer && !r.checkSeq(message.seq)) {
             logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
@@ -49,7 +54,7 @@ class LengXueXunLian : ActiveSkill {
             )
         } else {
             logger.error("现在不能发动[冷血训练]")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不能发动[冷血训练]")
+            r.sendErrorMessage("现在不能发动[冷血训练]")
         }
     }
 
@@ -63,68 +68,66 @@ class LengXueXunLian : ActiveSkill {
             r.incrSeq()
             logger.info("${r}发动了[冷血训练]，展示了牌堆顶的${cards.joinToString()}")
             r.skills += MustLockOne()
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_leng_xue_xun_lian_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    cards.forEach { builder.addCards(it.toPbCard()) }
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillLengXueXunLianAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    this@executeLengXueXunLian.cards.forEach { cards.add(it.toPbCard()) }
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_leng_xue_xun_lian_b_tos.newBuilder()
-                                val card = cards.minBy { !it.isBlack() }
-                                builder2.sendCardId = card.id
-                                when (card.direction) {
-                                    Left -> builder2.targetPlayerId =
-                                        p.getAlternativeLocation(r.getNextLeftAlivePlayer().location)
+                                g.tryContinueResolveProtocol(p, skillLengXueXunLianBTos {
+                                    val card = this@executeLengXueXunLian.cards.minBy { !it.isBlack() }
+                                    sendCardId = card.id
+                                    when (card.direction) {
+                                        Left -> targetPlayerId =
+                                            p.getAlternativeLocation(r.getNextLeftAlivePlayer().location)
 
-                                    Right -> builder2.targetPlayerId =
-                                        p.getAlternativeLocation(r.getNextRightAlivePlayer().location)
+                                        Right -> targetPlayerId =
+                                            p.getAlternativeLocation(r.getNextRightAlivePlayer().location)
 
-                                    Up -> {
-                                        val target = g.players.filter { it !== p && it!!.alive }.random()!!
-                                        builder2.targetPlayerId = p.getAlternativeLocation(target.location)
+                                        Up -> {
+                                            val target = g.players.filter { it !== p && it!!.alive }.random()!!
+                                            targetPlayerId = p.getAlternativeLocation(target.location)
+                                        }
+
+                                        else -> {}
                                     }
-
-                                    else -> {}
-                                }
-                                builder2.lockPlayerId = 0
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(p, builder2.build())
+                                    lockPlayerId = 0
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val availableCards = cards.filter { it.isBlack() }.ifEmpty { cards }
                     val result = r.calSendMessageCard(r, availableCards)
-                    val builder2 = skill_leng_xue_xun_lian_b_tos.newBuilder()
-                    builder2.sendCardId = result.card.id
-                    builder2.targetPlayerId = r.getAlternativeLocation(result.target.location)
-                    if (result.lockedPlayers.isNotEmpty())
-                        builder2.lockPlayerId = r.getAlternativeLocation(result.lockedPlayers.first().location)
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillLengXueXunLianBTos {
+                        sendCardId = result.card.id
+                        targetPlayerId = r.getAlternativeLocation(result.target.location)
+                        if (result.lockedPlayers.isNotEmpty())
+                            lockPlayerId = r.getAlternativeLocation(result.lockedPlayers.first().location)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             val pb = message as? skill_leng_xue_xun_lian_b_tos
             if (pb == null) {
                 logger.error("现在正在结算[冷血训练]")
-                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算[冷血训练]")
+                player.sendErrorMessage("现在正在结算[冷血训练]")
                 return null
             }
             if (player !== r) {
                 logger.error("没有轮到你传情报")
-                (player as? HumanPlayer)?.sendErrorMessage("没有轮到你传情报")
+                player.sendErrorMessage("没有轮到你传情报")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -135,31 +138,31 @@ class LengXueXunLian : ActiveSkill {
             val card = cards.find { it.id == pb.sendCardId }
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!card.isBlack() && cards.any { card.isBlack() }) {
                 logger.error("你必须选择黑色牌")
-                (player as? HumanPlayer)?.sendErrorMessage("你必须选择黑色牌")
+                player.sendErrorMessage("你必须选择黑色牌")
                 return null
             }
             val anotherCard = cards.first { it.id != pb.sendCardId }
             if (pb.targetPlayerId <= 0 || pb.targetPlayerId >= player.game!!.players.size) {
                 logger.error("目标错误: ${pb.targetPlayerId}")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误: ${pb.targetPlayerId}")
+                player.sendErrorMessage("目标错误: ${pb.targetPlayerId}")
                 return null
             }
             val target = player.game!!.players[player.getAbstractLocation(pb.targetPlayerId)]!!
             if (pb.lockPlayerId < 0 || pb.lockPlayerId >= player.game!!.players.size) {
                 logger.error("锁定目标错误: ${pb.lockPlayerId}")
-                (player as? HumanPlayer)?.sendErrorMessage("锁定目标错误: ${pb.lockPlayerId}")
+                player.sendErrorMessage("锁定目标错误: ${pb.lockPlayerId}")
                 return null
             }
             val lockPlayer = player.game!!.players[player.getAbstractLocation(pb.lockPlayerId)]!!
             val sendCardError = player.canSendCard(player, card, null, card.direction, target, listOf(lockPlayer))
             if (sendCardError != null) {
                 logger.error(sendCardError)
-                (player as? HumanPlayer)?.sendErrorMessage(sendCardError)
+                player.sendErrorMessage(sendCardError)
                 return null
             }
             player.incrSeq()
@@ -168,15 +171,13 @@ class LengXueXunLian : ActiveSkill {
             logger.info("${player}将${anotherCard}加入了手牌")
             player.game!!.players.forEach { it!!.skills += CannotPlayCard(cardType = listOf(Diao_Bao)) }
             player.cards.add(anotherCard)
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_leng_xue_xun_lian_b_toc.newBuilder()
-                    builder.sendCard = card.toPbCard()
-                    builder.senderId = p.getAlternativeLocation(player.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.lockPlayerId = p.getAlternativeLocation(lockPlayer.location)
-                    builder.handCard = anotherCard.toPbCard()
-                    p.send(builder.build())
+            player.game!!.players.send {
+                skillLengXueXunLianBToc {
+                    sendCard = card.toPbCard()
+                    senderId = it.getAlternativeLocation(player.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    lockPlayerId = it.getAlternativeLocation(lockPlayer.location)
+                    handCard = anotherCard.toPbCard()
                 }
             }
             return ResolveResult(
@@ -202,11 +203,7 @@ class LengXueXunLian : ActiveSkill {
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
             e.whoseTurn.calSendMessageCard().value <= 111 || return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                skill.executeProtocol(
-                    e.whoseTurn.game!!,
-                    e.whoseTurn,
-                    skill_leng_xue_xun_lian_a_tos.getDefaultInstance()
-                )
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillLengXueXunLianATos { })
             }, 1, TimeUnit.SECONDS)
             return true
         }

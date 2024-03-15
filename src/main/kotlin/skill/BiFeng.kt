@@ -4,8 +4,11 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_bi_feng_tos
+import com.fengsheng.protos.skillBiFengToc
+import com.fengsheng.protos.skillBiFengTos
+import com.fengsheng.protos.waitForSkillBiFengToc
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -29,46 +32,42 @@ class BiFeng : TriggeredSkill {
     private data class excuteBiFeng(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = wait_for_skill_bi_feng_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                waitForSkillBiFengToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_bi_feng_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(p, builder2.build())
+                                g.tryContinueResolveProtocol(p, skillBiFengTos {
+                                    enable = false
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder2 = skill_bi_feng_tos.newBuilder()
-                    builder2.enable = true
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillBiFengTos { enable = true })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             val pb = message as? skill_bi_feng_tos
             if (pb == null) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player != r) {
                 logger.error("没有轮到你操作")
-                (player as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
+                player.sendErrorMessage("没有轮到你操作")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(pb.seq)) {
@@ -81,13 +80,11 @@ class BiFeng : TriggeredSkill {
                 return ResolveResult(fsm, true)
             logger.info("${r}发动了[避风]")
             r.addSkillUseCount(SkillId.BI_FENG)
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_bi_feng_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.card = event.card!!.toPbCard()
-                    event.targetPlayer?.also { builder.targetPlayerId = p.getAlternativeLocation(it.location) }
-                    p.send(builder.build())
+            player.game!!.players.send { p ->
+                skillBiFengToc {
+                    playerId = p.getAlternativeLocation(player.location)
+                    event.card?.let { this.card = it.toPbCard() }
+                    event.targetPlayer?.let { targetPlayerId = p.getAlternativeLocation(it.location) }
                 }
             }
             r.draw(2)

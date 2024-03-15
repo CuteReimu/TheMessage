@@ -7,10 +7,14 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Fengsheng.wei_bi_give_card_tos
+import com.fengsheng.protos.weiBiGiveCardToc
+import com.fengsheng.protos.weiBiGiveCardTos
+import com.fengsheng.protos.weiBiShowHandCardToc
+import com.fengsheng.protos.weiBiWaitForGiveCardToc
 import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -31,7 +35,7 @@ class WeiBi : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用威逼")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用威逼")
+            r.sendErrorMessage("你被禁止使用威逼")
             return false
         }
         val target = args[0] as Player
@@ -56,24 +60,22 @@ class WeiBi : Card {
     ) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = wei_bi_wait_for_give_card_toc.newBuilder()
-                    if (card != null) builder.card = card.toPbCard()
-                    builder.wantType = wantType
-                    builder.waitingSecond = Config.WaitSecond
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
+            r.game!!.players.send { p ->
+                weiBiWaitForGiveCardToc {
+                    if (this@executeWeiBi.card != null) card = this@executeWeiBi.card.toPbCard()
+                    wantType = this@executeWeiBi.wantType
+                    waitingSecond = Config.WaitSecond
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
                     if (p === target) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(r.game!!, {
                             if (p.checkSeq(seq)) {
                                 autoSelect()
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (target is RobotPlayer) {
@@ -84,35 +86,33 @@ class WeiBi : Card {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is wei_bi_give_card_tos) {
                 logger.error("现在正在结算威逼")
-                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算威逼")
+                player.sendErrorMessage("现在正在结算威逼")
                 return null
             }
             if (target !== player) {
                 logger.error("你不是威逼的目标")
-                (player as? HumanPlayer)?.sendErrorMessage("你不是威逼的目标")
+                player.sendErrorMessage("你不是威逼的目标")
                 return null
             }
             val cardId: Int = message.cardId
             val c = target.findCard(cardId)
             if (c == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             target.incrSeq()
             logger.info("${target}给了${r}一张$c")
             target.deleteCard(cardId)
             r.cards.add(c)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = wei_bi_give_card_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = c.toPbCard()
-                    p.send(builder.build())
+            r.game!!.players.send {
+                weiBiGiveCardToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    if (it === r || it === target) card = c.toPbCard()
                 }
             }
             r.game!!.addEvent(GiveCardEvent(r, target, r))
@@ -125,10 +125,10 @@ class WeiBi : Card {
             val card = target.cards.filter { it.type == wantType }.run {
                 if (isRobot) bestCard(target.identity, true) else random()
             }
-            val builder = wei_bi_give_card_tos.newBuilder()
-            builder.cardId = card.id
-            if (target is HumanPlayer) builder.seq = target.seq
-            target.game!!.tryContinueResolveProtocol(target, builder.build())
+            target.game!!.tryContinueResolveProtocol(target, weiBiGiveCardTos {
+                cardId = card.id
+                if (target is HumanPlayer) seq = target.seq
+            })
         }
     }
 
@@ -140,22 +140,22 @@ class WeiBi : Card {
         fun canUse(g: Game, r: Player, target: Player, wantType: card_type): Boolean {
             if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
                 logger.error("威逼的使用时机不对")
-                (r as? HumanPlayer)?.sendErrorMessage("威逼的使用时机不对")
+                r.sendErrorMessage("威逼的使用时机不对")
                 return false
             }
             if (r === target) {
                 logger.error("威逼不能对自己使用")
-                (r as? HumanPlayer)?.sendErrorMessage("威逼不能对自己使用")
+                r.sendErrorMessage("威逼不能对自己使用")
                 return false
             }
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                r.sendErrorMessage("目标已死亡")
                 return false
             }
             if (!availableCardType.contains(wantType)) {
                 logger.error("威逼选择的卡牌类型错误：$wantType")
-                (r as? HumanPlayer)?.sendErrorMessage("威逼选择的卡牌类型错误：$wantType")
+                r.sendErrorMessage("威逼选择的卡牌类型错误：$wantType")
                 return false
             }
             return true
@@ -177,17 +177,13 @@ class WeiBi : Card {
                 } else {
                     r.weiBiFailRate = 0
                     logger.info("${target}向${r}展示了所有手牌")
-                    for (p in g.players) {
-                        if (p is HumanPlayer) {
-                            val builder = wei_bi_show_hand_card_toc.newBuilder()
-                            if (card != null) builder.card = card.toPbCard()
-                            builder.wantType = wantType
-                            builder.playerId = p.getAlternativeLocation(r.location)
-                            builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                            if (p === r) {
-                                for (c in target.cards) builder.addCards(c.toPbCard())
-                            }
-                            p.send(builder.build())
+                    g.players.send { p ->
+                        weiBiShowHandCardToc {
+                            if (card != null) this.card = card.toPbCard()
+                            this.wantType = wantType
+                            playerId = p.getAlternativeLocation(r.location)
+                            targetPlayerId = p.getAlternativeLocation(target.location)
+                            if (p === r) target.cards.forEach { cards.add(it.toPbCard()) }
                         }
                     }
                     OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm)

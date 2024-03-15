@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.Shi_Tan
 import com.fengsheng.protos.Common.card_type.Wei_Bi
-import com.fengsheng.protos.Role.skill_cheng_fu_toc
+import com.fengsheng.protos.skillChengFuToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -22,19 +22,17 @@ class ChengFu : TriggeredSkill {
         } ?: return null
         logger.info("${askWhom}触发了[城府]，${event.cardType}无效")
         if (event.valid) {
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_cheng_fu_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(askWhom.location)
-                    builder.fromPlayerId = player.getAlternativeLocation(event.player.location)
-                    event.card?.let { card ->
+            g.players.send { player ->
+                skillChengFuToc {
+                    playerId = player.getAlternativeLocation(askWhom.location)
+                    fromPlayerId = player.getAlternativeLocation(event.player.location)
+                    event.card?.let {
                         if (event.cardType != Shi_Tan || player === event.player)
-                            builder.card = card.toPbCard()
+                            card = it.toPbCard()
                         else
-                            builder.unknownCardCount = 1
+                            unknownCardCount = 1
                     }
-                    builder.cardType = event.cardType
-                    player.send(builder.build())
+                    cardType = event.cardType
                 }
             }
         }

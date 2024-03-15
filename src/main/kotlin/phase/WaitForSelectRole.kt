@@ -2,10 +2,14 @@ package com.fengsheng.phase
 
 import com.fengsheng.*
 import com.fengsheng.protos.Common.role.*
-import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Fengsheng.select_role_tos
+import com.fengsheng.protos.gameStartToc
+import com.fengsheng.protos.selectRoleToc
+import com.fengsheng.protos.selectRoleTos
+import com.fengsheng.protos.waitForSelectRoleToc
 import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.RoleSkillsData
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -21,13 +25,13 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         for (player in game.players) {
             if (player is HumanPlayer) {
                 if (player.needWaitLoad)
-                    player.send(game_start_toc.getDefaultInstance())
+                    player.send(gameStartToc { })
                 else
                     notifySelectRole(player)
                 player.timeout = GameExecutor.post(game, {
-                    val builder = select_role_tos.newBuilder()
-                    builder.role = options[player.location].firstOrNull()?.role ?: unknown
-                    game.tryContinueResolveProtocol(player, builder.build())
+                    game.tryContinueResolveProtocol(player, selectRoleTos {
+                        role = options[player.location].firstOrNull()?.role ?: unknown
+                    })
                 }, player.getWaitSeconds(Config.WaitSecond * 2 + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 selected[player!!.location] = options[player.location].run {
@@ -47,15 +51,15 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
         return ResolveResult(StartGame(game, whoseTurn), true)
     }
 
-    override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+    override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
         if (message !is select_role_tos) {
             logger.error("正在等待选择角色")
-            (player as? HumanPlayer)?.sendErrorMessage("正在等待选择角色")
+            player.sendErrorMessage("正在等待选择角色")
             return null
         }
         if (selected[player.location] != null) {
             logger.error("你已经选了角色")
-            (player as? HumanPlayer)?.sendErrorMessage("你已经选了角色")
+            player.sendErrorMessage("你已经选了角色")
             return null
         }
         val roleSkillsData =
@@ -63,28 +67,28 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             else options[player.location].find { o -> o.role == message.role }
         if (roleSkillsData == null) {
             logger.error("你没有这个角色")
-            (player as? HumanPlayer)?.sendErrorMessage("你没有这个角色")
+            player.sendErrorMessage("你没有这个角色")
             return null
         }
         player.incrSeq()
         selected[player.location] = roleSkillsData
         player.roleSkillsData = roleSkillsData
         player.originRole = roleSkillsData.role
-        (player as? HumanPlayer)?.send(select_role_toc.newBuilder().setRole(roleSkillsData.role).build())
+        player.send(selectRoleToc { role = roleSkillsData.role })
         for (role in selected) if (role == null) return null
         return ResolveResult(StartGame(game, whoseTurn), true)
     }
 
     fun notifySelectRole(player: HumanPlayer) {
-        val builder = wait_for_select_role_toc.newBuilder()
-        builder.playerCount = game.players.size
-        builder.identity = player.identity
-        builder.secretTask = player.secretTask
-        builder.addAllRoles(options[player.location].map { it.role }.ifEmpty { listOf(unknown) })
-        builder.waitingSecond = Config.WaitSecond * 2
-        builder.addAllPossibleSecretTask(game.possibleSecretTasks)
-        builder.position = player.getAbstractLocation(whoseTurn) + 1
-        player.send(builder.build())
+        player.send(waitForSelectRoleToc {
+            playerCount = game.players.size
+            identity = player.identity
+            secretTask = player.secretTask
+            roles.addAll(options[player.location].map { it.role }.ifEmpty { listOf(unknown) })
+            waitingSecond = Config.WaitSecond * 2
+            possibleSecretTask.addAll(game.possibleSecretTasks)
+            position = player.getAbstractLocation(whoseTurn) + 1
+        })
         if (game.players.size < 5)
             player.notifyIdentity()
     }

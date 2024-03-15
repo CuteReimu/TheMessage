@@ -5,9 +5,10 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_an_cang_sha_ji_toc
 import com.fengsheng.protos.Role.skill_an_cang_sha_ji_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillAnCangShaJiToc
+import com.fengsheng.protos.skillAnCangShaJiTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -48,10 +49,10 @@ class AnCangShaJi : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -65,7 +66,7 @@ class AnCangShaJi : TriggeredSkill {
             }
             if (message !is skill_an_cang_sha_ji_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -79,19 +80,19 @@ class AnCangShaJi : TriggeredSkill {
                 card = r.findCard(message.cardId)
                 if (card == null) {
                     logger.error("没有这张牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    player.sendErrorMessage("没有这张牌")
                     return null
                 }
                 if (!card.isPureBlack()) {
                     logger.error("你选择的不是纯黑色牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("你选择的不是纯黑色牌")
+                    player.sendErrorMessage("你选择的不是纯黑色牌")
                     return null
                 }
             } else {
                 handCard = target.cards.randomOrNull()
                 if (handCard == null) {
                     logger.error("${target}没有手牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("对方没有手牌")
+                    player.sendErrorMessage("对方没有手牌")
                     return null
                 }
             }
@@ -107,14 +108,12 @@ class AnCangShaJi : TriggeredSkill {
                 target.messageCards.add(card)
                 r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_an_cang_sha_ji_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    card?.let { builder.card = it.toPbCard() }
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) handCard?.let { builder.handCard = it.toPbCard() }
-                    p.send(builder.build())
+            r.game!!.players.send { p ->
+                skillAnCangShaJiToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    card?.let { this.card = it.toPbCard() }
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target) handCard?.let { this.handCard = it.toPbCard() }
                 }
             }
             return ResolveResult(fsm, true)
@@ -133,9 +132,7 @@ class AnCangShaJi : TriggeredSkill {
             }
             if (card != null || p !== target && target.cards.isNotEmpty()) {
                 GameExecutor.post(p.game!!, {
-                    val builder = skill_an_cang_sha_ji_tos.newBuilder()
-                    card?.let { builder.cardId = it.id }
-                    p.game!!.tryContinueResolveProtocol(p, builder.build())
+                    p.game!!.tryContinueResolveProtocol(p, skillAnCangShaJiTos { card?.let { cardId = it.id } })
                 }, 3, TimeUnit.SECONDS)
                 return true
             }

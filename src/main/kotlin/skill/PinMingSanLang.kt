@@ -7,9 +7,10 @@ import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.protos.Role.skill_pin_ming_san_lang_toc
 import com.fengsheng.protos.Role.skill_pin_ming_san_lang_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillPinMingSanLangToc
+import com.fengsheng.protos.skillPinMingSanLangTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -24,15 +25,15 @@ class PinMingSanLang : MainPhaseSkill() {
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && r.cards.any { it.isPureBlack() } && r.messageCards.count(Black) < 2
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[拼命三郎]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[拼命三郎]一回合只能发动一次")
+            r.sendErrorMessage("[拼命三郎]一回合只能发动一次")
             return
         }
         val pb = message as skill_pin_ming_san_lang_tos
@@ -44,12 +45,12 @@ class PinMingSanLang : MainPhaseSkill() {
         val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张卡")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+            r.sendErrorMessage("没有这张卡")
             return
         }
         if (!card.isPureBlack()) {
             logger.error("这张牌不是纯黑色")
-            (r as? HumanPlayer)?.sendErrorMessage("这张牌不是纯黑色")
+            r.sendErrorMessage("这张牌不是纯黑色")
             return
         }
         r.incrSeq()
@@ -57,12 +58,10 @@ class PinMingSanLang : MainPhaseSkill() {
         logger.info("${r}发动了[拼命三郎]，将手牌中的${card}置入自己的情报区")
         r.deleteCard(card.id)
         r.messageCards.add(card)
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_pin_ming_san_lang_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.card = card.toPbCard()
-                p.send(builder.build())
+        g.players.send {
+            skillPinMingSanLangToc {
+                playerId = it.getAlternativeLocation(r.location)
+                this.card = card.toPbCard()
             }
         }
         r.draw(3)
@@ -86,9 +85,7 @@ class PinMingSanLang : MainPhaseSkill() {
             }
             val card = p.cards.filter { it.isPureBlack() }.ifEmpty { return false }.bestCard(p.identity, true)
             GameExecutor.post(p.game!!, {
-                val builder = skill_pin_ming_san_lang_tos.newBuilder()
-                builder.cardId = card.id
-                skill.executeProtocol(p.game!!, p, builder.build())
+                skill.executeProtocol(p.game!!, p, skillPinMingSanLangTos { cardId = card.id })
             }, 3, TimeUnit.SECONDS)
             return true
         }

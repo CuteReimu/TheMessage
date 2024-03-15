@@ -5,10 +5,12 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.protos.Errcode.error_message_toc
 import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.RoleSkillsData
 import com.fengsheng.skill.Skill
 import com.fengsheng.skill.SkillId
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import kotlin.random.Random
 
@@ -59,6 +61,21 @@ abstract class Player protected constructor() {
         skillUseCount.clear()
     }
 
+    /**
+     * 向玩家客户端发送[error_message_toc]
+     */
+    open fun sendErrorMessage(message: String) {}
+
+    /**
+     * 向玩家客户端发送协议
+     */
+    open fun send(message: GeneratedMessage) {}
+
+    /**
+     * 向玩家客户端发送协议
+     */
+    open fun send(protoName: String, buf: ByteArray, flush: Boolean) {}
+
     fun deleteCard(id: Int): Card? {
         val index = cards.indexOfFirst { c -> c.id == id }
         return if (index >= 0) cards.removeAt(index) else null
@@ -86,7 +103,7 @@ abstract class Player protected constructor() {
         targetPlayer: Player,
         lockedPlayers: List<Player>,
         messageCard: Card,
-        dir: direction?
+        dir: direction
     )
 
     abstract fun notifySendPhase(waitSecond: Int = 0)
@@ -353,3 +370,6 @@ abstract class Player protected constructor() {
         }
     }
 }
+
+inline fun Iterable<Player?>.send(message: (HumanPlayer) -> GeneratedMessage) =
+    forEach { (it as? HumanPlayer)?.send(message(it)) }

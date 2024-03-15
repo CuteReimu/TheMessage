@@ -1,15 +1,17 @@
 package com.fengsheng.card
 
 import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
-import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Wu_Dao
-import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Fengsheng.use_wu_dao_toc
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.phase.Fight_Phase
+import com.fengsheng.protos.notifyPhaseToc
+import com.fengsheng.protos.useWuDaoToc
+import com.fengsheng.send
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 
@@ -29,21 +31,21 @@ class WuDao : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用误导")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用误导")
+            r.sendErrorMessage("你被禁止使用误导")
             return false
         }
         val target = args[0] as Player
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null) {
             logger.error("误导的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机不对")
+            r.sendErrorMessage("误导的使用时机不对")
             return false
         }
         val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
         val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
         if (target === fsm.inFrontOfWhom || target !== left && target !== right) {
             logger.error("误导只能选择情报当前人左右两边的人作为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
+            r.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
             return false
         }
         return true
@@ -73,26 +75,22 @@ class WuDao : Card {
             card?.apply { r.deleteCard(id) }
             val resolveFunc = { valid: Boolean ->
                 if (valid) {
-                    for (player in g.players) {
-                        if (player is HumanPlayer) {
-                            val builder = use_wu_dao_toc.newBuilder()
-                            card?.apply { builder.card = toPbCard() }
-                            builder.playerId = player.getAlternativeLocation(r.location)
-                            builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                            player.send(builder.build())
+                    g.players.send { p ->
+                        useWuDaoToc {
+                            card?.let { this.card = it.toPbCard() }
+                            playerId = p.getAlternativeLocation(r.location)
+                            targetPlayerId = p.getAlternativeLocation(target.location)
                         }
                     }
                     val newFsm = fsm.copy(inFrontOfWhom = target, whoseFightTurn = target)
-                    for (p in g.players) { // 解决客户端动画问题
-                        if (p is HumanPlayer) {
-                            val builder = Fengsheng.notify_phase_toc.newBuilder()
-                            builder.currentPlayerId = p.getAlternativeLocation(newFsm.whoseTurn.location)
-                            builder.messagePlayerId = p.getAlternativeLocation(newFsm.inFrontOfWhom.location)
-                            builder.waitingPlayerId = p.getAlternativeLocation(newFsm.whoseFightTurn.location)
-                            builder.currentPhase = phase.Fight_Phase
-                            if (newFsm.isMessageCardFaceUp)
-                                builder.messageCard = newFsm.messageCard.toPbCard()
-                            p.send(builder.build())
+                    // 解决客户端动画问题
+                    g.players.send {
+                        notifyPhaseToc {
+                            currentPlayerId = it.getAlternativeLocation(newFsm.whoseTurn.location)
+                            messagePlayerId = it.getAlternativeLocation(newFsm.inFrontOfWhom.location)
+                            waitingPlayerId = it.getAlternativeLocation(newFsm.whoseFightTurn.location)
+                            currentPhase = Fight_Phase
+                            if (newFsm.isMessageCardFaceUp) messageCard = newFsm.messageCard.toPbCard()
                         }
                     }
                     OnFinishResolveCard(fsm.whoseTurn, r, target, card?.getOriginCard(), Wu_Dao, newFsm)

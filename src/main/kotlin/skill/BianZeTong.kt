@@ -7,8 +7,11 @@ import com.fengsheng.card.PoYi
 import com.fengsheng.card.WuDao
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_bian_ze_tong_tos
+import com.fengsheng.protos.skillBianZeTongToc
+import com.fengsheng.protos.skillBianZeTongTos
+import com.fengsheng.protos.skillWaitForBianZeTongToc
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -32,50 +35,48 @@ class BianZeTong : TriggeredSkill {
     private data class executeBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             logger.info("${r}发动了[变则通]")
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_wait_for_bian_ze_tong_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { p ->
+                skillWaitForBianZeTongToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(p.game!!, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_bian_ze_tong_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                p.game!!.tryContinueResolveProtocol(p, skillBianZeTongTos {
+                                    enable = false
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_bian_ze_tong_tos.newBuilder()
-                    builder2.enable = true
-                    builder2.cardTypeA = listOf(Diao_Bao, Wu_Dao, Jie_Huo).run {
-                        filter { type -> r.cards.all { it.type != type } }.ifEmpty { this }
-                    }.random()
-                    builder2.cardTypeB = Po_Yi
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillBianZeTongTos {
+                        enable = true
+                        cardTypeA = listOf(Diao_Bao, Wu_Dao, Jie_Huo).run {
+                            filter { type -> r.cards.all { it.type != type } }.ifEmpty { this }
+                        }.random()
+                        cardTypeB = Po_Yi
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             r.draw(1)
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_bian_ze_tong_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -85,37 +86,33 @@ class BianZeTong : TriggeredSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in r.game!!.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_bian_ze_tong_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                r.game!!.players.send {
+                    skillBianZeTongToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        enable = false
                     }
                 }
                 return ResolveResult(fsm, true)
             }
             if (message.cardTypeA == message.cardTypeB) {
                 logger.error("A和B不能相同")
-                (player as? HumanPlayer)?.sendErrorMessage("A和B不能相同")
+                player.sendErrorMessage("A和B不能相同")
                 return null
             }
             if (message.cardTypeA !in validCardTypes || message.cardTypeB !in validCardTypes) {
                 logger.error("A和B只能是【破译】【调包】【误导】【截获】")
-                (player as? HumanPlayer)?.sendErrorMessage("A和B只能是【破译】【调包】【误导】【截获】")
+                player.sendErrorMessage("A和B只能是【破译】【调包】【误导】【截获】")
                 return null
             }
             r.incrSeq()
             logger.info("${r}宣言了${message.cardTypeA}和${message.cardTypeB}")
             r.game!!.players.forEach { it!!.skills += BianZeTong2(message.cardTypeA, message.cardTypeB) }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_bian_ze_tong_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.enable = true
-                    builder.cardTypeA = message.cardTypeA
-                    builder.cardTypeB = message.cardTypeB
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillBianZeTongToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
+                    cardTypeA = message.cardTypeA
+                    cardTypeB = message.cardTypeB
                 }
             }
             return ResolveResult(fsm, true)

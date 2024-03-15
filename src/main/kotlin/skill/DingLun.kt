@@ -4,9 +4,10 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.phase.OnReceiveCard
-import com.fengsheng.protos.Role.skill_ding_lun_toc
 import com.fengsheng.protos.Role.skill_ding_lun_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillDingLunToc
+import com.fengsheng.protos.skillDingLunTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -21,21 +22,21 @@ class DingLun : ActiveSkill {
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean =
         !r.roleFaceUp && fightPhase.inFrontOfWhom === r
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("不是你发技能的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+            r.sendErrorMessage("不是你发技能的时机")
             return
         }
         if (r !== fsm.inFrontOfWhom) {
             logger.error("情报不在你面前，不能发动[定论]")
-            (r as? HumanPlayer)?.sendErrorMessage("情报不在你面前，不能发动[定论]")
+            r.sendErrorMessage("情报不在你面前，不能发动[定论]")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[定论]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[定论]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[定论]")
             return
         }
         val pb = message as skill_ding_lun_tos
@@ -49,13 +50,11 @@ class DingLun : ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[定论]")
         val joinIntoHand = r.checkThreeSameMessageCard(fsm.messageCard)
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_ding_lun_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.card = fsm.messageCard.toPbCard()
-                builder.joinIntoHand = joinIntoHand
-                p.send(builder.build())
+        g.players.send {
+            skillDingLunToc {
+                playerId = it.getAlternativeLocation(r.location)
+                card = fsm.messageCard.toPbCard()
+                this.joinIntoHand = joinIntoHand
             }
         }
         if (joinIntoHand) {
@@ -74,9 +73,7 @@ class DingLun : ActiveSkill {
             val asMessage = !player.checkThreeSameMessageCard(e.messageCard)
             value == 0 || (asMessage == (value > 0)) || return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
-                skill.executeProtocol(
-                    e.whoseFightTurn.game!!, e.whoseFightTurn, skill_ding_lun_tos.getDefaultInstance()
-                )
+                skill.executeProtocol(e.whoseFightTurn.game!!, e.whoseFightTurn, skillDingLunTos { })
             }, 1, TimeUnit.SECONDS)
             return true
         }

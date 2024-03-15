@@ -2,7 +2,7 @@ package com.fengsheng
 
 import com.fengsheng.phase.StartGame
 import com.fengsheng.phase.WaitForSelectRole
-import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Record.record_file
 import com.fengsheng.protos.Record.recorder_line
 import com.fengsheng.skill.RoleCache
@@ -30,11 +30,11 @@ class Recorder {
     fun add(protoName: String, messageBuf: ByteArray?) {
         if (protoName in ignoredProtoNames) return
         if (!loading && ("wait_for_select_role_toc" == protoName || "init_toc" == protoName || list.isNotEmpty())) {
-            val builder = recorder_line.newBuilder()
-            builder.nanoTime = System.nanoTime()
-            builder.protoName = protoName
-            builder.messageBuf = ByteString.copyFrom(messageBuf)
-            list.add(builder.build())
+            list.add(recorderLine {
+                nanoTime = System.nanoTime()
+                this.protoName = protoName
+                this.messageBuf = ByteString.copyFrom(messageBuf)
+            })
         }
     }
 
@@ -51,17 +51,17 @@ class Recorder {
         val recordId = ((now.time / 1000 * 1000 + g.id % 100 * 10 + p.location) %
                 (36L * 36 * 36 * 36 * 36 * 36)).toString(Character.MAX_RADIX).addLeadingZero(6)
         val fileName = timeStr + "-" + sb + "-" + p.location + "-" + recordId
-        val builder = record_file.newBuilder()
-        builder.clientVersion = Config.ClientVersion.get()
-        builder.addAllLines(list)
-        val recordFile = builder.build()
+        val recordFile = recordFile {
+            clientVersion = Config.ClientVersion.get()
+            lines.addAll(list)
+        }
         saveLoadPool.trySend {
             val file = File("records/")
             if (!file.exists() && !file.isDirectory && !file.mkdir()) logger.error("make dir failed: ${file.name}")
             try {
                 DataOutputStream(FileOutputStream("records/$fileName")).use { os ->
                     os.write(recordFile.toByteArray())
-                    if (notify) p.send(save_record_success_toc.newBuilder().setRecordId(recordId).build())
+                    if (notify) p.send(saveRecordSuccessToc { this.recordId = recordId })
                     logger.info("save record success: $recordId")
                 }
             } catch (e: IOException) {
@@ -94,7 +94,7 @@ class Recorder {
                     currentIndex = 0
                     logger.info("load record success: $recordId")
                     if (player.needWaitLoad)
-                        player.send(game_start_toc.getDefaultInstance())
+                        player.send(gameStartToc {})
                     else
                         displayNext(player)
                 }
@@ -121,7 +121,7 @@ class Recorder {
                 return
             }
             if (currentIndex >= list.size) {
-                player.send(display_record_end_toc.getDefaultInstance())
+                player.send(displayRecordEndToc { })
                 list = ArrayList()
                 loading = false
                 break
@@ -133,7 +133,7 @@ class Recorder {
             }
             player.send(line.protoName, line.messageBuf.toByteArray(), true)
             if (++currentIndex >= list.size) {
-                player.send(display_record_end_toc.getDefaultInstance())
+                player.send(displayRecordEndToc { })
                 list = ArrayList()
                 loading = false
                 break
@@ -154,12 +154,12 @@ class Recorder {
     }
 
     fun reconnect(player: HumanPlayer) {
-        player.send(reconnect_toc.newBuilder().setIsEnd(false).build())
+        player.send(reconnectToc { isEnd = false })
         for (i in 0..(list.size - 2)) {
             val line = list[i]
             player.send(line.protoName, line.messageBuf.toByteArray(), false)
         }
-        player.send(reconnect_toc.newBuilder().setIsEnd(true).build())
+        player.send(reconnectToc { isEnd = true })
         list.lastOrNull()?.let { line ->
             player.send(line.protoName, line.messageBuf.toByteArray(), true)
         }

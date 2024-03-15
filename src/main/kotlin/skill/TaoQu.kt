@@ -7,8 +7,13 @@ import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_tao_qu_a_tos
+import com.fengsheng.protos.Role.skill_tao_qu_b_tos
+import com.fengsheng.protos.skillTaoQuAToc
+import com.fengsheng.protos.skillTaoQuATos
+import com.fengsheng.protos.skillTaoQuBToc
+import com.fengsheng.protos.skillTaoQuBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -27,16 +32,16 @@ class TaoQu : MainPhaseSkill() {
             }
         }
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? MainPhaseIdle
         if (r !== fsm?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[套取]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[套取]一回合只能发动一次")
+            r.sendErrorMessage("[套取]一回合只能发动一次")
             return
         }
         val pb = message as skill_tao_qu_a_tos
@@ -47,14 +52,14 @@ class TaoQu : MainPhaseSkill() {
         }
         if (pb.cardIdsCount != 2) {
             logger.error("你必须选择两张手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你必须选择两张手牌")
+            r.sendErrorMessage("你必须选择两张手牌")
             return
         }
         val cards = pb.cardIdsList.map {
             val card = r.findCard(it)
             if (card == null) {
                 logger.error("没有这张牌")
-                (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                r.sendErrorMessage("没有这张牌")
                 return
             }
             card
@@ -62,7 +67,7 @@ class TaoQu : MainPhaseSkill() {
         val colors = cards[0].colors.filter { it in cards[1].colors }
         if (colors.isEmpty()) {
             logger.error("你选择的两张牌不含相同颜色")
-            (r as? HumanPlayer)?.sendErrorMessage("你选择的两张牌不含相同颜色")
+            r.sendErrorMessage("你选择的两张牌不含相同颜色")
             return
         }
         if (!colors.any { c ->
@@ -71,7 +76,7 @@ class TaoQu : MainPhaseSkill() {
                 }
             }) {
             logger.error("除自己以外场上没有你选择的颜色的情报")
-            (r as? HumanPlayer)?.sendErrorMessage("除自己以外场上没有你选择的颜色的情报")
+            r.sendErrorMessage("除自己以外场上没有你选择的颜色的情报")
             return
         }
         r.incrSeq()
@@ -89,16 +94,15 @@ class TaoQu : MainPhaseSkill() {
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tao_qu_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.addAllColors(colors)
-                    cards.forEach { builder.addCards(it.toPbCard()) }
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillTaoQuAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    colors.addAll(this@executeTaoQu.colors)
+                    this@executeTaoQu.cards.forEach { cards.add(it.toPbCard()) }
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
                                 val playerAndCard = g.players.flatMap {
@@ -108,15 +112,14 @@ class TaoQu : MainPhaseSkill() {
                                         else PlayerAndCard(it, card)
                                     }
                                 }.random()
-                                val builder2 = skill_tao_qu_b_tos.newBuilder()
-                                builder2.targetPlayerId = p.getAlternativeLocation(playerAndCard.player.location)
-                                builder2.cardId = playerAndCard.card.id
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(r, builder2.build())
+                                g.tryContinueResolveProtocol(r, skillTaoQuBTos {
+                                    targetPlayerId = p.getAlternativeLocation(playerAndCard.player.location)
+                                    cardId = playerAndCard.card.id
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -128,24 +131,24 @@ class TaoQu : MainPhaseSkill() {
                             else PlayerAndCard(it, card)
                         }
                     }.minBy { RobotPlayer.cardOrder[it.card.type]!! }
-                    val builder2 = skill_tao_qu_b_tos.newBuilder()
-                    builder2.targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
-                    builder2.cardId = playerAndCard.card.id
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillTaoQuBTos {
+                        targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
+                        cardId = playerAndCard.card.id
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== fsm.whoseTurn) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_tao_qu_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = player.game!!
@@ -156,42 +159,40 @@ class TaoQu : MainPhaseSkill() {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             if (message.targetPlayerId == 0) {
                 logger.error("不能以自己为目标")
-                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+                player.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[player.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张情报")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                player.sendErrorMessage("没有这张情报")
                 return null
             }
             if (!card.colors.any { it in colors }) {
                 logger.error("选择的情报没有该颜色")
-                (player as? HumanPlayer)?.sendErrorMessage("选择的情报没有该颜色")
+                player.sendErrorMessage("选择的情报没有该颜色")
                 return null
             }
             player.incrSeq()
             logger.info("${player}将${target}面前的${card}加入了手牌")
             target.deleteMessageCard(card.id)
             player.cards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tao_qu_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.cardId = card.id
-                    p.send(builder.build())
+            g.players.send {
+                skillTaoQuBToc {
+                    playerId = it.getAlternativeLocation(player.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    cardId = card.id
                 }
             }
             target.draw(1)
@@ -211,9 +212,7 @@ class TaoQu : MainPhaseSkill() {
             }.randomOrNull() ?: return false
             val cardIds = player.cards.filter { color in it.colors }.shuffled().take(2).map { it.id }
             GameExecutor.post(player.game!!, {
-                val builder = skill_tao_qu_a_tos.newBuilder()
-                builder.addAllCardIds(cardIds)
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillTaoQuATos { this.cardIds.addAll(cardIds) })
             }, 3, TimeUnit.SECONDS)
             return true
         }

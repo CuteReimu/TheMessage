@@ -5,9 +5,10 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_mian_li_cang_zhen_toc
 import com.fengsheng.protos.Role.skill_mian_li_cang_zhen_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillMianLiCangZhenToc
+import com.fengsheng.protos.skillMianLiCangZhenTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -34,10 +35,10 @@ class MianLiCangZhen : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -51,7 +52,7 @@ class MianLiCangZhen : TriggeredSkill {
             }
             if (message !is skill_mian_li_cang_zhen_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.sender
@@ -63,31 +64,29 @@ class MianLiCangZhen : TriggeredSkill {
             val card = r.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             if (!card.colors.contains(color.Black)) {
                 logger.error("你选择的不是黑色手牌")
-                (player as? HumanPlayer)?.sendErrorMessage("你选择的不是黑色手牌")
+                player.sendErrorMessage("你选择的不是黑色手牌")
                 return null
             }
             val target = event.inFrontOfWhom
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()
             logger.info("${r}发动了[绵里藏针]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_mian_li_cang_zhen_toc.newBuilder()
-                    builder.card = card.toPbCard()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillMianLiCangZhenToc {
+                    this.card = card.toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             r.draw(1)
@@ -113,16 +112,9 @@ class MianLiCangZhen : TriggeredSkill {
                 }
             }
             card ?: return false
-            GameExecutor.post(
-                p.game!!,
-                {
-                    val builder = skill_mian_li_cang_zhen_tos.newBuilder()
-                    builder.cardId = card.id
-                    p.game!!.tryContinueResolveProtocol(p, builder.build())
-                },
-                2,
-                TimeUnit.SECONDS
-            )
+            GameExecutor.post(p.game!!, {
+                p.game!!.tryContinueResolveProtocol(p, skillMianLiCangZhenTos { cardId = card.id })
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

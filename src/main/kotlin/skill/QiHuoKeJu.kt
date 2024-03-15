@@ -3,9 +3,10 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_qi_huo_ke_ju_toc
 import com.fengsheng.protos.Role.skill_qi_huo_ke_ju_tos
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.skillQiHuoKeJuToc
+import com.fengsheng.protos.skillQiHuoKeJuTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -32,10 +33,10 @@ class QiHuoKeJu : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -49,7 +50,7 @@ class QiHuoKeJu : TriggeredSkill {
             }
             if (message !is skill_qi_huo_ke_ju_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
@@ -62,19 +63,17 @@ class QiHuoKeJu : TriggeredSkill {
             val card = r.findMessageCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             r.incrSeq()
             logger.info("${r}发动了[奇货可居]")
             r.deleteMessageCard(card.id)
             r.cards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_qi_huo_ke_ju_toc.newBuilder()
-                    builder.cardId = card.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillQiHuoKeJuToc {
+                    cardId = card.id
+                    playerId = it.getAlternativeLocation(r.location)
                 }
             }
             return ResolveResult(fsm, true)
@@ -87,9 +86,7 @@ class QiHuoKeJu : TriggeredSkill {
             val p = fsm0.event.inFrontOfWhom
             val card = p.messageCards.find { it.colors.contains(color.Black) } ?: return false
             GameExecutor.post(p.game!!, {
-                val builder = skill_qi_huo_ke_ju_tos.newBuilder()
-                builder.cardId = card.id
-                p.game!!.tryContinueResolveProtocol(p, builder.build())
+                p.game!!.tryContinueResolveProtocol(p, skillQiHuoKeJuTos { cardId = card.id })
             }, 3, TimeUnit.SECONDS)
             return true
         }

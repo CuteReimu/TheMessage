@@ -5,8 +5,10 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.card.WeiBi
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.*
+import com.fengsheng.protos.Role.skill_guang_fa_bao_a_tos
+import com.fengsheng.protos.Role.skill_guang_fa_bao_b_tos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -20,16 +22,16 @@ class GuangFaBao : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
             logger.error("现在不是发动[广发报]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[广发报]的时机")
+            r.sendErrorMessage("现在不是发动[广发报]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[广发报]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[广发报]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[广发报]")
             return
         }
         val pb = message as skill_guang_fa_bao_a_tos
@@ -42,13 +44,7 @@ class GuangFaBao : ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[广发报]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_guang_fa_bao_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillGuangFaBaoAToc { playerId = it.getAlternativeLocation(r.location) } }
         r.draw(3)
         g.resolve(executeGuangFaBao(fsm, r, false))
     }
@@ -56,24 +52,18 @@ class GuangFaBao : ActiveSkill {
     private data class executeGuangFaBao(val fsm: FightPhaseIdle, val r: Player, val putCard: Boolean) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_wait_for_guang_fa_bao_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond * 4 / 3
+            g.players.send { p ->
+                skillWaitForGuangFaBaoBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond * 4 / 3
                     if (p === r) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
+                        val seq2 = p.seq
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_guang_fa_bao_b_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            if (p.checkSeq(seq2))
+                                g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos { seq = seq2 })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -110,29 +100,27 @@ class GuangFaBao : ActiveSkill {
                             target = null
                         }
                     }
-                    if (card != null && target != null) {
-                        val builder = skill_guang_fa_bao_b_tos.newBuilder()
-                        builder.enable = true
-                        builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                        builder.addCardIds(card.id)
-                        g.tryContinueResolveProtocol(r, builder.build())
-                        return@post
-                    }
-                    g.tryContinueResolveProtocol(r, skill_guang_fa_bao_b_tos.getDefaultInstance())
+                    g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos {
+                        if (card != null && target != null) {
+                            enable = true
+                            targetPlayerId = r.getAlternativeLocation(target.location)
+                            cardIds.add(card.id)
+                        }
+                    })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_guang_fa_bao_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -143,60 +131,51 @@ class GuangFaBao : ActiveSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_guang_fa_bao_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
-                    }
-                }
+                g.players.send { skillGuangFaBaoBToc { playerId = it.getAlternativeLocation(r.location) } }
                 if (putCard) g.addEvent(AddMessageCardEvent(fsm.whoseTurn))
                 val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
                 return ResolveResult(newFsm, true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.cardIdsCount == 0) {
                 logger.error("enable为true时至少要发一张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("至少要发一张牌")
+                player.sendErrorMessage("至少要发一张牌")
                 return null
             }
             val cards = List(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张卡")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                    player.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card
             }
             if (target.checkThreeSameMessageCard(cards)) {
                 logger.error("你不能通过此技能让任何角色收集三张或更多的同色情报")
-                (player as? HumanPlayer)?.sendErrorMessage("你不能通过此技能让任何角色收集三张或更多的同色情报")
+                player.sendErrorMessage("你不能通过此技能让任何角色收集三张或更多的同色情报")
                 return null
             }
             r.incrSeq()
             logger.info("${r}将${cards.joinToString()}置于${target}的情报区")
             r.cards.removeAll(cards.toSet())
             target.messageCards.addAll(cards)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_guang_fa_bao_b_toc.newBuilder()
-                    builder.enable = true
-                    cards.forEach { builder.addCards(it.toPbCard()) }
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            g.players.send { p ->
+                skillGuangFaBaoBToc {
+                    enable = true
+                    cards.forEach { this.cards.add(it.toPbCard()) }
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
                 }
             }
             if (r.cards.isNotEmpty())
@@ -213,7 +192,7 @@ class GuangFaBao : ActiveSkill {
             !player.roleFaceUp || return false
             player === e.whoseTurn || player.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_guang_fa_bao_a_tos.newBuilder().build())
+                skill.executeProtocol(player.game!!, player, skillGuangFaBaoATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

@@ -6,12 +6,14 @@ import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.card_type.Diao_Bao
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_du_ming_a_tos
+import com.fengsheng.protos.Role.skill_du_ming_b_tos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -44,24 +46,18 @@ class DuMing : TriggeredSkill {
     private data class waitForDuMing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_wait_for_du_ming_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillWaitForDuMingToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq)) {
-                                val builder2 = skill_du_ming_a_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(p, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            if (p.checkSeq(seq))
+                                g.tryContinueResolveProtocol(p, skillDuMingATos { this.seq = seq })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -83,54 +79,54 @@ class DuMing : TriggeredSkill {
                     }
                 }
                 GameExecutor.post(g, {
-                    val builder2 = skill_du_ming_a_tos.newBuilder()
-                    builder2.enable = true
-                    if (messageCard == null || causer == null ||
-                        if (r.identity == Black) r !== causer && Random.nextBoolean()
-                        else causer.identity != r.identity
-                    ) {
-                        builder2.color = listOf(Red, Blue, Black).random()
-                    } else {
-                        var wrong = false
-                        if (r.identity == Black) {
-                            when (r.secretTask) {
-                                Killer -> {
-                                    if (r.messageCards.count(Black) < 2 ||
-                                        r === event.whoseTurn && r.messageCards.countTrueCard() >= 2
-                                    ) wrong = true
-                                }
+                    g.tryContinueResolveProtocol(r, skillDuMingATos {
+                        enable = true
+                        if (messageCard == null || causer == null ||
+                            if (r.identity == Black) r !== causer && Random.nextBoolean()
+                            else causer.identity != r.identity
+                        ) {
+                            color = listOf(Red, Blue, Black).random()
+                        } else {
+                            var wrong = false
+                            if (r.identity == Black) {
+                                when (r.secretTask) {
+                                    Killer -> {
+                                        if (r.messageCards.count(Black) < 2 ||
+                                            r === event.whoseTurn && r.messageCards.countTrueCard() >= 2
+                                        ) wrong = true
+                                    }
 
-                                Pioneer -> {
-                                    if (r.messageCards.count(Black) < 2 || r.messageCards.countTrueCard() >= 1)
-                                        wrong = true
-                                }
+                                    Pioneer -> {
+                                        if (r.messageCards.count(Black) < 2 || r.messageCards.countTrueCard() >= 1)
+                                            wrong = true
+                                    }
 
-                                Sweeper -> {
-                                    if (r.messageCards.count(Black) < 2 ||
-                                        r.messageCards.run { count(Red) <= 1 && count(Blue) <= 1 }
-                                    ) wrong = true
-                                }
+                                    Sweeper -> {
+                                        if (r.messageCards.count(Black) < 2 ||
+                                            r.messageCards.run { count(Red) <= 1 && count(Blue) <= 1 }
+                                        ) wrong = true
+                                    }
 
-                                else -> {}
+                                    else -> {}
+                                }
                             }
+                            color = listOf(Red, Blue, Black).filter { it !in messageCard.colors == wrong }.random()
                         }
-                        builder2.color = listOf(Red, Blue, Black).filter { it !in messageCard.colors == wrong }.random()
-                    }
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ming_a_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -144,14 +140,14 @@ class DuMing : TriggeredSkill {
             }
             if (message.color !== Red && message.color !== Blue && message.color !== Black) {
                 logger.error("不存在的颜色")
-                (player as? HumanPlayer)?.sendErrorMessage("不存在的颜色")
+                player.sendErrorMessage("不存在的颜色")
                 return null
             }
             if (event is FinishResolveCardEvent) {
                 val fightPhase = event.nextFsm as? FightPhaseIdle
                 if (fightPhase == null) {
                     logger.error("状态错误：${event.nextFsm}")
-                    (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
+                    player.sendErrorMessage("服务器内部错误，无法发动技能")
                     return null
                 }
                 r.incrSeq()
@@ -161,7 +157,7 @@ class DuMing : TriggeredSkill {
                 return ResolveResult(executeDuMing(fsm, event, r, message.color, event.messageCard), true)
             }
             logger.error("状态错误：$fsm")
-            (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
+            player.sendErrorMessage("服务器内部错误，无法发动技能")
             return null
         }
     }
@@ -179,51 +175,49 @@ class DuMing : TriggeredSkill {
             logger.info("${r}发动了赌命，声明了$c")
             r.draw(1)
             val needPutBlack = c !in card.colors && r.cards.any { it.isPureBlack() }
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_du_ming_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.color = c
-                    if (p === r) builder.card = card.toPbCard()
+            g.players.send { p ->
+                skillDuMingAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    color = c
+                    if (p === r) card = this@executeDuMing.card.toPbCard()
                     if (needPutBlack) {
-                        builder.waitingSecond = Config.WaitSecond
+                        waitingSecond = Config.WaitSecond
                         if (p === r) {
                             val seq = p.seq
-                            builder.seq = seq
+                            this.seq = seq
                             p.timeout = GameExecutor.post(g, {
                                 if (p.checkSeq(seq)) {
-                                    val builder2 = skill_du_ming_b_tos.newBuilder()
-                                    builder2.cardId = p.cards.filter { it.isPureBlack() }.random().id
-                                    builder2.seq = seq
-                                    g.tryContinueResolveProtocol(p, builder2.build())
+                                    g.tryContinueResolveProtocol(p, skillDuMingBTos {
+                                        cardId = p.cards.filter { it.isPureBlack() }.random().id
+                                        this.seq = seq
+                                    })
                                 }
-                            }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         }
                     }
-                    p.send(builder.build())
                 }
             }
             if (!needPutBlack)
                 return ResolveResult(fsm, true)
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder2 = skill_du_ming_b_tos.newBuilder()
-                    builder2.cardId = r.cards.filter { it.isPureBlack() }.bestCard(r.identity, true).id
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillDuMingBTos {
+                        cardId = r.cards.filter { it.isPureBlack() }.bestCard(r.identity, true).id
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ming_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -234,24 +228,22 @@ class DuMing : TriggeredSkill {
             val card = r.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!card.isPureBlack()) {
                 logger.error("这张牌不是纯黑色")
-                (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色")
+                player.sendErrorMessage("这张牌不是黑色")
                 return null
             }
             r.incrSeq()
             logger.info("${r}将${card}置入情报区")
             r.deleteCard(card.id)
             r.messageCards.add(card)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_du_ming_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.card = card.toPbCard()
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillDuMingBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    this.card = card.toPbCard()
                 }
             }
             r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))

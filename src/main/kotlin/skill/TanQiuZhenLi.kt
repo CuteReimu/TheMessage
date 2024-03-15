@@ -8,8 +8,13 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_tan_qiu_zhen_li_a_tos
+import com.fengsheng.protos.Role.skill_tan_qiu_zhen_li_b_tos
+import com.fengsheng.protos.skillTanQiuZhenLiAToc
+import com.fengsheng.protos.skillTanQiuZhenLiATos
+import com.fengsheng.protos.skillTanQiuZhenLiBToc
+import com.fengsheng.protos.skillTanQiuZhenLiBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -26,15 +31,15 @@ class TanQiuZhenLi : MainPhaseSkill() {
             it !== r && it!!.alive && it.messageCards.any { c -> Red in c.colors || Blue in c.colors }
         }
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[探求真理]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[探求真理]一回合只能发动一次")
+            r.sendErrorMessage("[探求真理]一回合只能发动一次")
             return
         }
         val pb = message as skill_tan_qiu_zhen_li_a_tos
@@ -45,24 +50,24 @@ class TanQiuZhenLi : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val card = target.findMessageCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张情报")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+            r.sendErrorMessage("没有这张情报")
             return
         }
         if (r.checkThreeSameMessageCard(card)) {
             logger.error("你不能以此技能令你收集三张或更多同色情报")
-            (r as? HumanPlayer)?.sendErrorMessage("你不能以此技能令你收集三张或更多同色情报")
+            r.sendErrorMessage("你不能以此技能令你收集三张或更多同色情报")
             return
         }
         r.incrSeq()
@@ -71,15 +76,13 @@ class TanQiuZhenLi : MainPhaseSkill() {
         target.deleteMessageCard(card.id)
         r.messageCards.add(card)
         val waitingSecond = Config.WaitSecond
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_tan_qiu_zhen_li_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.cardId = card.id
-                builder.waitingSecond = waitingSecond
-                if (p === target) builder.seq = target.seq
-                p.send(builder.build())
+        g.players.send { p ->
+            skillTanQiuZhenLiAToc {
+                playerId = p.getAlternativeLocation(r.location)
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                cardId = card.id
+                this.waitingSecond = waitingSecond
+                if (p === target) seq = target.seq
             }
         }
         g.addEvent(AddMessageCardEvent(r))
@@ -96,16 +99,11 @@ class TanQiuZhenLi : MainPhaseSkill() {
             if (target is HumanPlayer) {
                 val seq = target.seq
                 target.timeout = GameExecutor.post(target.game!!, {
-                    if (target.checkSeq(seq)) {
-                        val builder = skill_tan_qiu_zhen_li_b_tos.newBuilder()
-                        builder.enable = false
-                        builder.seq = seq
-                        target.game!!.tryContinueResolveProtocol(target, builder.build())
-                    }
+                    if (target.checkSeq(seq))
+                        target.game!!.tryContinueResolveProtocol(target, skillTanQiuZhenLiBTos { this.seq = seq })
                 }, target.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(target.game!!, {
-                    val builder = skill_tan_qiu_zhen_li_b_tos.newBuilder()
                     var value = 0
                     var card: Card? = null
                     var fromHand = false
@@ -128,26 +126,27 @@ class TanQiuZhenLi : MainPhaseSkill() {
                             fromHand = true
                         }
                     }
-                    if (card != null) {
-                        builder.enable = true
-                        builder.fromHand = fromHand
-                        builder.cardId = card.id
-                    }
-                    target.game!!.tryContinueResolveProtocol(target, builder.build())
+                    target.game!!.tryContinueResolveProtocol(target, skillTanQiuZhenLiBTos {
+                        card?.let {
+                            enable = true
+                            this.fromHand = fromHand
+                            cardId = it.id
+                        }
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== target) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_tan_qiu_zhen_li_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -158,13 +157,11 @@ class TanQiuZhenLi : MainPhaseSkill() {
             }
             if (!message.enable) {
                 target.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_tan_qiu_zhen_li_b_toc.newBuilder()
-                        builder.enable = false
-                        builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        p.send(builder.build())
+                g.players.send {
+                    skillTanQiuZhenLiBToc {
+                        enable = false
+                        targetPlayerId = it.getAlternativeLocation(target.location)
+                        playerId = it.getAlternativeLocation(r.location)
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -174,7 +171,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
                     val card1 = target.deleteCard(message.cardId)
                     if (card1 == null) {
                         logger.error("没有这张牌")
-                        (target as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        target.sendErrorMessage("没有这张牌")
                         return null
                     }
                     logger.info("${target}将手牌中的${card1}置入${r}的情报区")
@@ -183,7 +180,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
                     val card1 = target.deleteMessageCard(message.cardId)
                     if (card1 == null) {
                         logger.error("没有这张情报")
-                        (target as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                        target.sendErrorMessage("没有这张情报")
                         return null
                     }
                     logger.info("${target}将情报区的${card1}置入${r}的情报区")
@@ -191,15 +188,13 @@ class TanQiuZhenLi : MainPhaseSkill() {
                 }
             target.incrSeq()
             r.messageCards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tan_qiu_zhen_li_b_toc.newBuilder()
-                    builder.enable = true
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.fromHand = message.fromHand
-                    builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send {
+                skillTanQiuZhenLiBToc {
+                    enable = true
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    playerId = it.getAlternativeLocation(r.location)
+                    fromHand = message.fromHand
+                    this.card = card.toPbCard()
                 }
             }
             return ResolveResult(fsm, true)
@@ -222,10 +217,10 @@ class TanQiuZhenLi : MainPhaseSkill() {
             val card = target.messageCards.filter(::isPureColor).randomOrNull() ?: return false
             val cardId = card.id
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_tan_qiu_zhen_li_a_tos.newBuilder()
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
-                builder.cardId = cardId
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillTanQiuZhenLiATos {
+                    targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
+                    this.cardId = cardId
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

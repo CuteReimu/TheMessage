@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
-import com.fengsheng.protos.Role.skill_ming_er_toc
+import com.fengsheng.protos.skillMingErToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -22,13 +22,7 @@ class MingEr : TriggeredSkill {
             Red in colors || Blue in colors
         } ?: return null
         logger.info("${event.sender}发动了[明饵]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_ming_er_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(event.sender.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillMingErToc { playerId = it.getAlternativeLocation(event.sender.location) } }
         if (event.sender === event.inFrontOfWhom)
             event.sender.draw(2)
         else

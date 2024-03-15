@@ -6,8 +6,11 @@ import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction.Up
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_workers_are_knowledgable_tos
+import com.fengsheng.protos.skillWaitForWorkersAreKnowledgableToc
+import com.fengsheng.protos.skillWorkersAreKnowledgableToc
+import com.fengsheng.protos.skillWorkersAreKnowledgableTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -35,53 +38,46 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
     private data class executeWorkersAreKnowledgable(val fsm: Fsm, val r: Player) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_workers_are_knowledgable_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                skillWaitForWorkersAreKnowledgableToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq = player.seq
-                        builder.seq = seq
-                        player.timeout = GameExecutor.post(
-                            player.game!!,
-                            {
-                                if (player.checkSeq(seq)) {
-                                    val builder2 = skill_workers_are_knowledgable_tos.newBuilder()
-                                    builder2.enable = false
-                                    builder2.seq = seq
-                                    player.game!!.tryContinueResolveProtocol(player, builder2.build())
-                                }
-                            },
-                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                        this.seq = seq
+                        player.timeout = GameExecutor.post(player.game!!, {
+                            if (player.checkSeq(seq)) {
+                                player.game!!.tryContinueResolveProtocol(player, skillWorkersAreKnowledgableTos {
+                                    enable = false
+                                    this.seq = seq
+                                })
+                            }
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_workers_are_knowledgable_tos.newBuilder()
                     val targets = r.game!!.players.filter { it!!.alive && it.isEnemy(r) }.shuffled()
                         .take(r.messageCards.count(Black))
-                    builder.enable = targets.isNotEmpty()
-                    builder.addAllTargetPlayerId(targets.map { r.getAlternativeLocation(it!!.location) })
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillWorkersAreKnowledgableTos {
+                        enable = targets.isNotEmpty()
+                        targets.forEach { targetPlayerId.add(r.getAlternativeLocation(it!!.location)) }
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_workers_are_knowledgable_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -95,25 +91,25 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
             }
             if (message.targetPlayerIdCount == 0) {
                 logger.error("enable为true时至少要选择一个目标")
-                (player as? HumanPlayer)?.sendErrorMessage("enable为true时至少要选择一个目标")
+                player.sendErrorMessage("enable为true时至少要选择一个目标")
                 return null
             }
             val maxCount = r.messageCards.count(Black)
             if (message.targetPlayerIdCount > maxCount) {
                 logger.error("最多选择${maxCount}个目标")
-                (player as? HumanPlayer)?.sendErrorMessage("最多选择${maxCount}个目标")
+                player.sendErrorMessage("最多选择${maxCount}个目标")
                 return null
             }
             val targets = message.targetPlayerIdList.map {
                 if (it < 0 || it >= r.game!!.players.size) {
                     logger.error("目标错误")
-                    (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                    player.sendErrorMessage("目标错误")
                     return null
                 }
                 val target = r.game!!.players[r.getAbstractLocation(it)]!!
                 if (!target.alive) {
                     logger.error("目标已死亡")
-                    (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                    player.sendErrorMessage("目标已死亡")
                     return null
                 }
                 target
@@ -121,12 +117,10 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
             r.incrSeq()
             logger.info("${r}发动了[咱们工人有知识]，令${targets.joinToString()}本回合不能接收情报")
             targets.forEach { it.skills += WorkersAreKnowledgable2() }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_workers_are_knowledgable_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.addAllTargetPlayerId(targets.map { p.getAlternativeLocation(it.location) })
-                    p.send(builder.build())
+            r.game!!.players.send { p ->
+                skillWorkersAreKnowledgableToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targets.forEach { targetPlayerId.add(p.getAlternativeLocation(it.location)) }
                 }
             }
             return ResolveResult(fsm, true)

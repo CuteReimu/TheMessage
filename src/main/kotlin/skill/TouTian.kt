@@ -5,10 +5,11 @@ import com.fengsheng.card.JieHuo
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
-import com.fengsheng.protos.Role.skill_tou_tian_toc
 import com.fengsheng.protos.Role.skill_tou_tian_tos
+import com.fengsheng.protos.skillTouTianToc
+import com.fengsheng.protos.skillTouTianTos
 import com.fengsheng.skill.SkillId.TOU_TIAN
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -22,11 +23,11 @@ class TouTian : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (!JieHuo.canUse(g, r)) return
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[偷天]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[偷天]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[偷天]")
             return
         }
         val pb = message as skill_tou_tian_tos
@@ -39,11 +40,7 @@ class TouTian : ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[偷天]")
-        for (p in g.players) {
-            (p as? HumanPlayer)?.send(
-                skill_tou_tian_toc.newBuilder().setPlayerId(p.getAlternativeLocation(r.location)).build()
-            )
-        }
+        g.players.send { skillTouTianToc { playerId = it.getAlternativeLocation(r.location) } }
         JieHuo.execute(null, g, r)
     }
 
@@ -59,9 +56,7 @@ class TouTian : ActiveSkill {
             val result = player.calFightPhase(e)
             if (result != null && result.cardType in listOf(Jie_Huo, Wu_Dao) && result.value >= newValue) return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
-                skill.executeProtocol(
-                    e.whoseFightTurn.game!!, e.whoseFightTurn, skill_tou_tian_tos.getDefaultInstance()
-                )
+                skill.executeProtocol(e.whoseFightTurn.game!!, e.whoseFightTurn, skillTouTianTos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

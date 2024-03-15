@@ -5,9 +5,11 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_cang_shen_jiao_tang_b_tos
+import com.fengsheng.protos.Role.skill_cang_shen_jiao_tang_c_tos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -26,17 +28,15 @@ class CangShenJiaoTang : TriggeredSkill {
         val target = event.inFrontOfWhom
         val isHiddenRole = !target.isPublicRole
         val timeoutSecond = Config.WaitSecond
-        for (player in g.players) {
-            if (player is HumanPlayer) {
-                val builder = skill_cang_shen_jiao_tang_a_toc.newBuilder()
-                builder.playerId = player.getAlternativeLocation(askWhom.location)
-                builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                builder.isHiddenRole = isHiddenRole
-                if (isHiddenRole && target.roleFaceUp || !isHiddenRole && target.messageCards.count(Black) > 0) {
-                    builder.waitingSecond = timeoutSecond
-                    if (player === askWhom) builder.seq = player.seq
+        g.players.send { player ->
+            skillCangShenJiaoTangAToc {
+                playerId = player.getAlternativeLocation(askWhom.location)
+                targetPlayerId = player.getAlternativeLocation(target.location)
+                this.isHiddenRole = isHiddenRole
+                if (isHiddenRole && target.roleFaceUp || !isHiddenRole && target.messageCards.any { it.isBlack() }) {
+                    waitingSecond = timeoutSecond
+                    if (player === askWhom) seq = player.seq
                 }
-                player.send(builder.build())
             }
         }
         if (isHiddenRole) {
@@ -60,32 +60,28 @@ class CangShenJiaoTang : TriggeredSkill {
             if (r is HumanPlayer) {
                 val seq2 = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
-                    if (r.checkSeq(seq2)) {
-                        val builder = skill_cang_shen_jiao_tang_b_tos.newBuilder()
-                        builder.enable = false
-                        builder.seq = seq2
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
-                    }
+                    if (r.checkSeq(seq2))
+                        r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangBTos { seq = seq2 })
                 }, r.getWaitSeconds(timeoutSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_cang_shen_jiao_tang_b_tos.newBuilder()
-                    builder.enable = r.isPartnerOrSelf(event.inFrontOfWhom)
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangBTos {
+                        enable = r.isPartnerOrSelf(event.inFrontOfWhom)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cang_shen_jiao_tang_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -96,13 +92,11 @@ class CangShenJiaoTang : TriggeredSkill {
             player.incrSeq()
             val target = event.inFrontOfWhom
             if (message.enable) player.game!!.playerSetRoleFaceUp(target, false)
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_cang_shen_jiao_tang_b_toc.newBuilder()
-                    builder.enable = message.enable
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            player.game!!.players.send {
+                skillCangShenJiaoTangBToc {
+                    enable = message.enable
+                    playerId = it.getAlternativeLocation(player.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             return ResolveResult(fsm, true)
@@ -120,10 +114,10 @@ class CangShenJiaoTang : TriggeredSkill {
                 val seq2 = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq2)) {
-                        val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
-                        builder.enable = false
-                        builder.seq = seq2
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangCTos {
+                            enable = false
+                            seq = seq2
+                        })
                     }
                 }, r.getWaitSeconds(timeoutSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -147,27 +141,27 @@ class CangShenJiaoTang : TriggeredSkill {
                             asMessageCard = true
                         }
                     }
-                    val builder = skill_cang_shen_jiao_tang_c_tos.newBuilder()
-                    if (selectedCard != null) {
-                        builder.enable = true
-                        builder.cardId = selectedCard.id
-                        builder.asMessageCard = asMessageCard
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangCTos {
+                        if (selectedCard != null) {
+                            enable = true
+                            cardId = selectedCard.id
+                            this.asMessageCard = asMessageCard
+                        }
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cang_shen_jiao_tang_c_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -180,12 +174,12 @@ class CangShenJiaoTang : TriggeredSkill {
                 val card = target.findMessageCard(message.cardId)
                 if (card == null) {
                     logger.error("没有这张情报")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                    player.sendErrorMessage("没有这张情报")
                     return null
                 }
                 if (!card.isBlack()) {
                     logger.error("目标情报不是黑色的")
-                    (player as? HumanPlayer)?.sendErrorMessage("目标情报不是黑色的")
+                    player.sendErrorMessage("目标情报不是黑色的")
                     return null
                 }
                 if (message.asMessageCard) {
@@ -200,15 +194,13 @@ class CangShenJiaoTang : TriggeredSkill {
                 }
             }
             player.incrSeq()
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_cang_shen_jiao_tang_c_toc.newBuilder()
-                    builder.enable = message.enable
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.cardId = message.cardId
-                    builder.asMessageCard = message.asMessageCard
-                    p.send(builder.build())
+            player.game!!.players.send {
+                skillCangShenJiaoTangCToc {
+                    enable = message.enable
+                    playerId = it.getAlternativeLocation(player.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    cardId = message.cardId
+                    asMessageCard = message.asMessageCard
                 }
             }
             return ResolveResult(fsm, true)

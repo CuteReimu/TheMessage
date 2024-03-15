@@ -3,9 +3,10 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -22,16 +23,16 @@ class DuJi : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[毒计]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[毒计]的时机")
+            r.sendErrorMessage("现在不是发动[毒计]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[毒计]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[毒计]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[毒计]")
             return
         }
         val pb = message as skill_du_ji_a_tos
@@ -42,31 +43,31 @@ class DuJi : ActiveSkill {
         }
         if (pb.targetPlayerIdsCount != 2) {
             logger.error("[毒计]必须选择两名角色为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("[毒计]必须选择两名角色为目标")
+            r.sendErrorMessage("[毒计]必须选择两名角色为目标")
             return
         }
         val idx1 = pb.getTargetPlayerIds(0)
         val idx2 = pb.getTargetPlayerIds(1)
         if (idx1 < 0 || idx1 >= g.players.size || idx2 < 0 || idx2 >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         if (idx1 == 0 || idx2 == 0) {
             logger.error("不能以自己为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+            r.sendErrorMessage("不能以自己为目标")
             return
         }
         val target1 = g.players[r.getAbstractLocation(idx1)]!!
         val target2 = g.players[r.getAbstractLocation(idx2)]!!
         if (!target1.alive || !target2.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         if (target1.cards.isEmpty() || target2.cards.isEmpty()) {
             logger.error("目标没有手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
+            r.sendErrorMessage("目标没有手牌")
             return
         }
         r.incrSeq()
@@ -81,15 +82,13 @@ class DuJi : ActiveSkill {
         r.cards.add(card2)
         r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target2, target1))
         r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target1, target2))
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_du_ji_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.addTargetPlayerIds(p.getAlternativeLocation(target1.location))
-                builder.addTargetPlayerIds(p.getAlternativeLocation(target2.location))
-                builder.addCards(card1.toPbCard())
-                builder.addCards(card2.toPbCard())
-                p.send(builder.build())
+        g.players.send {
+            skillDuJiAToc {
+                playerId = it.getAlternativeLocation(r.location)
+                targetPlayerIds.add(it.getAlternativeLocation(target1.location))
+                targetPlayerIds.add(it.getAlternativeLocation(target2.location))
+                cards.add(card1.toPbCard())
+                cards.add(card2.toPbCard())
             }
         }
         val twoPlayersAndCards = ArrayList<TwoPlayersAndCard>()
@@ -117,54 +116,48 @@ class DuJi : ActiveSkill {
                 return ResolveResult(fsm, true)
             }
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_wait_for_du_ji_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
+            g.players.send { p ->
+                skillWaitForDuJiBToc {
+                    playerId = p.getAlternativeLocation(r.location)
                     for (twoPlayersAndCard in playerAndCards) {
-                        builder.addTargetPlayerIds(p.getAlternativeLocation(twoPlayersAndCard.waitingPlayer.location))
-                        builder.addCardIds(twoPlayersAndCard.card.id)
+                        targetPlayerIds.add(p.getAlternativeLocation(twoPlayersAndCard.waitingPlayer.location))
+                        cardIds.add(twoPlayersAndCard.card.id)
                     }
-                    builder.waitingSecond = Config.WaitSecond
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq2 = p.seq
-                        builder.seq = seq2
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_du_ji_b_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            if (p.checkSeq(seq2))
+                                g.tryContinueResolveProtocol(r, skillDuJiBTos { seq = seq2 })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     if (playerAndCards.isNotEmpty()) {
-                        val builder = skill_du_ji_b_tos.newBuilder()
-                        builder.enable = true
-                        builder.cardId = playerAndCards[0].card.id
-                        g.tryContinueResolveProtocol(r, builder.build())
+                        g.tryContinueResolveProtocol(r, skillDuJiBTos {
+                            enable = true
+                            cardId = playerAndCards[0].card.id
+                        })
                     } else {
-                        g.tryContinueResolveProtocol(r, skill_du_ji_b_tos.newBuilder().setEnable(false).build())
+                        g.tryContinueResolveProtocol(r, skillDuJiBTos { enable = false })
                     }
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ji_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -175,12 +168,10 @@ class DuJi : ActiveSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_du_ji_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                g.players.send {
+                    skillDuJiBToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        enable = false
                     }
                 }
                 if (asMessage) r.game!!.addEvent(AddMessageCardEvent(whoseTurn))
@@ -191,7 +182,7 @@ class DuJi : ActiveSkill {
             val index = playerAndCards.indexOfFirst { it.card.id == message.cardId }
             if (index < 0) {
                 logger.error("目标卡牌不存在")
-                (player as? HumanPlayer)?.sendErrorMessage("目标卡牌不存在")
+                player.sendErrorMessage("目标卡牌不存在")
                 return null
             }
             val selection = playerAndCards.removeAt(index)
@@ -204,28 +195,26 @@ class DuJi : ActiveSkill {
         override fun resolve(): ResolveResult? {
             logger.info("等待${selection.waitingPlayer}对${selection.card}进行选择")
             val g = selection.waitingPlayer.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_du_ji_b_toc.newBuilder()
-                    builder.enable = true
-                    builder.playerId = p.getAlternativeLocation(fsm.r.location)
-                    builder.waitingPlayerId = p.getAlternativeLocation(selection.waitingPlayer.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(selection.fromPlayer.location)
-                    builder.card = selection.card.toPbCard()
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillDuJiBToc {
+                    enable = true
+                    playerId = p.getAlternativeLocation(fsm.r.location)
+                    waitingPlayerId = p.getAlternativeLocation(selection.waitingPlayer.location)
+                    targetPlayerId = p.getAlternativeLocation(selection.fromPlayer.location)
+                    card = selection.card.toPbCard()
+                    waitingSecond = Config.WaitSecond
                     if (p === selection.waitingPlayer) {
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
+                        val seq2 = p.seq
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
-                                val builder2 = skill_du_ji_c_tos.newBuilder()
-                                builder2.inFrontOfMe = false
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(selection.waitingPlayer, builder2.build())
+                                g.tryContinueResolveProtocol(selection.waitingPlayer, skillDuJiCTos {
+                                    inFrontOfMe = false
+                                    seq = seq2
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             val p = selection.waitingPlayer
@@ -233,24 +222,24 @@ class DuJi : ActiveSkill {
                 val inFrontOfMe = p.calculateMessageCardValue(fsm.whoseTurn, p, selection.card) >
                         p.calculateMessageCardValue(fsm.whoseTurn, selection.fromPlayer, selection.card)
                 GameExecutor.post(g, {
-                    val builder = skill_du_ji_c_tos.newBuilder()
-                    builder.inFrontOfMe = inFrontOfMe
-                    g.tryContinueResolveProtocol(p, builder.build())
+                    g.tryContinueResolveProtocol(p, skillDuJiCTos {
+                        this.inFrontOfMe = inFrontOfMe
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             val r = selection.waitingPlayer
             if (player !== r) {
                 logger.error("当前没有轮到你结算[毒计]")
-                (player as? HumanPlayer)?.sendErrorMessage("当前没有轮到你结算[毒计]")
+                player.sendErrorMessage("当前没有轮到你结算[毒计]")
                 return null
             }
             if (message !is skill_du_ji_c_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -265,14 +254,12 @@ class DuJi : ActiveSkill {
             logger.info("${r}选择将${card}放在${target}面前")
             fsm.r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_du_ji_c_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(fsm.r.location)
-                    builder.waitingPlayerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send {
+                skillDuJiCToc {
+                    playerId = it.getAlternativeLocation(fsm.r.location)
+                    waitingPlayerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.card = card.toPbCard()
                 }
             }
             return ResolveResult(fsm, true)
@@ -298,11 +285,10 @@ class DuJi : ActiveSkill {
             val player1 = players[i]
             val player2 = players[j]
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(
-                    player.game!!, player, skill_du_ji_a_tos.newBuilder()
-                        .addTargetPlayerIds(player.getAlternativeLocation(player1.location))
-                        .addTargetPlayerIds(player.getAlternativeLocation(player2.location)).build()
-                )
+                skill.executeProtocol(player.game!!, player, skillDuJiATos {
+                    targetPlayerIds.add(player.getAlternativeLocation(player1.location))
+                    targetPlayerIds.add(player.getAlternativeLocation(player2.location))
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

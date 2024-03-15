@@ -1,14 +1,17 @@
 package com.fengsheng.card
 
 import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
-import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.Jie_Huo
-import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.direction
+import com.fengsheng.protos.Common.phase.Fight_Phase
+import com.fengsheng.protos.notifyPhaseToc
+import com.fengsheng.protos.useJieHuoToc
+import com.fengsheng.send
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 
@@ -28,7 +31,7 @@ class JieHuo : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用截获")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用截获")
+            r.sendErrorMessage("你被禁止使用截获")
             return false
         }
         return Companion.canUse(g, r)
@@ -49,7 +52,7 @@ class JieHuo : Card {
             val fsm = g.fsm as? FightPhaseIdle
             if (r !== fsm?.whoseFightTurn) {
                 logger.error("截获的使用时机不对")
-                (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机不对")
+                r.sendErrorMessage("截获的使用时机不对")
                 return false
             }
             return true
@@ -64,25 +67,20 @@ class JieHuo : Card {
             val fsm = g.fsm as FightPhaseIdle
             val resolveFunc = { valid: Boolean ->
                 if (valid) {
-                    for (player in g.players) {
-                        if (player is HumanPlayer) {
-                            val builder = Fengsheng.use_jie_huo_toc.newBuilder()
-                            builder.playerId = player.getAlternativeLocation(r.location)
-                            if (card != null) builder.card = card.toPbCard()
-                            player.send(builder.build())
+                    g.players.send {
+                        useJieHuoToc {
+                            playerId = it.getAlternativeLocation(r.location)
+                            if (card != null) this.card = card.toPbCard()
                         }
                     }
                     val newFsm = fsm.copy(inFrontOfWhom = r, whoseFightTurn = r)
-                    for (p in g.players) { // 解决客户端动画问题
-                        if (p is HumanPlayer) {
-                            val builder = Fengsheng.notify_phase_toc.newBuilder()
-                            builder.currentPlayerId = p.getAlternativeLocation(newFsm.whoseTurn.location)
-                            builder.messagePlayerId = p.getAlternativeLocation(newFsm.inFrontOfWhom.location)
-                            builder.waitingPlayerId = p.getAlternativeLocation(newFsm.whoseFightTurn.location)
-                            builder.currentPhase = phase.Fight_Phase
-                            if (newFsm.isMessageCardFaceUp)
-                                builder.messageCard = newFsm.messageCard.toPbCard()
-                            p.send(builder.build())
+                    g.players.send {
+                        notifyPhaseToc {
+                            currentPlayerId = it.getAlternativeLocation(newFsm.whoseTurn.location)
+                            messagePlayerId = it.getAlternativeLocation(newFsm.inFrontOfWhom.location)
+                            waitingPlayerId = it.getAlternativeLocation(newFsm.whoseFightTurn.location)
+                            currentPhase = Fight_Phase
+                            if (newFsm.isMessageCardFaceUp) messageCard = newFsm.messageCard.toPbCard()
                         }
                     }
                     OnFinishResolveCard(fsm.whoseTurn, r, null, card?.getOriginCard(), Jie_Huo, newFsm)

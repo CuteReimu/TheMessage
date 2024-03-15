@@ -4,8 +4,13 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_huo_xin_a_tos
+import com.fengsheng.protos.Role.skill_huo_xin_b_tos
+import com.fengsheng.protos.skillHuoXinAToc
+import com.fengsheng.protos.skillHuoXinATos
+import com.fengsheng.protos.skillHuoXinBToc
+import com.fengsheng.protos.skillHuoXinBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -20,15 +25,15 @@ class HuoXin : MainPhaseSkill() {
     override fun mainPhaseNeedNotify(r: Player): Boolean =
         super.mainPhaseNeedNotify(r) && r.game!!.players.any { it !== r && it!!.alive && it.cards.isNotEmpty() }
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[惑心]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[惑心]一回合只能发动一次")
+            r.sendErrorMessage("[惑心]一回合只能发动一次")
             return
         }
         val pb = message as skill_huo_xin_a_tos
@@ -39,39 +44,37 @@ class HuoXin : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val showCards = g.deck.peek(1)
         if (showCards.isEmpty()) {
             logger.error("牌堆没牌了")
-            (r as? HumanPlayer)?.sendErrorMessage("牌堆没牌了")
+            r.sendErrorMessage("牌堆没牌了")
             return
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[惑心]，展示了牌堆顶的${showCards[0]}，查看了${target}的手牌")
         val waitingSecond = Config.WaitSecond
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_huo_xin_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.showCard = showCards[0].toPbCard()
+        g.players.send { p ->
+            skillHuoXinAToc {
+                playerId = p.getAlternativeLocation(r.location)
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                showCard = showCards[0].toPbCard()
                 if (target.cards.isNotEmpty()) {
-                    builder.waitingSecond = waitingSecond
+                    this.waitingSecond = waitingSecond
                     if (p === r) {
-                        target.cards.forEach { builder.addCards(it.toPbCard()) }
-                        builder.seq = p.seq
+                        target.cards.forEach { cards.add(it.toPbCard()) }
+                        seq = p.seq
                     }
                 }
-                p.send(builder.build())
             }
         }
         if (target.cards.isEmpty()) {
@@ -95,10 +98,10 @@ class HuoXin : MainPhaseSkill() {
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
-                        val builder = skill_huo_xin_b_tos.newBuilder()
-                        builder.discardCardId = card.id
-                        builder.seq = seq
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillHuoXinBTos {
+                            discardCardId = card.id
+                            this.seq = seq
+                        })
                     }
                 }, r.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -106,23 +109,21 @@ class HuoXin : MainPhaseSkill() {
                     filter { it.hasSameColor(showCard) }.ifEmpty { this }.bestCard(r.identity)
                 }
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_huo_xin_b_tos.newBuilder()
-                    builder.discardCardId = card.id
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillHuoXinBTos { discardCardId = card.id })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_huo_xin_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -133,7 +134,7 @@ class HuoXin : MainPhaseSkill() {
             val card = target.deleteCard(message.discardCardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             r.incrSeq()
@@ -145,14 +146,12 @@ class HuoXin : MainPhaseSkill() {
                 logger.info("${r}弃掉了${target}的${card}")
                 r.game!!.deck.discard(card)
             }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_huo_xin_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.discardCard = card.toPbCard()
-                    builder.joinIntoHand = joinIntoHand
-                    p.send(builder.build())
+            r.game!!.players.send { p ->
+                skillHuoXinBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    discardCard = card.toPbCard()
+                    this.joinIntoHand = joinIntoHand
                 }
             }
             r.game!!.addEvent(DiscardCardEvent(r, target))
@@ -168,9 +167,9 @@ class HuoXin : MainPhaseSkill() {
                 it !== e.whoseTurn && it!!.alive && (isEarly || it.isEnemy(e.whoseTurn)) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_huo_xin_a_tos.newBuilder()
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillHuoXinATos {
+                    targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

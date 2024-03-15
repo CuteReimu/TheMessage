@@ -3,8 +3,13 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_bo_ai_a_tos
+import com.fengsheng.protos.Role.skill_bo_ai_b_tos
+import com.fengsheng.protos.skillBoAiAToc
+import com.fengsheng.protos.skillBoAiATos
+import com.fengsheng.protos.skillBoAiBToc
+import com.fengsheng.protos.skillBoAiBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -16,15 +21,15 @@ class BoAi : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[博爱]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[博爱]一回合只能发动一次")
+            r.sendErrorMessage("[博爱]一回合只能发动一次")
             return
         }
         val pb = message as skill_bo_ai_a_tos
@@ -42,106 +47,96 @@ class BoAi : MainPhaseSkill() {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[博爱]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_bo_ai_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillBoAiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq2 = p.seq
-                        builder.seq = seq2
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_bo_ai_b_tos.newBuilder()
-                                builder2.cardId = 0
-                                builder2.seq = seq2
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            if (p.checkSeq(seq2))
+                                r.game!!.tryContinueResolveProtocol(r, skillBoAiBTos { seq = seq2 })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             r.draw(1)
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder = skill_bo_ai_b_tos.newBuilder()
-                    if (!g.isEarly) {
-                        val player = r.game!!.players.find { it!!.alive && it.isPartner(r) && it.isFemale }
-                        if (player != null) {
-                            builder.cardId = r.cards.bestCard(r.identity, true).id
-                            builder.targetPlayerId = r.getAlternativeLocation(player.location)
+                    r.game!!.tryContinueResolveProtocol(r, skillBoAiBTos {
+                        if (!g.isEarly) {
+                            val player = r.game!!.players.find { it!!.alive && it.isPartner(r) && it.isFemale }
+                            if (player != null) {
+                                targetPlayerId = r.getAlternativeLocation(player.location)
+                                cardId = r.cards.bestCard(r.identity, true).id
+                            }
                         }
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_bo_ai_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
-                (player as? HumanPlayer)?.sendErrorMessage("操作太晚了")
+                player.sendErrorMessage("操作太晚了")
                 return null
             }
             if (message.cardId == 0) {
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_bo_ai_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                g.players.send {
+                    skillBoAiBToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        enable = false
                     }
                 }
                 return ResolveResult(fsm, true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             if (message.targetPlayerId == 0) {
                 logger.error("不能以自己为目标")
-                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+                player.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = r.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             r.incrSeq()
             logger.info("${r}将${card}交给$target")
             r.deleteCard(card.id)
             target.cards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_bo_ai_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.enable = true
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send {
+                skillBoAiBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    if (it === r || it === target) this.card = card.toPbCard()
                 }
             }
             if (target.isFemale) r.draw(1)
@@ -154,9 +149,7 @@ class BoAi : MainPhaseSkill() {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.whoseTurn.getSkillUseCount(SkillId.BO_AI) == 0 || return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                skill.executeProtocol(
-                    e.whoseTurn.game!!, e.whoseTurn, skill_bo_ai_a_tos.getDefaultInstance()
-                )
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillBoAiATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

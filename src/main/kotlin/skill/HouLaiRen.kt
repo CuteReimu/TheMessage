@@ -5,8 +5,13 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.UseChengQingOnDying
 import com.fengsheng.phase.WaitForChengQing
 import com.fengsheng.protos.Common.role.unknown
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_hou_lai_ren_a_tos
+import com.fengsheng.protos.Role.skill_hou_lai_ren_b_tos
+import com.fengsheng.protos.skillHouLaiRenAToc
+import com.fengsheng.protos.skillHouLaiRenATos
+import com.fengsheng.protos.skillHouLaiRenBToc
+import com.fengsheng.protos.skillHouLaiRenBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -20,16 +25,16 @@ class HouLaiRen : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = false
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? WaitForChengQing
         if (fsm == null || r !== fsm.askWhom || r !== fsm.whoDie) {
             logger.error("还没有结算到你濒死")
-            (r as? HumanPlayer)?.sendErrorMessage("还没有结算到你濒死")
+            r.sendErrorMessage("还没有结算到你濒死")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[后来人]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[后来人]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[后来人]")
             return
         }
         val pb = message as skill_hou_lai_ren_a_tos
@@ -41,12 +46,12 @@ class HouLaiRen : ActiveSkill {
         val card = r.findMessageCard(message.remainCardId)
         if (card == null) {
             logger.error("没有这张情报")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+            r.sendErrorMessage("没有这张情报")
             return
         }
         if (card.isPureBlack()) {
             logger.error("你必须选择一张红色情报或蓝色情报")
-            (r as? HumanPlayer)?.sendErrorMessage("你必须选择一张红色情报或蓝色情报")
+            r.sendErrorMessage("你必须选择一张红色情报或蓝色情报")
             return
         }
         r.incrSeq()
@@ -70,47 +75,43 @@ class HouLaiRen : ActiveSkill {
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_hou_lai_ren_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.remainCardId = remainCardId
-                    builder.waitingSecond = Config.WaitSecond * 2
+            g.players.send { p ->
+                skillHouLaiRenAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    remainCardId = this@executeHouLaiRen.remainCardId
+                    waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
-                        roles.forEach { builder.addRoles(it.role) }
+                        this@executeHouLaiRen.roles.forEach { roles.add(it.role) }
                         val seq2 = p.seq
-                        builder.seq = seq2
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
-                                val builder2 = skill_hou_lai_ren_b_tos.newBuilder()
-                                builder2.role = roles.first().role
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
+                                g.tryContinueResolveProtocol(r, skillHouLaiRenBTos {
+                                    role = this@executeHouLaiRen.roles.first().role
+                                    seq = seq2
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder2 = skill_hou_lai_ren_b_tos.newBuilder()
-                    builder2.role = roles.first().role
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillHouLaiRenBTos { role = roles.first().role })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_hou_lai_ren_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -122,18 +123,16 @@ class HouLaiRen : ActiveSkill {
             val roleSkillsData = roles.find { it.role == message.role }
             if (roleSkillsData == null) {
                 logger.error("你没有这个角色")
-                (r as? HumanPlayer)?.sendErrorMessage("你没有这个角色")
+                r.sendErrorMessage("你没有这个角色")
                 return null
             }
             r.incrSeq()
             logger.info("${r}变成了${roleSkillsData.name}")
             r.roleSkillsData = roleSkillsData
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_hou_lai_ren_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.role = if (r.roleFaceUp || p === r) r.role else unknown
-                    p.send(builder.build())
+            g.players.send {
+                skillHouLaiRenBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    role = if (r.roleFaceUp || it === r) r.role else unknown
                 }
             }
             return ResolveResult(UseChengQingOnDying(fsm), true)
@@ -147,9 +146,7 @@ class HouLaiRen : ActiveSkill {
             if (player.roleFaceUp) return false
             val card = player.messageCards.filter { !it.isPureBlack() }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_hou_lai_ren_a_tos.newBuilder()
-                builder.remainCardId = card.id
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillHouLaiRenATos { remainCardId = card.id })
             }, 1, TimeUnit.SECONDS)
             return true
         }

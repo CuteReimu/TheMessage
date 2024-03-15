@@ -3,10 +3,11 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_lian_xin_a_tos
+import com.fengsheng.protos.Role.skill_lian_xin_b_tos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -32,21 +33,18 @@ class LianXin : TriggeredSkill {
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players) {
-                if (p === event.inFrontOfWhom) {
+                if (p === event.inFrontOfWhom)
                     p.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
-                } else if (p is HumanPlayer) {
-                    val builder = unknown_waiting_toc.newBuilder()
-                    builder.waitingSecond = Config.WaitSecond
-                    p.send(builder.build())
-                }
+                else if (p is HumanPlayer)
+                    p.send(unknownWaitingToc { waitingSecond = Config.WaitSecond })
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -60,7 +58,7 @@ class LianXin : TriggeredSkill {
             }
             if (message !is skill_lian_xin_a_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
@@ -76,17 +74,15 @@ class LianXin : TriggeredSkill {
             logger.info("${r}发动了[联信]")
             r.draw(2)
             val hasNext = target.alive && r.cards.any(checkCard)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_lian_xin_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.messageCard = event.messageCard.toPbCard()
+            g.players.send { p ->
+                skillLianXinAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    messageCard = event.messageCard.toPbCard()
                     if (hasNext) {
-                        builder.waitingSecond = Config.WaitSecond
-                        if (p === r) builder.seq = p.seq
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) seq = p.seq
                     }
-                    p.send(builder.build())
                 }
             }
             if (!hasNext)
@@ -104,10 +100,10 @@ class LianXin : TriggeredSkill {
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
-                        val builder = skill_lian_xin_b_tos.newBuilder()
-                        builder.cardId = card.id
-                        builder.seq = seq
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillLianXinBTos {
+                            cardId = card.id
+                            this.seq = seq
+                        })
                     }
                 }, r.getWaitSeconds(Config.WaitSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -122,23 +118,21 @@ class LianXin : TriggeredSkill {
                     }
                 }
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_lian_xin_b_tos.newBuilder()
-                    builder.cardId = card.id
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillLianXinBTos { cardId = card.id })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_lian_xin_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
@@ -151,12 +145,12 @@ class LianXin : TriggeredSkill {
             val card = r.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!checkCard(card)) {
                 logger.error("选择的牌不含有不同颜色")
-                (player as? HumanPlayer)?.sendErrorMessage("选择的牌不含有不同颜色")
+                player.sendErrorMessage("选择的牌不含有不同颜色")
                 return null
             }
             r.incrSeq()
@@ -164,13 +158,11 @@ class LianXin : TriggeredSkill {
             logger.info("${r}将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_lian_xin_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send {
+                skillLianXinBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.card = card.toPbCard()
                 }
             }
             g.addEvent(AddMessageCardEvent(event.whoseTurn))
@@ -190,7 +182,7 @@ class LianXin : TriggeredSkill {
                     } || target.isPartnerOrSelf(p) && target.willDie(card)) return false
             }
             GameExecutor.post(p.game!!, {
-                p.game!!.tryContinueResolveProtocol(p, skill_lian_xin_a_tos.getDefaultInstance())
+                p.game!!.tryContinueResolveProtocol(p, skillLianXinATos { })
             }, 1, TimeUnit.SECONDS)
             return true
         }

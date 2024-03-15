@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
-import com.fengsheng.protos.Role.skill_guan_hai_toc
+import com.fengsheng.protos.skillGuanHaiToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -22,12 +22,10 @@ class GuanHai : TriggeredSkill {
         } ?: return null
         logger.info("${askWhom}发动了[观海]")
         val fsm2 = event.currentFsm as FightPhaseIdle
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_guan_hai_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(askWhom.location)
-                builder.card = fsm2.messageCard.toPbCard()
-                p.send(builder.build())
+        g.players.send {
+            skillGuanHaiToc {
+                playerId = it.getAlternativeLocation(askWhom.location)
+                card = fsm2.messageCard.toPbCard()
             }
         }
         return null

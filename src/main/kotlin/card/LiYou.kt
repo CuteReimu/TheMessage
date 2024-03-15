@@ -7,7 +7,7 @@ import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.use_li_you_toc
+import com.fengsheng.protos.useLiYouToc
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.SkillId.HUO_XIN
 import com.fengsheng.skill.SkillId.YUN_CHOU_WEI_WO
@@ -31,7 +31,7 @@ class LiYou : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用利诱")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用利诱")
+            r.sendErrorMessage("你被禁止使用利诱")
             return false
         }
         val target = args[0] as Player
@@ -53,12 +53,12 @@ class LiYou : Card {
         fun canUse(g: Game, r: Player, target: Player): Boolean {
             if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
                 logger.error("利诱的使用时机不对")
-                (r as? HumanPlayer)?.sendErrorMessage("利诱的使用时机不对")
+                r.sendErrorMessage("利诱的使用时机不对")
                 return false
             }
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                r.sendErrorMessage("目标已死亡")
                 return false
             }
             return true
@@ -84,15 +84,13 @@ class LiYou : Card {
                         logger.info("${deckCards.joinToString()}加入了${target}的的情报区")
                     }
                 }
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        val builder = use_li_you_toc.newBuilder()
-                        builder.playerId = player.getAlternativeLocation(r.location)
-                        builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                        if (card != null) builder.liYouCard = card.toPbCard()
-                        builder.joinIntoHand = joinIntoHand
-                        if (deckCards.isNotEmpty()) builder.messageCard = deckCards[0].toPbCard()
-                        player.send(builder.build())
+                g.players.send {
+                    useLiYouToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        targetPlayerId = it.getAlternativeLocation(target.location)
+                        if (card != null) liYouCard = card.toPbCard()
+                        if (deckCards.isNotEmpty()) messageCard = deckCards[0].toPbCard()
+                        this.joinIntoHand = joinIntoHand
                     }
                 }
                 if (!joinIntoHand) r.game!!.addEvent(AddMessageCardEvent(r, false))

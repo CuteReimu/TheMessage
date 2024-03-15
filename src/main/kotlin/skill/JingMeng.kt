@@ -3,8 +3,13 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_jing_meng_a_tos
+import com.fengsheng.protos.Role.skill_jing_meng_b_tos
+import com.fengsheng.protos.skillJingMengAToc
+import com.fengsheng.protos.skillJingMengATos
+import com.fengsheng.protos.skillJingMengBToc
+import com.fengsheng.protos.skillJingMengBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -32,10 +37,10 @@ class JingMeng : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -49,7 +54,7 @@ class JingMeng : TriggeredSkill {
             }
             if (message !is skill_jing_meng_a_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
@@ -61,18 +66,18 @@ class JingMeng : TriggeredSkill {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误：${message.targetPlayerId}")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误：${message.targetPlayerId}")
+                player.sendErrorMessage("目标错误：${message.targetPlayerId}")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target.cards.isEmpty()) {
                 logger.error("目标没有手牌")
-                (player as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
+                player.sendErrorMessage("目标没有手牌")
                 return null
             }
             r.incrSeq()
@@ -86,47 +91,45 @@ class JingMeng : TriggeredSkill {
         override fun resolve(): ResolveResult? {
             val r = event.inFrontOfWhom
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jing_meng_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillJingMengAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
-                        for (card in target.cards) builder.addCards(card.toPbCard())
-                        val seq2: Int = p.seq
-                        builder.seq = seq2
+                        target.cards.forEach { cards.add(it.toPbCard()) }
+                        val seq2 = p.seq
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
-                                val builder2 = skill_jing_meng_b_tos.newBuilder()
-                                builder2.cardId = target.cards.first().id
-                                builder2.seq = seq2
-                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                p.game!!.tryContinueResolveProtocol(p, skillJingMengBTos {
+                                    cardId = target.cards.first().id
+                                    seq = seq2
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder = skill_jing_meng_b_tos.newBuilder()
-                    builder.cardId = target.cards.bestCard(r.identity).id
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillJingMengBTos {
+                        cardId = target.cards.bestCard(r.identity).id
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.inFrontOfWhom) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jing_meng_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.inFrontOfWhom
@@ -139,18 +142,16 @@ class JingMeng : TriggeredSkill {
             val card = target.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             r.incrSeq()
             logger.info("${r}弃掉了${target}的$card")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jing_meng_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send {
+                skillJingMengBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.card = card.toPbCard()
                 }
             }
             g.playerDiscardCard(target, card)
@@ -167,9 +168,9 @@ class JingMeng : TriggeredSkill {
                 it!!.alive && p.isEnemy(it) && it.cards.isNotEmpty()
             }.randomOrNull() ?: return false
             GameExecutor.post(p.game!!, {
-                val builder = skill_jing_meng_a_tos.newBuilder()
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                p.game!!.tryContinueResolveProtocol(p, builder.build())
+                p.game!!.tryContinueResolveProtocol(p, skillJingMengATos {
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

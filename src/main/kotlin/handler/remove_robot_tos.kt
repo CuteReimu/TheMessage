@@ -3,6 +3,8 @@ package com.fengsheng.handler
 import com.fengsheng.HumanPlayer
 import com.fengsheng.RobotPlayer
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.leaveRoomToc
+import com.fengsheng.send
 import org.apache.logging.log4j.kotlin.logger
 
 class remove_robot_tos : AbstractProtoHandler<Fengsheng.remove_robot_tos>() {
@@ -18,9 +20,8 @@ class remove_robot_tos : AbstractProtoHandler<Fengsheng.remove_robot_tos>() {
             val robotPlayer = players[index]!!
             r.game!!.players = r.game!!.players.toMutableList().apply { set(index, null) }
             logger.info("${robotPlayer.playerName}离开了房间")
-            val reply = Fengsheng.leave_room_toc.newBuilder().setPosition(robotPlayer.location).build()
-            for (p in players)
-                (p as? HumanPlayer)?.send(reply)
+            val reply = leaveRoomToc { position = robotPlayer.location }
+            players.send { reply }
             r.game!!.cancelStartTimer()
         }
     }

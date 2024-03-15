@@ -8,12 +8,13 @@ import com.fengsheng.card.Card
 import com.fengsheng.card.Deck
 import com.fengsheng.network.Network
 import com.fengsheng.phase.WaitForSelectRole
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.protos.Fengsheng.*
 import com.fengsheng.skill.*
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import com.google.protobuf.TextFormat
 import io.netty.util.Timeout
 import org.apache.logging.log4j.kotlin.logger
@@ -67,25 +68,21 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         if (index < 0) {
             if (players.size >= 9 || player is RobotPlayer) return false
             players = players + null
-            for (p in players)
-                (p as? HumanPlayer)?.send(add_one_position_toc.getDefaultInstance())
+            players.send { addOnePositionToc { } }
             index = players.size - 1
             cancelStartTimer()
         }
         players = players.toMutableList().apply { set(index, player) }
         player.location = index
         val unready = players.count { it == null }
-        val builder = join_room_toc.newBuilder()
-        val name = player.playerName
-        val score = Statistics.getScore(name) ?: 0
-        val rank = if (player is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
-        builder.name = name
-        builder.position = player.location
-        builder.winCount = count.winCount
-        builder.gameCount = count.gameCount
-        builder.rank = rank
-        builder.score = score
-        val msg = builder.build()
+        val msg = joinRoomToc {
+            name = player.playerName
+            position = player.location
+            winCount = count.winCount
+            gameCount = count.gameCount
+            score = Statistics.getScore(name) ?: 0
+            rank = if (player is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
+        }
         players.forEach { if (it !== player && it is HumanPlayer) it.send(msg) }
         if (unready == 0) {
             logger.info("${player.playerName}加入了。已加入${players.size}个人，游戏将在5秒内开始。。。")
@@ -225,7 +222,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         humanPlayers.forEach { it.saveRecord() }
         humanPlayers.forEach { playerNameCache.remove(it.playerName) }
         players.forEach { it!!.reset() }
-        if (forceEnd) humanPlayers.forEach { it.send(notify_kicked_toc.getDefaultInstance()) }
+        if (forceEnd) humanPlayers.forEach { it.send(notifyKickedToc {}) }
         actorRef.tell(StopGameActor(), ActorRef.noSender())
     }
 
@@ -244,12 +241,10 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         player.cards.removeAll(cards.toSet())
         logger.info("${player}弃掉了${cards.joinToString()}，剩余手牌${player.cards.size}张")
         deck.discard(cards)
-        for (p in players) {
-            if (p is HumanPlayer) {
-                val builder = discard_card_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(player.location)
-                cards.forEach { builder.addCards(it.toPbCard()) }
-                p.send(builder.build())
+        players.send {
+            discardCardToc {
+                playerId = it.getAlternativeLocation(player.location)
+                cards.forEach { this.cards.add(it.toPbCard()) }
             }
         }
     }
@@ -265,13 +260,10 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             else logger.info("${player}将角色翻至背面朝上")
             player.roleFaceUp = false
         }
-        for (p in players) {
-            if (p is HumanPlayer) {
-                val builder = notify_role_update_toc.newBuilder().setPlayerId(
-                    p.getAlternativeLocation(player.location)
-                )
-                builder.role = if (player.roleFaceUp) player.role else role.unknown
-                p.send(builder.build())
+        players.send {
+            notifyRoleUpdateToc {
+                playerId = it.getAlternativeLocation(player.location)
+                role = if (player.roleFaceUp) player.role else unknown
             }
         }
     }
@@ -317,14 +309,14 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     /**
      * 对于[WaitingFsm]，当收到玩家协议时，继续处理当前状态机
      */
-    fun tryContinueResolveProtocol(player: Player, pb: GeneratedMessageV3) {
+    fun tryContinueResolveProtocol(player: Player, pb: GeneratedMessage) {
         GameExecutor.post(this) {
             if (fsm !is WaitingFsm) {
                 logger.error(
                     "时机错误，当前时点为：$fsm，收到: ${pb.javaClass.simpleName} | " +
                             printer.printToString(pb).replace("\n *".toRegex(), " ")
                 )
-                (player as? HumanPlayer)?.sendErrorMessage("时机错误")
+                player.sendErrorMessage("时机错误")
                 return@post
             }
             val result = (fsm as WaitingFsm).resolveProtocol(player, pb)

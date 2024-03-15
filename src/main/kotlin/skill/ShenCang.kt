@@ -2,7 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Role.skill_shen_cang_toc
+import com.fengsheng.protos.skillShenCangToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -21,13 +21,7 @@ class ShenCang : TriggeredSkill {
             event.cardType == Wei_Bi || event.cardType == Feng_Yun_Bian_Huan || event.cardType == Jie_Huo
         } ?: return null
         logger.info("${askWhom}发动了[深藏]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_shen_cang_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(askWhom.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillShenCangToc { playerId = it.getAlternativeLocation(askWhom.location) } }
         g.playerSetRoleFaceUp(askWhom, false)
         return null
     }

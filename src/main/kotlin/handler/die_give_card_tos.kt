@@ -6,6 +6,8 @@ import com.fengsheng.card.Card
 import com.fengsheng.phase.AfterDieGiveCard
 import com.fengsheng.phase.WaitForDieGiveCard
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.notifyDieGiveCardToc
+import com.fengsheng.send
 import org.apache.logging.log4j.kotlin.logger
 
 class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
@@ -61,16 +63,12 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
         }
         target.cards.addAll(cards)
         logger.info("${r}给了${target}$${cards.joinToString()}")
-        for (p in r.game!!.players) {
-            if (p is HumanPlayer) {
-                val builder = Fengsheng.notify_die_give_card_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                if (p === r || p === target)
-                    for (card in cards) builder.addCard(card.toPbCard())
-                else
-                    builder.unknownCardCount = cards.size
-                p.send(builder.build())
+        r.game!!.players.send { p ->
+            notifyDieGiveCardToc {
+                playerId = p.getAlternativeLocation(r.location)
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                if (p === r || p === target) cards.forEach { this.card.add(it.toPbCard()) }
+                else unknownCardCount = cards.size
             }
         }
         r.incrSeq()

@@ -3,9 +3,10 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -32,10 +33,10 @@ class JianDiFengXing : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -49,7 +50,7 @@ class JianDiFengXing : TriggeredSkill {
             }
             if (message !is skill_jian_di_feng_xing_a_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -68,33 +69,31 @@ class JianDiFengXing : TriggeredSkill {
         override fun resolve(): ResolveResult? {
             val r = event.sender
             val hasBlack = r.cards.any { it.isPureBlack() }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jian_di_feng_xing_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
+            r.game!!.players.send { p ->
+                skillJianDiFengXingAToc {
+                    playerId = p.getAlternativeLocation(r.location)
                     if (hasBlack) {
-                        builder.waitingSecond = Config.WaitSecond
+                        waitingSecond = Config.WaitSecond
                         if (p === r) {
                             val seq = p.seq
-                            builder.seq = seq
+                            this.seq = seq
                             p.timeout = GameExecutor.post(p.game!!, {
                                 if (p.checkSeq(seq)) {
-                                    val builder2 = skill_jian_di_feng_xing_b_tos.newBuilder()
-                                    builder2.cardId = p.cards.first { it.isPureBlack() }.id
-                                    builder2.seq = seq
-                                    p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                    p.game!!.tryContinueResolveProtocol(p, skillJianDiFengXingBTos {
+                                        cardId = p.cards.first { it.isPureBlack() }.id
+                                        this.seq = seq
+                                    })
                                 }
-                            }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         }
                     }
-                    p.send(builder.build())
                 }
             }
             if (hasBlack && r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_jian_di_feng_xing_b_tos.newBuilder()
-                    builder2.cardId = r.cards.filter { it.isPureBlack() }.random().id
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillJianDiFengXingBTos {
+                        cardId = r.cards.filter { it.isPureBlack() }.random().id
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             if (!hasBlack)
@@ -102,15 +101,15 @@ class JianDiFengXing : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jian_di_feng_xing_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -121,12 +120,12 @@ class JianDiFengXing : TriggeredSkill {
             val card = player.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!card.isPureBlack()) {
                 logger.error("这张牌不是纯黑色")
-                (player as? HumanPlayer)?.sendErrorMessage("这张牌不是纯黑色")
+                player.sendErrorMessage("这张牌不是纯黑色")
                 return null
             }
             player.incrSeq()
@@ -143,40 +142,38 @@ class JianDiFengXing : TriggeredSkill {
             val r = event.sender
             val messageExists = event.inFrontOfWhom.messageCards.any { it.id == event.messageCard.id }
             if (!messageExists) logger.info("待收情报不存在了")
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jian_di_feng_xing_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.card = card.toPbCard()
+            r.game!!.players.send { p ->
+                skillJianDiFengXingBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    card = this@executeJianDiFengXingC.card.toPbCard()
                     if (messageExists) {
-                        builder.waitingSecond = Config.WaitSecond
+                        waitingSecond = Config.WaitSecond
                         if (p === r) {
                             val seq = p.seq
-                            builder.seq = seq
+                            this.seq = seq
                             p.timeout = GameExecutor.post(p.game!!, {
                                 if (p.checkSeq(seq)) {
-                                    val builder2 = skill_jian_di_feng_xing_c_tos.newBuilder()
-                                    builder2.enable = false
-                                    builder2.seq = seq
-                                    p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                    p.game!!.tryContinueResolveProtocol(p, skillJianDiFengXingCTos {
+                                        enable = false
+                                        this.seq = seq
+                                    })
                                 }
-                            }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         }
                     }
-                    p.send(builder.build())
                 }
             }
             if (messageExists && r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_jian_di_feng_xing_c_tos.newBuilder()
-                    if (r.isEnemy(event.inFrontOfWhom) && !event.messageCard.isBlack()) {
-                        val cards = r.cards.filter { it.isBlack() }
-                        if (cards.isNotEmpty()) {
-                            builder2.enable = true
-                            builder2.cardId = cards.bestCard(r.identity, true).id
+                    r.game!!.tryContinueResolveProtocol(r, skillJianDiFengXingCTos {
+                        if (r.isEnemy(event.inFrontOfWhom) && !event.messageCard.isBlack()) {
+                            val cards = r.cards.filter { it.isBlack() }
+                            if (cards.isNotEmpty()) {
+                                enable = true
+                                cardId = cards.bestCard(r.identity, true).id
+                            }
                         }
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             if (!messageExists)
@@ -184,15 +181,15 @@ class JianDiFengXing : TriggeredSkill {
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jian_di_feng_xing_c_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -202,12 +199,10 @@ class JianDiFengXing : TriggeredSkill {
             }
             if (!message.enable) {
                 player.incrSeq()
-                for (p in player.game!!.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_jian_di_feng_xing_c_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(player.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                player.game!!.players.send {
+                    skillJianDiFengXingCToc {
+                        playerId = it.getAlternativeLocation(player.location)
+                        enable = false
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -215,12 +210,12 @@ class JianDiFengXing : TriggeredSkill {
             val card = player.deleteCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!card.isBlack()) {
                 logger.error("这张牌不是黑色")
-                (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色")
+                player.sendErrorMessage("这张牌不是黑色")
                 return null
             }
             val target = event.inFrontOfWhom
@@ -229,14 +224,12 @@ class JianDiFengXing : TriggeredSkill {
             target.deleteMessageCard(event.messageCard.id)
             player.game!!.deck.discard(event.messageCard)
             target.messageCards.add(card)
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jian_di_feng_xing_c_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.enable = true
-                    builder.card = card.toPbCard()
-                    builder.oldMessageCardId = event.messageCard.id
-                    p.send(builder.build())
+            player.game!!.players.send {
+                skillJianDiFengXingCToc {
+                    playerId = it.getAlternativeLocation(player.location)
+                    enable = true
+                    this.card = card.toPbCard()
+                    oldMessageCardId = event.messageCard.id
                 }
             }
             event.messageCard = card
@@ -249,8 +242,7 @@ class JianDiFengXing : TriggeredSkill {
             if (fsm !is executeJianDiFengXingA) return false
             val p = fsm.event.sender
             GameExecutor.post(p.game!!, {
-                val builder = skill_jian_di_feng_xing_a_tos.newBuilder()
-                p.game!!.tryContinueResolveProtocol(p, builder.build())
+                p.game!!.tryContinueResolveProtocol(p, skillJianDiFengXingATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

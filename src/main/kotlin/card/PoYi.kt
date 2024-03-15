@@ -7,9 +7,12 @@ import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.protos.Common.card_type.Po_Yi
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
-import com.fengsheng.protos.Fengsheng.*
+import com.fengsheng.protos.Fengsheng.po_yi_show_tos
+import com.fengsheng.protos.poYiShowToc
+import com.fengsheng.protos.poYiShowTos
+import com.fengsheng.protos.usePoYiToc
 import com.fengsheng.skill.cannotPlayCard
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -29,13 +32,13 @@ class PoYi : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用破译")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用破译")
+            r.sendErrorMessage("你被禁止使用破译")
             return false
         }
         val fsm = g.fsm as? SendPhaseIdle
         if (r !== fsm?.inFrontOfWhom) {
             logger.error("破译的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("破译的使用时机不对")
+            r.sendErrorMessage("破译的使用时机不对")
             return false
         }
         return true
@@ -54,51 +57,47 @@ class PoYi : Card {
     private data class executePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = sendPhase.inFrontOfWhom
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = use_po_yi_toc.newBuilder()
-                    builder.card = card.toPbCard()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    if (!sendPhase.isMessageCardFaceUp) builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                usePoYiToc {
+                    card = this@executePoYi.card.toPbCard()
+                    playerId = player.getAlternativeLocation(r.location)
+                    if (!sendPhase.isMessageCardFaceUp) waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq2 = player.seq
-                        builder.messageCard = sendPhase.messageCard.toPbCard()
-                        builder.seq = seq2
+                        messageCard = sendPhase.messageCard.toPbCard()
+                        seq = seq2
                         val waitingSecond =
-                            if (builder.waitingSecond == 0) 0
-                            else player.getWaitSeconds(builder.waitingSecond + 2)
+                            if (this.waitingSecond == 0) 0
+                            else player.getWaitSeconds(this.waitingSecond + 2)
                         player.timeout = GameExecutor.post(r.game!!, {
                             if (player.checkSeq(seq2))
-                                r.game!!.tryContinueResolveProtocol(r, po_yi_show_tos.getDefaultInstance())
+                                r.game!!.tryContinueResolveProtocol(r, poYiShowTos { })
                         }, waitingSecond.toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = po_yi_show_tos.newBuilder()
-                    builder2.show = sendPhase.messageCard.isBlack()
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, poYiShowTos { show = sendPhase.messageCard.isBlack() })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is po_yi_show_tos) {
                 logger.error("现在正在结算破译")
-                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算破译")
+                player.sendErrorMessage("现在正在结算破译")
                 return null
             }
             if (player !== sendPhase.inFrontOfWhom) {
                 logger.error("你不是破译的使用者")
-                (player as? HumanPlayer)?.sendErrorMessage("你不是破译的使用者")
+                player.sendErrorMessage("你不是破译的使用者")
                 return null
             }
             if (message.show && !sendPhase.messageCard.isBlack()) {
                 logger.error("非黑牌不能翻开")
-                (player as? HumanPlayer)?.sendErrorMessage("非黑牌不能翻开")
+                player.sendErrorMessage("非黑牌不能翻开")
                 return null
             }
             player.incrSeq()
@@ -116,13 +115,11 @@ class PoYi : Card {
                 logger.info("${sendPhase.messageCard}被翻开了")
                 r.draw(1)
             }
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = po_yi_show_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.show = show
-                    if (show) builder.messageCard = sendPhase.messageCard.toPbCard()
-                    player.send(builder.build())
+            r.game!!.players.send {
+                poYiShowToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    this.show = show
+                    if (show) messageCard = sendPhase.messageCard.toPbCard()
                 }
             }
         }

@@ -4,11 +4,11 @@ import com.fengsheng.Config
 import com.fengsheng.HumanPlayer
 import com.fengsheng.Statistics
 import com.fengsheng.protos.Fengsheng
-import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 
 class get_record_list_tos : ProtoHandler {
-    override fun handle(player: HumanPlayer, message: GeneratedMessageV3) {
+    override fun handle(player: HumanPlayer, message: GeneratedMessage) {
         if (player.game != null || player.isLoadingRecord) {
             logger.error("player is already in a room")
             player.sendErrorMessage("你已经在房间里了")

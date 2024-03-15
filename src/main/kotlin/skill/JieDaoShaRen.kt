@@ -5,8 +5,13 @@ import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_jie_dao_sha_ren_a_tos
+import com.fengsheng.protos.Role.skill_jie_dao_sha_ren_b_tos
+import com.fengsheng.protos.skillJieDaoShaRenAToc
+import com.fengsheng.protos.skillJieDaoShaRenATos
+import com.fengsheng.protos.skillJieDaoShaRenBToc
+import com.fengsheng.protos.skillJieDaoShaRenBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -20,16 +25,16 @@ class JieDaoShaRen : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[借刀杀人]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[借刀杀人]的时机")
+            r.sendErrorMessage("现在不是发动[借刀杀人]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[借刀杀人]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[借刀杀人]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[借刀杀人]")
             return
         }
         val pb = message as skill_jie_dao_sha_ren_a_tos
@@ -40,23 +45,23 @@ class JieDaoShaRen : ActiveSkill {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             logger.error("不能以自己为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+            r.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         if (target.cards.isEmpty()) {
             logger.error("目标没有手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
+            r.sendErrorMessage("目标没有手牌")
             return
         }
         r.incrSeq()
@@ -74,28 +79,26 @@ class JieDaoShaRen : ActiveSkill {
             r.cards.add(card)
             g.addEvent(GiveCardEvent(fsm.whoseTurn, target, r))
             logger.info("${r}对${target}发动了[借刀杀人]，抽取了一张手牌$card")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jie_dao_sha_ren_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.card = card.toPbCard()
-                    if (card.isBlack()) {
-                        builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillJieDaoShaRenAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    card = this@executeJieDaoShaRen.card.toPbCard()
+                    if (this@executeJieDaoShaRen.card.isBlack()) {
+                        waitingSecond = Config.WaitSecond
                         if (p === r) {
                             val seq2 = p.seq
-                            builder.seq = seq2
+                            seq = seq2
                             p.timeout = GameExecutor.post(g, {
                                 if (p.checkSeq(seq2)) {
-                                    val builder2 = skill_jie_dao_sha_ren_b_tos.newBuilder()
-                                    builder2.enable = false
-                                    builder2.seq = seq2
-                                    g.tryContinueResolveProtocol(r, builder2.build())
+                                    g.tryContinueResolveProtocol(r, skillJieDaoShaRenBTos {
+                                        enable = false
+                                        seq = seq2
+                                    })
                                 }
-                            }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         }
                     }
-                    p.send(builder.build())
                 }
             }
             if (!card.isBlack()) {
@@ -114,24 +117,24 @@ class JieDaoShaRen : ActiveSkill {
                             target2 = p
                         }
                     }
-                    val builder = skill_jie_dao_sha_ren_b_tos.newBuilder()
-                    builder.enable = true
-                    builder.targetPlayerId = r.getAlternativeLocation(target2.location)
-                    g.tryContinueResolveProtocol(r, builder.build())
+                    g.tryContinueResolveProtocol(r, skillJieDaoShaRenBTos {
+                        enable = true
+                        targetPlayerId = r.getAlternativeLocation(target2.location)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jie_dao_sha_ren_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -142,39 +145,35 @@ class JieDaoShaRen : ActiveSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_jie_dao_sha_ren_b_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                g.players.send {
+                    skillJieDaoShaRenBToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        enable = false
                     }
                 }
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()
             logger.info("${r}将${card}置于${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jie_dao_sha_ren_b_toc.newBuilder()
-                    builder.card = card.toPbCard()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.enable = true
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillJieDaoShaRenBToc {
+                    card = this@executeJieDaoShaRen.card.toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             g.playerSetRoleFaceUp(r, false)
@@ -192,9 +191,9 @@ class JieDaoShaRen : ActiveSkill {
                 it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
             }.shuffled().maxByOrNull { it!!.cards.count(Black).toDouble() / it.cards.size } ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_jie_dao_sha_ren_a_tos.newBuilder()
-                builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillJieDaoShaRenATos {
+                    targetPlayerId = player.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

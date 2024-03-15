@@ -5,12 +5,14 @@ import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.WaitForChengQing
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_ru_bi_zhi_shi_a_tos
+import com.fengsheng.protos.Role.skill_ru_bi_zhi_shi_b_tos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -24,16 +26,16 @@ class RuBiZhiShi : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm
         if ((fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) && (fsm !is WaitForChengQing || r !== fsm.askWhom)) {
             logger.error("现在不是发动[如臂指使]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[如臂指使]的时机")
+            r.sendErrorMessage("现在不是发动[如臂指使]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("角色面朝上时不能发动[如臂指使]")
-            (r as? HumanPlayer)?.sendErrorMessage("角色面朝上时不能发动[如臂指使]")
+            r.sendErrorMessage("角色面朝上时不能发动[如臂指使]")
             return
         }
         val pb = message as skill_ru_bi_zhi_shi_a_tos
@@ -44,18 +46,18 @@ class RuBiZhiShi : ActiveSkill {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         if (target.cards.isEmpty()) {
             logger.error("目标没有手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
+            r.sendErrorMessage("目标没有手牌")
             return
         }
         r.incrSeq()
@@ -69,27 +71,25 @@ class RuBiZhiShi : ActiveSkill {
     data class executeRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_ru_bi_zhi_shi_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond * 2
+            g.players.send { p ->
+                skillRuBiZhiShiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
-                        target.cards.forEach { builder.addCards(it.toPbCard()) }
+                        target.cards.forEach { cards.add(it.toPbCard()) }
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_ru_bi_zhi_shi_b_tos.newBuilder()
-                                builder2.enable = true
-                                builder2.cardId = target.cards.random().id
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(p, builder2.build())
+                                g.tryContinueResolveProtocol(p, skillRuBiZhiShiBTos {
+                                    enable = true
+                                    cardId = target.cards.random().id
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -98,24 +98,13 @@ class RuBiZhiShi : ActiveSkill {
                         val result = r.calFightPhase(fsm, target, target.cards)
                         if (result != null) {
                             when (result.cardType) {
-                                Jie_Huo -> {
-                                    val builder = use_jie_huo_tos.newBuilder()
-                                    builder.cardId = result.card.id
-                                    g.tryContinueResolveProtocol(r, builder.build())
-                                }
-
-                                Diao_Bao -> {
-                                    val builder = use_diao_bao_tos.newBuilder()
-                                    builder.cardId = result.card.id
-                                    g.tryContinueResolveProtocol(r, builder.build())
-                                }
-
-                                else -> { // Wu_Dao
-                                    val builder = use_wu_dao_tos.newBuilder()
-                                    builder.cardId = result.card.id
-                                    builder.targetPlayerId = r.getAlternativeLocation(result.wuDaoTarget!!.location)
-                                    g.tryContinueResolveProtocol(r, builder.build())
-                                }
+                                Jie_Huo -> g.tryContinueResolveProtocol(r, useJieHuoTos { cardId = result.card.id })
+                                Diao_Bao -> g.tryContinueResolveProtocol(r, useDiaoBaoTos { cardId = result.card.id })
+                                else ->  // Wu_Dao
+                                    g.tryContinueResolveProtocol(r, useWuDaoTos {
+                                        cardId = result.card.id
+                                        targetPlayerId = r.getAlternativeLocation(result.wuDaoTarget!!.location)
+                                    })
                             }
                             return@post
                         }
@@ -140,28 +129,28 @@ class RuBiZhiShi : ActiveSkill {
                                             ?: find { r.identity !in it.colors }
                                             ?: firstOrNull()
                                     } ?: break
-                                val builder = cheng_qing_save_die_tos.newBuilder()
-                                builder.use = true
-                                builder.cardId = card.id
-                                builder.targetCardId = black.id
-                                g.tryContinueResolveProtocol(r, builder.build())
+                                g.tryContinueResolveProtocol(r, chengQingSaveDieTos {
+                                    use = true
+                                    cardId = card.id
+                                    targetCardId = black.id
+                                })
                                 return@post
                             }
                         }
                     }
-                    val builder = skill_ru_bi_zhi_shi_b_tos.newBuilder()
-                    builder.enable = true
-                    builder.cardId = target.cards.bestCard(r.identity).id
-                    g.tryContinueResolveProtocol(r, builder.build())
+                    g.tryContinueResolveProtocol(r, skillRuBiZhiShiBTos {
+                        enable = true
+                        cardId = target.cards.bestCard(r.identity).id
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is skill_ru_bi_zhi_shi_b_tos) {
@@ -180,7 +169,7 @@ class RuBiZhiShi : ActiveSkill {
                 val card = target.findCard(message.cardId)
                 if (card == null) {
                     logger.error("没有这张牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    player.sendErrorMessage("没有这张牌")
                     return null
                 }
                 logger.info("${r}选择弃掉${target}的$card")
@@ -196,24 +185,24 @@ class RuBiZhiShi : ActiveSkill {
                 is use_jie_huo_tos -> {
                     if (fsm !is FightPhaseIdle) {
                         logger.error("截获的使用时机错误")
-                        (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机错误")
+                        r.sendErrorMessage("截获的使用时机错误")
                         return null
                     }
                     if (target.cannotPlayCard(Jie_Huo)) {
                         logger.error("对方被禁止使用截获")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用截获")
+                        r.sendErrorMessage("对方被禁止使用截获")
                         return null
                     }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
                         logger.error("没有这张牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        r.sendErrorMessage("没有这张牌")
                         return null
                     }
                     val (ok, convertCardSkill) = target.canUseCardTypes(Jie_Huo, card, true)
                     if (!ok) {
                         logger.error("这张${card}不能当作截获使用")
-                        (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作截获使用")
+                        r.sendErrorMessage("这张${card}不能当作截获使用")
                         return null
                     }
                     r.incrSeq()
@@ -228,42 +217,42 @@ class RuBiZhiShi : ActiveSkill {
                 is use_wu_dao_tos -> {
                     if (fsm !is FightPhaseIdle) {
                         logger.error("误导的使用时机错误")
-                        (r as? HumanPlayer)?.sendErrorMessage("误导的使用时机错误")
+                        r.sendErrorMessage("误导的使用时机错误")
                         return null
                     }
                     if (target.cannotPlayCard(Wu_Dao)) {
                         logger.error("对方被禁止使用误导")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用误导")
+                        r.sendErrorMessage("对方被禁止使用误导")
                         return null
                     }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
                         logger.error("没有这张牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        r.sendErrorMessage("没有这张牌")
                         return null
                     }
                     val (ok, convertCardSkill) = target.canUseCardTypes(Wu_Dao, card, true)
                     if (!ok) {
                         logger.error("这张${card}不能当作误导使用")
-                        (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作误导使用")
+                        r.sendErrorMessage("这张${card}不能当作误导使用")
                         return null
                     }
                     if (message.targetPlayerId < 0 || message.targetPlayerId >= r.game!!.players.size) {
                         logger.error("目标错误")
-                        (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                        player.sendErrorMessage("目标错误")
                         return null
                     }
                     val target2 = r.game!!.players[r.getAbstractLocation(message.targetPlayerId)]!!
                     if (!target2.alive) {
                         logger.error("目标已死亡")
-                        (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                        player.sendErrorMessage("目标已死亡")
                         return null
                     }
                     val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
                     val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
                     if (target2 === fsm.inFrontOfWhom || target2 !== left && target2 !== right) {
                         logger.error("误导只能选择情报当前人左右两边的人作为目标")
-                        (r as? HumanPlayer)?.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
+                        r.sendErrorMessage("误导只能选择情报当前人左右两边的人作为目标")
                         return null
                     }
                     r.incrSeq()
@@ -278,24 +267,24 @@ class RuBiZhiShi : ActiveSkill {
                 is use_diao_bao_tos -> {
                     if (fsm !is FightPhaseIdle) {
                         logger.error("调包的使用时机错误")
-                        (r as? HumanPlayer)?.sendErrorMessage("调包的使用时机错误")
+                        r.sendErrorMessage("调包的使用时机错误")
                         return null
                     }
                     if (target.cannotPlayCard(Diao_Bao)) {
                         logger.error("对方被禁止使用调包")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用调包")
+                        r.sendErrorMessage("对方被禁止使用调包")
                         return null
                     }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
                         logger.error("没有这张牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        r.sendErrorMessage("没有这张牌")
                         return null
                     }
                     val (ok, convertCardSkill) = target.canUseCardTypes(Diao_Bao, card, true)
                     if (!ok) {
                         logger.error("这张${card}不能当作调包使用")
-                        (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作调包使用")
+                        r.sendErrorMessage("这张${card}不能当作调包使用")
                         return null
                     }
                     r.incrSeq()
@@ -310,41 +299,41 @@ class RuBiZhiShi : ActiveSkill {
                 is cheng_qing_save_die_tos -> {
                     if (fsm !is WaitForChengQing) {
                         logger.error("澄清的使用时机错误")
-                        (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机错误")
+                        r.sendErrorMessage("澄清的使用时机错误")
                         return null
                     }
                     if (!message.use) {
                         logger.error("参数错误")
-                        (r as? HumanPlayer)?.sendErrorMessage("参数错误")
+                        r.sendErrorMessage("参数错误")
                         return null
                     }
                     if (target.cannotPlayCard(Cheng_Qing)) {
                         logger.error("对方被禁止使用澄清")
-                        (r as? HumanPlayer)?.sendErrorMessage("对方被禁止使用澄清")
+                        r.sendErrorMessage("对方被禁止使用澄清")
                         return null
                     }
                     val card = target.findCard(message.cardId)
                     if (card == null) {
                         logger.error("没有这张牌")
-                        (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        r.sendErrorMessage("没有这张牌")
                         return null
                     }
                     val (ok, convertCardSkill) = target.canUseCardTypes(Cheng_Qing, card, true)
                     if (!ok) {
                         logger.error("这张${card}不能当作澄清使用")
-                        (r as? HumanPlayer)?.sendErrorMessage("这张${card}不能当作澄清使用")
+                        r.sendErrorMessage("这张${card}不能当作澄清使用")
                         return null
                     }
                     val target2 = fsm.whoDie
                     val card2 = target2.messageCards.find { c -> c.id == message.targetCardId }
                     if (card2 == null) {
                         logger.error("没有这张情报")
-                        (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                        r.sendErrorMessage("没有这张情报")
                         return null
                     }
                     if (!card2.isBlack()) {
                         logger.error("澄清只能对黑情报使用")
-                        (r as? HumanPlayer)?.sendErrorMessage("澄清只能对黑情报使用")
+                        r.sendErrorMessage("澄清只能对黑情报使用")
                         return null
                     }
                     r.incrSeq()
@@ -358,21 +347,19 @@ class RuBiZhiShi : ActiveSkill {
 
                 else -> {
                     logger.error("错误的协议")
-                    (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                    player.sendErrorMessage("错误的协议")
                     return null
                 }
             }
         }
 
         private fun notifyUseSkill(enable: Boolean, useCard: Boolean) {
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_ru_bi_zhi_shi_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.enable = enable
-                    builder.useCard = useCard
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillRuBiZhiShiBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.enable = enable
+                    this.useCard = useCard
                 }
             }
         }
@@ -387,9 +374,9 @@ class RuBiZhiShi : ActiveSkill {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
             }.shuffled().maxByOrNull { it!!.cards.size } ?: return false
             GameExecutor.post(r.game!!, {
-                val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
-                builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                skill.executeProtocol(r.game!!, r, builder.build())
+                skill.executeProtocol(r.game!!, r, skillRuBiZhiShiATos {
+                    targetPlayerId = r.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }
@@ -402,9 +389,9 @@ class RuBiZhiShi : ActiveSkill {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
             }.shuffled().maxByOrNull { it!!.cards.size } ?: return false
             GameExecutor.post(r.game!!, {
-                val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
-                builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                skill.executeProtocol(r.game!!, r, builder.build())
+                skill.executeProtocol(r.game!!, r, skillRuBiZhiShiATos {
+                    targetPlayerId = r.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

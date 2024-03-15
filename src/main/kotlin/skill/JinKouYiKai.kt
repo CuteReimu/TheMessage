@@ -3,8 +3,13 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_jin_kou_yi_kai_a_tos
+import com.fengsheng.protos.Role.skill_jin_kou_yi_kai_b_tos
+import com.fengsheng.protos.skillJinKouYiKaiAToc
+import com.fengsheng.protos.skillJinKouYiKaiATos
+import com.fengsheng.protos.skillJinKouYiKaiBToc
+import com.fengsheng.protos.skillJinKouYiKaiBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -20,16 +25,16 @@ class JinKouYiKai : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = fightPhase.whoseTurn === r
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn || r !== fsm.whoseTurn) {
             logger.error("现在不是发动[金口一开]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[金口一开]的时机")
+            r.sendErrorMessage("现在不是发动[金口一开]的时机")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[金口一开]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[金口一开]一回合只能发动一次")
+            r.sendErrorMessage("[金口一开]一回合只能发动一次")
             return
         }
         val pb = message as skill_jin_kou_yi_kai_a_tos
@@ -41,7 +46,7 @@ class JinKouYiKai : ActiveSkill {
         val cards = g.deck.peek(1)
         if (cards.isEmpty()) {
             logger.error("牌堆没牌了")
-            (r as? HumanPlayer)?.sendErrorMessage("牌堆没牌了")
+            r.sendErrorMessage("牌堆没牌了")
             return
         }
         r.incrSeq()
@@ -54,63 +59,53 @@ class JinKouYiKai : ActiveSkill {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[金口一开]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jin_kou_yi_kai_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillJinKouYiKaiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
-                        builder.card = cards.first().toPbCard()
+                        card = cards.first().toPbCard()
                         val seq2: Int = p.seq
-                        builder.seq = seq2
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq2)) {
-                                val builder2 = skill_jin_kou_yi_kai_b_tos.newBuilder()
-                                builder2.exchange = false
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            if (p.checkSeq(seq2))
+                                g.tryContinueResolveProtocol(r, skillJinKouYiKaiBTos { seq = seq2 })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder = skill_jin_kou_yi_kai_b_tos.newBuilder()
                     val oldValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
                     val newValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, cards.first())
-                    builder.exchange = newValue > oldValue + 10
-                    g.tryContinueResolveProtocol(r, builder.build())
+                    g.tryContinueResolveProtocol(r, skillJinKouYiKaiBTos { exchange = newValue > oldValue + 10 })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jin_kou_yi_kai_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
-            val g = r.game
+            val g = r.game!!
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
                 logger.error("操作太晚了, required Seq: ${r.seq}, actual Seq: ${message.seq}")
                 r.sendErrorMessage("操作太晚了")
                 return null
             }
             r.incrSeq()
-            for (p in g!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jin_kou_yi_kai_b_toc.newBuilder()
-                    builder.exchange = message.exchange
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillJinKouYiKaiBToc {
+                    exchange = message.exchange
+                    playerId = it.getAlternativeLocation(r.location)
                 }
             }
             return if (message.exchange) {
@@ -137,7 +132,7 @@ class JinKouYiKai : ActiveSkill {
             val player = e.whoseFightTurn
             if (player !== e.whoseTurn || player.getSkillUseCount(SkillId.JIN_KOU_YI_KAI) > 0) return false
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_jin_kou_yi_kai_a_tos.getDefaultInstance())
+                skill.executeProtocol(player.game!!, player, skillJinKouYiKaiATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

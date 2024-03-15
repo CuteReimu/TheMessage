@@ -6,8 +6,12 @@ import com.fengsheng.card.WuDao
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
-import com.google.protobuf.GeneratedMessageV3
+import com.fengsheng.protos.Role.skill_ying_bian_zi_ru_a_tos
+import com.fengsheng.protos.Role.skill_ying_bian_zi_ru_b_tos
+import com.fengsheng.protos.skillYingBianZiRuAToc
+import com.fengsheng.protos.skillYingBianZiRuATos
+import com.fengsheng.protos.skillYingBianZiRuBTos
+import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
@@ -24,21 +28,21 @@ class YingBianZiRu : ActiveSkill {
 
     override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp
 
-    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessageV3) {
+    override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[应变自如]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[应变自如]的时机")
+            r.sendErrorMessage("现在不是发动[应变自如]的时机")
             return
         }
         if (fsm.isMessageCardFaceUp) {
             logger.error("情报面朝上，不能发动[应变自如]")
-            (r as? HumanPlayer)?.sendErrorMessage("情报面朝上，不能发动[应变自如]")
+            r.sendErrorMessage("情报面朝上，不能发动[应变自如]")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[应变自如]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[应变自如]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[应变自如]")
             return
         }
         val pb = message as skill_ying_bian_zi_ru_a_tos
@@ -52,16 +56,14 @@ class YingBianZiRu : ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         val timeout = Config.WaitSecond
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_ying_bian_zi_ru_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.card = fsm.messageCard.toPbCard()
+        g.players.send { p ->
+            skillYingBianZiRuAToc {
+                playerId = p.getAlternativeLocation(r.location)
+                card = fsm.messageCard.toPbCard()
                 if (fsm.messageCard.isPureBlack()) {
-                    builder.waitingSecond = timeout
-                    if (p === r) builder.seq = p.seq
+                    waitingSecond = timeout
+                    if (p === r) seq = p.seq
                 }
-                p.send(builder.build())
             }
         }
         g.fsm = fsm.copy(isMessageCardFaceUp = true)
@@ -96,10 +98,10 @@ class YingBianZiRu : ActiveSkill {
                             fsm.inFrontOfWhom.getNextLeftAlivePlayer(),
                             fsm.inFrontOfWhom.getNextRightAlivePlayer()
                         ).random()
-                        val builder = skill_ying_bian_zi_ru_b_tos.newBuilder()
-                        builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                        builder.seq = seq
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillYingBianZiRuBTos {
+                            targetPlayerId = r.getAlternativeLocation(target.location)
+                            this.seq = seq
+                        })
                     }
                 }, r.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -109,23 +111,23 @@ class YingBianZiRu : ActiveSkill {
                     val leftValue = r.calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard)
                     val rightValue = r.calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard)
                     val target = if (leftValue > rightValue) left else right
-                    val builder = skill_ying_bian_zi_ru_b_tos.newBuilder()
-                    builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillYingBianZiRuBTos {
+                        targetPlayerId = r.getAlternativeLocation(target.location)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
         }
 
-        override fun resolveProtocol(player: Player, message: GeneratedMessageV3): ResolveResult? {
+        override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_ying_bian_zi_ru_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -136,18 +138,18 @@ class YingBianZiRu : ActiveSkill {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target !== fsm.inFrontOfWhom.getNextLeftAlivePlayer() && target !== fsm.inFrontOfWhom.getNextRightAlivePlayer()) {
                 logger.error("只能误导给左右两边的玩家")
-                (player as? HumanPlayer)?.sendErrorMessage("只能误导给左右两边的玩家")
+                player.sendErrorMessage("只能误导给左右两边的玩家")
                 return null
             }
             r.incrSeq()
@@ -170,7 +172,7 @@ class YingBianZiRu : ActiveSkill {
                         && !willWin(e.whoseTurn, this, e.messageCard)
             } || return false
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_ying_bian_zi_ru_a_tos.getDefaultInstance())
+                skill.executeProtocol(player.game!!, player, skillYingBianZiRuATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }
