@@ -77,9 +77,9 @@ class JiuJi : TriggeredSkill {
                 return ResolveResult(fsm, true)
             }
             r.incrSeq()
+            g.playerSetRoleFaceUp(r, true)
             logger.info("${r}发动了[就计]")
             g.players.send { skillJiuJiAToc { playerId = it.getAlternativeLocation(r.location) } }
-            g.playerSetRoleFaceUp(r, true)
             r.draw(2)
             event.card?.let { r.skills += JiuJi2() }
             return ResolveResult(fsm, true)
