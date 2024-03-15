@@ -102,7 +102,7 @@ class join_room_tos : ProtoHandler {
                 this.game = null
                 send(Fengsheng.notify_kicked_toc.getDefaultInstance())
                 val reply = leaveRoomToc { position = location }
-                newGame.players.forEach { (it as? HumanPlayer)?.send(reply) }
+                newGame.players.send { reply }
             }
             if (!Config.IsGmEnable) {
                 val humanCount = newGame.players.count { it is HumanPlayer }
@@ -153,9 +153,7 @@ class join_room_tos : ProtoHandler {
                     players = players.toMutableList().apply { set(index, null) }
                     logger.info("${robotPlayer.playerName}离开了房间")
                     val reply = leaveRoomToc { position = robotPlayer.location }
-                    for (p in players) {
-                        (p as? HumanPlayer)?.send(reply)
-                    }
+                    players.send { reply }
                 }
             }
         }

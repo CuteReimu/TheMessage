@@ -56,7 +56,7 @@ class use_yu_qin_gu_zong_tos : AbstractProtoHandler<Fengsheng.use_yu_qin_gu_zong
         val sendCardError = r.canSendCard(r, messageCard, null, pb.cardDir, target, lockPlayers)
         if (sendCardError != null) {
             logger.error(sendCardError)
-            (r as? HumanPlayer)?.sendErrorMessage(sendCardError)
+            r.sendErrorMessage(sendCardError)
             return
         }
         if (card.type != Yu_Qin_Gu_Zong) card = card.asCard(Yu_Qin_Gu_Zong)

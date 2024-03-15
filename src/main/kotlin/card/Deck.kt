@@ -1,10 +1,10 @@
 package com.fengsheng.card
 
 import com.fengsheng.Game
-import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction.*
 import com.fengsheng.protos.syncDeckNumToc
+import com.fengsheng.send
 
 class Deck(private val game: Game) {
     private var nextId = 0
@@ -90,11 +90,11 @@ class Deck(private val game: Game) {
      * @param shuffled 是否洗牌
      */
     private fun notifyDeckCount(shuffled: Boolean) {
-        for (player in game.players) {
-            (player as? HumanPlayer)?.send(syncDeckNumToc {
+        game.players.send {
+            syncDeckNumToc {
                 num = cards.size
                 this.shuffled = shuffled
-            })
+            }
         }
     }
 

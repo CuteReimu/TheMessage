@@ -31,12 +31,12 @@ class HouZiQieXin : MainPhaseSkill() {
         val fsm = g.fsm as? MainPhaseIdle
         if (r !== fsm?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[猴子窃信]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[猴子窃信]一回合只能发动一次")
+            r.sendErrorMessage("[猴子窃信]一回合只能发动一次")
             return
         }
         val pb = message as skill_hou_zi_qie_xin_tos
@@ -47,35 +47,35 @@ class HouZiQieXin : MainPhaseSkill() {
         }
         if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val handCard = r.findCard(message.handCardId)
         if (handCard == null) {
             logger.error("没有这张牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         if (message.targetPlayerId == 0) {
             logger.error("不能以自己为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+            r.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val messageCard = target.findMessageCard(message.messageCardId)
         if (messageCard == null) {
             logger.error("没有这张情报")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+            r.sendErrorMessage("没有这张情报")
             return
         }
         if (!handCard.colorExactlyTheSame(messageCard)) {
             logger.error("选择的两张牌不是完全同色")
-            (r as? HumanPlayer)?.sendErrorMessage("选择的两张牌不是完全同色")
+            r.sendErrorMessage("选择的两张牌不是完全同色")
             return
         }
         r.incrSeq()
@@ -85,13 +85,13 @@ class HouZiQieXin : MainPhaseSkill() {
         target.deleteMessageCard(messageCard.id)
         r.cards.add(messageCard)
         target.messageCards.add(handCard)
-        for (p in r.game!!.players) {
-            (p as? HumanPlayer)?.send(skillHouZiQieXinToc {
-                playerId = p.getAlternativeLocation(r.location)
+        r.game!!.players.send {
+            skillHouZiQieXinToc {
+                playerId = it.getAlternativeLocation(r.location)
                 this.handCard = handCard.toPbCard()
-                targetPlayerId = p.getAlternativeLocation(target.location)
+                targetPlayerId = it.getAlternativeLocation(target.location)
                 messageCardId = message.messageCardId
-            })
+            }
         }
         g.addEvent(AddMessageCardEvent(r))
         g.continueResolve()

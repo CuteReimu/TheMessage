@@ -68,8 +68,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         if (index < 0) {
             if (players.size >= 9 || player is RobotPlayer) return false
             players = players + null
-            for (p in players)
-                (p as? HumanPlayer)?.send(addOnePositionToc { })
+            players.send { addOnePositionToc { } }
             index = players.size - 1
             cancelStartTimer()
         }
@@ -321,7 +320,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                     "时机错误，当前时点为：$fsm，收到: ${pb.javaClass.simpleName} | " +
                             printer.printToString(pb).replace("\n *".toRegex(), " ")
                 )
-                (player as? HumanPlayer)?.sendErrorMessage("时机错误")
+                player.sendErrorMessage("时机错误")
                 return@post
             }
             val result = (fsm as WaitingFsm).resolveProtocol(player, pb)

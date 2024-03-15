@@ -26,12 +26,12 @@ class ZiZhengQingBai : MainPhaseSkill() {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[自证清白]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[自证清白]一回合只能发动一次")
+            r.sendErrorMessage("[自证清白]一回合只能发动一次")
             return
         }
         val pb = message as skill_zi_zheng_qing_bai_tos
@@ -43,12 +43,12 @@ class ZiZhengQingBai : MainPhaseSkill() {
         val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张卡")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+            r.sendErrorMessage("没有这张卡")
             return
         }
         if (r.identity != Black && r.identity in card.colors) {
             logger.error("你不能弃置与自己身份相同颜色的牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你不能弃置与自己身份相同颜色的牌")
+            r.sendErrorMessage("你不能弃置与自己身份相同颜色的牌")
             return
         }
         r.incrSeq()

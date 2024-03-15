@@ -61,7 +61,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                 player.game = null
                 Game.playerNameCache.remove(player.playerName, player)
                 val reply = leaveRoomToc { position = player.location }
-                game.players.forEach { (it as? HumanPlayer)?.send(reply) }
+                game.players.send { reply }
                 game.cancelStartTimer()
             }
         }

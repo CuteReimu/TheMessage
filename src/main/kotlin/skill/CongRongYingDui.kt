@@ -70,7 +70,7 @@ class CongRongYingDui : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is skill_cong_rong_ying_dui_tos) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -84,7 +84,7 @@ class CongRongYingDui : TriggeredSkill {
             }
             if (!message.drawCard && target.cards.isEmpty()) {
                 logger.error("对方没有手牌")
-                (player as? HumanPlayer)?.sendErrorMessage("对方没有手牌")
+                player.sendErrorMessage("对方没有手牌")
                 return null
             }
             player.incrSeq()

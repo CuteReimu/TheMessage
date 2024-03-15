@@ -35,18 +35,18 @@ class DiaoHuLiShan : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用调虎离山")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用调虎离山")
+            r.sendErrorMessage("你被禁止使用调虎离山")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("调虎离山的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("调虎离山的使用时机不对")
+            r.sendErrorMessage("调虎离山的使用时机不对")
             return false
         }
         val target = args[0] as Player
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return false
         }
         return true

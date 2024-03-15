@@ -18,9 +18,7 @@ class FuHei : TriggeredSkill {
             event.messageCard.isBlack()
         } ?: return null
         logger.info("${askWhom}发动了[腹黑]")
-        for (p in g.players) {
-            (p as? HumanPlayer)?.send(skillFuHeiToc { playerId = p.getAlternativeLocation(event.sender.location) })
-        }
+        g.players.send { skillFuHeiToc { playerId = it.getAlternativeLocation(event.sender.location) } }
         event.sender.draw(1)
         return null
     }

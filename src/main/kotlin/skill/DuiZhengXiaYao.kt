@@ -25,12 +25,12 @@ class DuiZhengXiaYao : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[对症下药]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[对症下药]的时机")
+            r.sendErrorMessage("现在不是发动[对症下药]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[对症下药]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[对症下药]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[对症下药]")
             return
         }
         val pb = message as skill_dui_zheng_xia_yao_a_tos
@@ -98,12 +98,12 @@ class DuiZhengXiaYao : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_dui_zheng_xia_yao_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -114,24 +114,24 @@ class DuiZhengXiaYao : ActiveSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    (p as? HumanPlayer)?.send(skillDuiZhengXiaYaoBToc {
-                        playerId = p.getAlternativeLocation(r.location)
+                g.players.send {
+                    skillDuiZhengXiaYaoBToc {
+                        playerId = it.getAlternativeLocation(r.location)
                         enable = false
-                    })
+                    }
                 }
                 return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
             }
             if (message.cardIdsCount != 2) {
                 logger.error("enable为true时必须要发两张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("不足两张牌")
+                player.sendErrorMessage("不足两张牌")
                 return null
             }
             val cards = List(2) { i ->
                 val card = r.findCard(message.getCardIds(i))
                 if (card == null) {
                     logger.error("没有这张卡")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                    player.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card
@@ -139,13 +139,13 @@ class DuiZhengXiaYao : ActiveSkill {
             val colors = getSameColors(cards[0], cards[1])
             if (colors.isEmpty()) {
                 logger.error("两张牌没有相同的颜色")
-                (player as? HumanPlayer)?.sendErrorMessage("两张牌没有相同的颜色")
+                player.sendErrorMessage("两张牌没有相同的颜色")
                 return null
             }
             val playerAndCard = findColorMessageCard(g, colors)
             if (playerAndCard == null) {
                 logger.error("场上没有选择的颜色的情报牌")
-                (player as? HumanPlayer)?.sendErrorMessage("场上没有选择的颜色的情报牌")
+                player.sendErrorMessage("场上没有选择的颜色的情报牌")
                 return null
             }
             r.incrSeq()
@@ -199,12 +199,12 @@ class DuiZhengXiaYao : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_dui_zheng_xia_yao_c_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -215,19 +215,19 @@ class DuiZhengXiaYao : ActiveSkill {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.messageCardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             var contains = false
@@ -239,7 +239,7 @@ class DuiZhengXiaYao : ActiveSkill {
             }
             if (!contains) {
                 logger.error("选择的情报不含有指定的颜色")
-                (player as? HumanPlayer)?.sendErrorMessage("选择的情报不含有指定的颜色")
+                player.sendErrorMessage("选择的情报不含有指定的颜色")
                 return null
             }
             r.incrSeq()

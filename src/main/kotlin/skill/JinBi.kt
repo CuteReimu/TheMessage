@@ -3,7 +3,12 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_jin_bi_a_tos
+import com.fengsheng.protos.Role.skill_jin_bi_b_tos
+import com.fengsheng.protos.skillJinBiAToc
+import com.fengsheng.protos.skillJinBiATos
+import com.fengsheng.protos.skillJinBiBToc
+import com.fengsheng.protos.skillJinBiBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -19,12 +24,12 @@ class JinBi : MainPhaseSkill() {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[禁闭]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[禁闭]一回合只能发动一次")
+            r.sendErrorMessage("[禁闭]一回合只能发动一次")
             return
         }
         val pb = message as skill_jin_bi_a_tos
@@ -35,18 +40,18 @@ class JinBi : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             logger.error("不能以自己为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+            r.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         r.incrSeq()
@@ -63,27 +68,24 @@ class JinBi : MainPhaseSkill() {
             }
             for (p in r.game!!.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_jin_bi_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    if (p === target) {
-                        val seq = p.seq
-                        builder.seq = seq
-                        p.timeout = GameExecutor.post(p.game!!, {
-                            if (p.checkSeq(seq)) {
-                                val builder2 = skill_jin_bi_b_tos.newBuilder()
-                                builder2.seq = seq
-                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                    p.send(builder.build())
+                    p.send(skillJinBiAToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                        waitingSecond = Config.WaitSecond
+                        if (p === target) {
+                            val seq = p.seq
+                            this.seq = seq
+                            p.timeout = GameExecutor.post(p.game!!, {
+                                if (p.checkSeq(seq))
+                                    p.game!!.tryContinueResolveProtocol(p, skillJinBiBTos { this.seq = seq })
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }
+                    })
                 }
             }
             if (target is RobotPlayer)
                 GameExecutor.post(target.game!!, {
-                    target.game!!.tryContinueResolveProtocol(target, skill_jin_bi_b_tos.getDefaultInstance())
+                    target.game!!.tryContinueResolveProtocol(target, skillJinBiBTos {})
                 }, 1, TimeUnit.SECONDS)
             return null
         }
@@ -91,12 +93,12 @@ class JinBi : MainPhaseSkill() {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== target) {
                 logger.error("你不是被禁闭的目标")
-                (player as? HumanPlayer)?.sendErrorMessage("你不是被禁闭的目标")
+                player.sendErrorMessage("你不是被禁闭的目标")
                 return null
             }
             if (message !is skill_jin_bi_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = target.game!!
@@ -111,14 +113,14 @@ class JinBi : MainPhaseSkill() {
                 return ResolveResult(fsm, true)
             } else if (message.cardIdsCount != 2) {
                 logger.error("给的牌数量不对：${message.cardIdsCount}")
-                (player as? HumanPlayer)?.sendErrorMessage("给的牌数量不对：${message.cardIdsCount}")
+                player.sendErrorMessage("给的牌数量不对：${message.cardIdsCount}")
                 return null
             }
             val cards = List(2) {
                 val card = target.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    player.sendErrorMessage("没有这张牌")
                     return null
                 }
                 card
@@ -127,17 +129,14 @@ class JinBi : MainPhaseSkill() {
             target.cards.removeAll(cards.toSet())
             r.cards.addAll(cards)
             logger.info("${target}给了${r}${cards.joinToString()}")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jin_bi_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) {
-                        for (card in cards) builder.addCards(card.toPbCard())
-                    } else {
-                        builder.unknownCardCount = 2
-                    }
-                    p.send(builder.build())
+            g.players.send { p ->
+                skillJinBiBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target)
+                        cards.forEach { this.cards.add(it.toPbCard()) }
+                    else
+                        unknownCardCount = 2
                 }
             }
             g.addEvent(GiveCardEvent(r, target, r))
@@ -151,10 +150,10 @@ class JinBi : MainPhaseSkill() {
             target.skills += CannotPlayCard(forbidAllCard = true)
             for (p in g.players) {
                 if (p is HumanPlayer) {
-                    val builder = skill_jin_bi_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+                    p.send(skillJinBiBToc {
+                        playerId = p.getAlternativeLocation(r.location)
+                        targetPlayerId = p.getAlternativeLocation(target.location)
+                    })
                 }
             }
         }
@@ -169,9 +168,9 @@ class JinBi : MainPhaseSkill() {
                 it!!.cards.count { c -> c.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) }
             } ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_jin_bi_a_tos.newBuilder()
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillJinBiATos {
+                    targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

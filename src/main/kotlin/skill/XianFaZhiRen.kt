@@ -92,12 +92,12 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_xian_fa_zhi_ren_a_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -112,13 +112,13 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             val target = player.game!!.players[player.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.deleteMessageCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张情报")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                player.sendErrorMessage("没有这张情报")
                 return null
             }
             player.incrSeq()
@@ -146,12 +146,12 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
             logger.error("不是你发技能的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+            r.sendErrorMessage("不是你发技能的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你面朝上，不能发动技能")
-            (r as? HumanPlayer)?.sendErrorMessage("你面朝上，不能发动技能")
+            r.sendErrorMessage("你面朝上，不能发动技能")
             return
         }
         message as skill_xian_fa_zhi_ren_a_tos
@@ -162,24 +162,24 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
         }
         if (!message.enable) {
             logger.error("错误的协议")
-            (r as? HumanPlayer)?.sendErrorMessage("错误的协议")
+            r.sendErrorMessage("错误的协议")
             return
         }
         if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = r.game!!.players[r.getAbstractLocation(message.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val card = target.deleteMessageCard(message.cardId)
         if (card == null) {
             logger.error("没有这张情报")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+            r.sendErrorMessage("没有这张情报")
             return
         }
         r.incrSeq()
@@ -239,12 +239,12 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_xian_fa_zhi_ren_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -255,18 +255,18 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.faceUp && target.roleFaceUp) {
                 logger.error("目标本来就是面朝上的")
-                (player as? HumanPlayer)?.sendErrorMessage("目标本来就是面朝上的")
+                player.sendErrorMessage("目标本来就是面朝上的")
                 return null
             }
             r.incrSeq()

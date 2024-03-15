@@ -37,12 +37,12 @@ class FengYunBianHuan : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用风云变幻")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用风云变幻")
+            r.sendErrorMessage("你被禁止使用风云变幻")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("风云变幻的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("风云变幻的使用时机不对")
+            r.sendErrorMessage("风云变幻的使用时机不对")
             return false
         }
         return true
@@ -130,25 +130,25 @@ class FengYunBianHuan : Card {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is feng_yun_bian_huan_choose_card_tos) {
                 logger.error("现在正在结算风云变幻")
-                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算风云变幻")
+                player.sendErrorMessage("现在正在结算风云变幻")
                 return null
             }
             val chooseCard = drawCards.find { c -> c.id == message.cardId }
             if (chooseCard == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (player !== players.first()) {
                 logger.error("还没轮到你选牌")
-                (player as? HumanPlayer)?.sendErrorMessage("还没轮到你选牌")
+                player.sendErrorMessage("还没轮到你选牌")
                 return null
             }
             if (message.asMessageCard) {
                 val containsSame = player.messageCards.any { c -> c.hasSameColor(chooseCard) }
                 if (containsSame) {
                     logger.error("已有相同颜色情报，不能作为情报牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("已有相同颜色情报，不能作为情报牌")
+                    player.sendErrorMessage("已有相同颜色情报，不能作为情报牌")
                     return null
                 }
             }

@@ -26,7 +26,7 @@ class YunChouWeiWo : ActiveSkill {
             is MainPhaseIdle -> {
                 if (r !== fsm.whoseTurn) {
                     logger.error("现在不是发动[运筹帷幄]的时机")
-                    (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
+                    r.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
                     return
                 }
             }
@@ -34,20 +34,20 @@ class YunChouWeiWo : ActiveSkill {
             is FightPhaseIdle -> {
                 if (r !== fsm.whoseFightTurn) {
                     logger.error("现在不是发动[运筹帷幄]的时机")
-                    (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
+                    r.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
                     return
                 }
             }
 
             else -> {
                 logger.error("现在不是发动[运筹帷幄]的时机")
-                (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
+                r.sendErrorMessage("现在不是发动[运筹帷幄]的时机")
                 return
             }
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[运筹帷幄]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[运筹帷幄]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[运筹帷幄]")
             return
         }
         val pb = message as skill_yun_chou_wei_wo_a_tos
@@ -59,7 +59,7 @@ class YunChouWeiWo : ActiveSkill {
         val cards = g.deck.peek(5)
         if (cards.size < 5) {
             logger.error("牌堆中的牌不够了")
-            (r as? HumanPlayer)?.sendErrorMessage("牌堆中的牌不够了")
+            r.sendErrorMessage("牌堆中的牌不够了")
             return
         }
         r.incrSeq()
@@ -110,12 +110,12 @@ class YunChouWeiWo : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yun_chou_wei_wo_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -126,14 +126,14 @@ class YunChouWeiWo : ActiveSkill {
             }
             if (message.deckCardIdsCount != 2) {
                 logger.error("你必须选择两张牌放回牌堆顶")
-                (player as? HumanPlayer)?.sendErrorMessage("你必须选择两张牌放回牌堆顶")
+                player.sendErrorMessage("你必须选择两张牌放回牌堆顶")
                 return null
             }
             val deckCards = message.deckCardIdsList.map {
                 val card = cards.find { card -> card.id == it }
                 if (card == null) {
                     logger.error("没有这张牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    player.sendErrorMessage("没有这张牌")
                     return null
                 }
                 card

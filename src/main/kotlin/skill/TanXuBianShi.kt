@@ -24,12 +24,12 @@ class TanXuBianShi : MainPhaseSkill() {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[探虚辨实]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[探虚辨实]一回合只能发动一次")
+            r.sendErrorMessage("[探虚辨实]一回合只能发动一次")
             return
         }
         val pb = message as skill_tan_xu_bian_shi_a_tos
@@ -40,24 +40,24 @@ class TanXuBianShi : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             logger.error("不能以自己为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+            r.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张牌")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+            r.sendErrorMessage("没有这张牌")
             return
         }
         r.incrSeq()
@@ -116,12 +116,12 @@ class TanXuBianShi : MainPhaseSkill() {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== target) {
                 logger.error("你不是被探虚辨实的目标")
-                (player as? HumanPlayer)?.sendErrorMessage("你不是被探虚辨实的目标")
+                player.sendErrorMessage("你不是被探虚辨实的目标")
                 return null
             }
             if (message !is skill_tan_xu_bian_shi_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = target.game!!
@@ -133,7 +133,7 @@ class TanXuBianShi : MainPhaseSkill() {
             val card = target.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             val mustGiveColor =
@@ -141,7 +141,7 @@ class TanXuBianShi : MainPhaseSkill() {
                 else target.identity
             if (mustGiveColor != null && mustGiveColor !in card.colors) {
                 logger.error("你必须选择含你身份颜色的牌")
-                (player as? HumanPlayer)?.sendErrorMessage("你必须选择含你身份颜色的牌")
+                player.sendErrorMessage("你必须选择含你身份颜色的牌")
                 return null
             }
             target.incrSeq()

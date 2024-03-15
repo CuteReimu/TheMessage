@@ -25,12 +25,12 @@ class MiaoShou : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[妙手]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[妙手]的时机")
+            r.sendErrorMessage("现在不是发动[妙手]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[妙手]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[妙手]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[妙手]")
             return
         }
         val pb = message as skill_miao_shou_a_tos
@@ -41,13 +41,13 @@ class MiaoShou : ActiveSkill {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         r.incrSeq()
@@ -110,12 +110,12 @@ class MiaoShou : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_miao_shou_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -126,37 +126,37 @@ class MiaoShou : ActiveSkill {
             }
             if (message.cardId != 0 && message.messageCardId != 0) {
                 logger.error("只能选择手牌或情报其中之一")
-                (player as? HumanPlayer)?.sendErrorMessage("只能选择手牌或情报其中之一")
+                player.sendErrorMessage("只能选择手牌或情报其中之一")
                 return null
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target2 = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target2.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             val card: Card?
             if (message.cardId == 0 && message.messageCardId == 0) {
                 logger.error("必须选择一张手牌或情报")
-                (player as? HumanPlayer)?.sendErrorMessage("必须选择一张手牌或情报")
+                player.sendErrorMessage("必须选择一张手牌或情报")
                 return null
             } else if (message.messageCardId == 0) {
                 card = target.deleteCard(message.cardId)
                 if (card == null) {
                     logger.error("没有这张牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    player.sendErrorMessage("没有这张牌")
                     return null
                 }
             } else {
                 card = target.deleteMessageCard(message.messageCardId)
                 if (card == null) {
                     logger.error("没有这张牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    player.sendErrorMessage("没有这张牌")
                     return null
                 }
             }

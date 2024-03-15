@@ -76,12 +76,12 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_workers_are_knowledgable_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -95,25 +95,25 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
             }
             if (message.targetPlayerIdCount == 0) {
                 logger.error("enable为true时至少要选择一个目标")
-                (player as? HumanPlayer)?.sendErrorMessage("enable为true时至少要选择一个目标")
+                player.sendErrorMessage("enable为true时至少要选择一个目标")
                 return null
             }
             val maxCount = r.messageCards.count(Black)
             if (message.targetPlayerIdCount > maxCount) {
                 logger.error("最多选择${maxCount}个目标")
-                (player as? HumanPlayer)?.sendErrorMessage("最多选择${maxCount}个目标")
+                player.sendErrorMessage("最多选择${maxCount}个目标")
                 return null
             }
             val targets = message.targetPlayerIdList.map {
                 if (it < 0 || it >= r.game!!.players.size) {
                     logger.error("目标错误")
-                    (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                    player.sendErrorMessage("目标错误")
                     return null
                 }
                 val target = r.game!!.players[r.getAbstractLocation(it)]!!
                 if (!target.alive) {
                     logger.error("目标已死亡")
-                    (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                    player.sendErrorMessage("目标已死亡")
                     return null
                 }
                 target

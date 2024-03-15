@@ -49,7 +49,7 @@ class LengXueXunLian : ActiveSkill {
             )
         } else {
             logger.error("现在不能发动[冷血训练]")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不能发动[冷血训练]")
+            r.sendErrorMessage("现在不能发动[冷血训练]")
         }
     }
 
@@ -119,12 +119,12 @@ class LengXueXunLian : ActiveSkill {
             val pb = message as? skill_leng_xue_xun_lian_b_tos
             if (pb == null) {
                 logger.error("现在正在结算[冷血训练]")
-                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算[冷血训练]")
+                player.sendErrorMessage("现在正在结算[冷血训练]")
                 return null
             }
             if (player !== r) {
                 logger.error("没有轮到你传情报")
-                (player as? HumanPlayer)?.sendErrorMessage("没有轮到你传情报")
+                player.sendErrorMessage("没有轮到你传情报")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -135,31 +135,31 @@ class LengXueXunLian : ActiveSkill {
             val card = cards.find { it.id == pb.sendCardId }
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!card.isBlack() && cards.any { card.isBlack() }) {
                 logger.error("你必须选择黑色牌")
-                (player as? HumanPlayer)?.sendErrorMessage("你必须选择黑色牌")
+                player.sendErrorMessage("你必须选择黑色牌")
                 return null
             }
             val anotherCard = cards.first { it.id != pb.sendCardId }
             if (pb.targetPlayerId <= 0 || pb.targetPlayerId >= player.game!!.players.size) {
                 logger.error("目标错误: ${pb.targetPlayerId}")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误: ${pb.targetPlayerId}")
+                player.sendErrorMessage("目标错误: ${pb.targetPlayerId}")
                 return null
             }
             val target = player.game!!.players[player.getAbstractLocation(pb.targetPlayerId)]!!
             if (pb.lockPlayerId < 0 || pb.lockPlayerId >= player.game!!.players.size) {
                 logger.error("锁定目标错误: ${pb.lockPlayerId}")
-                (player as? HumanPlayer)?.sendErrorMessage("锁定目标错误: ${pb.lockPlayerId}")
+                player.sendErrorMessage("锁定目标错误: ${pb.lockPlayerId}")
                 return null
             }
             val lockPlayer = player.game!!.players[player.getAbstractLocation(pb.lockPlayerId)]!!
             val sendCardError = player.canSendCard(player, card, null, card.direction, target, listOf(lockPlayer))
             if (sendCardError != null) {
                 logger.error(sendCardError)
-                (player as? HumanPlayer)?.sendErrorMessage(sendCardError)
+                player.sendErrorMessage(sendCardError)
                 return null
             }
             player.incrSeq()

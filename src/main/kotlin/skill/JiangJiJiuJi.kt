@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Wu_Dao
-import com.fengsheng.protos.Role.skill_jiang_ji_jiu_ji_toc
+import com.fengsheng.protos.skillJiangJiJiuJiToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -35,13 +35,7 @@ class JiangJiJiuJi : TriggeredSkill {
                 askWhom.alive
             } ?: return null
             logger.info("${askWhom}发动了[将计就计]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jiang_ji_jiu_ji_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(askWhom.location)
-                    p.send(builder.build())
-                }
-            }
+            g.players.send { skillJiangJiJiuJiToc { playerId = it.getAlternativeLocation(askWhom.location) } }
             askWhom.draw(1)
             g.playerSetRoleFaceUp(askWhom, false)
             askWhom.skills = askWhom.skills.filterNot { it === this }

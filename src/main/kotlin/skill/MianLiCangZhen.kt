@@ -37,7 +37,7 @@ class MianLiCangZhen : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -51,7 +51,7 @@ class MianLiCangZhen : TriggeredSkill {
             }
             if (message !is skill_mian_li_cang_zhen_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val r = event.sender
@@ -63,18 +63,18 @@ class MianLiCangZhen : TriggeredSkill {
             val card = r.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             if (!card.colors.contains(color.Black)) {
                 logger.error("你选择的不是黑色手牌")
-                (player as? HumanPlayer)?.sendErrorMessage("你选择的不是黑色手牌")
+                player.sendErrorMessage("你选择的不是黑色手牌")
                 return null
             }
             val target = event.inFrontOfWhom
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             r.incrSeq()

@@ -29,23 +29,23 @@ class PingHeng : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用平衡")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用平衡")
+            r.sendErrorMessage("你被禁止使用平衡")
             return false
         }
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("平衡的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("平衡的使用时机不对")
+            r.sendErrorMessage("平衡的使用时机不对")
             return false
         }
         val target = args[0] as Player
         if (r === target) {
             logger.error("平衡不能对自己使用")
-            (r as? HumanPlayer)?.sendErrorMessage("平衡不能对自己使用")
+            r.sendErrorMessage("平衡不能对自己使用")
             return false
         }
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return false
         }
         return true

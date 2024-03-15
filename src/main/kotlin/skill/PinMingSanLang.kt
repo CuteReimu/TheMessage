@@ -27,12 +27,12 @@ class PinMingSanLang : MainPhaseSkill() {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[拼命三郎]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[拼命三郎]一回合只能发动一次")
+            r.sendErrorMessage("[拼命三郎]一回合只能发动一次")
             return
         }
         val pb = message as skill_pin_ming_san_lang_tos
@@ -44,12 +44,12 @@ class PinMingSanLang : MainPhaseSkill() {
         val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张卡")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+            r.sendErrorMessage("没有这张卡")
             return
         }
         if (!card.isPureBlack()) {
             logger.error("这张牌不是纯黑色")
-            (r as? HumanPlayer)?.sendErrorMessage("这张牌不是纯黑色")
+            r.sendErrorMessage("这张牌不是纯黑色")
             return
         }
         r.incrSeq()

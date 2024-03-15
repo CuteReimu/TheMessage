@@ -22,12 +22,12 @@ class ZuoYouFengYuan : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || fsm.whoseFightTurn !== r) {
             logger.error("没有轮到你操作")
-            (r as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
+            r.sendErrorMessage("没有轮到你操作")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[左右逢源]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[左右逢源]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[左右逢源]")
             return
         }
         val pb = message as skill_zuo_you_feng_yuan_tos
@@ -38,19 +38,19 @@ class ZuoYouFengYuan : ActiveSkill {
         }
         if (pb.targetPlayerIdsCount != 2) {
             logger.error("必须选择两个目标")
-            (r as? HumanPlayer)?.sendErrorMessage("必须选择两个目标")
+            r.sendErrorMessage("必须选择两个目标")
             return
         }
         val targets = pb.targetPlayerIdsList.map {
             if (it < 0 || it >= g.players.size) {
                 logger.error("目标错误：$it")
-                (r as? HumanPlayer)?.sendErrorMessage("目标错误：$it")
+                r.sendErrorMessage("目标错误：$it")
                 return
             }
             val target = g.players[r.getAbstractLocation(it)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                r.sendErrorMessage("目标已死亡")
                 return
             }
             target

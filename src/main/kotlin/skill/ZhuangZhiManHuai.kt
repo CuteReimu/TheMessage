@@ -39,7 +39,7 @@ class ZhuangZhiManHuai : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message is end_receive_phase_tos) {
@@ -53,7 +53,7 @@ class ZhuangZhiManHuai : TriggeredSkill {
             }
             if (message !is skill_zhuang_zhi_man_huai_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -70,12 +70,12 @@ class ZhuangZhiManHuai : TriggeredSkill {
                     card = event.inFrontOfWhom.findMessageCard(message.cardId)?.also { target = event.inFrontOfWhom }
                 if (card == null) {
                     logger.error("没有这张情报")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                    player.sendErrorMessage("没有这张情报")
                     return null
                 }
                 if (!card.isBlack()) {
                     logger.error("你选择的不是黑色情报")
-                    (player as? HumanPlayer)?.sendErrorMessage("你选择的不是黑色情报")
+                    player.sendErrorMessage("你选择的不是黑色情报")
                     return null
                 }
             }

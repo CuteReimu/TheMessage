@@ -2,6 +2,8 @@ package com.fengsheng.handler
 
 import com.fengsheng.HumanPlayer
 import com.fengsheng.protos.Fengsheng
+import com.fengsheng.protos.addOnePositionToc
+import com.fengsheng.send
 import org.apache.logging.log4j.kotlin.logger
 
 class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos>() {
@@ -18,8 +20,7 @@ class add_one_position_tos : AbstractProtoHandler<Fengsheng.add_one_position_tos
         }
         val newPlayers = players + null
         r.game!!.players = newPlayers
-        for (p in players)
-            (p as? HumanPlayer)?.send(Fengsheng.add_one_position_toc.getDefaultInstance())
+        players.send { addOnePositionToc { } }
         r.game!!.cancelStartTimer()
     }
 }

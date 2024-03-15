@@ -29,12 +29,12 @@ class YuQinGuZong : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用欲擒故纵")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用欲擒故纵")
+            r.sendErrorMessage("你被禁止使用欲擒故纵")
             return false
         }
         if (r !== (g.fsm as? SendPhaseStart)?.whoseTurn) {
             logger.error("欲擒故纵的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("欲擒故纵的使用时机不对")
+            r.sendErrorMessage("欲擒故纵的使用时机不对")
             return false
         }
         return true

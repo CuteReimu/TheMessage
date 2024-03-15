@@ -80,12 +80,12 @@ class CangShenJiaoTang : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cang_shen_jiao_tang_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -162,12 +162,12 @@ class CangShenJiaoTang : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== event.sender) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cang_shen_jiao_tang_c_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -180,12 +180,12 @@ class CangShenJiaoTang : TriggeredSkill {
                 val card = target.findMessageCard(message.cardId)
                 if (card == null) {
                     logger.error("没有这张情报")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                    player.sendErrorMessage("没有这张情报")
                     return null
                 }
                 if (!card.isBlack()) {
                     logger.error("目标情报不是黑色的")
-                    (player as? HumanPlayer)?.sendErrorMessage("目标情报不是黑色的")
+                    player.sendErrorMessage("目标情报不是黑色的")
                     return null
                 }
                 if (message.asMessageCard) {

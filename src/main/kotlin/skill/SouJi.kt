@@ -25,12 +25,12 @@ class SouJi : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[搜缉]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[搜缉]的时机")
+            r.sendErrorMessage("现在不是发动[搜缉]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[搜缉]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[搜缉]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[搜缉]")
             return
         }
         val pb = message as skill_sou_ji_a_tos
@@ -41,13 +41,13 @@ class SouJi : ActiveSkill {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         r.incrSeq()
@@ -105,12 +105,12 @@ class SouJi : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_sou_ji_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -123,19 +123,19 @@ class SouJi : ActiveSkill {
                 val card = target.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张牌")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    player.sendErrorMessage("没有这张牌")
                     return null
                 }
                 if (!card.colors.contains(Black)) {
                     logger.error("这张牌不是黑色的")
-                    (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色的")
+                    player.sendErrorMessage("这张牌不是黑色的")
                     return null
                 }
                 card
             }
             if (message.messageCard && !fsm.messageCard.colors.contains(Black)) {
                 logger.error("待收情报不是黑色的")
-                (player as? HumanPlayer)?.sendErrorMessage("待收情报不是黑色的")
+                player.sendErrorMessage("待收情报不是黑色的")
                 return null
             }
             r.incrSeq()

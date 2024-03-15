@@ -29,12 +29,12 @@ class TanQiuZhenLi : MainPhaseSkill() {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[探求真理]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[探求真理]一回合只能发动一次")
+            r.sendErrorMessage("[探求真理]一回合只能发动一次")
             return
         }
         val pb = message as skill_tan_qiu_zhen_li_a_tos
@@ -45,24 +45,24 @@ class TanQiuZhenLi : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val card = target.findMessageCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张情报")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+            r.sendErrorMessage("没有这张情报")
             return
         }
         if (r.checkThreeSameMessageCard(card)) {
             logger.error("你不能以此技能令你收集三张或更多同色情报")
-            (r as? HumanPlayer)?.sendErrorMessage("你不能以此技能令你收集三张或更多同色情报")
+            r.sendErrorMessage("你不能以此技能令你收集三张或更多同色情报")
             return
         }
         r.incrSeq()
@@ -142,12 +142,12 @@ class TanQiuZhenLi : MainPhaseSkill() {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== target) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_tan_qiu_zhen_li_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -174,7 +174,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
                     val card1 = target.deleteCard(message.cardId)
                     if (card1 == null) {
                         logger.error("没有这张牌")
-                        (target as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                        target.sendErrorMessage("没有这张牌")
                         return null
                     }
                     logger.info("${target}将手牌中的${card1}置入${r}的情报区")
@@ -183,7 +183,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
                     val card1 = target.deleteMessageCard(message.cardId)
                     if (card1 == null) {
                         logger.error("没有这张情报")
-                        (target as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                        target.sendErrorMessage("没有这张情报")
                         return null
                     }
                     logger.info("${target}将情报区的${card1}置入${r}的情报区")

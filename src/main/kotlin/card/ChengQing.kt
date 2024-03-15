@@ -29,7 +29,7 @@ class ChengQing : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用澄清")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用澄清")
+            r.sendErrorMessage("你被禁止使用澄清")
             return false
         }
         val target = args[0] as Player
@@ -38,39 +38,39 @@ class ChengQing : Card {
         if (fsm is MainPhaseIdle) {
             if (r !== fsm.whoseTurn) {
                 logger.error("澄清的使用时机不对")
-                (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
+                r.sendErrorMessage("澄清的使用时机不对")
                 return false
             }
         } else if (fsm is WaitForChengQing) {
             if (r !== fsm.askWhom) {
                 logger.error("澄清的使用时机不对")
-                (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
+                r.sendErrorMessage("澄清的使用时机不对")
                 return false
             }
             if (target !== fsm.whoDie) {
                 logger.error("正在求澄清的人是${fsm.whoDie}")
-                (r as? HumanPlayer)?.sendErrorMessage("正在求澄清的人是${fsm.whoDie}")
+                r.sendErrorMessage("正在求澄清的人是${fsm.whoDie}")
                 return false
             }
         } else {
             logger.error("澄清的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("澄清的使用时机不对")
+            r.sendErrorMessage("澄清的使用时机不对")
             return false
         }
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return false
         }
         val targetCard = target.messageCards.find { c -> c.id == targetCardId }
         if (targetCard == null) {
             logger.error("没有这张情报")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+            r.sendErrorMessage("没有这张情报")
             return false
         }
         if (!targetCard.isBlack()) {
             logger.error("澄清只能对黑情报使用")
-            (r as? HumanPlayer)?.sendErrorMessage("澄清只能对黑情报使用")
+            r.sendErrorMessage("澄清只能对黑情报使用")
             return false
         }
         return true

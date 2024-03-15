@@ -28,17 +28,17 @@ class YingBianZiRu : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[应变自如]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[应变自如]的时机")
+            r.sendErrorMessage("现在不是发动[应变自如]的时机")
             return
         }
         if (fsm.isMessageCardFaceUp) {
             logger.error("情报面朝上，不能发动[应变自如]")
-            (r as? HumanPlayer)?.sendErrorMessage("情报面朝上，不能发动[应变自如]")
+            r.sendErrorMessage("情报面朝上，不能发动[应变自如]")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[应变自如]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[应变自如]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[应变自如]")
             return
         }
         val pb = message as skill_ying_bian_zi_ru_a_tos
@@ -120,12 +120,12 @@ class YingBianZiRu : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_ying_bian_zi_ru_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -136,18 +136,18 @@ class YingBianZiRu : ActiveSkill {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (target !== fsm.inFrontOfWhom.getNextLeftAlivePlayer() && target !== fsm.inFrontOfWhom.getNextRightAlivePlayer()) {
                 logger.error("只能误导给左右两边的玩家")
-                (player as? HumanPlayer)?.sendErrorMessage("只能误导给左右两边的玩家")
+                player.sendErrorMessage("只能误导给左右两边的玩家")
                 return null
             }
             r.incrSeq()

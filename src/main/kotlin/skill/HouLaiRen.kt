@@ -28,12 +28,12 @@ class HouLaiRen : ActiveSkill {
         val fsm = g.fsm as? WaitForChengQing
         if (fsm == null || r !== fsm.askWhom || r !== fsm.whoDie) {
             logger.error("还没有结算到你濒死")
-            (r as? HumanPlayer)?.sendErrorMessage("还没有结算到你濒死")
+            r.sendErrorMessage("还没有结算到你濒死")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[后来人]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[后来人]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[后来人]")
             return
         }
         val pb = message as skill_hou_lai_ren_a_tos
@@ -45,12 +45,12 @@ class HouLaiRen : ActiveSkill {
         val card = r.findMessageCard(message.remainCardId)
         if (card == null) {
             logger.error("没有这张情报")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+            r.sendErrorMessage("没有这张情报")
             return
         }
         if (card.isPureBlack()) {
             logger.error("你必须选择一张红色情报或蓝色情报")
-            (r as? HumanPlayer)?.sendErrorMessage("你必须选择一张红色情报或蓝色情报")
+            r.sendErrorMessage("你必须选择一张红色情报或蓝色情报")
             return
         }
         r.incrSeq()
@@ -107,12 +107,12 @@ class HouLaiRen : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_hou_lai_ren_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -124,7 +124,7 @@ class HouLaiRen : ActiveSkill {
             val roleSkillsData = roles.find { it.role == message.role }
             if (roleSkillsData == null) {
                 logger.error("你没有这个角色")
-                (r as? HumanPlayer)?.sendErrorMessage("你没有这个角色")
+                r.sendErrorMessage("你没有这个角色")
                 return null
             }
             r.incrSeq()

@@ -36,28 +36,28 @@ class MiLing : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用密令")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用密令")
+            r.sendErrorMessage("你被禁止使用密令")
             return false
         }
         if (r !== (g.fsm as? SendPhaseStart)?.whoseTurn) {
             logger.error("密令的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("密令的使用时机不对")
+            r.sendErrorMessage("密令的使用时机不对")
             return false
         }
         val target = args[0] as Player
         if (r === target) {
             logger.error("密令不能对自己使用")
-            (r as? HumanPlayer)?.sendErrorMessage("密令不能对自己使用")
+            r.sendErrorMessage("密令不能对自己使用")
             return false
         }
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return false
         }
         if (target.cards.isEmpty()) {
             logger.error("目标没有手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("目标没有手牌")
+            r.sendErrorMessage("目标没有手牌")
             return false
         }
         return true
@@ -137,18 +137,18 @@ class MiLing : Card {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (message !is mi_ling_choose_card_tos) {
                 logger.error("现在正在结算密令")
-                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算密令")
+                player.sendErrorMessage("现在正在结算密令")
                 return null
             }
             if (player !== this.player) {
                 logger.error("没有轮到你操作")
-                (player as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
+                player.sendErrorMessage("没有轮到你操作")
                 return null
             }
             val card = target.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             player.incrSeq()
@@ -229,12 +229,12 @@ class MiLing : Card {
             val pb = message as? send_message_card_tos
             if (pb == null) {
                 logger.error("现在正在结算密令")
-                (player as? HumanPlayer)?.sendErrorMessage("现在正在结算密令")
+                player.sendErrorMessage("现在正在结算密令")
                 return null
             }
             if (player !== target) {
                 logger.error("没有轮到你传情报")
-                (player as? HumanPlayer)?.sendErrorMessage("没有轮到你传情报")
+                player.sendErrorMessage("没有轮到你传情报")
                 return null
             }
             val availableCards =
@@ -243,19 +243,19 @@ class MiLing : Card {
             val messageCard = target.findCard(message.cardId)
             if (messageCard == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (pb.targetPlayerId <= 0 || pb.targetPlayerId >= target.game!!.players.size) {
                 logger.error("目标错误: ${pb.targetPlayerId}")
-                (player as? HumanPlayer)?.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
+                player.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
                 return null
             }
             val messageTarget = target.game!!.players[target.getAbstractLocation(pb.targetPlayerId)]!!
             val lockPlayers = pb.lockPlayerIdList.map {
                 if (it < 0 || it >= target.game!!.players.size) {
                     logger.error("锁定目标错误: $it")
-                    (player as? HumanPlayer)?.sendErrorMessage("锁定目标错误: $it")
+                    player.sendErrorMessage("锁定目标错误: $it")
                     return null
                 }
                 target.game!!.players[target.getAbstractLocation(it)]!!
@@ -270,7 +270,7 @@ class MiLing : Card {
             )
             if (sendCardError != null) {
                 logger.error(sendCardError)
-                (player as? HumanPlayer)?.sendErrorMessage(sendCardError)
+                player.sendErrorMessage(sendCardError)
                 return null
             }
             player.incrSeq()

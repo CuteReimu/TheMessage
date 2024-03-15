@@ -31,12 +31,12 @@ class DiaoBao : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用调包")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用调包")
+            r.sendErrorMessage("你被禁止使用调包")
             return false
         }
         if (r !== (g.fsm as? FightPhaseIdle)?.whoseFightTurn) {
             logger.error("调包的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("调包的使用时机不对")
+            r.sendErrorMessage("调包的使用时机不对")
             return false
         }
         return true

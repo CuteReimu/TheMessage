@@ -26,12 +26,12 @@ class GuangFaBao : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
             logger.error("现在不是发动[广发报]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[广发报]的时机")
+            r.sendErrorMessage("现在不是发动[广发报]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[广发报]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[广发报]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[广发报]")
             return
         }
         val pb = message as skill_guang_fa_bao_a_tos
@@ -44,9 +44,7 @@ class GuangFaBao : ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[广发报]")
-        for (p in g.players) {
-            (p as? HumanPlayer)?.send(skillGuangFaBaoAToc { playerId = p.getAlternativeLocation(r.location) })
-        }
+        g.players.send { skillGuangFaBaoAToc { playerId = it.getAlternativeLocation(r.location) } }
         r.draw(3)
         g.resolve(executeGuangFaBao(fsm, r, false))
     }
@@ -121,12 +119,12 @@ class GuangFaBao : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_guang_fa_bao_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -151,32 +149,32 @@ class GuangFaBao : ActiveSkill {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.cardIdsCount == 0) {
                 logger.error("enable为true时至少要发一张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("至少要发一张牌")
+                player.sendErrorMessage("至少要发一张牌")
                 return null
             }
             val cards = List(message.cardIdsCount) {
                 val card = r.findCard(message.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张卡")
-                    (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                    player.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card
             }
             if (target.checkThreeSameMessageCard(cards)) {
                 logger.error("你不能通过此技能让任何角色收集三张或更多的同色情报")
-                (player as? HumanPlayer)?.sendErrorMessage("你不能通过此技能让任何角色收集三张或更多的同色情报")
+                player.sendErrorMessage("你不能通过此技能让任何角色收集三张或更多的同色情报")
                 return null
             }
             r.incrSeq()

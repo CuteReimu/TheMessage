@@ -22,12 +22,12 @@ class GongFen : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("现在不是发动[共焚]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[共焚]的时机")
+            r.sendErrorMessage("现在不是发动[共焚]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[共焚]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[共焚]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[共焚]")
             return
         }
         val pb = message as skill_gong_fen_tos

@@ -64,12 +64,12 @@ class BiFeng : TriggeredSkill {
             val pb = message as? skill_bi_feng_tos
             if (pb == null) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player != r) {
                 logger.error("没有轮到你操作")
-                (player as? HumanPlayer)?.sendErrorMessage("没有轮到你操作")
+                player.sendErrorMessage("没有轮到你操作")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(pb.seq)) {

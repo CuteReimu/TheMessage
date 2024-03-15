@@ -23,12 +23,12 @@ class JiZhi : ActiveSkill {
         val fsm = g.fsm
         if ((fsm !is FightPhaseIdle || r !== fsm.whoseFightTurn) && (fsm !is WaitForChengQing || r !== fsm.askWhom)) {
             logger.error("现在不是发动[急智]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[急智]的时机")
+            r.sendErrorMessage("现在不是发动[急智]的时机")
             return
         }
         if (r.roleFaceUp) {
             logger.error("角色面朝上时不能发动[急智]")
-            (r as? HumanPlayer)?.sendErrorMessage("角色面朝上时不能发动[急智]")
+            r.sendErrorMessage("角色面朝上时不能发动[急智]")
             return
         }
         val pb = message as skill_ji_zhi_tos

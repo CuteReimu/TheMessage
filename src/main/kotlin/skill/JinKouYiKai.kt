@@ -24,12 +24,12 @@ class JinKouYiKai : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn || r !== fsm.whoseTurn) {
             logger.error("现在不是发动[金口一开]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[金口一开]的时机")
+            r.sendErrorMessage("现在不是发动[金口一开]的时机")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[金口一开]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[金口一开]一回合只能发动一次")
+            r.sendErrorMessage("[金口一开]一回合只能发动一次")
             return
         }
         val pb = message as skill_jin_kou_yi_kai_a_tos
@@ -41,7 +41,7 @@ class JinKouYiKai : ActiveSkill {
         val cards = g.deck.peek(1)
         if (cards.isEmpty()) {
             logger.error("牌堆没牌了")
-            (r as? HumanPlayer)?.sendErrorMessage("牌堆没牌了")
+            r.sendErrorMessage("牌堆没牌了")
             return
         }
         r.incrSeq()
@@ -90,12 +90,12 @@ class JinKouYiKai : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_jin_kou_yi_kai_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game

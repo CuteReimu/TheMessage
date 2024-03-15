@@ -22,11 +22,11 @@ class GuanHai : TriggeredSkill {
         } ?: return null
         logger.info("${askWhom}发动了[观海]")
         val fsm2 = event.currentFsm as FightPhaseIdle
-        for (p in g.players) {
-            (p as? HumanPlayer)?.send(skillGuanHaiToc {
-                playerId = p.getAlternativeLocation(askWhom.location)
+        g.players.send {
+            skillGuanHaiToc {
+                playerId = it.getAlternativeLocation(askWhom.location)
                 card = fsm2.messageCard.toPbCard()
-            })
+            }
         }
         return null
     }

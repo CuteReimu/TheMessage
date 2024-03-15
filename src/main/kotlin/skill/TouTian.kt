@@ -5,8 +5,8 @@ import com.fengsheng.card.JieHuo
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
-import com.fengsheng.protos.Role.skill_tou_tian_toc
 import com.fengsheng.protos.Role.skill_tou_tian_tos
+import com.fengsheng.protos.skillTouTianToc
 import com.fengsheng.skill.SkillId.TOU_TIAN
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
@@ -26,7 +26,7 @@ class TouTian : ActiveSkill {
         if (!JieHuo.canUse(g, r)) return
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[偷天]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[偷天]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[偷天]")
             return
         }
         val pb = message as skill_tou_tian_tos
@@ -39,11 +39,7 @@ class TouTian : ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[偷天]")
-        for (p in g.players) {
-            (p as? HumanPlayer)?.send(
-                skill_tou_tian_toc.newBuilder().setPlayerId(p.getAlternativeLocation(r.location)).build()
-            )
-        }
+        g.players.send { skillTouTianToc { playerId = it.getAlternativeLocation(r.location) } }
         JieHuo.execute(null, g, r)
     }
 

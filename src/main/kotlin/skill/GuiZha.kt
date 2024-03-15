@@ -24,12 +24,12 @@ class GuiZha : MainPhaseSkill() {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[诡诈]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[诡诈]一回合只能发动一次")
+            r.sendErrorMessage("[诡诈]一回合只能发动一次")
             return
         }
         val pb = message as skill_gui_zha_tos
@@ -40,13 +40,13 @@ class GuiZha : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         when (pb.cardType) {
@@ -54,7 +54,7 @@ class GuiZha : MainPhaseSkill() {
             Li_You -> if (!LiYou.canUse(g, r, target)) return
             else -> {
                 logger.error("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
-                (r as? HumanPlayer)?.sendErrorMessage("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
+                r.sendErrorMessage("你只能视为使用了[威逼]或[利诱]：${pb.cardType}")
                 return
             }
         }

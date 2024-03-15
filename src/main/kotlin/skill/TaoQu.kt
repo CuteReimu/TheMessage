@@ -31,12 +31,12 @@ class TaoQu : MainPhaseSkill() {
         val fsm = g.fsm as? MainPhaseIdle
         if (r !== fsm?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[套取]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[套取]一回合只能发动一次")
+            r.sendErrorMessage("[套取]一回合只能发动一次")
             return
         }
         val pb = message as skill_tao_qu_a_tos
@@ -47,14 +47,14 @@ class TaoQu : MainPhaseSkill() {
         }
         if (pb.cardIdsCount != 2) {
             logger.error("你必须选择两张手牌")
-            (r as? HumanPlayer)?.sendErrorMessage("你必须选择两张手牌")
+            r.sendErrorMessage("你必须选择两张手牌")
             return
         }
         val cards = pb.cardIdsList.map {
             val card = r.findCard(it)
             if (card == null) {
                 logger.error("没有这张牌")
-                (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                r.sendErrorMessage("没有这张牌")
                 return
             }
             card
@@ -62,7 +62,7 @@ class TaoQu : MainPhaseSkill() {
         val colors = cards[0].colors.filter { it in cards[1].colors }
         if (colors.isEmpty()) {
             logger.error("你选择的两张牌不含相同颜色")
-            (r as? HumanPlayer)?.sendErrorMessage("你选择的两张牌不含相同颜色")
+            r.sendErrorMessage("你选择的两张牌不含相同颜色")
             return
         }
         if (!colors.any { c ->
@@ -71,7 +71,7 @@ class TaoQu : MainPhaseSkill() {
                 }
             }) {
             logger.error("除自己以外场上没有你选择的颜色的情报")
-            (r as? HumanPlayer)?.sendErrorMessage("除自己以外场上没有你选择的颜色的情报")
+            r.sendErrorMessage("除自己以外场上没有你选择的颜色的情报")
             return
         }
         r.incrSeq()
@@ -140,12 +140,12 @@ class TaoQu : MainPhaseSkill() {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== fsm.whoseTurn) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_tao_qu_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = player.game!!
@@ -156,29 +156,29 @@ class TaoQu : MainPhaseSkill() {
             }
             if (message.targetPlayerId < 0 || message.targetPlayerId >= g.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             if (message.targetPlayerId == 0) {
                 logger.error("不能以自己为目标")
-                (player as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+                player.sendErrorMessage("不能以自己为目标")
                 return null
             }
             val target = g.players[player.getAbstractLocation(message.targetPlayerId)]!!
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             val card = target.findMessageCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张情报")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张情报")
+                player.sendErrorMessage("没有这张情报")
                 return null
             }
             if (!card.colors.any { it in colors }) {
                 logger.error("选择的情报没有该颜色")
-                (player as? HumanPlayer)?.sendErrorMessage("选择的情报没有该颜色")
+                player.sendErrorMessage("选择的情报没有该颜色")
                 return null
             }
             player.incrSeq()

@@ -25,12 +25,12 @@ class YuSiWangPo : MainPhaseSkill() {
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
             logger.error("现在不是出牌阶段空闲时点")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是出牌阶段空闲时点")
+            r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[鱼死网破]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[鱼死网破]一回合只能发动一次")
+            r.sendErrorMessage("[鱼死网破]一回合只能发动一次")
             return
         }
         val pb = message as skill_yu_si_wang_po_a_tos
@@ -41,24 +41,24 @@ class YuSiWangPo : MainPhaseSkill() {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         if (pb.targetPlayerId == 0) {
             logger.error("不能以自己为目标")
-            (r as? HumanPlayer)?.sendErrorMessage("不能以自己为目标")
+            r.sendErrorMessage("不能以自己为目标")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val card = r.findCard(pb.cardId)
         if (card == null) {
             logger.error("没有这张卡")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+            r.sendErrorMessage("没有这张卡")
             return
         }
         val discardCount = r.messageCards.count(Black) + 1
@@ -130,12 +130,12 @@ class YuSiWangPo : MainPhaseSkill() {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== target) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yu_si_wang_po_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (target is HumanPlayer && !target.checkSeq(message.seq)) {
@@ -145,14 +145,14 @@ class YuSiWangPo : MainPhaseSkill() {
             }
             if (cardCount != message.cardIdsCount) {
                 logger.error("选择的卡牌数量不对")
-                (player as? HumanPlayer)?.sendErrorMessage("你需要选择${cardCount}张牌")
+                player.sendErrorMessage("你需要选择${cardCount}张牌")
                 return null
             }
             val cards = message.cardIdsList.map {
                 val card = target.findCard(it)
                 if (card == null) {
                     logger.error("没有这张卡")
-                    (target as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                    target.sendErrorMessage("没有这张卡")
                     return null
                 }
                 card

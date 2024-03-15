@@ -22,9 +22,7 @@ class HuanRi : TriggeredSkill {
             event.player.roleFaceUp
         } ?: return null
         logger.info("${askWhom}发动了[换日]")
-        for (p in g.players) {
-            (p as? HumanPlayer)?.send(skillHuanRiToc { playerId = p.getAlternativeLocation(askWhom.location) })
-        }
+        g.players.send { skillHuanRiToc { playerId = it.getAlternativeLocation(askWhom.location) } }
         g.playerSetRoleFaceUp(askWhom, false)
         return null
     }

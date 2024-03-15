@@ -31,7 +31,7 @@ class JieHuo : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用截获")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用截获")
+            r.sendErrorMessage("你被禁止使用截获")
             return false
         }
         return Companion.canUse(g, r)
@@ -52,7 +52,7 @@ class JieHuo : Card {
             val fsm = g.fsm as? FightPhaseIdle
             if (r !== fsm?.whoseFightTurn) {
                 logger.error("截获的使用时机不对")
-                (r as? HumanPlayer)?.sendErrorMessage("截获的使用时机不对")
+                r.sendErrorMessage("截获的使用时机不对")
                 return false
             }
             return true

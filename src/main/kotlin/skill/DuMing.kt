@@ -123,12 +123,12 @@ class DuMing : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ming_a_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -142,14 +142,14 @@ class DuMing : TriggeredSkill {
             }
             if (message.color !== Red && message.color !== Blue && message.color !== Black) {
                 logger.error("不存在的颜色")
-                (player as? HumanPlayer)?.sendErrorMessage("不存在的颜色")
+                player.sendErrorMessage("不存在的颜色")
                 return null
             }
             if (event is FinishResolveCardEvent) {
                 val fightPhase = event.nextFsm as? FightPhaseIdle
                 if (fightPhase == null) {
                     logger.error("状态错误：${event.nextFsm}")
-                    (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
+                    player.sendErrorMessage("服务器内部错误，无法发动技能")
                     return null
                 }
                 r.incrSeq()
@@ -159,7 +159,7 @@ class DuMing : TriggeredSkill {
                 return ResolveResult(executeDuMing(fsm, event, r, message.color, event.messageCard), true)
             }
             logger.error("状态错误：$fsm")
-            (player as? HumanPlayer)?.sendErrorMessage("服务器内部错误，无法发动技能")
+            player.sendErrorMessage("服务器内部错误，无法发动技能")
             return null
         }
     }
@@ -216,12 +216,12 @@ class DuMing : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_du_ming_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -232,12 +232,12 @@ class DuMing : TriggeredSkill {
             val card = r.findCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张牌")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                player.sendErrorMessage("没有这张牌")
                 return null
             }
             if (!card.isPureBlack()) {
                 logger.error("这张牌不是纯黑色")
-                (player as? HumanPlayer)?.sendErrorMessage("这张牌不是黑色")
+                player.sendErrorMessage("这张牌不是黑色")
                 return null
             }
             r.incrSeq()

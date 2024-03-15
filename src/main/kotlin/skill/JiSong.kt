@@ -26,12 +26,12 @@ class JiSong : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
             logger.error("现在不是发动[急送]的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("现在不是发动[急送]的时机")
+            r.sendErrorMessage("现在不是发动[急送]的时机")
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[急送]一回合只能发动一次")
-            (r as? HumanPlayer)?.sendErrorMessage("[急送]一回合只能发动一次")
+            r.sendErrorMessage("[急送]一回合只能发动一次")
             return
         }
         val pb = message as skill_ji_song_tos
@@ -42,13 +42,13 @@ class JiSong : ActiveSkill {
         }
         if (pb.targetPlayerId < 0 || pb.targetPlayerId >= g.players.size) {
             logger.error("目标错误")
-            (r as? HumanPlayer)?.sendErrorMessage("目标错误")
+            r.sendErrorMessage("目标错误")
             return
         }
         val target = g.players[r.getAbstractLocation(pb.targetPlayerId)]!!
         if (!target.alive) {
             logger.error("目标已死亡")
-            (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+            r.sendErrorMessage("目标已死亡")
             return
         }
         val messageCard: Card?
@@ -57,11 +57,11 @@ class JiSong : ActiveSkill {
             messageCard = r.findMessageCard(pb.messageCard)
             if (messageCard == null) {
                 logger.error("没有这张牌")
-                (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                r.sendErrorMessage("没有这张牌")
                 return
             } else if (messageCard.colors.contains(color.Black)) {
                 logger.error("这张牌不是非黑色")
-                (r as? HumanPlayer)?.sendErrorMessage("这张牌不是非黑色")
+                r.sendErrorMessage("这张牌不是非黑色")
                 return
             }
             cards = null
@@ -70,7 +70,7 @@ class JiSong : ActiveSkill {
                 val card = r.findCard(pb.getCardIds(it))
                 if (card == null) {
                     logger.error("没有这张牌")
-                    (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+                    r.sendErrorMessage("没有这张牌")
                     return
                 }
                 card
@@ -78,7 +78,7 @@ class JiSong : ActiveSkill {
             messageCard = null
         } else {
             logger.error("发动技能支付的条件不正确")
-            (r as? HumanPlayer)?.sendErrorMessage("发动技能支付的条件不正确")
+            r.sendErrorMessage("发动技能支付的条件不正确")
             return
         }
         r.incrSeq()

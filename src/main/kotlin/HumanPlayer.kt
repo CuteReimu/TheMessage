@@ -59,14 +59,14 @@ class HumanPlayer(
     /**
      * 向玩家客户端发送[error_message_toc]
      */
-    fun sendErrorMessage(message: String) {
+    override fun sendErrorMessage(message: String) {
         send(errorMessageToc { msg = message })
     }
 
     /**
      * 向玩家客户端发送协议
      */
-    fun send(message: GeneratedMessage) {
+    override fun send(message: GeneratedMessage) {
         val buf = message.toByteArray()
         val name = message.descriptorForType.name
         recorder.add(name, buf)
@@ -78,7 +78,10 @@ class HumanPlayer(
         )
     }
 
-    fun send(protoName: String, buf: ByteArray, flush: Boolean) {
+    /**
+     * 向玩家客户端发送协议
+     */
+    override fun send(protoName: String, buf: ByteArray, flush: Boolean) {
         val v = newBodyFun(protoName, buf)
         val f = if (flush) channel.writeAndFlush(v) else channel.write(v)
         f.addListener(ChannelFutureListener { future: ChannelFuture ->

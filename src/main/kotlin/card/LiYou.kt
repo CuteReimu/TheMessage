@@ -31,7 +31,7 @@ class LiYou : Card {
     override fun canUse(g: Game, r: Player, vararg args: Any): Boolean {
         if (r.cannotPlayCard(type)) {
             logger.error("你被禁止使用利诱")
-            (r as? HumanPlayer)?.sendErrorMessage("你被禁止使用利诱")
+            r.sendErrorMessage("你被禁止使用利诱")
             return false
         }
         val target = args[0] as Player
@@ -53,12 +53,12 @@ class LiYou : Card {
         fun canUse(g: Game, r: Player, target: Player): Boolean {
             if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
                 logger.error("利诱的使用时机不对")
-                (r as? HumanPlayer)?.sendErrorMessage("利诱的使用时机不对")
+                r.sendErrorMessage("利诱的使用时机不对")
                 return false
             }
             if (!target.alive) {
                 logger.error("目标已死亡")
-                (r as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                r.sendErrorMessage("目标已死亡")
                 return false
             }
             return true

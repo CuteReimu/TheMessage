@@ -21,22 +21,22 @@ class YiHuaJieMu : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (fsm == null || r !== fsm.whoseFightTurn) {
             logger.error("[移花接木]的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("[移花接木]的使用时机不对")
+            r.sendErrorMessage("[移花接木]的使用时机不对")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[移花接木]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[移花接木]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[移花接木]")
             return
         }
         if (g.players.all { !it!!.alive || it.messageCards.isEmpty() }) {
             logger.error("场上没有情报，不能发动[移花接木]")
-            (r as? HumanPlayer)?.sendErrorMessage("场上没有情报，不能发动[移花接木]")
+            r.sendErrorMessage("场上没有情报，不能发动[移花接木]")
             return
         }
         if (g.players.count { it!!.alive } < 2) {
             logger.error("场上没有两名存活的角色，不能发动[移花接木]")
-            (r as? HumanPlayer)?.sendErrorMessage("场上没有两名存活的角色，不能发动[移花接木]")
+            r.sendErrorMessage("场上没有两名存活的角色，不能发动[移花接木]")
             return
         }
         r.incrSeq()
@@ -89,12 +89,12 @@ class YiHuaJieMu : ActiveSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (r !== player) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_yi_hua_jie_mu_b_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (player is HumanPlayer && !player.checkSeq(message.seq)) {
@@ -104,35 +104,35 @@ class YiHuaJieMu : ActiveSkill {
             }
             if (message.fromPlayerId < 0 || message.fromPlayerId >= player.game!!.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val fromPlayer = player.game!!.players[player.getAbstractLocation(message.fromPlayerId)]!!
             if (!fromPlayer.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.toPlayerId < 0 || message.toPlayerId >= player.game!!.players.size) {
                 logger.error("目标错误")
-                (player as? HumanPlayer)?.sendErrorMessage("目标错误")
+                player.sendErrorMessage("目标错误")
                 return null
             }
             val toPlayer = player.game!!.players[player.getAbstractLocation(message.toPlayerId)]!!
             if (!toPlayer.alive) {
                 logger.error("目标已死亡")
-                (player as? HumanPlayer)?.sendErrorMessage("目标已死亡")
+                player.sendErrorMessage("目标已死亡")
                 return null
             }
             if (message.fromPlayerId == message.toPlayerId) {
                 logger.error("选择的两个目标不能相同")
-                (player as? HumanPlayer)?.sendErrorMessage("选择的两个目标不能相同")
+                player.sendErrorMessage("选择的两个目标不能相同")
                 return null
             }
             val card = fromPlayer.findMessageCard(message.cardId)
             if (card == null) {
                 logger.error("没有这张卡")
-                (player as? HumanPlayer)?.sendErrorMessage("没有这张卡")
+                player.sendErrorMessage("没有这张卡")
                 return null
             }
             player.incrSeq()

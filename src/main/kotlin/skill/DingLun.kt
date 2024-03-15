@@ -25,17 +25,17 @@ class DingLun : ActiveSkill {
         val fsm = g.fsm as? FightPhaseIdle
         if (r !== fsm?.whoseFightTurn) {
             logger.error("不是你发技能的时机")
-            (r as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+            r.sendErrorMessage("不是你发技能的时机")
             return
         }
         if (r !== fsm.inFrontOfWhom) {
             logger.error("情报不在你面前，不能发动[定论]")
-            (r as? HumanPlayer)?.sendErrorMessage("情报不在你面前，不能发动[定论]")
+            r.sendErrorMessage("情报不在你面前，不能发动[定论]")
             return
         }
         if (r.roleFaceUp) {
             logger.error("你现在正面朝上，不能发动[定论]")
-            (r as? HumanPlayer)?.sendErrorMessage("你现在正面朝上，不能发动[定论]")
+            r.sendErrorMessage("你现在正面朝上，不能发动[定论]")
             return
         }
         val pb = message as skill_ding_lun_tos

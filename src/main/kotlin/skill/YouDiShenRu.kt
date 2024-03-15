@@ -33,25 +33,25 @@ class YouDiShenRu : ActiveSkill {
         val fsm = g.fsm as? SendPhaseStart
         if (fsm == null) {
             logger.error("[诱敌深入]的使用时机不对")
-            (r as? HumanPlayer)?.sendErrorMessage("[诱敌深入]的使用时机不对")
+            r.sendErrorMessage("[诱敌深入]的使用时机不对")
             return
         }
         val card = r.findCard(message.cardId)
         if (card == null) {
             logger.error("没有这张牌")
-            (r as? HumanPlayer)?.sendErrorMessage("没有这张牌")
+            r.sendErrorMessage("没有这张牌")
             return
         }
         if (message.targetPlayerId <= 0 || message.targetPlayerId >= r.game!!.players.size) {
             logger.error("目标错误: ${message.targetPlayerId}")
-            (r as? HumanPlayer)?.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
+            r.sendErrorMessage("遇到了bug，试试把牌取消选择重新选一下")
             return
         }
         val target = g.players[r.getAbstractLocation(message.targetPlayerId)]!!
         val lockPlayers = message.lockPlayerIdList.map {
             if (it < 0 || it >= g.players.size) {
                 logger.error("锁定目标错误: $it")
-                (r as? HumanPlayer)?.sendErrorMessage("锁定目标错误: $it")
+                r.sendErrorMessage("锁定目标错误: $it")
                 return
             }
             g.players[r.getAbstractLocation(it)]!!
@@ -59,7 +59,7 @@ class YouDiShenRu : ActiveSkill {
         val sendCardError = r.canSendCard(r, card, r.cards, message.cardDir, target, lockPlayers)
         if (sendCardError != null) {
             logger.error(sendCardError)
-            (r as? HumanPlayer)?.sendErrorMessage(sendCardError)
+            r.sendErrorMessage(sendCardError)
             return
         }
         r.incrSeq()

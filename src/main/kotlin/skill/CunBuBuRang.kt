@@ -77,12 +77,12 @@ class CunBuBuRang : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_cun_bu_bu_rang_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             val g = r.game!!
@@ -93,9 +93,7 @@ class CunBuBuRang : TriggeredSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    (p as? HumanPlayer)?.send(skillCunBuBuRangToc { enable = false })
-                }
+                g.players.send { skillCunBuBuRangToc { enable = false } }
                 return ResolveResult(fsm, true)
             }
             val card = target.cards.random()

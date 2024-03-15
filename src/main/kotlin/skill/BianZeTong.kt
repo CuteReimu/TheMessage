@@ -73,12 +73,12 @@ class BianZeTong : TriggeredSkill {
         override fun resolveProtocol(player: Player, message: GeneratedMessage): ResolveResult? {
             if (player !== r) {
                 logger.error("不是你发技能的时机")
-                (player as? HumanPlayer)?.sendErrorMessage("不是你发技能的时机")
+                player.sendErrorMessage("不是你发技能的时机")
                 return null
             }
             if (message !is skill_bian_ze_tong_tos) {
                 logger.error("错误的协议")
-                (player as? HumanPlayer)?.sendErrorMessage("错误的协议")
+                player.sendErrorMessage("错误的协议")
                 return null
             }
             if (r is HumanPlayer && !r.checkSeq(message.seq)) {
@@ -100,12 +100,12 @@ class BianZeTong : TriggeredSkill {
             }
             if (message.cardTypeA == message.cardTypeB) {
                 logger.error("A和B不能相同")
-                (player as? HumanPlayer)?.sendErrorMessage("A和B不能相同")
+                player.sendErrorMessage("A和B不能相同")
                 return null
             }
             if (message.cardTypeA !in validCardTypes || message.cardTypeB !in validCardTypes) {
                 logger.error("A和B只能是【破译】【调包】【误导】【截获】")
-                (player as? HumanPlayer)?.sendErrorMessage("A和B只能是【破译】【调包】【误导】【截获】")
+                player.sendErrorMessage("A和B只能是【破译】【调包】【误导】【截获】")
                 return null
             }
             r.incrSeq()
