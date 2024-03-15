@@ -256,14 +256,12 @@ class RobotPlayer : Player() {
                         target.cards.addAll(giveCards)
                         game!!.addEvent(GiveCardEvent(fsm.whoseTurn, this, target))
                         logger.info("${this}给了${target}${giveCards.joinToString()}")
-                        for (p in game!!.players) {
-                            if (p is HumanPlayer) {
-                                p.send(notifyDieGiveCardToc {
-                                    playerId = p.getAlternativeLocation(location)
-                                    targetPlayerId = p.getAlternativeLocation(target.location)
-                                    if (p === target) giveCards.forEach { card.add(it.toPbCard()) }
-                                    else unknownCardCount = giveCards.size
-                                })
+                        game!!.players.send { p ->
+                            notifyDieGiveCardToc {
+                                playerId = p.getAlternativeLocation(location)
+                                targetPlayerId = p.getAlternativeLocation(target.location)
+                                if (p === target) giveCards.forEach { card.add(it.toPbCard()) }
+                                else unknownCardCount = giveCards.size
                             }
                         }
                     }

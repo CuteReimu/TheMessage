@@ -7,8 +7,9 @@ import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
-import com.fengsheng.protos.Role.skill_pin_ming_san_lang_toc
 import com.fengsheng.protos.Role.skill_pin_ming_san_lang_tos
+import com.fengsheng.protos.skillPinMingSanLangToc
+import com.fengsheng.protos.skillPinMingSanLangTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -57,12 +58,10 @@ class PinMingSanLang : MainPhaseSkill() {
         logger.info("${r}发动了[拼命三郎]，将手牌中的${card}置入自己的情报区")
         r.deleteCard(card.id)
         r.messageCards.add(card)
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_pin_ming_san_lang_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.card = card.toPbCard()
-                p.send(builder.build())
+        g.players.send {
+            skillPinMingSanLangToc {
+                playerId = it.getAlternativeLocation(r.location)
+                this.card = card.toPbCard()
             }
         }
         r.draw(3)
@@ -86,9 +85,7 @@ class PinMingSanLang : MainPhaseSkill() {
             }
             val card = p.cards.filter { it.isPureBlack() }.ifEmpty { return false }.bestCard(p.identity, true)
             GameExecutor.post(p.game!!, {
-                val builder = skill_pin_ming_san_lang_tos.newBuilder()
-                builder.cardId = card.id
-                skill.executeProtocol(p.game!!, p, builder.build())
+                skill.executeProtocol(p.game!!, p, skillPinMingSanLangTos { cardId = card.id })
             }, 3, TimeUnit.SECONDS)
             return true
         }

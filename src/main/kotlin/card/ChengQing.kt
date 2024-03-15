@@ -86,14 +86,12 @@ class ChengQing : Card {
             val targetCard = target.deleteMessageCard(targetCardId)!!
             logger.info("${target}面前的${targetCard}被置入弃牌堆")
             g.deck.discard(targetCard)
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    player.send(useChengQingToc {
-                        card = toPbCard()
-                        playerId = player.getAlternativeLocation(r.location)
-                        targetPlayerId = player.getAlternativeLocation(target.location)
-                        this.targetCardId = targetCardId
-                    })
+            g.players.send {
+                useChengQingToc {
+                    card = toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.targetCardId = targetCardId
                 }
             }
             if (fsm is MainPhaseIdle) {

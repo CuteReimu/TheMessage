@@ -7,6 +7,7 @@ import com.fengsheng.protos.Common.card_type.Jie_Huo
 import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Role.skill_tou_tian_tos
 import com.fengsheng.protos.skillTouTianToc
+import com.fengsheng.protos.skillTouTianTos
 import com.fengsheng.skill.SkillId.TOU_TIAN
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
@@ -55,9 +56,7 @@ class TouTian : ActiveSkill {
             val result = player.calFightPhase(e)
             if (result != null && result.cardType in listOf(Jie_Huo, Wu_Dao) && result.value >= newValue) return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
-                skill.executeProtocol(
-                    e.whoseFightTurn.game!!, e.whoseFightTurn, skill_tou_tian_tos.getDefaultInstance()
-                )
+                skill.executeProtocol(e.whoseFightTurn.game!!, e.whoseFightTurn, skillTouTianTos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

@@ -32,24 +32,22 @@ class BiFeng : TriggeredSkill {
     private data class excuteBiFeng(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(waitForSkillBiFengToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq = p.seq
-                            this.seq = seq
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq)) {
-                                    g.tryContinueResolveProtocol(p, skillBiFengTos {
-                                        enable = false
-                                        this.seq = seq
-                                    })
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                waitForSkillBiFengToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq = p.seq
+                        this.seq = seq
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq)) {
+                                g.tryContinueResolveProtocol(p, skillBiFengTos {
+                                    enable = false
+                                    this.seq = seq
+                                })
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -82,13 +80,11 @@ class BiFeng : TriggeredSkill {
                 return ResolveResult(fsm, true)
             logger.info("${r}发动了[避风]")
             r.addSkillUseCount(SkillId.BI_FENG)
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillBiFengToc {
-                        playerId = p.getAlternativeLocation(player.location)
-                        event.card?.let { this.card = it.toPbCard() }
-                        event.targetPlayer?.let { targetPlayerId = p.getAlternativeLocation(it.location) }
-                    })
+            player.game!!.players.send { p ->
+                skillBiFengToc {
+                    playerId = p.getAlternativeLocation(player.location)
+                    event.card?.let { this.card = it.toPbCard() }
+                    event.targetPlayer?.let { targetPlayerId = p.getAlternativeLocation(it.location) }
                 }
             }
             r.draw(2)

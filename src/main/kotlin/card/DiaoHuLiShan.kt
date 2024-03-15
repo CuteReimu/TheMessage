@@ -2,7 +2,6 @@ package com.fengsheng.card
 
 import com.fengsheng.Game
 import com.fengsheng.GameExecutor
-import com.fengsheng.HumanPlayer
 import com.fengsheng.Player
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
@@ -11,6 +10,7 @@ import com.fengsheng.protos.Common.card_type.Diao_Hu_Li_Shan
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.useDiaoHuLiShanToc
+import com.fengsheng.send
 import com.fengsheng.skill.CannotPlayCard
 import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.InvalidSkill
@@ -59,14 +59,12 @@ class DiaoHuLiShan : Card {
         logger.info("${r}对${target}使用了$this，禁用" + if (isSkill) "技能" else "出牌")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    player.send(useDiaoHuLiShanToc {
-                        playerId = player.getAlternativeLocation(r.location)
-                        targetPlayerId = player.getAlternativeLocation(target.location)
-                        card = toPbCard()
-                        this.isSkill = isSkill
-                    })
+            g.players.send {
+                useDiaoHuLiShanToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    card = toPbCard()
+                    this.isSkill = isSkill
                 }
             }
             if (isSkill) InvalidSkill.deal(target)

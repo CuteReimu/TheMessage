@@ -1,9 +1,9 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_jiu_ji_a_tos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -28,37 +28,28 @@ class JiuJi : TriggeredSkill {
 
     private data class executeJiuJi(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    if (player === r) {
-                        val builder = skill_wait_for_jiu_ji_toc.newBuilder()
-                        builder.fromPlayerId = player.getAlternativeLocation(event.player.location)
-                        builder.cardType = event.cardType
-                        if (event.cardType != Shi_Tan) event.card?.let { builder.card = it.toPbCard() }
-                        builder.waitingSecond = Config.WaitSecond
-                        val seq2 = player.seq
-                        builder.seq = seq2
-                        player.timeout = GameExecutor.post(r.game!!, {
-                            if (r.checkSeq(seq2)) {
-                                val builder2 = skill_jiu_ji_a_tos.newBuilder()
-                                builder2.enable = true
-                                builder2.seq = seq2
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        player.send(builder.build())
-                    } else {
-                        val builder = Fengsheng.unknown_waiting_toc.newBuilder()
-                        builder.waitingSecond = Config.WaitSecond
-                        player.send(builder.build())
-                    }
+            r.game!!.players.send { player ->
+                if (player === r) skillWaitForJiuJiToc {
+                    fromPlayerId = player.getAlternativeLocation(event.player.location)
+                    cardType = event.cardType
+                    if (event.cardType != Shi_Tan) event.card?.let { card = it.toPbCard() }
+                    waitingSecond = Config.WaitSecond
+                    val seq2 = player.seq
+                    seq = seq2
+                    player.timeout = GameExecutor.post(r.game!!, {
+                        if (r.checkSeq(seq2)) {
+                            r.game!!.tryContinueResolveProtocol(r, skillJiuJiATos {
+                                enable = true
+                                seq = seq2
+                            })
+                        }
+                    }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                 }
+                else unknownWaitingToc { waitingSecond = Config.WaitSecond }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_jiu_ji_a_tos.newBuilder()
-                    builder2.enable = event.card != null
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillJiuJiATos { enable = event.card != null })
                 }, 100, TimeUnit.MILLISECONDS)
             }
             return null
@@ -87,13 +78,7 @@ class JiuJi : TriggeredSkill {
             }
             r.incrSeq()
             logger.info("${r}发动了[就计]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jiu_ji_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    p.send(builder.build())
-                }
-            }
+            g.players.send { skillJiuJiAToc { playerId = it.getAlternativeLocation(r.location) } }
             g.playerSetRoleFaceUp(r, true)
             r.draw(2)
             event.card?.let { r.skills += JiuJi2() }
@@ -116,12 +101,10 @@ class JiuJi : TriggeredSkill {
             askWhom.cards.add(card)
             logger.info("${askWhom}将使用的${card}加入了手牌")
             askWhom.skills = askWhom.skills.filterNot { it === this }
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_jiu_ji_b_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(askWhom.location)
-                    builder.card = card.toPbCard()
-                    player.send(builder.build())
+            g.players.send {
+                skillJiuJiBToc {
+                    playerId = it.getAlternativeLocation(askWhom.location)
+                    this.card = card.toPbCard()
                 }
             }
             event.discardAfterResolve = false

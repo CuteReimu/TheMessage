@@ -57,13 +57,11 @@ class PingHeng : Card {
         logger.info("${r}对${target}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    player.send(usePingHengToc {
-                        playerId = player.getAlternativeLocation(r.location)
-                        targetPlayerId = player.getAlternativeLocation(target.location)
-                        pingHengCard = toPbCard()
-                    })
+            g.players.send {
+                usePingHengToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    pingHengCard = toPbCard()
                 }
             }
             if (r.cards.isNotEmpty()) r.game!!.addEvent(DiscardCardEvent(r, r))

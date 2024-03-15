@@ -4,8 +4,9 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_lian_min_toc
 import com.fengsheng.protos.Role.skill_lian_min_tos
+import com.fengsheng.protos.skillLianMinToc
+import com.fengsheng.protos.skillLianMinTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -91,13 +92,11 @@ class LianMin : TriggeredSkill {
             logger.info("${r}发动了[怜悯]，将${target}面前的${card}加入了手牌")
             target.deleteMessageCard(card.id)
             r.cards.add(card)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_lian_min_toc.newBuilder()
-                    builder.cardId = card.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillLianMinToc {
+                    cardId = card.id
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             return ResolveResult(fsm, true)
@@ -126,10 +125,10 @@ class LianMin : TriggeredSkill {
             }
             if (card != null && targetPlayer != null) {
                 GameExecutor.post(p.game!!, {
-                    val builder = skill_lian_min_tos.newBuilder()
-                    builder.cardId = card.id
-                    builder.targetPlayerId = p.getAlternativeLocation(targetPlayer.location)
-                    p.game!!.tryContinueResolveProtocol(p, builder.build())
+                    p.game!!.tryContinueResolveProtocol(p, skillLianMinTos {
+                        cardId = card.id
+                        targetPlayerId = p.getAlternativeLocation(targetPlayer.location)
+                    })
                 }, 3, TimeUnit.SECONDS)
                 return true
             }

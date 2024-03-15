@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Role.skill_gong_fen_tos
 import com.fengsheng.protos.skillGongFenToc
+import com.fengsheng.protos.skillGongFenTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -72,13 +73,11 @@ class GongFen : ActiveSkill {
                 logger.info("${card}加入${r}的手牌")
                 r.cards.add(card)
             }
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillGongFenToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        this.card = card.toPbCard()
-                    })
+            g.players.send {
+                skillGongFenToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.card = card.toPbCard()
                 }
             }
             GameExecutor.post(g, {
@@ -94,7 +93,7 @@ class GongFen : ActiveSkill {
             !player.roleFaceUp || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_gong_fen_tos.getDefaultInstance())
+                skill.executeProtocol(player.game!!, player, skillGongFenTos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

@@ -2,9 +2,7 @@ package com.fengsheng.handler
 
 import com.fengsheng.*
 import com.fengsheng.Statistics.PlayerGameCount
-import com.fengsheng.protos.Fengsheng
-import com.fengsheng.protos.getRoomInfoToc
-import com.fengsheng.protos.leaveRoomToc
+import com.fengsheng.protos.*
 import com.google.protobuf.GeneratedMessage
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.logger
@@ -46,12 +44,12 @@ class join_room_tos : ProtoHandler {
                         oldPlayer.sendErrorMessage("登录异常，请稍后重试")
                         false
                     } else if (game.isStarted && !game.isEnd) { // 断线重连
-                        oldPlayer.send(Fengsheng.notify_kicked_toc.getDefaultInstance())
+                        oldPlayer.send(notifyKickedToc { })
                         Game.exchangePlayer(oldPlayer, player)
                         oldPlayer.setAutoPlay(false)
                         if (oldPlayer.needWaitLoad) {
                             oldPlayer.isReconnecting = true
-                            player.send(Fengsheng.game_start_toc.getDefaultInstance())
+                            player.send(gameStartToc { })
                         } else {
                             oldPlayer.reconnect()
                         }
@@ -100,7 +98,7 @@ class join_room_tos : ProtoHandler {
                 newGame.players = newGame.players.toMutableList().apply { set(location, null) }
                 newGame.cancelStartTimer()
                 this.game = null
-                send(Fengsheng.notify_kicked_toc.getDefaultInstance())
+                send(notifyKickedToc { })
                 val reply = leaveRoomToc { position = location }
                 newGame.players.send { reply }
             }

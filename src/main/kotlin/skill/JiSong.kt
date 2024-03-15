@@ -5,8 +5,9 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Role.skill_ji_song_toc
 import com.fengsheng.protos.Role.skill_ji_song_tos
+import com.fengsheng.protos.skillJiSongToc
+import com.fengsheng.protos.skillJiSongTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -91,13 +92,11 @@ class JiSong : ActiveSkill {
             g.playerDiscardCard(r, cards!!)
             g.addEvent(DiscardCardEvent(fsm.whoseTurn, r))
         }
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_ji_song_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                if (messageCard != null) builder.messageCard = messageCard.toPbCard()
-                p.send(builder.build())
+        g.players.send {
+            skillJiSongToc {
+                playerId = it.getAlternativeLocation(r.location)
+                targetPlayerId = it.getAlternativeLocation(target.location)
+                if (messageCard != null) this.messageCard = messageCard.toPbCard()
             }
         }
         g.resolve(fsm.copy(inFrontOfWhom = target, whoseFightTurn = target))
@@ -139,11 +138,11 @@ class JiSong : ActiveSkill {
                 cards.size == 2 || return false
             }
             GameExecutor.post(player.game!!, {
-                val builder = skill_ji_song_tos.newBuilder()
-                cards.forEach { card -> builder.addCardIds(card.id) }
-                builder.messageCard = messageCard?.id ?: 0
-                builder.targetPlayerId = player.getAlternativeLocation(target.location)
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillJiSongTos {
+                    cards.forEach { cardIds.add(it.id) }
+                    messageCard?.let { this.messageCard = it.id }
+                    targetPlayerId = player.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

@@ -5,10 +5,11 @@ import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.role.shang_yu
-import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_xian_fa_zhi_ren_a_tos
+import com.fengsheng.protos.Role.skill_xian_fa_zhi_ren_b_tos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -40,32 +41,20 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
     private data class executeXianFaZhiRenA(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    if (p === r) {
-                        val builder = wait_for_skill_xian_fa_zhi_ren_a_toc.newBuilder()
-                        builder.waitingSecond = Config.WaitSecond
-                        val seq = p.seq
-                        builder.seq = seq
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq)) {
-                                val builder2 = skill_xian_fa_zhi_ren_a_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(p, builder2.build())
-                            }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        p.send(builder.build())
-                    } else {
-                        val builder = unknown_waiting_toc.newBuilder()
-                        builder.waitingSecond = Config.WaitSecond
-                        p.send(builder.build())
-                    }
+            g.players.send { p ->
+                if (p === r) waitForSkillXianFaZhiRenAToc {
+                    waitingSecond = Config.WaitSecond
+                    val seq = p.seq
+                    this.seq = seq
+                    p.timeout = GameExecutor.post(g, {
+                        if (p.checkSeq(seq))
+                            g.tryContinueResolveProtocol(p, skillXianFaZhiRenATos { this.seq = seq })
+                    }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                 }
+                else unknownWaitingToc { waitingSecond = Config.WaitSecond }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder2 = skill_xian_fa_zhi_ren_a_tos.newBuilder()
                     val targetAndCard = g.players.flatMap {
                         if (it!!.isPartnerOrSelf(r)) {
                             if (it.messageCards.count(Black) < 3) emptyList()
@@ -78,12 +67,13 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                             }
                         }
                     }.randomOrNull()
-                    builder2.enable = targetAndCard != null
-                    if (targetAndCard != null) {
-                        builder2.targetPlayerId = r.getAlternativeLocation(targetAndCard.player.location)
-                        builder2.cardId = targetAndCard.card.id
-                    }
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillXianFaZhiRenATos {
+                        if (targetAndCard != null) {
+                            enable = true
+                            targetPlayerId = r.getAlternativeLocation(targetAndCard.player.location)
+                            cardId = targetAndCard.card.id
+                        }
+                    })
                 }, 100, TimeUnit.MILLISECONDS)
             }
             return null
@@ -126,16 +116,14 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             logger.info("${player}发动了[先发制人]，弃掉了${target}面前的$card")
             player.game!!.deck.discard(card)
             val timeout = Config.WaitSecond
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_xian_fa_zhi_ren_a_toc.newBuilder()
-                    builder.enable = message.enable
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.cardId = card.id
-                    builder.waitingSecond = timeout
-                    if (p === player) builder.seq = p.seq
-                    p.send(builder.build())
+            player.game!!.players.send { p ->
+                skillXianFaZhiRenAToc {
+                    enable = message.enable
+                    playerId = p.getAlternativeLocation(player.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    cardId = card.id
+                    waitingSecond = timeout
+                    if (p === player) seq = p.seq
                 }
             }
             return ResolveResult(executeXianFaZhiRenB(fsm, player, target, timeout), true)
@@ -187,16 +175,14 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
         logger.info("${r}发动了[先发制人]，弃掉了${target}面前的$card")
         r.game!!.deck.discard(card)
         val timeout = Config.WaitSecond
-        for (p in r.game!!.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_xian_fa_zhi_ren_a_toc.newBuilder()
-                builder.enable = message.enable
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                builder.cardId = card.id
-                builder.waitingSecond = timeout
-                if (p === r) builder.seq = p.seq
-                p.send(builder.build())
+        r.game!!.players.send { p ->
+            skillXianFaZhiRenAToc {
+                enable = message.enable
+                playerId = p.getAlternativeLocation(r.location)
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                cardId = card.id
+                waitingSecond = timeout
+                if (p === r) seq = p.seq
             }
         }
         r.game!!.resolve(executeXianFaZhiRenB(fsm, r, target, timeout))
@@ -209,11 +195,11 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
-                        val builder = skill_xian_fa_zhi_ren_b_tos.newBuilder()
-                        builder.targetPlayerId = r.getAlternativeLocation(defaultTarget.location)
-                        builder.faceUp = false
-                        builder.seq = seq
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillXianFaZhiRenBTos {
+                            targetPlayerId = r.getAlternativeLocation(defaultTarget.location)
+                            faceUp = false
+                            this.seq = seq
+                        })
                     }
                 }, r.getWaitSeconds(timeout + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -227,10 +213,10 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                         }.ifEmpty { this }
                 }.randomOrNull() ?: r
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_xian_fa_zhi_ren_b_tos.newBuilder()
-                    builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                    builder.faceUp = !target.roleFaceUp
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillXianFaZhiRenBTos {
+                        targetPlayerId = r.getAlternativeLocation(target.location)
+                        faceUp = !target.roleFaceUp
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -273,13 +259,11 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             logger.info("${target}的技能被无效了")
             InvalidSkill.deal(target)
             if (message.faceUp) g.playerSetRoleFaceUp(target, true)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_xian_fa_zhi_ren_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.faceUp = message.faceUp
-                    p.send(builder.build())
+            g.players.send {
+                skillXianFaZhiRenBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    faceUp = message.faceUp
                 }
             }
             if (fsm is FightPhaseIdle)
@@ -314,11 +298,11 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             val card = cards.run { filter { player.identity !in it.colors }.ifEmpty { this } }
                 .randomOrNull() ?: return false
             GameExecutor.post(g, {
-                val builder2 = skill_xian_fa_zhi_ren_a_tos.newBuilder()
-                builder2.enable = true
-                builder2.targetPlayerId = player.getAlternativeLocation(target.location)
-                builder2.cardId = card.id
-                skill.executeProtocol(g, player, builder2.build())
+                skill.executeProtocol(g, player, skillXianFaZhiRenATos {
+                    enable = true
+                    targetPlayerId = player.getAlternativeLocation(target.location)
+                    cardId = card.id
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

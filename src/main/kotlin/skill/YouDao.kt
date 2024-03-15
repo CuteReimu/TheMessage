@@ -2,7 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type
-import com.fengsheng.protos.Role.skill_you_dao_toc
+import com.fengsheng.protos.skillYouDaoToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -19,13 +19,7 @@ class YouDao : TriggeredSkill {
             event.cardType == card_type.Wu_Dao
         } ?: return null
         logger.info("${askWhom}发动了[诱导]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_you_dao_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(askWhom.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillYouDaoToc { playerId = it.getAlternativeLocation(askWhom.location) } }
         askWhom.draw(1)
         return null
     }

@@ -5,7 +5,12 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_yun_chou_wei_wo_a_tos
+import com.fengsheng.protos.Role.skill_yun_chou_wei_wo_b_tos
+import com.fengsheng.protos.skillYunChouWeiWoAToc
+import com.fengsheng.protos.skillYunChouWeiWoATos
+import com.fengsheng.protos.skillYunChouWeiWoBToc
+import com.fengsheng.protos.skillYunChouWeiWoBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -72,36 +77,34 @@ class YunChouWeiWo : ActiveSkill {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[运筹帷幄]，查看了牌堆顶的五张牌")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yun_chou_wei_wo_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond * 2
+            g.players.send { p ->
+                skillYunChouWeiWoAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
-                        val sortedCards = cards.sortCards(r.identity)
-                        cards.forEach { builder.addCards(it.toPbCard()) }
+                        this@executeYunChouWeiWo.cards.forEach { cards.add(it.toPbCard()) }
                         val seq2 = p.seq
-                        builder.seq = seq2
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
-                                val builder2 = skill_yun_chou_wei_wo_b_tos.newBuilder()
-                                builder2.addDeckCardIds(sortedCards[4].id)
-                                builder2.addDeckCardIds(sortedCards[3].id)
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
+                                g.tryContinueResolveProtocol(r, skillYunChouWeiWoBTos {
+                                    deckCardIds.add(this@executeYunChouWeiWo.cards[1].id)
+                                    deckCardIds.add(this@executeYunChouWeiWo.cards[0].id)
+                                    seq = seq2
+                                })
                                 return@post
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder = skill_yun_chou_wei_wo_b_tos.newBuilder()
-                    builder.addDeckCardIds(cards[3].id)
-                    builder.addDeckCardIds(cards[4].id)
-                    g.tryContinueResolveProtocol(r, builder.build())
+                    val sortedCards = cards.sortCards(r.identity)
+                    g.tryContinueResolveProtocol(r, skillYunChouWeiWoBTos {
+                        deckCardIds.add(sortedCards[3].id)
+                        deckCardIds.add(sortedCards[4].id)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -144,12 +147,10 @@ class YunChouWeiWo : ActiveSkill {
             g.deck.draw(5)
             g.deck.addFirst(listOf(deckCards[1], deckCards[0]))
             r.cards.addAll(handCards)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yun_chou_wei_wo_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    if (p === r) handCards.forEach { builder.addCards(it.toPbCard()) }
-                    p.send(builder.build())
+            g.players.send { p ->
+                skillYunChouWeiWoBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    if (p === r) handCards.forEach { cards.add(it.toPbCard()) }
                 }
             }
             if (fsm is FightPhaseIdle)
@@ -166,7 +167,7 @@ class YunChouWeiWo : ActiveSkill {
                 player.game!!.players.anyoneWillWinOrDie(e) || return false
             }
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_yun_chou_wei_wo_a_tos.getDefaultInstance())
+                skill.executeProtocol(player.game!!, player, skillYunChouWeiWoATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

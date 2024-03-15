@@ -5,7 +5,12 @@ import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_tan_xu_bian_shi_a_tos
+import com.fengsheng.protos.Role.skill_tan_xu_bian_shi_b_tos
+import com.fengsheng.protos.skillTanXuBianShiAToc
+import com.fengsheng.protos.skillTanXuBianShiATos
+import com.fengsheng.protos.skillTanXuBianShiBToc
+import com.fengsheng.protos.skillTanXuBianShiBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -78,37 +83,35 @@ class TanXuBianShi : MainPhaseSkill() {
             val mustGiveColor =
                 if (target.identity == Black || target.cards.all { target.identity !in it.colors }) null
                 else target.identity
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tan_xu_bian_shi_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = card.toPbCard()
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { p ->
+                skillTanXuBianShiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target) card = this@executeTanXuBianShi.card.toPbCard()
+                    waitingSecond = Config.WaitSecond
                     if (p === target) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(p.game!!, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_tan_xu_bian_shi_b_tos.newBuilder()
-                                builder2.cardId =
-                                    if (mustGiveColor == null) target.cards.first().id
-                                    else target.cards.first { mustGiveColor in it.colors }.id
-                                builder2.seq = seq
-                                p.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                p.game!!.tryContinueResolveProtocol(p, skillTanXuBianShiBTos {
+                                    cardId =
+                                        if (mustGiveColor == null) target.cards.first().id
+                                        else target.cards.first { mustGiveColor in it.colors }.id
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (target is RobotPlayer)
                 GameExecutor.post(target.game!!, {
-                    val builder2 = skill_tan_xu_bian_shi_b_tos.newBuilder()
-                    builder2.cardId =
-                        if (mustGiveColor == null) target.cards.bestCard(target.identity, true).id
-                        else target.cards.filter { mustGiveColor in it.colors }.bestCard(target.identity, true).id
-                    target.game!!.tryContinueResolveProtocol(target, builder2.build())
+                    target.game!!.tryContinueResolveProtocol(target, skillTanXuBianShiBTos {
+                        cardId =
+                            if (mustGiveColor == null) target.cards.bestCard(target.identity, true).id
+                            else target.cards.filter { mustGiveColor in it.colors }.bestCard(target.identity, true).id
+                    })
                 }, 3, TimeUnit.SECONDS)
             return null
         }
@@ -148,13 +151,11 @@ class TanXuBianShi : MainPhaseSkill() {
             target.deleteCard(card.id)
             r.cards.add(card)
             logger.info("${target}给了${r}$card")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tan_xu_bian_shi_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send { p ->
+                skillTanXuBianShiBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target) this.card = card.toPbCard()
                 }
             }
             r.game!!.addEvent(GiveCardEvent(r, r, target))
@@ -174,10 +175,10 @@ class TanXuBianShi : MainPhaseSkill() {
                 else filter { it!!.isEnemy(e.whoseTurn) }.ifEmpty { this }
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_tan_xu_bian_shi_a_tos.newBuilder()
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
-                builder.cardId = card.id
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillTanXuBianShiATos {
+                    targetPlayerId = e.whoseTurn.getAlternativeLocation(player.location)
+                    cardId = card.id
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

@@ -5,11 +5,13 @@ import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.WaitForChengQing
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.*
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_ru_bi_zhi_shi_a_tos
+import com.fengsheng.protos.Role.skill_ru_bi_zhi_shi_b_tos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -69,27 +71,25 @@ class RuBiZhiShi : ActiveSkill {
     data class executeRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_ru_bi_zhi_shi_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond * 2
+            g.players.send { p ->
+                skillRuBiZhiShiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
-                        target.cards.forEach { builder.addCards(it.toPbCard()) }
+                        target.cards.forEach { cards.add(it.toPbCard()) }
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_ru_bi_zhi_shi_b_tos.newBuilder()
-                                builder2.enable = true
-                                builder2.cardId = target.cards.random().id
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(p, builder2.build())
+                                g.tryContinueResolveProtocol(p, skillRuBiZhiShiBTos {
+                                    enable = true
+                                    cardId = target.cards.random().id
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -98,24 +98,13 @@ class RuBiZhiShi : ActiveSkill {
                         val result = r.calFightPhase(fsm, target, target.cards)
                         if (result != null) {
                             when (result.cardType) {
-                                Jie_Huo -> {
-                                    val builder = use_jie_huo_tos.newBuilder()
-                                    builder.cardId = result.card.id
-                                    g.tryContinueResolveProtocol(r, builder.build())
-                                }
-
-                                Diao_Bao -> {
-                                    val builder = use_diao_bao_tos.newBuilder()
-                                    builder.cardId = result.card.id
-                                    g.tryContinueResolveProtocol(r, builder.build())
-                                }
-
-                                else -> { // Wu_Dao
-                                    val builder = use_wu_dao_tos.newBuilder()
-                                    builder.cardId = result.card.id
-                                    builder.targetPlayerId = r.getAlternativeLocation(result.wuDaoTarget!!.location)
-                                    g.tryContinueResolveProtocol(r, builder.build())
-                                }
+                                Jie_Huo -> g.tryContinueResolveProtocol(r, useJieHuoTos { cardId = result.card.id })
+                                Diao_Bao -> g.tryContinueResolveProtocol(r, useDiaoBaoTos { cardId = result.card.id })
+                                else ->  // Wu_Dao
+                                    g.tryContinueResolveProtocol(r, useWuDaoTos {
+                                        cardId = result.card.id
+                                        targetPlayerId = r.getAlternativeLocation(result.wuDaoTarget!!.location)
+                                    })
                             }
                             return@post
                         }
@@ -140,19 +129,19 @@ class RuBiZhiShi : ActiveSkill {
                                             ?: find { r.identity !in it.colors }
                                             ?: firstOrNull()
                                     } ?: break
-                                val builder = cheng_qing_save_die_tos.newBuilder()
-                                builder.use = true
-                                builder.cardId = card.id
-                                builder.targetCardId = black.id
-                                g.tryContinueResolveProtocol(r, builder.build())
+                                g.tryContinueResolveProtocol(r, chengQingSaveDieTos {
+                                    use = true
+                                    cardId = card.id
+                                    targetCardId = black.id
+                                })
                                 return@post
                             }
                         }
                     }
-                    val builder = skill_ru_bi_zhi_shi_b_tos.newBuilder()
-                    builder.enable = true
-                    builder.cardId = target.cards.bestCard(r.identity).id
-                    g.tryContinueResolveProtocol(r, builder.build())
+                    g.tryContinueResolveProtocol(r, skillRuBiZhiShiBTos {
+                        enable = true
+                        cardId = target.cards.bestCard(r.identity).id
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -365,14 +354,12 @@ class RuBiZhiShi : ActiveSkill {
         }
 
         private fun notifyUseSkill(enable: Boolean, useCard: Boolean) {
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_ru_bi_zhi_shi_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.enable = enable
-                    builder.useCard = useCard
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillRuBiZhiShiBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.enable = enable
+                    this.useCard = useCard
                 }
             }
         }
@@ -387,9 +374,9 @@ class RuBiZhiShi : ActiveSkill {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
             }.shuffled().maxByOrNull { it!!.cards.size } ?: return false
             GameExecutor.post(r.game!!, {
-                val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
-                builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                skill.executeProtocol(r.game!!, r, builder.build())
+                skill.executeProtocol(r.game!!, r, skillRuBiZhiShiATos {
+                    targetPlayerId = r.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }
@@ -402,9 +389,9 @@ class RuBiZhiShi : ActiveSkill {
                 it!!.alive && it.isEnemy(r) && it.cards.isNotEmpty()
             }.shuffled().maxByOrNull { it!!.cards.size } ?: return false
             GameExecutor.post(r.game!!, {
-                val builder = skill_ru_bi_zhi_shi_a_tos.newBuilder()
-                builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                skill.executeProtocol(r.game!!, r, builder.build())
+                skill.executeProtocol(r.game!!, r, skillRuBiZhiShiATos {
+                    targetPlayerId = r.getAlternativeLocation(target.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

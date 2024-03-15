@@ -5,7 +5,11 @@ import com.fengsheng.card.count
 import com.fengsheng.phase.ReceivePhaseIdle
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction.Up
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_xiang_jin_si_suo_a_tos
+import com.fengsheng.protos.skillWaitForXiangJinSiSuoToc
+import com.fengsheng.protos.skillXiangJinSiSuoAToc
+import com.fengsheng.protos.skillXiangJinSiSuoATos
+import com.fengsheng.protos.skillXiangJinSiSuoBToc
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -25,56 +29,46 @@ class XiangJinSiSuo : TriggeredSkill {
 
     private data class executeXiangJinSiSuoA(val fsm: Fsm, val event: SendCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_xiang_jin_si_suo_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                skillWaitForXiangJinSiSuoToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq = player.seq
-                        builder.seq = seq
-                        player.timeout = GameExecutor.post(
-                            player.game!!,
-                            {
-                                if (player.checkSeq(seq)) {
-                                    val builder2 = skill_xiang_jin_si_suo_a_tos.newBuilder()
-                                    builder2.enable = true
-                                    builder2.targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
-                                    builder2.seq = seq
-                                    player.game!!.tryContinueResolveProtocol(player, builder2.build())
-                                }
-                            },
-                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                        this.seq = seq
+                        player.timeout = GameExecutor.post(player.game!!, {
+                            if (player.checkSeq(seq)) {
+                                player.game!!.tryContinueResolveProtocol(player, skillXiangJinSiSuoATos {
+                                    enable = true
+                                    targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
+                                    this.seq = seq
+                                })
+                            }
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_xiang_jin_si_suo_a_tos.newBuilder()
-                    builder.enable = true
-                    builder.targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
-                    if (event.dir == Up && r.identity != Black && event.targetPlayer.identity == r.identity &&
-                        event.sender.identity == r.identity && r.identity in event.messageCard.colors
-                    ) {
-                        val other = if (r === event.sender) event.targetPlayer else event.sender
-                        val count1 = r.messageCards.count(r.identity)
-                        val count2 = other.messageCards.count(r.identity)
-                        val countB1 = r.messageCards.count(Black)
-                        val countB2 = other.messageCards.count(Black)
-                        if (count1 > count2) {
-                            builder.targetPlayerId = 0
-                        } else if (count1 < count2) {
-                            builder.targetPlayerId = r.getAlternativeLocation(other.location)
-                        } else if (countB1 > countB2) {
-                            builder.targetPlayerId = r.getAlternativeLocation(other.location)
-                        } else {
-                            builder.targetPlayerId = 0
+                    r.game!!.tryContinueResolveProtocol(r, skillXiangJinSiSuoATos {
+                        enable = true
+                        targetPlayerId = r.getAlternativeLocation(event.targetPlayer.location)
+                        if (event.dir == Up && r.identity != Black && event.targetPlayer.identity == r.identity &&
+                            event.sender.identity == r.identity && r.identity in event.messageCard.colors
+                        ) {
+                            val other = if (r === event.sender) event.targetPlayer else event.sender
+                            val count1 = r.messageCards.count(r.identity)
+                            val count2 = other.messageCards.count(r.identity)
+                            val countB1 = r.messageCards.count(Black)
+                            val countB2 = other.messageCards.count(Black)
+                            targetPlayerId = when {
+                                count1 > count2 -> 0
+                                count1 < count2 -> r.getAlternativeLocation(other.location)
+                                countB1 > countB2 -> r.getAlternativeLocation(other.location)
+                                else -> 0
+                            }
                         }
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
@@ -98,12 +92,10 @@ class XiangJinSiSuo : TriggeredSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in r.game!!.players) {
-                    if (p is HumanPlayer) {
-                        val builder = skill_xiang_jin_si_suo_a_toc.newBuilder()
-                        builder.playerId = p.getAlternativeLocation(r.location)
-                        builder.enable = false
-                        p.send(builder.build())
+                r.game!!.players.send {
+                    skillXiangJinSiSuoAToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        enable = false
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -122,13 +114,11 @@ class XiangJinSiSuo : TriggeredSkill {
             r.incrSeq()
             r.skills += XiangJinSiSuo2(target)
             logger.info("${r}发动了[详尽思索]，指定了${target}")
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_xiang_jin_si_suo_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.enable = true
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillXiangJinSiSuoAToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             return ResolveResult(fsm, true)
@@ -147,12 +137,8 @@ class XiangJinSiSuo : TriggeredSkill {
             askWhom.getSkillUseCount(skillId) == 0 || return null
             askWhom.addSkillUseCount(skillId)
             logger.info("[详尽思索]命中")
-            for (p in askWhom.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_xiang_jin_si_suo_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(askWhom.location)
-                    p.send(builder.build())
-                }
+            askWhom.game!!.players.send {
+                skillXiangJinSiSuoBToc { playerId = it.getAlternativeLocation(askWhom.location) }
             }
             askWhom.draw(1)
             return ResolveResult(fsm, true)

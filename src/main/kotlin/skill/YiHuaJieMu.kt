@@ -2,7 +2,11 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_yi_hua_jie_mu_b_tos
+import com.fengsheng.protos.skillYiHuaJieMuAToc
+import com.fengsheng.protos.skillYiHuaJieMuATos
+import com.fengsheng.protos.skillYiHuaJieMuBToc
+import com.fengsheng.protos.skillYiHuaJieMuBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -52,35 +56,33 @@ class YiHuaJieMu : ActiveSkill {
             val fromPlayer = alivePlayers.filter { it.messageCards.isNotEmpty() }.random()
             val card = fromPlayer.messageCards.random()
             val toPlayer = alivePlayers.filter { it !== fromPlayer }.random()
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yi_hua_jie_mu_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond * 2
+            r.game!!.players.send { p ->
+                skillYiHuaJieMuAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(p.game!!, {
                             if (p.checkSeq(seq)) {
-                                val builder2 = skill_yi_hua_jie_mu_b_tos.newBuilder()
-                                builder2.fromPlayerId = p.getAlternativeLocation(fromPlayer.location)
-                                builder2.cardId = card.id
-                                builder2.toPlayerId = p.getAlternativeLocation(toPlayer.location)
-                                builder2.seq = seq
-                                r.game!!.tryContinueResolveProtocol(p, builder2.build())
+                                r.game!!.tryContinueResolveProtocol(p, skillYiHuaJieMuBTos {
+                                    fromPlayerId = p.getAlternativeLocation(fromPlayer.location)
+                                    cardId = card.id
+                                    toPlayerId = p.getAlternativeLocation(toPlayer.location)
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val builder2 = skill_yi_hua_jie_mu_b_tos.newBuilder()
-                    builder2.fromPlayerId = r.getAlternativeLocation(fromPlayer.location)
-                    builder2.cardId = card.id
-                    builder2.toPlayerId = r.getAlternativeLocation(toPlayer.location)
-                    r.game!!.tryContinueResolveProtocol(r, builder2.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillYiHuaJieMuBTos {
+                        fromPlayerId = r.getAlternativeLocation(fromPlayer.location)
+                        cardId = card.id
+                        toPlayerId = r.getAlternativeLocation(toPlayer.location)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -146,15 +148,13 @@ class YiHuaJieMu : ActiveSkill {
                 player.game!!.addEvent(AddMessageCardEvent(fsm.whoseTurn))
                 logger.info("${fromPlayer}面前的${card}加入了${toPlayer}的情报区")
             }
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yi_hua_jie_mu_b_toc.newBuilder()
-                    builder.cardId = card.id
-                    builder.joinIntoHand = joinIntoHand
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.fromPlayerId = p.getAlternativeLocation(fromPlayer.location)
-                    builder.toPlayerId = p.getAlternativeLocation(toPlayer.location)
-                    p.send(builder.build())
+            player.game!!.players.send {
+                skillYiHuaJieMuBToc {
+                    cardId = card.id
+                    this.joinIntoHand = joinIntoHand
+                    playerId = it.getAlternativeLocation(player.location)
+                    fromPlayerId = it.getAlternativeLocation(fromPlayer.location)
+                    toPlayerId = it.getAlternativeLocation(toPlayer.location)
                 }
             }
             return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
@@ -169,7 +169,7 @@ class YiHuaJieMu : ActiveSkill {
             if (g.players.all { !it!!.alive || it.messageCards.isEmpty() }) return false
             if (g.players.count { it!!.alive } < 2) return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
-                skill.executeProtocol(g, e.whoseFightTurn, skill_yi_hua_jie_mu_a_tos.getDefaultInstance())
+                skill.executeProtocol(g, e.whoseFightTurn, skillYiHuaJieMuATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

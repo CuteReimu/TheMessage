@@ -6,7 +6,12 @@ import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_sou_ji_a_tos
+import com.fengsheng.protos.Role.skill_sou_ji_b_tos
+import com.fengsheng.protos.skillSouJiAToc
+import com.fengsheng.protos.skillSouJiATos
+import com.fengsheng.protos.skillSouJiBToc
+import com.fengsheng.protos.skillSouJiBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -60,43 +65,35 @@ class SouJi : ActiveSkill {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}对${target}发动了[搜缉]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_sou_ji_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond * 4 / 3
+            g.players.send { p ->
+                skillSouJiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    waitingSecond = Config.WaitSecond * 4 / 3
                     if (p === r) {
-                        for (card in target.cards) builder.addCards(card.toPbCard())
-                        builder.messageCard = fsm.messageCard.toPbCard()
+                        target.cards.forEach { cards.add(it.toPbCard()) }
+                        messageCard = fsm.messageCard.toPbCard()
                         val seq2 = p.seq
-                        builder.seq = seq2
-                        p.timeout = GameExecutor.post(
-                            g,
-                            {
-                                if (p.checkSeq(seq2)) {
-                                    val builder2 = skill_sou_ji_b_tos.newBuilder()
-                                    builder2.addAllCardIds(target.cards.filter(Black).map { it.id })
-                                    builder2.messageCard = false
-                                    builder2.seq = seq2
-                                    g.tryContinueResolveProtocol(r, builder2.build())
-                                }
-                            },
-                            p.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2)) {
+                                g.tryContinueResolveProtocol(r, skillSouJiBTos {
+                                    cardIds.addAll(target.cards.filter(Black).map { it.id })
+                                    messageCard = false
+                                    seq = seq2
+                                })
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder = skill_sou_ji_b_tos.newBuilder()
-                    builder.addAllCardIds(target.cards.filter(Black).map { it.id })
-                    if (fsm.messageCard.isBlack() &&
-                        r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard) <= 10
-                    ) builder.messageCard = true
-                    g.tryContinueResolveProtocol(r, builder.build())
+                    g.tryContinueResolveProtocol(r, skillSouJiBTos {
+                        cardIds.addAll(target.cards.filter(Black).map { it.id })
+                        messageCard = fsm.messageCard.isBlack() &&
+                                r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard) <= 10
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -145,14 +142,12 @@ class SouJi : ActiveSkill {
                 r.cards.addAll(cards)
                 g.addEvent(GiveCardEvent(fsm.whoseTurn, target, r))
             }
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_sou_ji_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    for (card in cards) builder.addCards(card.toPbCard())
-                    if (message.messageCard) builder.messageCard = fsm.messageCard.toPbCard()
-                    p.send(builder.build())
+            g.players.send { p ->
+                skillSouJiBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    cards.forEach { card -> this.cards.add(card.toPbCard()) }
+                    if (message.messageCard) messageCard = fsm.messageCard.toPbCard()
                 }
             }
             if (message.messageCard) {
@@ -174,9 +169,9 @@ class SouJi : ActiveSkill {
                     .ifEmpty { this }
             }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_sou_ji_a_tos.newBuilder()
-                builder.targetPlayerId = player.getAlternativeLocation(p.location)
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillSouJiATos {
+                    targetPlayerId = player.getAlternativeLocation(p.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

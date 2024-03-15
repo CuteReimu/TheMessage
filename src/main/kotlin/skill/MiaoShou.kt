@@ -6,7 +6,12 @@ import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_miao_shou_a_tos
+import com.fengsheng.protos.Role.skill_miao_shou_b_tos
+import com.fengsheng.protos.skillMiaoShouAToc
+import com.fengsheng.protos.skillMiaoShouATos
+import com.fengsheng.protos.skillMiaoShouBToc
+import com.fengsheng.protos.skillMiaoShouBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -67,41 +72,38 @@ class MiaoShou : ActiveSkill {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}对${target}发动了[妙手]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_miao_shou_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.waitingSecond = Config.WaitSecond
-                    builder.messageCard = fsm.messageCard.toPbCard()
+            g.players.send { p ->
+                skillMiaoShouAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    waitingSecond = Config.WaitSecond
+                    messageCard = fsm.messageCard.toPbCard()
                     if (p === r) {
-                        target.cards.forEach { builder.addCards(it.toPbCard()) }
+                        target.cards.forEach { cards.add(it.toPbCard()) }
                         val seq2 = p.seq
-                        builder.seq = seq2
+                        seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
-                                val builder2 = skill_miao_shou_b_tos.newBuilder()
-                                builder2.cardId = target.cards.firstOrNull()?.id ?: 0
-                                if (builder2.cardId == 0)
-                                    builder2.messageCardId = target.messageCards.firstOrNull()?.id ?: 0
-                                builder2.targetPlayerId = 0
-                                builder2.seq = seq2
-                                g.tryContinueResolveProtocol(r, builder2.build())
-                                return@post
+                                g.tryContinueResolveProtocol(r, skillMiaoShouBTos {
+                                    cardId = target.cards.firstOrNull()?.id ?: 0
+                                    if (cardId == 0)
+                                        messageCardId = target.messageCards.firstOrNull()?.id ?: 0
+                                    targetPlayerId = 0
+                                    seq = seq2
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val builder = skill_miao_shou_b_tos.newBuilder()
-                    builder.messageCardId = target.messageCards.firstOrNull()?.id ?: 0
-                    if (builder.messageCardId == 0)
-                        builder.cardId = target.cards.firstOrNull()?.id ?: 0
-                    builder.targetPlayerId = 0
-                    g.tryContinueResolveProtocol(r, builder.build())
+                    g.tryContinueResolveProtocol(r, skillMiaoShouBTos {
+                        messageCardId = target.messageCards.firstOrNull()?.id ?: 0
+                        if (messageCardId == 0)
+                            cardId = target.cards.firstOrNull()?.id ?: 0
+                        targetPlayerId = 0
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -162,15 +164,13 @@ class MiaoShou : ActiveSkill {
             }
             r.incrSeq()
             logger.info("${r}将${card}作为情报，面朝上移至${target2}的面前")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_miao_shou_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.fromPlayerId = p.getAlternativeLocation(target.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target2.location)
-                    if (message.cardId != 0) builder.card = card.toPbCard()
-                    else builder.messageCardId = card.id
-                    p.send(builder.build())
+            g.players.send { p ->
+                skillMiaoShouBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    fromPlayerId = p.getAlternativeLocation(target.location)
+                    targetPlayerId = p.getAlternativeLocation(target2.location)
+                    if (message.cardId != 0) this.card = card.toPbCard()
+                    else messageCardId = card.id
                 }
             }
             return ResolveResult(
@@ -193,9 +193,9 @@ class MiaoShou : ActiveSkill {
                         && it.identity != color.Black && it.messageCards.count(it.identity) >= 2
             } ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_miao_shou_a_tos.newBuilder()
-                builder.targetPlayerId = player.getAlternativeLocation(p.location)
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillMiaoShouATos {
+                    targetPlayerId = player.getAlternativeLocation(p.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

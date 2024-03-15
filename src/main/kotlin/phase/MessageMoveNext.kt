@@ -1,12 +1,12 @@
 package com.fengsheng.phase
 
 import com.fengsheng.Fsm
-import com.fengsheng.HumanPlayer
 import com.fengsheng.ResolveResult
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Up
 import com.fengsheng.protos.Common.phase.Send_Phase
 import com.fengsheng.protos.notifyPhaseToc
+import com.fengsheng.send
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -44,17 +44,15 @@ data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
         sendPhase.inFrontOfWhom.game!!.deck.discard(sendPhase.messageCard)
         if (!sendPhase.isMessageCardFaceUp) {
             val players = sendPhase.whoseTurn.game!!.players
-            for (player in players) {
-                if (player is HumanPlayer) {
-                    player.send(notifyPhaseToc {
-                        currentPlayerId = player.getAlternativeLocation(sendPhase.whoseTurn.location)
-                        currentPhase = Send_Phase
-                        messagePlayerId = player.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
-                        messageCardDir = sendPhase.dir
-                        messageCard = sendPhase.messageCard.toPbCard()
-                        senderId = player.getAlternativeLocation(sendPhase.sender.location)
-                        waitingPlayerId = player.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
-                    })
+            players.send {
+                notifyPhaseToc {
+                    currentPlayerId = it.getAlternativeLocation(sendPhase.whoseTurn.location)
+                    currentPhase = Send_Phase
+                    messagePlayerId = it.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
+                    messageCardDir = sendPhase.dir
+                    messageCard = sendPhase.messageCard.toPbCard()
+                    senderId = it.getAlternativeLocation(sendPhase.sender.location)
+                    waitingPlayerId = it.getAlternativeLocation(sendPhase.inFrontOfWhom.location)
                 }
             }
         }

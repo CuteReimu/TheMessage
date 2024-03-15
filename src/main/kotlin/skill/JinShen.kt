@@ -3,8 +3,9 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_jin_shen_toc
 import com.fengsheng.protos.Role.skill_jin_shen_tos
+import com.fengsheng.protos.skillJinShenToc
+import com.fengsheng.protos.skillJinShenTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -73,13 +74,11 @@ class JinShen : TriggeredSkill {
             r.deleteMessageCard(messageCard.id)
             r.messageCards.add(card)
             r.cards.add(messageCard)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jin_shen_toc.newBuilder()
-                    builder.card = card.toPbCard()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.messageCardId = event.messageCard.id
-                    p.send(builder.build())
+            g.players.send {
+                skillJinShenToc {
+                    this.card = card.toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    messageCardId = event.messageCard.id
                 }
             }
             event.messageCard = card
@@ -92,16 +91,9 @@ class JinShen : TriggeredSkill {
             if (fsm0 !is executeJinShen) return false
             val p = fsm0.event.inFrontOfWhom
             val card = p.cards.find { !it.colors.contains(color.Black) } ?: return false
-            GameExecutor.post(
-                p.game!!,
-                {
-                    val builder = skill_jin_shen_tos.newBuilder()
-                    builder.cardId = card.id
-                    p.game!!.tryContinueResolveProtocol(p, builder.build())
-                },
-                2,
-                TimeUnit.SECONDS
-            )
+            GameExecutor.post(p.game!!, {
+                p.game!!.tryContinueResolveProtocol(p, skillJinShenTos { cardId = card.id })
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

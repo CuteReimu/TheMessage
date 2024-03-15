@@ -35,24 +35,22 @@ class BianZeTong : TriggeredSkill {
     private data class executeBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             logger.info("${r}发动了[变则通]")
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillWaitForBianZeTongToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq = p.seq
-                            this.seq = seq
-                            p.timeout = GameExecutor.post(p.game!!, {
-                                if (p.checkSeq(seq)) {
-                                    p.game!!.tryContinueResolveProtocol(p, skillBianZeTongTos {
-                                        enable = false
-                                        this.seq = seq
-                                    })
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            r.game!!.players.send { p ->
+                skillWaitForBianZeTongToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq = p.seq
+                        this.seq = seq
+                        p.timeout = GameExecutor.post(p.game!!, {
+                            if (p.checkSeq(seq)) {
+                                p.game!!.tryContinueResolveProtocol(p, skillBianZeTongTos {
+                                    enable = false
+                                    this.seq = seq
+                                })
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -88,12 +86,10 @@ class BianZeTong : TriggeredSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in r.game!!.players) {
-                    if (p is HumanPlayer) {
-                        p.send(skillBianZeTongToc {
-                            playerId = p.getAlternativeLocation(r.location)
-                            enable = false
-                        })
+                r.game!!.players.send {
+                    skillBianZeTongToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        enable = false
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -111,14 +107,12 @@ class BianZeTong : TriggeredSkill {
             r.incrSeq()
             logger.info("${r}宣言了${message.cardTypeA}和${message.cardTypeB}")
             r.game!!.players.forEach { it!!.skills += BianZeTong2(message.cardTypeA, message.cardTypeB) }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillBianZeTongToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        enable = true
-                        cardTypeA = message.cardTypeA
-                        cardTypeB = message.cardTypeB
-                    })
+            r.game!!.players.send {
+                skillBianZeTongToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
+                    cardTypeA = message.cardTypeA
+                    cardTypeB = message.cardTypeB
                 }
             }
             return ResolveResult(fsm, true)

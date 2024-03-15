@@ -85,27 +85,25 @@ class JianRen : TriggeredSkill {
                 logger.info("${r}将${card}加入了手牌")
             }
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillJianRenAToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        this.card = card.toPbCard()
-                        if (isBlack && autoChoose != null) {
-                            waitingSecond = Config.WaitSecond
-                            if (p === r) {
-                                val seq2 = p.seq
-                                seq = seq2
-                                p.timeout = GameExecutor.post(g, {
-                                    if (p.checkSeq(seq2))
-                                        p.game!!.tryContinueResolveProtocol(p, skillJianRenBTos {
-                                            targetPlayerId = p.getAlternativeLocation(autoChoose.player.location)
-                                            cardId = autoChoose.card.id
-                                            seq = seq2
-                                        })
-                                }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                            }
+            g.players.send { p ->
+                skillJianRenAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    this.card = card.toPbCard()
+                    if (isBlack && autoChoose != null) {
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq2 = p.seq
+                            seq = seq2
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq2))
+                                    p.game!!.tryContinueResolveProtocol(p, skillJianRenBTos {
+                                        targetPlayerId = p.getAlternativeLocation(autoChoose.player.location)
+                                        cardId = autoChoose.card.id
+                                        seq = seq2
+                                    })
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         }
-                    })
+                    }
                 }
             }
             if (r is RobotPlayer && isBlack && autoChoose != null) {
@@ -163,13 +161,11 @@ class JianRen : TriggeredSkill {
             logger.info("${r}弃掉了${target}面前的$messageCard")
             target.deleteMessageCard(messageCard.id)
             g.deck.discard(messageCard)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillJianRenBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        cardId = messageCard.id
-                    })
+            g.players.send {
+                skillJianRenBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    cardId = messageCard.id
                 }
             }
             return ResolveResult(fsm, true)

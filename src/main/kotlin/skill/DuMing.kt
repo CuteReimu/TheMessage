@@ -46,20 +46,18 @@ class DuMing : TriggeredSkill {
     private data class waitForDuMing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillWaitForDuMingToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq = p.seq
-                            this.seq = seq
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq))
-                                    g.tryContinueResolveProtocol(p, skillDuMingATos { this.seq = seq })
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillWaitForDuMingToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq = p.seq
+                        this.seq = seq
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq))
+                                g.tryContinueResolveProtocol(p, skillDuMingATos { this.seq = seq })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -177,28 +175,26 @@ class DuMing : TriggeredSkill {
             logger.info("${r}发动了赌命，声明了$c")
             r.draw(1)
             val needPutBlack = c !in card.colors && r.cards.any { it.isPureBlack() }
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillDuMingAToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        color = c
-                        if (p === r) card = this@executeDuMing.card.toPbCard()
-                        if (needPutBlack) {
-                            waitingSecond = Config.WaitSecond
-                            if (p === r) {
-                                val seq = p.seq
-                                this.seq = seq
-                                p.timeout = GameExecutor.post(g, {
-                                    if (p.checkSeq(seq)) {
-                                        g.tryContinueResolveProtocol(p, skillDuMingBTos {
-                                            cardId = p.cards.filter { it.isPureBlack() }.random().id
-                                            this.seq = seq
-                                        })
-                                    }
-                                }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                            }
+            g.players.send { p ->
+                skillDuMingAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    color = c
+                    if (p === r) card = this@executeDuMing.card.toPbCard()
+                    if (needPutBlack) {
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) {
+                            val seq = p.seq
+                            this.seq = seq
+                            p.timeout = GameExecutor.post(g, {
+                                if (p.checkSeq(seq)) {
+                                    g.tryContinueResolveProtocol(p, skillDuMingBTos {
+                                        cardId = p.cards.filter { it.isPureBlack() }.random().id
+                                        this.seq = seq
+                                    })
+                                }
+                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                         }
-                    })
+                    }
                 }
             }
             if (!needPutBlack)
@@ -244,12 +240,10 @@ class DuMing : TriggeredSkill {
             logger.info("${r}将${card}置入情报区")
             r.deleteCard(card.id)
             r.messageCards.add(card)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillDuMingBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        this.card = card.toPbCard()
-                    })
+            r.game!!.players.send {
+                skillDuMingBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    this.card = card.toPbCard()
                 }
             }
             r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))

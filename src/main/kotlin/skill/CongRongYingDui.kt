@@ -35,25 +35,23 @@ class CongRongYingDui : TriggeredSkill {
     ) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    player.send(waitForSkillCongRongYingDuiToc {
-                        playerId = player.getAlternativeLocation(r.location)
-                        targetPlayerId = player.getAlternativeLocation(target.location)
-                        waitingSecond = Config.WaitSecond
-                        if (player === r) {
-                            val seq = player.seq
-                            this.seq = seq
-                            player.timeout = GameExecutor.post(r.game!!, {
-                                if (player.checkSeq(seq)) {
-                                    r.game!!.tryContinueResolveProtocol(player, skillCongRongYingDuiTos {
-                                        enable = false
-                                        this.seq = seq
-                                    })
-                                }
-                            }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            r.game!!.players.send { player ->
+                waitForSkillCongRongYingDuiToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    targetPlayerId = player.getAlternativeLocation(target.location)
+                    waitingSecond = Config.WaitSecond
+                    if (player === r) {
+                        val seq = player.seq
+                        this.seq = seq
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            if (player.checkSeq(seq)) {
+                                r.game!!.tryContinueResolveProtocol(player, skillCongRongYingDuiTos {
+                                    enable = false
+                                    this.seq = seq
+                                })
+                            }
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -99,15 +97,13 @@ class CongRongYingDui : TriggeredSkill {
                 logger.info("${r}发动了[从容应对]，选择了双方各摸一张牌")
                 null
             }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillCongRongYingDuiToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        enable = message.enable
-                        drawCard = message.drawCard
-                        if (p === r || p === target) card?.let { this.card = it.toPbCard() }
-                    })
+            r.game!!.players.send { p ->
+                skillCongRongYingDuiToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    enable = message.enable
+                    drawCard = message.drawCard
+                    if (p === r || p === target) card?.let { this.card = it.toPbCard() }
                 }
             }
             if (message.drawCard)

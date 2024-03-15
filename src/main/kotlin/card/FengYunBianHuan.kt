@@ -62,13 +62,11 @@ class FengYunBianHuan : Card {
         }
         g.turn += g.players.size
         logger.info("${r}使用了${this}，翻开了${drawCards.joinToString()}")
-        for (player in r.game!!.players) {
-            if (player is HumanPlayer) {
-                player.send(useFengYunBianHuanToc {
-                    card = toPbCard()
-                    playerId = player.getAlternativeLocation(r.location)
-                    drawCards.forEach { showCards.add(it.toPbCard()) }
-                })
+        r.game!!.players.send {
+            useFengYunBianHuanToc {
+                card = toPbCard()
+                playerId = it.getAlternativeLocation(r.location)
+                drawCards.forEach { showCards.add(it.toPbCard()) }
             }
         }
         val resolveFunc = { _: Boolean ->
@@ -91,34 +89,30 @@ class FengYunBianHuan : Card {
             if (r == null) {
                 p.game!!.deck.discard(drawCards)
                 // 向客户端发送notify_phase_toc，客户端关闭风云变幻的弹窗
-                for (player in p.game!!.players) {
-                    if (player is HumanPlayer) {
-                        player.send(notifyPhaseToc {
-                            currentPlayerId = player.getAlternativeLocation(p.location)
-                            currentPhase = Main_Phase
-                        })
+                p.game!!.players.send {
+                    notifyPhaseToc {
+                        currentPlayerId = it.getAlternativeLocation(p.location)
+                        currentPhase = Main_Phase
                     }
                 }
                 if (asMessageCard) p.game!!.addEvent(AddMessageCardEvent(p, false))
                 val newFsm = OnFinishResolveCard(p, p, null, card.getOriginCard(), Feng_Yun_Bian_Huan, mainPhaseIdle)
                 return ResolveResult(newFsm, true)
             }
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    player.send(waitForFengYunBianHuanChooseCardToc {
-                        playerId = player.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (player === r) {
-                            val seq2 = player.seq
-                            seq = seq2
-                            player.timeout = GameExecutor.post(r.game!!, {
-                                if (player.checkSeq(seq2)) {
-                                    player.incrSeq()
-                                    autoChooseCard()
-                                }
-                            }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            r.game!!.players.send { player ->
+                waitForFengYunBianHuanChooseCardToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (player === r) {
+                        val seq2 = player.seq
+                        seq = seq2
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            if (player.checkSeq(seq2)) {
+                                player.incrSeq()
+                                autoChooseCard()
+                            }
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -162,13 +156,11 @@ class FengYunBianHuan : Card {
                 logger.info("${player}把${chooseCard}加入手牌")
                 player.cards.add(chooseCard)
             }
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(fengYunBianHuanChooseCardToc {
-                        playerId = p.getAlternativeLocation(player.location)
-                        cardId = message.cardId
-                        asMessageCard = message.asMessageCard
-                    })
+            player.game!!.players.send {
+                fengYunBianHuanChooseCardToc {
+                    playerId = it.getAlternativeLocation(player.location)
+                    cardId = message.cardId
+                    asMessageCard = message.asMessageCard
                 }
             }
             if (!asMessageCard && message.asMessageCard)

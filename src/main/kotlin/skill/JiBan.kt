@@ -7,6 +7,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.skill_ji_ban_a_tos
 import com.fengsheng.protos.Role.skill_ji_ban_b_tos
 import com.fengsheng.protos.skillJiBanAToc
+import com.fengsheng.protos.skillJiBanATos
 import com.fengsheng.protos.skillJiBanBToc
 import com.fengsheng.protos.skillJiBanBTos
 import com.google.protobuf.GeneratedMessage
@@ -48,19 +49,17 @@ class JiBan : MainPhaseSkill() {
             val g = r.game!!
             logger.info("${r}发动了[羁绊]")
             r.draw(2)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillJiBanAToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq2 = p.seq
-                            seq = seq2
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq2)) autoSelect(seq2)
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillJiBanAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq2 = p.seq
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2)) autoSelect(seq2)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) GameExecutor.post(g, { autoSelect(0) }, 1, TimeUnit.SECONDS)
@@ -118,16 +117,14 @@ class JiBan : MainPhaseSkill() {
             logger.info("${r}将${cards.joinToString()}交给$target")
             r.cards.removeAll(cards.toSet())
             target.cards.addAll(cards)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillJiBanBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        if (p === r || p === target)
-                            cards.forEach { this.cards.add(it.toPbCard()) }
-                        else
-                            unknownCardCount = cards.size
-                    })
+            g.players.send { p ->
+                skillJiBanBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target)
+                        cards.forEach { this.cards.add(it.toPbCard()) }
+                    else
+                        unknownCardCount = cards.size
                 }
             }
             g.addEvent(GiveCardEvent(r, r, target))
@@ -158,7 +155,7 @@ class JiBan : MainPhaseSkill() {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.whoseTurn.getSkillUseCount(SkillId.JI_BAN) > 0) return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skill_ji_ban_a_tos.getDefaultInstance())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillJiBanATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

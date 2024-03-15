@@ -3,8 +3,9 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_qi_huo_ke_ju_toc
 import com.fengsheng.protos.Role.skill_qi_huo_ke_ju_tos
+import com.fengsheng.protos.skillQiHuoKeJuToc
+import com.fengsheng.protos.skillQiHuoKeJuTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -69,12 +70,10 @@ class QiHuoKeJu : TriggeredSkill {
             logger.info("${r}发动了[奇货可居]")
             r.deleteMessageCard(card.id)
             r.cards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_qi_huo_ke_ju_toc.newBuilder()
-                    builder.cardId = card.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillQiHuoKeJuToc {
+                    cardId = card.id
+                    playerId = it.getAlternativeLocation(r.location)
                 }
             }
             return ResolveResult(fsm, true)
@@ -87,9 +86,7 @@ class QiHuoKeJu : TriggeredSkill {
             val p = fsm0.event.inFrontOfWhom
             val card = p.messageCards.find { it.colors.contains(color.Black) } ?: return false
             GameExecutor.post(p.game!!, {
-                val builder = skill_qi_huo_ke_ju_tos.newBuilder()
-                builder.cardId = card.id
-                p.game!!.tryContinueResolveProtocol(p, builder.build())
+                p.game!!.tryContinueResolveProtocol(p, skillQiHuoKeJuTos { cardId = card.id })
             }, 3, TimeUnit.SECONDS)
             return true
         }

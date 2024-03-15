@@ -2,8 +2,9 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_toc
 import com.fengsheng.protos.Role.skill_zuo_you_feng_yuan_tos
+import com.fengsheng.protos.skillZuoYouFengYuanToc
+import com.fengsheng.protos.skillZuoYouFengYuanTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -58,12 +59,10 @@ class ZuoYouFengYuan : ActiveSkill {
         r.incrSeq()
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}对${targets.joinToString()}发动了[左右逢源]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_zuo_you_feng_yuan_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.addAllTargetPlayerIds(pb.targetPlayerIdsList)
-                p.send(builder.build())
+        g.players.send {
+            skillZuoYouFengYuanToc {
+                playerId = it.getAlternativeLocation(r.location)
+                targetPlayerIds.addAll(pb.targetPlayerIdsList)
             }
         }
         targets.forEach {
@@ -99,10 +98,10 @@ class ZuoYouFengYuan : ActiveSkill {
                 players.shuffle()
             }
             GameExecutor.post(r.game!!, {
-                val builder = skill_zuo_you_feng_yuan_tos.newBuilder()
-                builder.addTargetPlayerIds(r.getAlternativeLocation(players[0]!!.location))
-                builder.addTargetPlayerIds(r.getAlternativeLocation(players[1]!!.location))
-                skill.executeProtocol(r.game!!, r, builder.build())
+                skill.executeProtocol(r.game!!, r, skillZuoYouFengYuanTos {
+                    targetPlayerIds.add(r.getAlternativeLocation(players[0]!!.location))
+                    targetPlayerIds.add(r.getAlternativeLocation(players[1]!!.location))
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

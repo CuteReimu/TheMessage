@@ -23,13 +23,11 @@ class HanHouLaoShi : TriggeredSkill {
         logger.info("${askWhom}发动了[憨厚老实]，被${target}抽取了一张${card}")
         askWhom.deleteCard(card.id)
         target.cards.add(card)
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                p.send(skillHanHouLaoShiToc {
-                    playerId = p.getAlternativeLocation(askWhom.location)
-                    targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (askWhom === p || target === p) this.card = card.toPbCard()
-                })
+        g.players.send {
+            skillHanHouLaoShiToc {
+                playerId = it.getAlternativeLocation(askWhom.location)
+                targetPlayerId = it.getAlternativeLocation(target.location)
+                if (askWhom === it || target === it) this.card = card.toPbCard()
             }
         }
         return null

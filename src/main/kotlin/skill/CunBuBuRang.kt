@@ -101,14 +101,12 @@ class CunBuBuRang : TriggeredSkill {
             logger.info("${r}对${target}发动了[寸步不让]，抽取了$card")
             target.deleteCard(card.id)
             r.cards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillCunBuBuRangToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        enable = true
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        if (p === r || p === target) this.card = card.toPbCard()
-                    })
+            g.players.send {
+                skillCunBuBuRangToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    if (it === r || it === target) this.card = card.toPbCard()
                 }
             }
             g.addEvent(GiveCardEvent(whoseTurn, target, r))

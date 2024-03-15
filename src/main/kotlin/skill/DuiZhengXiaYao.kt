@@ -50,24 +50,22 @@ class DuiZhengXiaYao : ActiveSkill {
     private data class executeDuiZhengXiaYaoA(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillDuiZhengXiaYaoAToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq2 = p.seq
-                            seq = seq2
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq2)) {
-                                    g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos {
-                                        enable = false
-                                        seq = seq2
-                                    })
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillDuiZhengXiaYaoAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq2 = p.seq
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2)) {
+                                g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos {
+                                    enable = false
+                                    seq = seq2
+                                })
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -89,7 +87,7 @@ class DuiZhengXiaYao : ActiveSkill {
                             return@post
                         }
                     }
-                    g.tryContinueResolveProtocol(r, skill_dui_zheng_xia_yao_b_tos.getDefaultInstance())
+                    g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos { })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -163,26 +161,24 @@ class DuiZhengXiaYao : ActiveSkill {
         override fun resolve(): ResolveResult? {
             logger.info("${r}展示了${cards.joinToString()}")
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillDuiZhengXiaYaoBToc {
-                        this@executeDuiZhengXiaYaoB.cards.forEach { cards.add(it.toPbCard()) }
-                        playerId = p.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq2 = p.seq
-                            seq = seq2
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq2)) {
-                                    g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoCTos {
-                                        targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)
-                                        messageCardId = defaultSelection.card.id
-                                        seq = seq2
-                                    })
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillDuiZhengXiaYaoBToc {
+                    this@executeDuiZhengXiaYaoB.cards.forEach { cards.add(it.toPbCard()) }
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq2 = p.seq
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2)) {
+                                g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoCTos {
+                                    targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)
+                                    messageCardId = defaultSelection.card.id
+                                    seq = seq2
+                                })
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -245,13 +241,11 @@ class DuiZhengXiaYao : ActiveSkill {
             r.incrSeq()
             logger.info("${r}弃掉了${target}面前的${card}")
             g.deck.discard(target.deleteMessageCard(card.id)!!)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillDuiZhengXiaYaoCToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        messageCardId = card.id
-                    })
+            g.players.send {
+                skillDuiZhengXiaYaoCToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    messageCardId = card.id
                 }
             }
             return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
@@ -283,7 +277,7 @@ class DuiZhengXiaYao : ActiveSkill {
             !player.roleFaceUp || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_dui_zheng_xia_yao_a_tos.getDefaultInstance())
+                skill.executeProtocol(player.game!!, player, skillDuiZhengXiaYaoATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

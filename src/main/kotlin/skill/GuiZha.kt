@@ -61,13 +61,11 @@ class GuiZha : MainPhaseSkill() {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}对${target}发动了[诡诈]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                p.send(skillGuiZhaToc {
-                    playerId = p.getAlternativeLocation(r.location)
-                    targetPlayerId = p.getAlternativeLocation(target.location)
-                    cardType = pb.cardType
-                })
+        g.players.send {
+            skillGuiZhaToc {
+                playerId = it.getAlternativeLocation(r.location)
+                targetPlayerId = it.getAlternativeLocation(target.location)
+                cardType = pb.cardType
             }
         }
         if (pb.cardType == Wei_Bi) WeiBi.execute(null, g, r, target, pb.wantType)

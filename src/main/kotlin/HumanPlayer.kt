@@ -437,13 +437,11 @@ class HumanPlayer(
      * 把自己的托管、掉线状态广播给所有玩家
      */
     fun notifyPlayerUpdateStatus() {
-        for (p in game!!.players) {
-            if (p is HumanPlayer) {
-                p.send(notifyPlayerUpdateToc {
-                    playerId = p.getAlternativeLocation(location)
-                    isAuto = autoPlay
-                    isOffline = !isActive
-                })
+        game!!.players.send {
+            notifyPlayerUpdateToc {
+                playerId = it.getAlternativeLocation(location)
+                isAuto = autoPlay
+                isOffline = !isActive
             }
         }
     }

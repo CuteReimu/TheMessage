@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
-import com.fengsheng.protos.Role.skill_zhi_yin_toc
+import com.fengsheng.protos.skillZhiYinToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -22,13 +22,7 @@ class ZhiYin : TriggeredSkill {
             Red in colors || Blue in colors
         } ?: return null
         logger.info("${event.inFrontOfWhom}发动了[知音]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_zhi_yin_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(event.inFrontOfWhom.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillZhiYinToc { playerId = it.getAlternativeLocation(event.inFrontOfWhom.location) } }
         if (event.inFrontOfWhom === event.sender) {
             event.inFrontOfWhom.draw(2)
         } else {

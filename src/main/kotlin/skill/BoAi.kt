@@ -6,6 +6,7 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.skill_bo_ai_a_tos
 import com.fengsheng.protos.Role.skill_bo_ai_b_tos
 import com.fengsheng.protos.skillBoAiAToc
+import com.fengsheng.protos.skillBoAiATos
 import com.fengsheng.protos.skillBoAiBToc
 import com.fengsheng.protos.skillBoAiBTos
 import com.google.protobuf.GeneratedMessage
@@ -46,20 +47,18 @@ class BoAi : MainPhaseSkill() {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[博爱]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillBoAiAToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq2 = p.seq
-                            seq = seq2
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq2))
-                                    r.game!!.tryContinueResolveProtocol(r, skillBoAiBTos { seq = seq2 })
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillBoAiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq2 = p.seq
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2))
+                                r.game!!.tryContinueResolveProtocol(r, skillBoAiBTos { seq = seq2 })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             r.draw(1)
@@ -98,12 +97,10 @@ class BoAi : MainPhaseSkill() {
             }
             if (message.cardId == 0) {
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        p.send(skillBoAiBToc {
-                            playerId = p.getAlternativeLocation(r.location)
-                            enable = false
-                        })
+                g.players.send {
+                    skillBoAiBToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        enable = false
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -134,14 +131,12 @@ class BoAi : MainPhaseSkill() {
             logger.info("${r}将${card}交给$target")
             r.deleteCard(card.id)
             target.cards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillBoAiBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        enable = true
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        if (p === r || p === target) this.card = card.toPbCard()
-                    })
+            g.players.send {
+                skillBoAiBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    if (it === r || it === target) this.card = card.toPbCard()
                 }
             }
             if (target.isFemale) r.draw(1)
@@ -154,9 +149,7 @@ class BoAi : MainPhaseSkill() {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             e.whoseTurn.getSkillUseCount(SkillId.BO_AI) == 0 || return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                skill.executeProtocol(
-                    e.whoseTurn.game!!, e.whoseTurn, skill_bo_ai_a_tos.getDefaultInstance()
-                )
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillBoAiATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

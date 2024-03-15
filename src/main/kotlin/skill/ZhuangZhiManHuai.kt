@@ -5,8 +5,9 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_zhuang_zhi_man_huai_toc
 import com.fengsheng.protos.Role.skill_zhuang_zhi_man_huai_tos
+import com.fengsheng.protos.skillZhuangZhiManHuaiToc
+import com.fengsheng.protos.skillZhuangZhiManHuaiTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -80,13 +81,11 @@ class ZhuangZhiManHuai : TriggeredSkill {
                 }
             }
             r.incrSeq()
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_zhuang_zhi_man_huai_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    card?.let { builder.card = it.toPbCard() }
-                    target?.let { builder.targetPlayerId = p.getAlternativeLocation(it.location) }
-                    p.send(builder.build())
+            r.game!!.players.send { p ->
+                skillZhuangZhiManHuaiToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    card?.let { this.card = it.toPbCard() }
+                    target?.let { targetPlayerId = p.getAlternativeLocation(it.location) }
                 }
             }
             if (card == null) {
@@ -124,9 +123,7 @@ class ZhuangZhiManHuai : TriggeredSkill {
                 }
             }
             GameExecutor.post(p.game!!, {
-                val builder = skill_zhuang_zhi_man_huai_tos.newBuilder()
-                card?.let { builder.cardId = it.id }
-                p.game!!.tryContinueResolveProtocol(p, builder.build())
+                p.game!!.tryContinueResolveProtocol(p, skillZhuangZhiManHuaiTos { card?.let { cardId = it.id } })
             }, 3, TimeUnit.SECONDS)
             return true
         }

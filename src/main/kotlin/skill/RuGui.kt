@@ -2,8 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_ru_gui_tos
 import com.fengsheng.protos.skillRuGuiToc
+import com.fengsheng.protos.skillRuGuiTos
+import com.fengsheng.protos.skillWaitForRuGuiToc
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -28,24 +30,18 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
 
     private data class executeRuGui(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_ru_gui_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                skillWaitForRuGuiToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq = player.seq
-                        builder.seq = seq
+                        this.seq = seq
                         player.timeout = GameExecutor.post(r.game!!, {
-                            if (r.checkSeq(seq)) {
-                                val builder2 = skill_ru_gui_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            if (r.checkSeq(seq))
+                                r.game!!.tryContinueResolveProtocol(r, skillRuGuiTos { this.seq = seq })
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -58,21 +54,14 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
                         card = c
                     }
                 }
-                GameExecutor.post(
-                    r.game!!,
-                    {
-                        val builder = skill_ru_gui_tos.newBuilder()
-                        if (card != null) {
-                            builder.enable = true
-                            builder.cardId = card.id
-                        } else {
-                            builder.enable = false
+                GameExecutor.post(r.game!!, {
+                    r.game!!.tryContinueResolveProtocol(r, skillRuGuiTos {
+                        card?.let {
+                            enable = true
+                            cardId = it.id
                         }
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
-                    },
-                    2,
-                    TimeUnit.SECONDS
-                )
+                    })
+                }, 2, TimeUnit.SECONDS)
             }
             return null
         }
@@ -116,13 +105,11 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
             r.deleteMessageCard(card.id)
             target.messageCards.add(card)
             logger.info("${r}面前的${card}移到了${target}面前")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_ru_gui_toc.newBuilder()
-                    builder.enable = true
-                    builder.cardId = card.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillRuGuiToc {
+                    enable = true
+                    cardId = card.id
+                    playerId = it.getAlternativeLocation(r.location)
                 }
             }
             g.addEvent(AddMessageCardEvent(event.whoseTurn))

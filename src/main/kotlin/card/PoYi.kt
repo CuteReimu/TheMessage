@@ -57,25 +57,23 @@ class PoYi : Card {
     private data class executePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = sendPhase.inFrontOfWhom
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    player.send(usePoYiToc {
-                        card = this@executePoYi.card.toPbCard()
-                        playerId = player.getAlternativeLocation(r.location)
-                        if (!sendPhase.isMessageCardFaceUp) waitingSecond = Config.WaitSecond
-                        if (player === r) {
-                            val seq2 = player.seq
-                            messageCard = sendPhase.messageCard.toPbCard()
-                            seq = seq2
-                            val waitingSecond =
-                                if (this.waitingSecond == 0) 0
-                                else player.getWaitSeconds(this.waitingSecond + 2)
-                            player.timeout = GameExecutor.post(r.game!!, {
-                                if (player.checkSeq(seq2))
-                                    r.game!!.tryContinueResolveProtocol(r, po_yi_show_tos.getDefaultInstance())
-                            }, waitingSecond.toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            r.game!!.players.send { player ->
+                usePoYiToc {
+                    card = this@executePoYi.card.toPbCard()
+                    playerId = player.getAlternativeLocation(r.location)
+                    if (!sendPhase.isMessageCardFaceUp) waitingSecond = Config.WaitSecond
+                    if (player === r) {
+                        val seq2 = player.seq
+                        messageCard = sendPhase.messageCard.toPbCard()
+                        seq = seq2
+                        val waitingSecond =
+                            if (this.waitingSecond == 0) 0
+                            else player.getWaitSeconds(this.waitingSecond + 2)
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            if (player.checkSeq(seq2))
+                                r.game!!.tryContinueResolveProtocol(r, poYiShowTos { })
+                        }, waitingSecond.toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -117,13 +115,11 @@ class PoYi : Card {
                 logger.info("${sendPhase.messageCard}被翻开了")
                 r.draw(1)
             }
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    player.send(poYiShowToc {
-                        playerId = player.getAlternativeLocation(r.location)
-                        this.show = show
-                        if (show) messageCard = sendPhase.messageCard.toPbCard()
-                    })
+            r.game!!.players.send {
+                poYiShowToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    this.show = show
+                    if (show) messageCard = sendPhase.messageCard.toPbCard()
                 }
             }
         }

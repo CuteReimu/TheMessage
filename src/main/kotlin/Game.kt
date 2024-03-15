@@ -241,12 +241,10 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         player.cards.removeAll(cards.toSet())
         logger.info("${player}弃掉了${cards.joinToString()}，剩余手牌${player.cards.size}张")
         deck.discard(cards)
-        for (p in players) {
-            if (p is HumanPlayer) {
-                p.send(discardCardToc {
-                    playerId = p.getAlternativeLocation(player.location)
-                    cards.forEach { this.cards.add(it.toPbCard()) }
-                })
+        players.send {
+            discardCardToc {
+                playerId = it.getAlternativeLocation(player.location)
+                cards.forEach { this.cards.add(it.toPbCard()) }
             }
         }
     }
@@ -262,12 +260,10 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             else logger.info("${player}将角色翻至背面朝上")
             player.roleFaceUp = false
         }
-        for (p in players) {
-            if (p is HumanPlayer) {
-                p.send(notifyRoleUpdateToc {
-                    playerId = p.getAlternativeLocation(player.location)
-                    role = if (player.roleFaceUp) player.role else unknown
-                })
+        players.send {
+            notifyRoleUpdateToc {
+                playerId = it.getAlternativeLocation(player.location)
+                role = if (player.roleFaceUp) player.role else unknown
             }
         }
     }

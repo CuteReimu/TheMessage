@@ -7,7 +7,12 @@ import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_tao_qu_a_tos
+import com.fengsheng.protos.Role.skill_tao_qu_b_tos
+import com.fengsheng.protos.skillTaoQuAToc
+import com.fengsheng.protos.skillTaoQuATos
+import com.fengsheng.protos.skillTaoQuBToc
+import com.fengsheng.protos.skillTaoQuBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -89,16 +94,15 @@ class TaoQu : MainPhaseSkill() {
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tao_qu_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.addAllColors(colors)
-                    cards.forEach { builder.addCards(it.toPbCard()) }
-                    builder.waitingSecond = Config.WaitSecond
+            g.players.send { p ->
+                skillTaoQuAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    colors.addAll(this@executeTaoQu.colors)
+                    this@executeTaoQu.cards.forEach { cards.add(it.toPbCard()) }
+                    waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
-                        builder.seq = seq
+                        this.seq = seq
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
                                 val playerAndCard = g.players.flatMap {
@@ -108,15 +112,14 @@ class TaoQu : MainPhaseSkill() {
                                         else PlayerAndCard(it, card)
                                     }
                                 }.random()
-                                val builder2 = skill_tao_qu_b_tos.newBuilder()
-                                builder2.targetPlayerId = p.getAlternativeLocation(playerAndCard.player.location)
-                                builder2.cardId = playerAndCard.card.id
-                                builder2.seq = seq
-                                g.tryContinueResolveProtocol(r, builder2.build())
+                                g.tryContinueResolveProtocol(r, skillTaoQuBTos {
+                                    targetPlayerId = p.getAlternativeLocation(playerAndCard.player.location)
+                                    cardId = playerAndCard.card.id
+                                    this.seq = seq
+                                })
                             }
-                        }, p.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    p.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -128,10 +131,10 @@ class TaoQu : MainPhaseSkill() {
                             else PlayerAndCard(it, card)
                         }
                     }.minBy { RobotPlayer.cardOrder[it.card.type]!! }
-                    val builder2 = skill_tao_qu_b_tos.newBuilder()
-                    builder2.targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
-                    builder2.cardId = playerAndCard.card.id
-                    g.tryContinueResolveProtocol(r, builder2.build())
+                    g.tryContinueResolveProtocol(r, skillTaoQuBTos {
+                        targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
+                        cardId = playerAndCard.card.id
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -185,13 +188,11 @@ class TaoQu : MainPhaseSkill() {
             logger.info("${player}将${target}面前的${card}加入了手牌")
             target.deleteMessageCard(card.id)
             player.cards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_tao_qu_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(player.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.cardId = card.id
-                    p.send(builder.build())
+            g.players.send {
+                skillTaoQuBToc {
+                    playerId = it.getAlternativeLocation(player.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    cardId = card.id
                 }
             }
             target.draw(1)
@@ -211,9 +212,7 @@ class TaoQu : MainPhaseSkill() {
             }.randomOrNull() ?: return false
             val cardIds = player.cards.filter { color in it.colors }.shuffled().take(2).map { it.id }
             GameExecutor.post(player.game!!, {
-                val builder = skill_tao_qu_a_tos.newBuilder()
-                builder.addAllCardIds(cardIds)
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillTaoQuATos { this.cardIds.addAll(cardIds) })
             }, 3, TimeUnit.SECONDS)
             return true
         }

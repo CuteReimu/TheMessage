@@ -5,8 +5,9 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_mian_li_cang_zhen_toc
 import com.fengsheng.protos.Role.skill_mian_li_cang_zhen_tos
+import com.fengsheng.protos.skillMianLiCangZhenToc
+import com.fengsheng.protos.skillMianLiCangZhenTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -81,13 +82,11 @@ class MianLiCangZhen : TriggeredSkill {
             logger.info("${r}发动了[绵里藏针]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_mian_li_cang_zhen_toc.newBuilder()
-                    builder.card = card.toPbCard()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillMianLiCangZhenToc {
+                    this.card = card.toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             r.draw(1)
@@ -113,16 +112,9 @@ class MianLiCangZhen : TriggeredSkill {
                 }
             }
             card ?: return false
-            GameExecutor.post(
-                p.game!!,
-                {
-                    val builder = skill_mian_li_cang_zhen_tos.newBuilder()
-                    builder.cardId = card.id
-                    p.game!!.tryContinueResolveProtocol(p, builder.build())
-                },
-                2,
-                TimeUnit.SECONDS
-            )
+            GameExecutor.post(p.game!!, {
+                p.game!!.tryContinueResolveProtocol(p, skillMianLiCangZhenTos { cardId = card.id })
+            }, 2, TimeUnit.SECONDS)
             return true
         }
     }

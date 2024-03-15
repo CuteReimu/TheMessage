@@ -2,7 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_zhuan_jiao_tos
+import com.fengsheng.protos.skillWaitForZhuanJiaoToc
+import com.fengsheng.protos.skillZhuanJiaoToc
+import com.fengsheng.protos.skillZhuanJiaoTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -27,24 +30,18 @@ class ZhuanJiao : TriggeredSkill {
 
     private data class executeZhuanJiao(val fsm: Fsm, val whoseTurn: Player, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_zhuan_jiao_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                skillWaitForZhuanJiaoToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq2 = player.seq
-                        builder.seq = seq2
+                        seq = seq2
                         player.timeout = GameExecutor.post(r.game!!, {
-                            if (r.checkSeq(seq2)) {
-                                val builder2 = skill_zhuan_jiao_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            }
-                        }, player.getWaitSeconds(builder.waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                            if (r.checkSeq(seq2))
+                                r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos { seq = seq2 })
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -62,25 +59,18 @@ class ZhuanJiao : TriggeredSkill {
                     if (players.isNotEmpty()) {
                         val target = players[Random.nextInt(players.size)]!!
                         GameExecutor.post(r.game!!, {
-                            val builder = skill_zhuan_jiao_tos.newBuilder()
-                            builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                            builder.enable = true
-                            builder.cardId = messageCard.id
-                            r.game!!.tryContinueResolveProtocol(r, builder.build())
+                            r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {
+                                targetPlayerId = r.getAlternativeLocation(target.location)
+                                enable = true
+                                cardId = messageCard.id
+                            })
                         }, 3, TimeUnit.SECONDS)
                         return null
                     }
                 }
-                GameExecutor.post(
-                    r.game!!,
-                    {
-                        val builder = skill_zhuan_jiao_tos.newBuilder()
-                        builder.enable = false
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
-                    },
-                    1,
-                    TimeUnit.SECONDS
-                )
+                GameExecutor.post(r.game!!, {
+                    r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {})
+                }, 1, TimeUnit.SECONDS)
             }
             return null
         }
@@ -143,13 +133,11 @@ class ZhuanJiao : TriggeredSkill {
             r.deleteMessageCard(card.id)
             target.messageCards.add(card)
             logger.info("${r}面前的${card}移到了${target}面前")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_zhuan_jiao_toc.newBuilder()
-                    builder.cardId = card.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillZhuanJiaoToc {
+                    cardId = card.id
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             r.draw(2)

@@ -5,8 +5,9 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.skill_yi_ya_huan_ya_toc
 import com.fengsheng.protos.Role.skill_yi_ya_huan_ya_tos
+import com.fengsheng.protos.skillYiYaHuanYaToc
+import com.fengsheng.protos.skillYiYaHuanYaTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -93,13 +94,11 @@ class YiYaHuanYa : TriggeredSkill {
             logger.info("${r}发动了[以牙还牙]，将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yi_ya_huan_ya_toc.newBuilder()
-                    builder.card = card.toPbCard()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillYiYaHuanYaToc {
+                    this.card = card.toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             r.draw(1)
@@ -127,10 +126,10 @@ class YiYaHuanYa : TriggeredSkill {
             }
             playerAndCard ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_yi_ya_huan_ya_tos.newBuilder()
-                builder.cardId = playerAndCard.card.id
-                builder.targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
-                player.game!!.tryContinueResolveProtocol(player, builder.build())
+                player.game!!.tryContinueResolveProtocol(player, skillYiYaHuanYaTos {
+                    cardId = playerAndCard.card.id
+                    targetPlayerId = player.getAlternativeLocation(playerAndCard.player.location)
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

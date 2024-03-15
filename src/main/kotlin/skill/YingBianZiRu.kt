@@ -6,7 +6,11 @@ import com.fengsheng.card.WuDao
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_ying_bian_zi_ru_a_tos
+import com.fengsheng.protos.Role.skill_ying_bian_zi_ru_b_tos
+import com.fengsheng.protos.skillYingBianZiRuAToc
+import com.fengsheng.protos.skillYingBianZiRuATos
+import com.fengsheng.protos.skillYingBianZiRuBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -52,16 +56,14 @@ class YingBianZiRu : ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         val timeout = Config.WaitSecond
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_ying_bian_zi_ru_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.card = fsm.messageCard.toPbCard()
+        g.players.send { p ->
+            skillYingBianZiRuAToc {
+                playerId = p.getAlternativeLocation(r.location)
+                card = fsm.messageCard.toPbCard()
                 if (fsm.messageCard.isPureBlack()) {
-                    builder.waitingSecond = timeout
-                    if (p === r) builder.seq = p.seq
+                    waitingSecond = timeout
+                    if (p === r) seq = p.seq
                 }
-                p.send(builder.build())
             }
         }
         g.fsm = fsm.copy(isMessageCardFaceUp = true)
@@ -96,10 +98,10 @@ class YingBianZiRu : ActiveSkill {
                             fsm.inFrontOfWhom.getNextLeftAlivePlayer(),
                             fsm.inFrontOfWhom.getNextRightAlivePlayer()
                         ).random()
-                        val builder = skill_ying_bian_zi_ru_b_tos.newBuilder()
-                        builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                        builder.seq = seq
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillYingBianZiRuBTos {
+                            targetPlayerId = r.getAlternativeLocation(target.location)
+                            this.seq = seq
+                        })
                     }
                 }, r.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -109,9 +111,9 @@ class YingBianZiRu : ActiveSkill {
                     val leftValue = r.calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard)
                     val rightValue = r.calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard)
                     val target = if (leftValue > rightValue) left else right
-                    val builder = skill_ying_bian_zi_ru_b_tos.newBuilder()
-                    builder.targetPlayerId = r.getAlternativeLocation(target.location)
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillYingBianZiRuBTos {
+                        targetPlayerId = r.getAlternativeLocation(target.location)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -170,7 +172,7 @@ class YingBianZiRu : ActiveSkill {
                         && !willWin(e.whoseTurn, this, e.messageCard)
             } || return false
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skill_ying_bian_zi_ru_a_tos.getDefaultInstance())
+                skill.executeProtocol(player.game!!, player, skillYingBianZiRuATos { })
             }, 3, TimeUnit.SECONDS)
             return true
         }

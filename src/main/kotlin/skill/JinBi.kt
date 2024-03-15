@@ -66,21 +66,19 @@ class JinBi : MainPhaseSkill() {
                 doExecuteJinBi()
                 return ResolveResult(fsm, true)
             }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillJinBiAToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === target) {
-                            val seq = p.seq
-                            this.seq = seq
-                            p.timeout = GameExecutor.post(p.game!!, {
-                                if (p.checkSeq(seq))
-                                    p.game!!.tryContinueResolveProtocol(p, skillJinBiBTos { this.seq = seq })
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            r.game!!.players.send { p ->
+                skillJinBiAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === target) {
+                        val seq = p.seq
+                        this.seq = seq
+                        p.timeout = GameExecutor.post(p.game!!, {
+                            if (p.checkSeq(seq))
+                                p.game!!.tryContinueResolveProtocol(p, skillJinBiBTos { this.seq = seq })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (target is RobotPlayer)
@@ -148,12 +146,10 @@ class JinBi : MainPhaseSkill() {
             val g = r.game!!
             InvalidSkill.deal(target)
             target.skills += CannotPlayCard(forbidAllCard = true)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillJinBiBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                    })
+            g.players.send {
+                skillJinBiBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
         }

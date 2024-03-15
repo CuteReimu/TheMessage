@@ -3,7 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.card_type.Jie_Huo
-import com.fengsheng.protos.Role.skill_shun_shi_er_wei_toc
+import com.fengsheng.protos.skillShunShiErWeiToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -35,13 +35,7 @@ class ShunShiErWei : TriggeredSkill {
                 askWhom.alive
             } ?: return null
             logger.info("${askWhom}发动了[顺势而为]")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_shun_shi_er_wei_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(askWhom.location)
-                    p.send(builder.build())
-                }
-            }
+            g.players.send { skillShunShiErWeiToc { playerId = it.getAlternativeLocation(askWhom.location) } }
             askWhom.draw(1)
             g.playerSetRoleFaceUp(askWhom, false)
             askWhom.skills = askWhom.skills.filterNot { it === this }

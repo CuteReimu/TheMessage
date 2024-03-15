@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.protos.Role.skill_shi_si_toc
+import com.fengsheng.protos.skillShiSiToc
 import org.apache.logging.log4j.kotlin.logger
 
 /**
@@ -19,13 +19,7 @@ class ShiSi : TriggeredSkill {
             event.messageCard.isBlack()
         } ?: return null
         logger.info("${event.inFrontOfWhom}发动了[视死]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_shi_si_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(event.inFrontOfWhom.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillShiSiToc { playerId = it.getAlternativeLocation(event.inFrontOfWhom.location) } }
         event.inFrontOfWhom.draw(2)
         return null
     }

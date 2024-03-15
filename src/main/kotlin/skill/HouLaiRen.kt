@@ -8,6 +8,7 @@ import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Role.skill_hou_lai_ren_a_tos
 import com.fengsheng.protos.Role.skill_hou_lai_ren_b_tos
 import com.fengsheng.protos.skillHouLaiRenAToc
+import com.fengsheng.protos.skillHouLaiRenATos
 import com.fengsheng.protos.skillHouLaiRenBToc
 import com.fengsheng.protos.skillHouLaiRenBTos
 import com.google.protobuf.GeneratedMessage
@@ -74,26 +75,24 @@ class HouLaiRen : ActiveSkill {
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillHouLaiRenAToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        remainCardId = this@executeHouLaiRen.remainCardId
-                        waitingSecond = Config.WaitSecond * 2
-                        if (p === r) {
-                            this@executeHouLaiRen.roles.forEach { roles.add(it.role) }
-                            val seq2 = p.seq
-                            seq = seq2
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq2)) {
-                                    g.tryContinueResolveProtocol(r, skillHouLaiRenBTos {
-                                        role = this@executeHouLaiRen.roles.first().role
-                                        seq = seq2
-                                    })
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillHouLaiRenAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    remainCardId = this@executeHouLaiRen.remainCardId
+                    waitingSecond = Config.WaitSecond * 2
+                    if (p === r) {
+                        this@executeHouLaiRen.roles.forEach { roles.add(it.role) }
+                        val seq2 = p.seq
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2)) {
+                                g.tryContinueResolveProtocol(r, skillHouLaiRenBTos {
+                                    role = this@executeHouLaiRen.roles.first().role
+                                    seq = seq2
+                                })
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -130,12 +129,10 @@ class HouLaiRen : ActiveSkill {
             r.incrSeq()
             logger.info("${r}变成了${roleSkillsData.name}")
             r.roleSkillsData = roleSkillsData
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillHouLaiRenBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        role = if (r.roleFaceUp || p === r) r.role else unknown
-                    })
+            g.players.send {
+                skillHouLaiRenBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    role = if (r.roleFaceUp || it === r) r.role else unknown
                 }
             }
             return ResolveResult(UseChengQingOnDying(fsm), true)
@@ -149,9 +146,7 @@ class HouLaiRen : ActiveSkill {
             if (player.roleFaceUp) return false
             val card = player.messageCards.filter { !it.isPureBlack() }.randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
-                val builder = skill_hou_lai_ren_a_tos.newBuilder()
-                builder.remainCardId = card.id
-                skill.executeProtocol(player.game!!, player, builder.build())
+                skill.executeProtocol(player.game!!, player, skillHouLaiRenATos { remainCardId = card.id })
             }, 1, TimeUnit.SECONDS)
             return true
         }

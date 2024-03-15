@@ -6,6 +6,7 @@ import com.fengsheng.phase.NextTurn
 import com.fengsheng.phase.OnReceiveCard
 import com.fengsheng.protos.Role.skill_ding_lun_tos
 import com.fengsheng.protos.skillDingLunToc
+import com.fengsheng.protos.skillDingLunTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -49,13 +50,11 @@ class DingLun : ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[定论]")
         val joinIntoHand = r.checkThreeSameMessageCard(fsm.messageCard)
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                p.send(skillDingLunToc {
-                    playerId = p.getAlternativeLocation(r.location)
-                    card = fsm.messageCard.toPbCard()
-                    this.joinIntoHand = joinIntoHand
-                })
+        g.players.send {
+            skillDingLunToc {
+                playerId = it.getAlternativeLocation(r.location)
+                card = fsm.messageCard.toPbCard()
+                this.joinIntoHand = joinIntoHand
             }
         }
         if (joinIntoHand) {
@@ -74,9 +73,7 @@ class DingLun : ActiveSkill {
             val asMessage = !player.checkThreeSameMessageCard(e.messageCard)
             value == 0 || (asMessage == (value > 0)) || return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
-                skill.executeProtocol(
-                    e.whoseFightTurn.game!!, e.whoseFightTurn, skill_ding_lun_tos.getDefaultInstance()
-                )
+                skill.executeProtocol(e.whoseFightTurn.game!!, e.whoseFightTurn, skillDingLunTos { })
             }, 1, TimeUnit.SECONDS)
             return true
         }

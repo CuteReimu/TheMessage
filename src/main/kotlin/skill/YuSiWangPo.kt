@@ -6,7 +6,12 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_yu_si_wang_po_a_tos
+import com.fengsheng.protos.Role.skill_yu_si_wang_po_b_tos
+import com.fengsheng.protos.skillYuSiWangPoAToc
+import com.fengsheng.protos.skillYuSiWangPoATos
+import com.fengsheng.protos.skillYuSiWangPoBToc
+import com.fengsheng.protos.skillYuSiWangPoBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -67,28 +72,24 @@ class YuSiWangPo : MainPhaseSkill() {
         r.addSkillUseCount(skillId)
         logger.info("${r}对${target}发动了[鱼死网破]")
         val timeout = Config.WaitSecond
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_yu_si_wang_po_a_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.targetPlayerId = p.getAlternativeLocation(target.location)
+        g.players.send { p ->
+            skillYuSiWangPoAToc {
+                playerId = p.getAlternativeLocation(r.location)
+                targetPlayerId = p.getAlternativeLocation(target.location)
                 if (!discardAll) {
-                    builder.waitingSecond = timeout
-                    if (p === target) builder.seq = p.seq
+                    waitingSecond = timeout
+                    if (p === target) seq = p.seq
                 }
-                p.send(builder.build())
             }
         }
         g.playerDiscardCard(r, card)
         g.addEvent(DiscardCardEvent(r, r))
         if (target.cards.isNotEmpty()) g.addEvent(DiscardCardEvent(r, target))
         if (discardAll) {
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yu_si_wang_po_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillYuSiWangPoBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             g.playerDiscardCard(target, target.cards.toList())
@@ -111,17 +112,17 @@ class YuSiWangPo : MainPhaseSkill() {
                 val seq = target.seq
                 target.timeout = GameExecutor.post(g, {
                     if (target.checkSeq(seq)) {
-                        val builder2 = skill_yu_si_wang_po_b_tos.newBuilder()
-                        builder2.addAllCardIds(target.cards.shuffled().take(cardCount).map { it.id })
-                        builder2.seq = seq
-                        g.tryContinueResolveProtocol(target, builder2.build())
+                        g.tryContinueResolveProtocol(target, skillYuSiWangPoBTos {
+                            cardIds.addAll(target.cards.shuffled().take(cardCount).map { it.id })
+                            this.seq = seq
+                        })
                     }
                 }, target.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
                 GameExecutor.post(g, {
-                    val builder2 = skill_yu_si_wang_po_b_tos.newBuilder()
-                    builder2.addAllCardIds(target.cards.sortCards(target.identity, true).take(cardCount).map { it.id })
-                    g.tryContinueResolveProtocol(target, builder2.build())
+                    g.tryContinueResolveProtocol(target, skillYuSiWangPoBTos {
+                        cardIds.addAll(target.cards.sortCards(target.identity, true).take(cardCount).map { it.id })
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -158,12 +159,10 @@ class YuSiWangPo : MainPhaseSkill() {
                 card
             }
             target.incrSeq()
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yu_si_wang_po_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillYuSiWangPoBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             target.game!!.playerDiscardCard(target, cards.toList())
@@ -180,10 +179,10 @@ class YuSiWangPo : MainPhaseSkill() {
                 e.whoseTurn.game!!.players.filter { it!!.alive && it.isEnemy(e.whoseTurn) && it.cards.size >= 2 }
                     .randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_yu_si_wang_po_a_tos.newBuilder()
-                builder.targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
-                builder.cardId = card.id
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillYuSiWangPoATos {
+                    targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
+                    cardId = card.id
+                })
             }, 3, TimeUnit.SECONDS)
             return true
         }

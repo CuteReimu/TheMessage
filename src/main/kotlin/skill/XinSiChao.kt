@@ -3,8 +3,9 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Role.skill_xin_si_chao_toc
 import com.fengsheng.protos.Role.skill_xin_si_chao_tos
+import com.fengsheng.protos.skillXinSiChaoToc
+import com.fengsheng.protos.skillXinSiChaoTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -46,13 +47,7 @@ class XinSiChao : MainPhaseSkill() {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[新思潮]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_xin_si_chao_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                p.send(builder.build())
-            }
-        }
+        g.players.send { skillXinSiChaoToc { playerId = it.getAlternativeLocation(r.location) } }
         g.playerDiscardCard(r, card)
         r.draw(2)
         g.addEvent(DiscardCardEvent(r, r))
@@ -65,9 +60,7 @@ class XinSiChao : MainPhaseSkill() {
             val card = e.whoseTurn.cards.ifEmpty { return false }
             val cardId = card.bestCard(e.whoseTurn.identity, true).id
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_xin_si_chao_tos.newBuilder()
-                builder.cardId = cardId
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillXinSiChaoTos { this.cardId = cardId })
             }, 3, TimeUnit.SECONDS)
             return true
         }

@@ -2,7 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_qiang_ling_tos
+import com.fengsheng.protos.skillQiangLingToc
+import com.fengsheng.protos.skillQiangLingTos
+import com.fengsheng.protos.skillWaitForQiangLingToc
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -32,36 +35,25 @@ class QiangLing : TriggeredSkill {
 
     private data class executeQiangLing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_qiang_ling_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                skillWaitForQiangLingToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player === r) {
                         val seq2 = player.seq
-                        builder.seq = seq2
-                        player.timeout = GameExecutor.post(
-                            player.game!!,
-                            {
-                                if (player.checkSeq(seq2)) {
-                                    val builder2 = skill_qiang_ling_tos.newBuilder()
-                                    builder2.enable = false
-                                    builder2.seq = seq2
-                                    player.game!!.tryContinueResolveProtocol(player, builder2.build())
-                                }
-                            },
-                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                        seq = seq2
+                        player.timeout = GameExecutor.post(player.game!!, {
+                            if (player.checkSeq(seq2))
+                                player.game!!.tryContinueResolveProtocol(player, skillQiangLingTos { seq = seq2 })
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     if (event is ChooseReceiveCardEvent) {
                         if (!r.willWin(event.whoseTurn, r, event.messageCard) && r.willDie(event.messageCard)) {
-                            r.game!!.tryContinueResolveProtocol(r, skill_qiang_ling_tos.getDefaultInstance())
+                            r.game!!.tryContinueResolveProtocol(r, skillQiangLingTos { })
                             return@post
                         }
                     }
@@ -74,10 +66,10 @@ class QiangLing : TriggeredSkill {
                                 else -> sortedBy { type -> r.cards.any { it.type == type } }.take(2)
                             }
                         }
-                    val builder = skill_qiang_ling_tos.newBuilder()
-                    builder.enable = result.isNotEmpty()
-                    builder.addAllTypes(result)
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillQiangLingTos {
+                        enable = result.isNotEmpty()
+                        types.addAll(result)
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -119,12 +111,10 @@ class QiangLing : TriggeredSkill {
             r.incrSeq()
             logger.info("${r}发动了[强令]，禁止了${typesList.joinToString()}")
             r.game!!.players.forEach { it!!.skills += CannotPlayCard(cardType = typesList) }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_qiang_ling_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.addAllTypes(typesList)
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillQiangLingToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    types.addAll(typesList)
                 }
             }
             return ResolveResult(fsm, true)

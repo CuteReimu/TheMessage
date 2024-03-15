@@ -76,29 +76,27 @@ class JiaoJi : MainPhaseSkill() {
         r.cards.addAll(cards)
         val black = r.messageCards.count(color.Black)
         val needReturnCount = (cards.size - black).coerceAtLeast(0)..cards.size
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                p.send(skillJiaoJiAToc {
-                    playerId = p.getAlternativeLocation(r.location)
-                    targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target)
-                        cards.forEach { this.cards.add(it.toPbCard()) }
-                    else
-                        unknownCardCount = cards.size
-                    waitingSecond = Config.WaitSecond
-                    if (p === r) {
-                        val seq = p.seq
-                        this.seq = seq
-                        p.timeout = GameExecutor.post(g, {
-                            if (p.checkSeq(seq)) {
-                                g.tryContinueResolveProtocol(r, skillJiaoJiBTos {
-                                    r.cards.take(needReturnCount.first).forEach { cardIds.add(it.id) }
-                                    this.seq = seq
-                                })
-                            }
-                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                    }
-                })
+        g.players.send { p ->
+            skillJiaoJiAToc {
+                playerId = p.getAlternativeLocation(r.location)
+                targetPlayerId = p.getAlternativeLocation(target.location)
+                if (p === r || p === target)
+                    cards.forEach { this.cards.add(it.toPbCard()) }
+                else
+                    unknownCardCount = cards.size
+                waitingSecond = Config.WaitSecond
+                if (p === r) {
+                    val seq = p.seq
+                    this.seq = seq
+                    p.timeout = GameExecutor.post(g, {
+                        if (p.checkSeq(seq)) {
+                            g.tryContinueResolveProtocol(r, skillJiaoJiBTos {
+                                r.cards.take(needReturnCount.first).forEach { cardIds.add(it.id) }
+                                this.seq = seq
+                            })
+                        }
+                    }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                }
             }
         }
         if (r is RobotPlayer) {
@@ -153,16 +151,14 @@ class JiaoJi : MainPhaseSkill() {
             logger.info("${r}将${cards.joinToString()}还给$target")
             r.cards.removeAll(cards.toSet())
             target.cards.addAll(cards)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillJiaoJiBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        if (p === r || p === target)
-                            cards.forEach { this.cards.add(it.toPbCard()) }
-                        else
-                            unknownCardCount = cards.size
-                    })
+            g.players.send { p ->
+                skillJiaoJiBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target)
+                        cards.forEach { this.cards.add(it.toPbCard()) }
+                    else
+                        unknownCardCount = cards.size
                 }
             }
             g.addEvent(GiveCardEvent(r, target, r))

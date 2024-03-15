@@ -84,15 +84,13 @@ class LiYou : Card {
                         logger.info("${deckCards.joinToString()}加入了${target}的的情报区")
                     }
                 }
-                for (player in g.players) {
-                    if (player is HumanPlayer) {
-                        player.send(useLiYouToc {
-                            playerId = player.getAlternativeLocation(r.location)
-                            targetPlayerId = player.getAlternativeLocation(target.location)
-                            if (card != null) liYouCard = card.toPbCard()
-                            if (deckCards.isNotEmpty()) messageCard = deckCards[0].toPbCard()
-                            this.joinIntoHand = joinIntoHand
-                        })
+                g.players.send {
+                    useLiYouToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        targetPlayerId = it.getAlternativeLocation(target.location)
+                        if (card != null) liYouCard = card.toPbCard()
+                        if (deckCards.isNotEmpty()) messageCard = deckCards[0].toPbCard()
+                        this.joinIntoHand = joinIntoHand
                     }
                 }
                 if (!joinIntoHand) r.game!!.addEvent(AddMessageCardEvent(r, false))

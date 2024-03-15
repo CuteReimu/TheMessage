@@ -7,6 +7,7 @@ import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_an_cang_sha_ji_tos
 import com.fengsheng.protos.skillAnCangShaJiToc
+import com.fengsheng.protos.skillAnCangShaJiTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -107,14 +108,12 @@ class AnCangShaJi : TriggeredSkill {
                 target.messageCards.add(card)
                 r.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
             }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillAnCangShaJiToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        card?.let { this.card = it.toPbCard() }
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        if (p === r || p === target) handCard?.let { this.handCard = it.toPbCard() }
-                    })
+            r.game!!.players.send { p ->
+                skillAnCangShaJiToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    card?.let { this.card = it.toPbCard() }
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === r || p === target) handCard?.let { this.handCard = it.toPbCard() }
                 }
             }
             return ResolveResult(fsm, true)
@@ -133,9 +132,7 @@ class AnCangShaJi : TriggeredSkill {
             }
             if (card != null || p !== target && target.cards.isNotEmpty()) {
                 GameExecutor.post(p.game!!, {
-                    val builder = skill_an_cang_sha_ji_tos.newBuilder()
-                    card?.let { builder.cardId = it.id }
-                    p.game!!.tryContinueResolveProtocol(p, builder.build())
+                    p.game!!.tryContinueResolveProtocol(p, skillAnCangShaJiTos { card?.let { cardId = it.id } })
                 }, 3, TimeUnit.SECONDS)
                 return true
             }

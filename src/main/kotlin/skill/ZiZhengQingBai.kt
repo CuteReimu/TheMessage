@@ -4,8 +4,9 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_toc
 import com.fengsheng.protos.Role.skill_zi_zheng_qing_bai_tos
+import com.fengsheng.protos.skillZiZhengQingBaiToc
+import com.fengsheng.protos.skillZiZhengQingBaiTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -54,12 +55,10 @@ class ZiZhengQingBai : MainPhaseSkill() {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[自证清白]")
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                val builder = skill_zi_zheng_qing_bai_toc.newBuilder()
-                builder.playerId = p.getAlternativeLocation(r.location)
-                builder.addAllColors(card.colors)
-                p.send(builder.build())
+        g.players.send {
+            skillZiZhengQingBaiToc {
+                playerId = it.getAlternativeLocation(r.location)
+                colors.addAll(card.colors)
             }
         }
         g.playerDiscardCard(r, card)
@@ -76,9 +75,7 @@ class ZiZhengQingBai : MainPhaseSkill() {
             }.ifEmpty { return false }.bestCard(e.whoseTurn.identity, true)
             val cardId = card.id
             GameExecutor.post(e.whoseTurn.game!!, {
-                val builder = skill_zi_zheng_qing_bai_tos.newBuilder()
-                builder.cardId = cardId
-                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, builder.build())
+                skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillZiZhengQingBaiTos { this.cardId = cardId })
             }, 3, TimeUnit.SECONDS)
             return true
         }

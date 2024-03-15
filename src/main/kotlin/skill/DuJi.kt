@@ -82,15 +82,13 @@ class DuJi : ActiveSkill {
         r.cards.add(card2)
         r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target2, target1))
         r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target1, target2))
-        for (p in g.players) {
-            if (p is HumanPlayer) {
-                p.send(skillDuJiAToc {
-                    playerId = p.getAlternativeLocation(r.location)
-                    targetPlayerIds.add(p.getAlternativeLocation(target1.location))
-                    targetPlayerIds.add(p.getAlternativeLocation(target2.location))
-                    cards.add(card1.toPbCard())
-                    cards.add(card2.toPbCard())
-                })
+        g.players.send {
+            skillDuJiAToc {
+                playerId = it.getAlternativeLocation(r.location)
+                targetPlayerIds.add(it.getAlternativeLocation(target1.location))
+                targetPlayerIds.add(it.getAlternativeLocation(target2.location))
+                cards.add(card1.toPbCard())
+                cards.add(card2.toPbCard())
             }
         }
         val twoPlayersAndCards = ArrayList<TwoPlayersAndCard>()
@@ -118,24 +116,22 @@ class DuJi : ActiveSkill {
                 return ResolveResult(fsm, true)
             }
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillWaitForDuJiBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        for (twoPlayersAndCard in playerAndCards) {
-                            targetPlayerIds.add(p.getAlternativeLocation(twoPlayersAndCard.waitingPlayer.location))
-                            cardIds.add(twoPlayersAndCard.card.id)
-                        }
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq2 = p.seq
-                            seq = seq2
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq2))
-                                    g.tryContinueResolveProtocol(r, skillDuJiBTos { seq = seq2 })
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillWaitForDuJiBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    for (twoPlayersAndCard in playerAndCards) {
+                        targetPlayerIds.add(p.getAlternativeLocation(twoPlayersAndCard.waitingPlayer.location))
+                        cardIds.add(twoPlayersAndCard.card.id)
+                    }
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq2 = p.seq
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2))
+                                g.tryContinueResolveProtocol(r, skillDuJiBTos { seq = seq2 })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -199,28 +195,26 @@ class DuJi : ActiveSkill {
         override fun resolve(): ResolveResult? {
             logger.info("等待${selection.waitingPlayer}对${selection.card}进行选择")
             val g = selection.waitingPlayer.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillDuJiBToc {
-                        enable = true
-                        playerId = p.getAlternativeLocation(fsm.r.location)
-                        waitingPlayerId = p.getAlternativeLocation(selection.waitingPlayer.location)
-                        targetPlayerId = p.getAlternativeLocation(selection.fromPlayer.location)
-                        card = selection.card.toPbCard()
-                        waitingSecond = Config.WaitSecond
-                        if (p === selection.waitingPlayer) {
-                            val seq2 = p.seq
-                            seq = seq2
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq2)) {
-                                    g.tryContinueResolveProtocol(selection.waitingPlayer, skillDuJiCTos {
-                                        inFrontOfMe = false
-                                        seq = seq2
-                                    })
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillDuJiBToc {
+                    enable = true
+                    playerId = p.getAlternativeLocation(fsm.r.location)
+                    waitingPlayerId = p.getAlternativeLocation(selection.waitingPlayer.location)
+                    targetPlayerId = p.getAlternativeLocation(selection.fromPlayer.location)
+                    card = selection.card.toPbCard()
+                    waitingSecond = Config.WaitSecond
+                    if (p === selection.waitingPlayer) {
+                        val seq2 = p.seq
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2)) {
+                                g.tryContinueResolveProtocol(selection.waitingPlayer, skillDuJiCTos {
+                                    inFrontOfMe = false
+                                    seq = seq2
+                                })
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             val p = selection.waitingPlayer
@@ -260,14 +254,12 @@ class DuJi : ActiveSkill {
             logger.info("${r}选择将${card}放在${target}面前")
             fsm.r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillDuJiCToc {
-                        playerId = p.getAlternativeLocation(fsm.r.location)
-                        waitingPlayerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        this.card = card.toPbCard()
-                    })
+            g.players.send {
+                skillDuJiCToc {
+                    playerId = it.getAlternativeLocation(fsm.r.location)
+                    waitingPlayerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.card = card.toPbCard()
                 }
             }
             return ResolveResult(fsm, true)

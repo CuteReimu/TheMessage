@@ -3,10 +3,11 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Fengsheng.unknown_waiting_toc
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_mi_xin_a_tos
+import com.fengsheng.protos.Role.skill_mi_xin_b_tos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -36,13 +37,10 @@ class MiXin : TriggeredSkill {
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players) {
-                if (p === event.inFrontOfWhom) {
+                if (p === event.inFrontOfWhom)
                     p.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
-                } else if (p is HumanPlayer) {
-                    val builder = unknown_waiting_toc.newBuilder()
-                    builder.waitingSecond = Config.WaitSecond
-                    p.send(builder.build())
-                }
+                else if (p is HumanPlayer)
+                    p.send(unknownWaitingToc { waitingSecond = Config.WaitSecond })
             }
             return null
         }
@@ -80,17 +78,15 @@ class MiXin : TriggeredSkill {
             logger.info("${r}发动了[密信]")
             r.draw(2)
             val hasNext = target.alive && r.cards.any(checkCard)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_mi_xin_a_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.messageCard = event.messageCard.toPbCard()
+            g.players.send { p ->
+                skillMiXinAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    messageCard = event.messageCard.toPbCard()
                     if (hasNext) {
-                        builder.waitingSecond = Config.WaitSecond
-                        if (p === r) builder.seq = p.seq
+                        waitingSecond = Config.WaitSecond
+                        if (p === r) seq = p.seq
                     }
-                    p.send(builder.build())
                 }
             }
             if (!hasNext)
@@ -108,10 +104,10 @@ class MiXin : TriggeredSkill {
                 val seq = r.seq
                 r.timeout = GameExecutor.post(r.game!!, {
                     if (r.checkSeq(seq)) {
-                        val builder = skill_mi_xin_b_tos.newBuilder()
-                        builder.cardId = card.id
-                        builder.seq = seq
-                        r.game!!.tryContinueResolveProtocol(r, builder.build())
+                        r.game!!.tryContinueResolveProtocol(r, skillMiXinBTos {
+                            cardId = card.id
+                            this.seq = seq
+                        })
                     }
                 }, r.getWaitSeconds(Config.WaitSecond + 2).toLong(), TimeUnit.SECONDS)
             } else {
@@ -126,9 +122,7 @@ class MiXin : TriggeredSkill {
                     }
                 }
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_mi_xin_b_tos.newBuilder()
-                    builder.cardId = card.id
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillMiXinBTos { cardId = card.id })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -168,13 +162,11 @@ class MiXin : TriggeredSkill {
             logger.info("${r}将${card}置入${target}的情报区")
             r.deleteCard(card.id)
             target.messageCards.add(card)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_mi_xin_b_toc.newBuilder()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    builder.card = card.toPbCard()
-                    p.send(builder.build())
+            g.players.send {
+                skillMiXinBToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    this.card = card.toPbCard()
                 }
             }
             g.addEvent(AddMessageCardEvent(event.whoseTurn))
@@ -195,7 +187,7 @@ class MiXin : TriggeredSkill {
                     } || target.isPartnerOrSelf(p) && target.willDie(color)) return false
             }
             GameExecutor.post(p.game!!, {
-                p.game!!.tryContinueResolveProtocol(p, skill_mi_xin_a_tos.getDefaultInstance())
+                p.game!!.tryContinueResolveProtocol(p, skillMiXinATos { })
             }, 1, TimeUnit.SECONDS)
             return true
         }

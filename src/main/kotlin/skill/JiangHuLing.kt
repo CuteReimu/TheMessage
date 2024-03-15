@@ -6,7 +6,8 @@ import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_jiang_hu_ling_a_tos
+import com.fengsheng.protos.Role.skill_jiang_hu_ling_b_tos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -28,24 +29,22 @@ class JiangHuLing : TriggeredSkill {
 
     private data class executeJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    player.send(skillWaitForJiangHuLingAToc {
-                        playerId = player.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        if (player === r) {
-                            val seq = player.seq
-                            this.seq = seq
-                            player.timeout = GameExecutor.post(player.game!!, {
-                                if (player.checkSeq(seq)) {
-                                    player.game!!.tryContinueResolveProtocol(player, skillJiangHuLingATos {
-                                        enable = false
-                                        this.seq = seq
-                                    })
-                                }
-                            }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            r.game!!.players.send { player ->
+                skillWaitForJiangHuLingAToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    if (player === r) {
+                        val seq = player.seq
+                        this.seq = seq
+                        player.timeout = GameExecutor.post(player.game!!, {
+                            if (player.checkSeq(seq)) {
+                                player.game!!.tryContinueResolveProtocol(player, skillJiangHuLingATos {
+                                    enable = false
+                                    this.seq = seq
+                                })
+                            }
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -126,21 +125,19 @@ class JiangHuLing : TriggeredSkill {
 
     private data class executeJiangHuLingB(val fsm: Fsm, val event: ReceiveCardEvent, val color: color) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in event.sender.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillWaitForJiangHuLingBToc {
-                        playerId = p.getAlternativeLocation(event.sender.location)
-                        color = this@executeJiangHuLingB.color
-                        waitingSecond = Config.WaitSecond
-                        if (p === event.sender) {
-                            val seq = p.seq
-                            this.seq = seq
-                            p.timeout = GameExecutor.post(p.game!!, {
-                                if (p.checkSeq(seq))
-                                    p.game!!.tryContinueResolveProtocol(p, endReceivePhaseTos { this.seq = seq })
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            event.sender.game!!.players.send { p ->
+                skillWaitForJiangHuLingBToc {
+                    playerId = p.getAlternativeLocation(event.sender.location)
+                    color = this@executeJiangHuLingB.color
+                    waitingSecond = Config.WaitSecond
+                    if (p === event.sender) {
+                        val seq = p.seq
+                        this.seq = seq
+                        p.timeout = GameExecutor.post(p.game!!, {
+                            if (p.checkSeq(seq))
+                                p.game!!.tryContinueResolveProtocol(p, endReceivePhaseTos { this.seq = seq })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             val p = event.sender
@@ -221,13 +218,11 @@ class JiangHuLing : TriggeredSkill {
             logger.info("${r}发动了[江湖令]，弃掉了${target}面前的$card")
             target.deleteMessageCard(card.id)
             r.game!!.deck.discard(card)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_jiang_hu_ling_b_toc.newBuilder()
-                    builder.cardId = card.id
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.enable = true
-                    p.send(builder.build())
+            r.game!!.players.send {
+                skillJiangHuLingBToc {
+                    cardId = card.id
+                    playerId = it.getAlternativeLocation(r.location)
+                    enable = true
                 }
             }
             if (card.colors.contains(Common.color.Black)) r.draw(1)

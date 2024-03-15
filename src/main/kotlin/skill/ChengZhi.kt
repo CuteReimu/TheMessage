@@ -53,29 +53,27 @@ class ChengZhi : TriggeredSkill {
             } else {
                 logger.info("${r}发动了[承志]，查看了${whoDie}的身份牌")
             }
-            if (whoDie.identity == color.Has_No_Identity) return ResolveResult(fsm, true)
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    player.send(skillWaitForChengZhiToc {
-                        playerId = player.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond
-                        diePlayerId = player.getAlternativeLocation(whoDie.location)
-                        if (player === r) {
-                            cards.forEach { this.cards.add(it.toPbCard()) }
-                            identity = whoDie.identity
-                            secretTask = whoDie.secretTask
-                            val seq2 = player.seq
-                            seq = seq2
-                            player.timeout = GameExecutor.post(r.game!!, {
-                                if (r.checkSeq(seq2)) {
-                                    r.game!!.tryContinueResolveProtocol(r, skillChengZhiTos {
-                                        enable = false
-                                        seq = seq2
-                                    })
-                                }
-                            }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            if (whoDie.identity == Has_No_Identity) return ResolveResult(fsm, true)
+            r.game!!.players.send { player ->
+                skillWaitForChengZhiToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
+                    diePlayerId = player.getAlternativeLocation(whoDie.location)
+                    if (player === r) {
+                        cards.forEach { this.cards.add(it.toPbCard()) }
+                        identity = whoDie.identity
+                        secretTask = whoDie.secretTask
+                        val seq2 = player.seq
+                        seq = seq2
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            if (r.checkSeq(seq2)) {
+                                r.game!!.tryContinueResolveProtocol(r, skillChengZhiTos {
+                                    enable = false
+                                    seq = seq2
+                                })
+                            }
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) GameExecutor.post(r.game!!, {
@@ -119,13 +117,11 @@ class ChengZhi : TriggeredSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        p.send(skillChengZhiToc {
-                            enable = false
-                            playerId = p.getAlternativeLocation(r.location)
-                            diePlayerId = p.getAlternativeLocation(whoDie.location)
-                        })
+                g.players.send {
+                    skillChengZhiToc {
+                        enable = false
+                        playerId = it.getAlternativeLocation(r.location)
+                        diePlayerId = it.getAlternativeLocation(whoDie.location)
                     }
                 }
                 return ResolveResult(fsm, true)
@@ -133,15 +129,13 @@ class ChengZhi : TriggeredSkill {
             r.incrSeq()
             r.identity = whoDie.identity
             r.secretTask = whoDie.secretTask
-            whoDie.identity = color.Has_No_Identity
+            whoDie.identity = Has_No_Identity
             logger.info("${r}获得了${whoDie}的身份牌")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillChengZhiToc {
-                        enable = true
-                        playerId = p.getAlternativeLocation(r.location)
-                        diePlayerId = p.getAlternativeLocation(whoDie.location)
-                    })
+            g.players.send {
+                skillChengZhiToc {
+                    enable = true
+                    playerId = it.getAlternativeLocation(r.location)
+                    diePlayerId = it.getAlternativeLocation(whoDie.location)
                 }
             }
             return ResolveResult(fsm, true)

@@ -63,13 +63,11 @@ class ShiTan : Card {
         r.deleteCard(id)
         val resolveFunc = { valid: Boolean ->
             if (valid) {
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        p.send(useShiTanToc {
-                            playerId = p.getAlternativeLocation(r.location)
-                            targetPlayerId = p.getAlternativeLocation(target.location)
-                            if (p === r) cardId = id
-                        })
+                g.players.send {
+                    useShiTanToc {
+                        playerId = it.getAlternativeLocation(r.location)
+                        targetPlayerId = it.getAlternativeLocation(target.location)
+                        if (it === r) cardId = id
                     }
                 }
                 executeShiTan(fsm, r, target, this@ShiTan)
@@ -89,12 +87,10 @@ class ShiTan : Card {
     }
 
     private fun notifyResult(target: Player, draw: Boolean) {
-        for (player in target.game!!.players) {
-            if (player is HumanPlayer) {
-                player.send(executeShiTanToc {
-                    playerId = player.getAlternativeLocation(target.location)
-                    isDrawCard = draw
-                })
+        target.game!!.players.send {
+            executeShiTanToc {
+                playerId = it.getAlternativeLocation(target.location)
+                isDrawCard = draw
             }
         }
     }
@@ -106,25 +102,23 @@ class ShiTan : Card {
         val card: ShiTan
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(showShiTanToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        waitingSecond = Config.WaitSecond
-                        if (p === target) {
-                            val seq2 = p.seq
-                            seq = seq2
-                            card = this@executeShiTan.card.toPbCard()
-                            p.timeout = GameExecutor.post(r.game!!, {
-                                if (p.checkSeq(seq2)) {
-                                    autoSelect()
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        } else if (p === r) {
-                            card = this@executeShiTan.card.toPbCard()
-                        }
-                    })
+            r.game!!.players.send { p ->
+                showShiTanToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    waitingSecond = Config.WaitSecond
+                    if (p === target) {
+                        val seq2 = p.seq
+                        seq = seq2
+                        card = this@executeShiTan.card.toPbCard()
+                        p.timeout = GameExecutor.post(r.game!!, {
+                            if (p.checkSeq(seq2)) {
+                                autoSelect()
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    } else if (p === r) {
+                        card = this@executeShiTan.card.toPbCard()
+                    }
                 }
             }
             if (target is RobotPlayer) {

@@ -52,20 +52,18 @@ class GuangFaBao : ActiveSkill {
     private data class executeGuangFaBao(val fsm: FightPhaseIdle, val r: Player, val putCard: Boolean) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillWaitForGuangFaBaoBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        waitingSecond = Config.WaitSecond * 4 / 3
-                        if (p === r) {
-                            val seq2 = p.seq
-                            seq = seq2
-                            p.timeout = GameExecutor.post(g, {
-                                if (p.checkSeq(seq2))
-                                    g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos { seq = seq2 })
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            g.players.send { p ->
+                skillWaitForGuangFaBaoBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond * 4 / 3
+                    if (p === r) {
+                        val seq2 = p.seq
+                        seq = seq2
+                        p.timeout = GameExecutor.post(g, {
+                            if (p.checkSeq(seq2))
+                                g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos { seq = seq2 })
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -102,15 +100,13 @@ class GuangFaBao : ActiveSkill {
                             target = null
                         }
                     }
-                    if (card != null && target != null) {
-                        g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos {
+                    g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos {
+                        if (card != null && target != null) {
                             enable = true
                             targetPlayerId = r.getAlternativeLocation(target.location)
                             cardIds.add(card.id)
-                        })
-                        return@post
-                    }
-                    g.tryContinueResolveProtocol(r, skill_guang_fa_bao_b_tos.getDefaultInstance())
+                        }
+                    })
                 }, 1, TimeUnit.SECONDS)
             }
             return null
@@ -135,14 +131,7 @@ class GuangFaBao : ActiveSkill {
             }
             if (!message.enable) {
                 r.incrSeq()
-                for (p in g.players) {
-                    if (p is HumanPlayer) {
-                        p.send(skillGuangFaBaoBToc {
-                            playerId = p.getAlternativeLocation(r.location)
-                            enable = false
-                        })
-                    }
-                }
+                g.players.send { skillGuangFaBaoBToc { playerId = it.getAlternativeLocation(r.location) } }
                 if (putCard) g.addEvent(AddMessageCardEvent(fsm.whoseTurn))
                 val newFsm = fsm.copy(whoseFightTurn = fsm.inFrontOfWhom)
                 return ResolveResult(newFsm, true)
@@ -181,14 +170,12 @@ class GuangFaBao : ActiveSkill {
             logger.info("${r}将${cards.joinToString()}置于${target}的情报区")
             r.cards.removeAll(cards.toSet())
             target.messageCards.addAll(cards)
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillGuangFaBaoBToc {
-                        enable = true
-                        cards.forEach { this.cards.add(it.toPbCard()) }
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                    })
+            g.players.send { p ->
+                skillGuangFaBaoBToc {
+                    enable = true
+                    cards.forEach { this.cards.add(it.toPbCard()) }
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
                 }
             }
             if (r.cards.isNotEmpty())

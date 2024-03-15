@@ -7,6 +7,7 @@ import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
 import com.fengsheng.protos.Role.skill_chi_zi_zhi_xin_a_tos
 import com.fengsheng.protos.Role.skill_chi_zi_zhi_xin_b_tos
 import com.fengsheng.protos.skillChiZiZhiXinAToc
+import com.fengsheng.protos.skillChiZiZhiXinATos
 import com.fengsheng.protos.skillChiZiZhiXinBToc
 import com.fengsheng.protos.skillChiZiZhiXinBTos
 import com.google.protobuf.GeneratedMessage
@@ -76,25 +77,23 @@ class ChiZiZhiXin : TriggeredSkill {
     private data class executeChiZiZhiXinB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = event.sender
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillChiZiZhiXinAToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        messageCard = event.messageCard.toPbCard()
-                        waitingSecond = Config.WaitSecond
-                        if (p === r) {
-                            val seq = r.seq
-                            this.seq = seq
-                            p.timeout = GameExecutor.post(r.game!!, {
-                                if (p.checkSeq(seq)) {
-                                    p.game!!.tryContinueResolveProtocol(p, skillChiZiZhiXinBTos {
-                                        drawCard = true
-                                        this.seq = seq
-                                    })
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            r.game!!.players.send { p ->
+                skillChiZiZhiXinAToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    messageCard = event.messageCard.toPbCard()
+                    waitingSecond = Config.WaitSecond
+                    if (p === r) {
+                        val seq = r.seq
+                        this.seq = seq
+                        p.timeout = GameExecutor.post(r.game!!, {
+                            if (p.checkSeq(seq)) {
+                                p.game!!.tryContinueResolveProtocol(p, skillChiZiZhiXinBTos {
+                                    drawCard = true
+                                    this.seq = seq
+                                })
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (r is RobotPlayer) {
@@ -159,13 +158,11 @@ class ChiZiZhiXin : TriggeredSkill {
                 logger.info("${r}发动了[赤子之心]，选择了摸两张牌")
                 r.incrSeq()
             }
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(skillChiZiZhiXinBToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        drawCard = message.drawCard
-                        card?.let { this.card = it.toPbCard() }
-                    })
+            r.game!!.players.send { p ->
+                skillChiZiZhiXinBToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    drawCard = message.drawCard
+                    card?.let { this.card = it.toPbCard() }
                 }
             }
             if (message.drawCard) r.draw(2)
@@ -178,7 +175,7 @@ class ChiZiZhiXin : TriggeredSkill {
             if (fsm0 !is executeChiZiZhiXinA) return false
             val p = fsm0.event.sender
             GameExecutor.post(p.game!!, {
-                p.game!!.tryContinueResolveProtocol(p, skill_chi_zi_zhi_xin_a_tos.getDefaultInstance())
+                p.game!!.tryContinueResolveProtocol(p, skillChiZiZhiXinATos { })
             }, 1, TimeUnit.SECONDS)
             return true
         }

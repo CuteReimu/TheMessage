@@ -50,15 +50,13 @@ class YuQinGuZong : Card {
         logger.info("${r}使用了$this，选择了${messageCard}传递")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(useYuQinGuZongToc {
-                        card = toPbCard()
-                        messageCardId = messageCard.id
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        lockPlayers.forEach { lockPlayerIds.add(p.getAlternativeLocation(it.location)) }
-                    })
+            r.game!!.players.send { p ->
+                useYuQinGuZongToc {
+                    card = toPbCard()
+                    messageCardId = messageCard.id
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    lockPlayers.forEach { lockPlayerIds.add(p.getAlternativeLocation(it.location)) }
                 }
             }
             r.deleteMessageCard(messageCard.id) // 欲擒故纵可能传出面前的情报

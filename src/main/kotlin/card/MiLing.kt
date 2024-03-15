@@ -73,20 +73,18 @@ class MiLing : Card {
         val hasColor = target.cards.any { color in it.colors }
         val timeout = Config.WaitSecond
         val resolveFunc = { _: Boolean ->
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(useMiLingToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        this.secret = secret
-                        if (p === r || p === target) card = toPbCard()
-                        this.hasColor = hasColor
-                        waitingSecond = timeout
-                        if (!hasColor && p === r)
-                            target.cards.forEach { handCards.add(it.toPbCard()) }
-                        if (hasColor && p === target || !hasColor && p === r)
-                            seq = p.seq
-                    })
+            r.game!!.players.send { p ->
+                useMiLingToc {
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    this.secret = secret
+                    if (p === r || p === target) card = toPbCard()
+                    this.hasColor = hasColor
+                    waitingSecond = timeout
+                    if (!hasColor && p === r)
+                        target.cards.forEach { handCards.add(it.toPbCard()) }
+                    if (hasColor && p === target || !hasColor && p === r)
+                        seq = p.seq
                 }
             }
             if (hasColor)
@@ -153,15 +151,13 @@ class MiLing : Card {
             }
             player.incrSeq()
             val timeout = Config.WaitSecond
-            for (p in player.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(miLingChooseCardToc {
-                        playerId = p.getAlternativeLocation(player.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        waitingSecond = timeout
-                        if (p === player || p === target) this.card = card.toPbCard()
-                        if (p === target) seq = p.seq
-                    })
+            player.game!!.players.send { p ->
+                miLingChooseCardToc {
+                    playerId = p.getAlternativeLocation(player.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    waitingSecond = timeout
+                    if (p === player || p === target) this.card = card.toPbCard()
+                    if (p === target) seq = p.seq
                 }
             }
             return ResolveResult(executeMiLing(this.card, target, secret, card, sendPhase, timeout), true)
@@ -203,11 +199,7 @@ class MiLing : Card {
                 GameExecutor.post(target.game!!, {
                     val skill = target.findSkill(LENG_XUE_XUN_LIAN) as? LengXueXunLian
                     if (skill != null) {
-                        skill.executeProtocol(
-                            target.game!!,
-                            target,
-                            Role.skill_leng_xue_xun_lian_a_tos.getDefaultInstance()
-                        )
+                        skill.executeProtocol(target.game!!, target, skillLengXueXunLianATos { })
                     } else {
                         val availableCards =
                             if (messageCard != null) listOf(messageCard)

@@ -22,19 +22,17 @@ class ChengFu : TriggeredSkill {
         } ?: return null
         logger.info("${askWhom}触发了[城府]，${event.cardType}无效")
         if (event.valid) {
-            for (player in g.players) {
-                if (player is HumanPlayer) {
-                    player.send(skillChengFuToc {
-                        playerId = player.getAlternativeLocation(askWhom.location)
-                        fromPlayerId = player.getAlternativeLocation(event.player.location)
-                        event.card?.let {
-                            if (event.cardType != Shi_Tan || player === event.player)
-                                card = it.toPbCard()
-                            else
-                                unknownCardCount = 1
-                        }
-                        cardType = event.cardType
-                    })
+            g.players.send { player ->
+                skillChengFuToc {
+                    playerId = player.getAlternativeLocation(askWhom.location)
+                    fromPlayerId = player.getAlternativeLocation(event.player.location)
+                    event.card?.let {
+                        if (event.cardType != Shi_Tan || player === event.player)
+                            card = it.toPbCard()
+                        else
+                            unknownCardCount = 1
+                    }
+                    cardType = event.cardType
                 }
             }
         }

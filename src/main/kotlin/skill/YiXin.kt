@@ -2,8 +2,10 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.PlayerAndCard
-import com.fengsheng.protos.Role.*
+import com.fengsheng.protos.Role.skill_yi_xin_tos
+import com.fengsheng.protos.skillWaitForYiXinToc
 import com.fengsheng.protos.skillYiXinToc
+import com.fengsheng.protos.skillYiXinTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -28,27 +30,17 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
 
     private data class executeYiXin(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (player in r.game!!.players) {
-                if (player is HumanPlayer) {
-                    val builder = skill_wait_for_yi_xin_toc.newBuilder()
-                    builder.playerId = player.getAlternativeLocation(r.location)
-                    builder.waitingSecond = Config.WaitSecond
+            r.game!!.players.send { player ->
+                skillWaitForYiXinToc {
+                    playerId = player.getAlternativeLocation(r.location)
+                    waitingSecond = Config.WaitSecond
                     if (player == r) {
                         val seq2 = player.seq
-                        builder.seq = seq2
-                        player.timeout = GameExecutor.post(
-                            r.game!!,
-                            {
-                                val builder2 = skill_yi_xin_tos.newBuilder()
-                                builder2.enable = false
-                                builder2.seq = seq2
-                                r.game!!.tryContinueResolveProtocol(r, builder2.build())
-                            },
-                            player.getWaitSeconds(builder.waitingSecond + 2).toLong(),
-                            TimeUnit.SECONDS
-                        )
+                        seq = seq2
+                        player.timeout = GameExecutor.post(r.game!!, {
+                            r.game!!.tryContinueResolveProtocol(r, skillYiXinTos { seq = seq2 })
+                        }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }
-                    player.send(builder.build())
                 }
             }
             if (r is RobotPlayer) {
@@ -66,13 +58,13 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
                     }
                 }
                 GameExecutor.post(r.game!!, {
-                    val builder = skill_yi_xin_tos.newBuilder()
-                    if (playerAndCard != null) {
-                        builder.enable = true
-                        builder.cardId = playerAndCard.card.id
-                        builder.targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
-                    }
-                    r.game!!.tryContinueResolveProtocol(r, builder.build())
+                    r.game!!.tryContinueResolveProtocol(r, skillYiXinTos {
+                        playerAndCard?.let {
+                            enable = true
+                            cardId = it.card.id
+                            targetPlayerId = r.getAlternativeLocation(it.player.location)
+                        }
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -127,14 +119,12 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
             r.deleteCard(card.id)
             target.messageCards.add(card)
             logger.info("${r}将${card}放置在${target}面前")
-            for (p in g.players) {
-                if (p is HumanPlayer) {
-                    val builder = skill_yi_xin_toc.newBuilder()
-                    builder.enable = true
-                    builder.card = card.toPbCard()
-                    builder.playerId = p.getAlternativeLocation(r.location)
-                    builder.targetPlayerId = p.getAlternativeLocation(target.location)
-                    p.send(builder.build())
+            g.players.send {
+                skillYiXinToc {
+                    enable = true
+                    this.card = card.toPbCard()
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
                 }
             }
             g.addEvent(AddMessageCardEvent(event.whoseTurn))

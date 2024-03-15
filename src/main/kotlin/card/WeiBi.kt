@@ -60,24 +60,22 @@ class WeiBi : Card {
     ) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(weiBiWaitForGiveCardToc {
-                        if (this@executeWeiBi.card != null) card = this@executeWeiBi.card.toPbCard()
-                        wantType = this@executeWeiBi.wantType
-                        waitingSecond = Config.WaitSecond
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        if (p === target) {
-                            val seq = p.seq
-                            this.seq = seq
-                            p.timeout = GameExecutor.post(r.game!!, {
-                                if (p.checkSeq(seq)) {
-                                    autoSelect()
-                                }
-                            }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
-                        }
-                    })
+            r.game!!.players.send { p ->
+                weiBiWaitForGiveCardToc {
+                    if (this@executeWeiBi.card != null) card = this@executeWeiBi.card.toPbCard()
+                    wantType = this@executeWeiBi.wantType
+                    waitingSecond = Config.WaitSecond
+                    playerId = p.getAlternativeLocation(r.location)
+                    targetPlayerId = p.getAlternativeLocation(target.location)
+                    if (p === target) {
+                        val seq = p.seq
+                        this.seq = seq
+                        p.timeout = GameExecutor.post(r.game!!, {
+                            if (p.checkSeq(seq)) {
+                                autoSelect()
+                            }
+                        }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
+                    }
                 }
             }
             if (target is RobotPlayer) {
@@ -110,13 +108,11 @@ class WeiBi : Card {
             logger.info("${target}给了${r}一张$c")
             target.deleteCard(cardId)
             r.cards.add(c)
-            for (p in r.game!!.players) {
-                if (p is HumanPlayer) {
-                    p.send(weiBiGiveCardToc {
-                        playerId = p.getAlternativeLocation(r.location)
-                        targetPlayerId = p.getAlternativeLocation(target.location)
-                        if (p === r || p === target) card = c.toPbCard()
-                    })
+            r.game!!.players.send {
+                weiBiGiveCardToc {
+                    playerId = it.getAlternativeLocation(r.location)
+                    targetPlayerId = it.getAlternativeLocation(target.location)
+                    if (it === r || it === target) card = c.toPbCard()
                 }
             }
             r.game!!.addEvent(GiveCardEvent(r, target, r))
@@ -181,15 +177,13 @@ class WeiBi : Card {
                 } else {
                     r.weiBiFailRate = 0
                     logger.info("${target}向${r}展示了所有手牌")
-                    for (p in g.players) {
-                        if (p is HumanPlayer) {
-                            p.send(weiBiShowHandCardToc {
-                                if (card != null) this.card = card.toPbCard()
-                                this.wantType = wantType
-                                playerId = p.getAlternativeLocation(r.location)
-                                targetPlayerId = p.getAlternativeLocation(target.location)
-                                if (p === r) target.cards.forEach { cards.add(it.toPbCard()) }
-                            })
+                    g.players.send { p ->
+                        weiBiShowHandCardToc {
+                            if (card != null) this.card = card.toPbCard()
+                            this.wantType = wantType
+                            playerId = p.getAlternativeLocation(r.location)
+                            targetPlayerId = p.getAlternativeLocation(target.location)
+                            if (p === r) target.cards.forEach { cards.add(it.toPbCard()) }
                         }
                     }
                     OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm)
