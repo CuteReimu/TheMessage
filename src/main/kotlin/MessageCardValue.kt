@@ -289,7 +289,7 @@ fun Player.calculateMessageCardValue(
                 val useless = secretTask == Sweeper && inFrontOfWhom.messageCards.countTrueCard() > 1
                 value += when (inFrontOfWhom.messageCards.count(Black)) {
                     0 -> if (useless) 0 else 1
-                    1 -> if (useless) 0 else 11
+                    1 -> if (useless) 0 else 6
                     else -> if (checkThreeSame) return 10 else if (this === inFrontOfWhom) -112 else 0
                 }
                 if (secretTask == Pioneer && this === inFrontOfWhom)
