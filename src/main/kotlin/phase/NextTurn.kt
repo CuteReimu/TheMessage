@@ -8,6 +8,7 @@ import com.fengsheng.skill.InvalidSkill
 import com.fengsheng.skill.OneTurnSkill
 import com.fengsheng.skill.changeGameResult
 import org.apache.logging.log4j.kotlin.logger
+import java.util.concurrent.TimeUnit
 
 /**
  * 即将跳转到下一回合时
@@ -19,7 +20,7 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
         whoseTurn.game!!.addEvent(TurnEndEvent(whoseTurn))
     }
 
-    override fun resolve0(): ResolveResult {
+    override fun resolve0(): ResolveResult? {
         val game = whoseTurn.game!!
         if (checkDisturberWin(game))
             return ResolveResult(null, false)
@@ -32,7 +33,8 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
                 game.players.forEach { it!!.resetSkillUseCount() }
                 InvalidSkill.reset(game)
                 OneTurnSkill.reset(game)
-                return ResolveResult(DrawPhase(player), true)
+                GameExecutor.post(game, { game.resolve(DrawPhase(player)) }, 500, TimeUnit.MILLISECONDS)
+                return null
             }
         }
     }
