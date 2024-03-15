@@ -62,16 +62,21 @@ private fun Player.willWinInternalCp(
     partnerTogether: Boolean = true
 ): Boolean {
     if (!alive) return false
+    if (willWinInternal(whoseTurn, inFrontOfWhom, colors, partnerTogether)) return true
     val g = whoseTurn.game!!
     fun isCpXiaoJiu(p: Player?) = p!!.alive && p.skills.any { it is YiZhongRen }
     fun isCpHanMei(p: Player?) = p!!.alive && p.skills.any { it is BaiYueGuang }
-    if (isCpXiaoJiu(this) && g.players.any { isHanMei(it) && it!!.messageCards.count(Red) >= 3 })
-        return true
-    if (isCpHanMei(this) && g.players.any { isXiaoJiu(it) && it!!.messageCards.count(Blue) >= 3 })
-        return true
+    if (isCpXiaoJiu(this) && g.players.any {
+            isHanMei(it) && it!!.messageCards.count(Red) >= 3 &&
+                    !it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
+        }) return true
+    if (isCpHanMei(this) && g.players.any {
+            isXiaoJiu(it) && it!!.messageCards.count(Blue) >= 3 &&
+                    !it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
+        }) return true
     if (isHanMei(this) && messageCards.count(Red) >= 3 && g.players.any(::isCpXiaoJiu)) return true
     if (isXiaoJiu(this) && messageCards.count(Blue) >= 3 && g.players.any(::isCpHanMei)) return true
-    return willWinInternal(whoseTurn, inFrontOfWhom, colors, partnerTogether)
+    return false
 }
 
 /**
