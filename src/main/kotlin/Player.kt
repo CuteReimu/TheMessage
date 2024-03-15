@@ -135,11 +135,46 @@ abstract class Player protected constructor() {
 
     abstract fun notifyAddHandCard(location: Int, unknownCount: Int, cards: List<Card> = emptyList())
 
+    /**
+     * 统计三种颜色以及真情报的数量
+     *
+     * @param card 待收情报，可以为null。如果不为null，则也会加入统计。
+     * @return 三种颜色以及真情报的数量以及，按照[黑][Black]、[红][Red]、[蓝][Blue]、真的顺序
+     */
+    fun countMessageCard(card: Card?) = countMessageCard(card?.colors ?: emptyList())
+
+    /**
+     * 统计三种颜色以及真情报的数量
+     *
+     * @param colors 待收情报的颜色，也会加入统计。
+     * @return 三种颜色以及真情报的数量以及，按照[黑][Black]、[红][Red]、[蓝][Blue]、真的顺序
+     */
+    fun countMessageCard(colors: List<color>): IntArray {
+        var red = 0
+        var blue = 0
+        var black = 0
+        var trueCard = 0
+        fun addCount(colors: List<color>) {
+            if (colors.any { c -> c != Black }) trueCard++
+            for (c in colors) {
+                when (c) {
+                    Red -> red++
+                    Blue -> blue++
+                    Black -> black++
+                    else -> {}
+                }
+            }
+        }
+        messageCards.forEach { addCount(it.colors) }
+        addCount(colors)
+        return intArrayOf(black, red, blue, trueCard)
+    }
+
     fun checkThreeSameMessageCard(card: Card): Boolean {
         return checkThreeSameMessageCard(listOf(card))
     }
 
-    fun checkThreeSameMessageCard(cards: Collection<Card>): Boolean {
+    fun checkThreeSameMessageCard(cards: Iterable<Card>): Boolean {
         var red = 0
         var blue = 0
         var black = 0
@@ -258,21 +293,6 @@ abstract class Player protected constructor() {
 
     /** @return 如果other是敌人，则返回true。否则返回false */
     fun isEnemy(other: Player) = !isPartnerOrSelf(other)
-
-    /** 亲密度。敌对阵营是0，神秘人是1，队友是2。如果自己是神秘人，则所有人都是1。 */
-    private fun getFriendship(other: Player) =
-        if (identity == Black) 1
-        else when (other.identity) {
-            identity -> 2
-            Black -> 1
-            else -> 0
-        }
-
-    /**
-     * 比较两个人的亲密度。
-     * @return 大于0表示前者比后者更亲密
-     */
-    fun checkFriendship(other1: Player, other2: Player): Int = getFriendship(other1) - getFriendship(other2)
 
     override fun toString(): String {
         val hide = if (roleFaceUp) "" else "(隐)"

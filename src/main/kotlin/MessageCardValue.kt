@@ -89,15 +89,21 @@ private fun Player.willWinInternal(
                 && identity in colors && inFrontOfWhom.messageCards.count(identity) >= 2
     } else {
         return when (secretTask) {
-            Killer -> {
-                if (this !== whoseTurn) return false
+            Killer, Pioneer, Sweeper -> {
                 if (game!!.players.any {
                         (it!!.identity != Black || it.secretTask in listOf(Collector, Mutator)) &&
                                 it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) {
                     return false
                 }
-                Black in colors && inFrontOfWhom.messageCards.count(Black) >= 2
+                val counts = inFrontOfWhom.countMessageCard(colors)
+                counts[Black.number] >= 3 || return false
+                when (secretTask) {
+                    Killer -> this === whoseTurn && counts[Black.number] >= 2
+                    Pioneer -> this === inFrontOfWhom && counts[Black.number] >= 1
+                    Sweeper -> counts[Red.number] <= 1 && counts[Blue.number] <= 1
+                    else -> false
+                }
             }
 
             Collector ->
@@ -117,15 +123,6 @@ private fun Player.willWinInternal(
                 if (Blue in colors && inFrontOfWhom.messageCards.count(Blue) >= 2) return true
                 false
             }
-
-            Pioneer ->
-                this === inFrontOfWhom && Black in colors && messageCards.count(Black) >= 2
-
-            Sweeper ->
-                Black in colors && inFrontOfWhom.messageCards.count(Black) >= 2 &&
-                        if (Red in colors) inFrontOfWhom.messageCards.all { Red !in it.colors }
-                        else if (Blue in colors) inFrontOfWhom.messageCards.all { Blue !in it.colors }
-                        else true
 
             Disturber ->
                 if (Red in colors || Blue in colors)
