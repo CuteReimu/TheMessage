@@ -66,16 +66,17 @@ private fun Player.willWinInternalCp(
     val g = whoseTurn.game!!
     fun isCpXiaoJiu(p: Player?) = p!!.alive && p.skills.any { it is YiZhongRen }
     fun isCpHanMei(p: Player?) = p!!.alive && p.skills.any { it is BaiYueGuang }
-    if (isCpXiaoJiu(this) && g.players.any {
-            isHanMei(it) && it!!.messageCards.count(Red) >= 3 &&
-                    !it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
-        }) return true
-    if (isCpHanMei(this) && g.players.any {
-            isXiaoJiu(it) && it!!.messageCards.count(Blue) >= 3 &&
-                    !it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
-        }) return true
-    if (isHanMei(this) && messageCards.count(Red) >= 3 && g.players.any(::isCpXiaoJiu)) return true
-    if (isXiaoJiu(this) && messageCards.count(Blue) >= 3 && g.players.any(::isCpHanMei)) return true
+    val counts = inFrontOfWhom.countMessageCard(colors)
+    if (isCpXiaoJiu(this) && isHanMei(inFrontOfWhom) && counts[Red.number] >= 3 &&
+        !inFrontOfWhom.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
+    ) return true
+    if (isCpHanMei(this) && isXiaoJiu(inFrontOfWhom) && counts[Blue.number] >= 3 &&
+        !inFrontOfWhom.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
+    ) return true
+    if (this === inFrontOfWhom) {
+        if (isHanMei(this) && counts[Red.number] >= 3 && g.players.any(::isCpXiaoJiu)) return true
+        if (isXiaoJiu(this) && counts[Blue.number] >= 3 && g.players.any(::isCpHanMei)) return true
+    }
     return false
 }
 
