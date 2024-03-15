@@ -110,7 +110,10 @@ class DuMing : TriggeredSkill {
                                     else -> {}
                                 }
                             }
-                            color = listOf(Red, Blue, Black).filter { it !in messageCard.colors == wrong }.random()
+                            color = listOf(Red, Blue, Black).filter { it !in messageCard.colors == wrong }.run {
+                                firstOrNull { r.identity != Black && it == r.identity }
+                                    ?: firstOrNull { it != Black } ?: random()
+                            }
                         }
                     })
                 }, 3, TimeUnit.SECONDS)
