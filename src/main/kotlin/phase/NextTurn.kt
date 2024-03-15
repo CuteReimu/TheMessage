@@ -4,6 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.secret_task.Disturber
+import com.fengsheng.protos.unknownWaitingToc
 import com.fengsheng.skill.InvalidSkill
 import com.fengsheng.skill.OneTurnSkill
 import com.fengsheng.skill.changeGameResult
@@ -33,6 +34,7 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
                 game.players.forEach { it!!.resetSkillUseCount() }
                 InvalidSkill.reset(game)
                 OneTurnSkill.reset(game)
+                game.players.send { unknownWaitingToc { } }
                 GameExecutor.post(game, { game.resolve(DrawPhase(player)) }, 500, TimeUnit.MILLISECONDS)
                 return null
             }
