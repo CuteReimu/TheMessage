@@ -392,8 +392,11 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         val declaredWinners = ArrayList<Player>()
         changeGameResult(whoseTurn, declaredWinners, winner)
         logger.info("只剩下${alivePlayers.joinToString()}存活，胜利者有${winner.joinToString()}")
-        allPlayerSetRoleFaceUp()
-        GameExecutor.post(this, { end(declaredWinners, winner) }, 1, TimeUnit.SECONDS)
+        this.players.send { unknownWaitingToc { } }
+        GameExecutor.post(this, {
+            allPlayerSetRoleFaceUp()
+            end(declaredWinners, winner)
+        }, 1, TimeUnit.SECONDS)
         return true
     }
 

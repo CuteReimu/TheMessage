@@ -1,13 +1,11 @@
 package com.fengsheng.phase
 
-import com.fengsheng.Fsm
-import com.fengsheng.GameExecutor
-import com.fengsheng.Player
-import com.fengsheng.ResolveResult
+import com.fengsheng.*
 import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.protos.unknownWaitingToc
 import com.fengsheng.skill.changeGameResult
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -50,14 +48,20 @@ data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, va
         if (declaredWinner.isNotEmpty()) {
             whoseTurn.game!!.changeGameResult(whoseTurn, declaredWinner, winner)
             logger.info("${declaredWinner.joinToString()}宣告胜利，胜利者有${winner.joinToString()}")
-            whoseTurn.game!!.allPlayerSetRoleFaceUp()
-            GameExecutor.post(whoseTurn.game!!, { whoseTurn.game!!.end(declaredWinner, winner) }, 1, TimeUnit.SECONDS)
+            whoseTurn.game!!.players.send { unknownWaitingToc { } }
+            GameExecutor.post(whoseTurn.game!!, {
+                whoseTurn.game!!.allPlayerSetRoleFaceUp()
+                whoseTurn.game!!.end(declaredWinner, winner)
+            }, 1, TimeUnit.SECONDS)
             return ResolveResult(null, false)
         }
         if (players.all { !it.alive }) {
             logger.info("全部死亡，游戏结束")
-            whoseTurn.game!!.allPlayerSetRoleFaceUp()
-            GameExecutor.post(whoseTurn.game!!, { whoseTurn.game!!.end(emptyList(), emptyList()) }, 1, TimeUnit.SECONDS)
+            whoseTurn.game!!.players.send { unknownWaitingToc { } }
+            GameExecutor.post(whoseTurn.game!!, {
+                whoseTurn.game!!.allPlayerSetRoleFaceUp()
+                whoseTurn.game!!.end(emptyList(), emptyList())
+            }, 1, TimeUnit.SECONDS)
             return ResolveResult(null, false)
         }
         if (whoseTurn.game!!.checkOnlyOneAliveIdentityPlayers(whoseTurn))

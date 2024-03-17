@@ -4,6 +4,7 @@ import com.fengsheng.card.count
 import com.fengsheng.phase.StartWaitForChengQing
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.protos.unknownWaitingToc
 import com.fengsheng.skill.changeGameResult
 import com.fengsheng.skill.checkWin
 import org.apache.logging.log4j.kotlin.logger
@@ -83,18 +84,21 @@ abstract class ProcessFsm : Fsm {
                 }
             }
         }
-        whoseTurn.game!!.checkWin(whoseTurn, declareWinner, winner)
+        game.checkWin(whoseTurn, declareWinner, winner)
         if (declareWinner.isNotEmpty() && stealer != null && stealer === whoseTurn && !winner.containsPlayer(stealer)) {
             declareWinner = hashMapOf(stealer.location to stealer)
             winner = hashMapOf(stealer.location to stealer)
         }
         val declareWinners = declareWinner.values.toMutableList()
         val winners = winner.values.toMutableList()
-        whoseTurn.game!!.changeGameResult(whoseTurn, declareWinners, winners)
+        game.changeGameResult(whoseTurn, declareWinners, winners)
         if (declareWinner.isNotEmpty()) {
             logger.info("${declareWinners.joinToString()}宣告胜利，胜利者有${winners.joinToString()}")
-            game.allPlayerSetRoleFaceUp()
-            GameExecutor.post(whoseTurn.game!!, { whoseTurn.game!!.end(declareWinners, winners) }, 1, TimeUnit.SECONDS)
+            game.players.send { unknownWaitingToc { } }
+            GameExecutor.post(game, {
+                game.allPlayerSetRoleFaceUp()
+                game.end(declareWinners, winners)
+            }, 1, TimeUnit.SECONDS)
             return ResolveResult(null, false)
         }
         return null
