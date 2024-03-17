@@ -137,7 +137,7 @@ class JiBan : MainPhaseSkill() {
                 if (seq != 0) r.cards.random()
                 else r.cards.bestCard(r.identity, true)
             val players =
-                if (seq != 0 || r.game!!.isEarly) availableTargets
+                if (seq != 0) availableTargets
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty {
                     if (card.type in WeiBi.availableCardType) r.weiBiFailRate = 0
                     availableTargets
