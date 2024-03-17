@@ -107,8 +107,8 @@ private fun Player.willWinInternal(
                 val counts = inFrontOfWhom.countMessageCard(colors)
                 counts[Black.number] >= 3 || return false
                 when (secretTask) {
-                    Killer -> this === whoseTurn && counts[Black.number] >= 2
-                    Pioneer -> this === inFrontOfWhom && counts[Black.number] >= 1
+                    Killer -> this === whoseTurn && counts[3] >= 2
+                    Pioneer -> this === inFrontOfWhom && counts[3] >= 1
                     Sweeper -> counts[Red.number] <= 1 && counts[Blue.number] <= 1
                     else -> false
                 }
