@@ -7,6 +7,7 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Fengsheng.wei_bi_give_card_tos
 import com.fengsheng.protos.weiBiGiveCardToc
 import com.fengsheng.protos.weiBiGiveCardTos
@@ -230,6 +231,7 @@ class WeiBi : Card {
                         it.cards.any { card -> card.type in availableCardType }
             }.run {
                 filter { it!!.cards.any { card -> card.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) } }.ifEmpty { this }
+                    .run { if (player.identity != Black) filter { it!!.identity != Black }.ifEmpty { this } else this }
             }.randomOrNull() ?: return false
             val cardType =
                 if (Random.nextInt(2) < player.weiBiFailRate) listOf(Jie_Huo, Wu_Dao, Diao_Bao).random() // N/2的概率纯随机
