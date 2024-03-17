@@ -8,6 +8,7 @@ import com.fengsheng.skill.changeGameResult
 import com.fengsheng.skill.checkWin
 import org.apache.logging.log4j.kotlin.logger
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * 游戏流程相关的状态机，进入这个状态时，先会处理所有事件，再判断输赢，最后再调用execute0函数
@@ -93,7 +94,7 @@ abstract class ProcessFsm : Fsm {
         if (declareWinner.isNotEmpty()) {
             logger.info("${declareWinners.joinToString()}宣告胜利，胜利者有${winners.joinToString()}")
             game.allPlayerSetRoleFaceUp()
-            whoseTurn.game!!.end(declareWinners, winners)
+            GameExecutor.post(whoseTurn.game!!, { whoseTurn.game!!.end(declareWinners, winners) }, 1, TimeUnit.SECONDS)
             return ResolveResult(null, false)
         }
         return null
