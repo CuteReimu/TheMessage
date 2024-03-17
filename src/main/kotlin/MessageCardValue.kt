@@ -361,6 +361,7 @@ class SendMessageCardResult(
 fun Player.calSendMessageCard(
     whoseTurn: Player = this,
     availableCards: List<Card> = cards,
+    isYuQinGuZong: Boolean = false,
 ): SendMessageCardResult {
     if (availableCards.isEmpty()) {
         logger.error("没有可用的情报牌，玩家手牌：${cards.joinToString()}")
@@ -405,6 +406,7 @@ fun Player.calSendMessageCard(
     }
 
     for (card in availableCards.sortCards(identity, true)) {
+        val removedCard = if (isYuQinGuZong) deleteMessageCard(card.id) else null
         if (card.direction == Up || skills.any { it is LianLuo }) {
             val (partner, enemy) = game!!.players.filter { it !== this && it!!.alive }.partition { isPartner(it!!) }
             for (target in partner.shuffled() + enemy.shuffled()) {
@@ -427,8 +429,10 @@ fun Player.calSendMessageCard(
                 result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyList(), value)
             }
         }
+        removedCard?.let { messageCards.add(it) }
     }
     if (result.card.canLock() || skills.any { it is MustLockOne || it is QiangYingXiaLing }) {
+        val removedCard = if (isYuQinGuZong) deleteMessageCard(result.card.id) else null
         var maxValue = Int.MIN_VALUE
         var lockTarget: Player? = null
         when (result.dir) {
@@ -466,6 +470,7 @@ fun Player.calSendMessageCard(
             }
         }
         lockTarget?.let { if (result.dir == Up && it.isPartner(this) || it !== this) result.lockedPlayers = listOf(it) }
+        removedCard?.let { messageCards.add(it) }
     }
     logger.debug("计算结果：${result.card}(cardId:${result.card.id})传递给${result.target}，方向是${result.dir}，分数为${result.value}")
     return result

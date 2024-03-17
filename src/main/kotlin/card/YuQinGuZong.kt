@@ -85,7 +85,7 @@ class YuQinGuZong : Card {
             var result: SendMessageCardResult? = null
             for (messageCard in availableCards) {
                 val v = player.calculateRemoveCardValue(player, player, messageCard)
-                val rlt = player.calSendMessageCard(player, listOf(messageCard))
+                val rlt = player.calSendMessageCard(player, listOf(messageCard), true)
                 if (v + rlt.value > value) {
                     value = v + rlt.value
                     result = rlt
