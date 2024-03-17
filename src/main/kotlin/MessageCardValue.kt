@@ -66,6 +66,8 @@ private fun Player.willWinInternalCp(
     val g = whoseTurn.game!!
     fun isCpXiaoJiu(p: Player?) = p!!.alive && p.skills.any { it is YiZhongRen }
     fun isCpHanMei(p: Player?) = p!!.alive && p.skills.any { it is BaiYueGuang }
+    fun isHanMei(p: Player) = p.alive && p.roleName.endsWith("韩梅")
+    fun isXiaoJiu(p: Player) = p.alive && p.roleName.endsWith("小九")
     val counts = inFrontOfWhom.countMessageCard(colors)
     if (isCpXiaoJiu(this) && isHanMei(inFrontOfWhom) && counts[Red.number] >= 3 &&
         !inFrontOfWhom.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)

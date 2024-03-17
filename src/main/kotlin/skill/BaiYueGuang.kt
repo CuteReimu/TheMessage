@@ -31,6 +31,6 @@ class BaiYueGuang : ChangeDrawCardCountSkill, WinSkill {
             winner.addPlayer(p)
         }
     }
-}
 
-fun isXiaoJiu(p: Player?) = p!!.alive && p.roleFaceUp && p.roleName.endsWith("小九")
+    private fun isXiaoJiu(p: Player?) = p!!.alive && p.roleFaceUp && p.roleName.endsWith("小九")
+}

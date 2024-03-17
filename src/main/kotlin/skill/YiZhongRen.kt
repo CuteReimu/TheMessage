@@ -31,6 +31,6 @@ class YiZhongRen : ChangeDrawCardCountSkill, WinSkill {
             winner.addPlayer(p)
         }
     }
-}
 
-fun isHanMei(p: Player?) = p!!.alive && p.roleFaceUp && p.roleName.endsWith("韩梅")
+    private fun isHanMei(p: Player?) = p!!.alive && p.roleFaceUp && p.roleName.endsWith("韩梅")
+}
