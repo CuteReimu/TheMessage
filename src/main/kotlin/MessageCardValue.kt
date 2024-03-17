@@ -380,6 +380,17 @@ fun Player.calSendMessageCard(
         var currentPlayer = nextPlayerFunc()
         var currentPercent = 1.0
         val canLock = card.canLock() || skills.any { it is MustLockOne || it is QiangYingXiaLing }
+        if (attenuation == 0.0) { // 对于向上的情报，单独处理
+            val nextPlayer = currentPlayer
+            val nextValue = calculateMessageCardValue(whoseTurn, nextPlayer, card)
+            val me = currentPlayer.nextPlayerFunc()
+            val myValue = calculateMessageCardValue(whoseTurn, me, card)
+            return when {
+                canLock && nextValue >= myValue -> nextValue
+                nextPlayer.isEnemy(me) -> minOf(nextValue, myValue)
+                else -> maxOf(nextValue, myValue)
+            }.toDouble()
+        }
         while (true) {
             var m = currentPercent
             if (canLock) m *= m
@@ -397,7 +408,7 @@ fun Player.calSendMessageCard(
         if (card.direction == Up || skills.any { it is LianLuo }) {
             val (partner, enemy) = game!!.players.filter { it !== this && it!!.alive }.partition { isPartner(it!!) }
             for (target in partner.shuffled() + enemy.shuffled()) {
-                val tmpValue = calAveValue(card, 0.7) { if (this === target) this@calSendMessageCard else target!! }
+                val tmpValue = calAveValue(card, 0.0) { if (this === target) this@calSendMessageCard else target!! }
                 if (tmpValue > value) {
                     value = tmpValue
                     result = SendMessageCardResult(card, target!!, Up, emptyList(), value)
