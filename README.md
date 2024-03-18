@@ -63,11 +63,11 @@ push.push_qq_groups=12345678
 
 **log4j配置**
 
-见`src/main/resources/log4j.properties`
+见 [src/main/resources/log4j2.xml](src/main/resources/log4j2.xml)
 
 ## 关于GM命令
 
-直接GET请求 http://127.0.0.1:9092/xxxx?a=1&b=2 即可使用。目前支持的GM命令有：
+直接GET请求`http://127.0.0.1:9092/xxxx?a=1&b=2`即可使用。目前支持的GM命令有：
 
 | 终结点               | 参数                      | 备注                                                                  |
 |-------------------|-------------------------|---------------------------------------------------------------------|
@@ -111,11 +111,11 @@ idea.max.intellisense.filesize=2500
 idea.max.content.load.filesize=20000
 ```
 
-将`idea.max.intellisense.filesize`的值改大。若没有这个属性，自行添加即可。
+`idea.max.intellisense.filesize`表示IDEA的代码洞察功能支持缓存的单个文件大小。默认是2500，将它改大即可。若没有这个属性，自行添加并改大即可。
 
 ### 中文乱码问题
 
-如遇Linux下中文乱码，请将字体文件放入`/usr/share/fonts`中，然后执行以下shell
+对于“排行”“胜率”这两个生成图片的功能，如遇Linux下中文乱码，请将字体文件放入`/usr/share/fonts`中，然后执行以下shell
 
 ```shell
 # 刷新字体缓存
