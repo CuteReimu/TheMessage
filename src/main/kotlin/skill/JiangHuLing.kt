@@ -49,10 +49,9 @@ class JiangHuLing : TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    val colors =
-                        if (r.identity == Black) listOf(Black, Red, Blue)
-                        else listOf(Black, Red, Blue) - r.identity
-                    val color = colors.random()
+                    val color =
+                        if (r.identity == Black) Black
+                        else (listOf(Black, Red, Blue) - r.identity).random()
                     r.game!!.tryContinueResolveProtocol(r, skillJiangHuLingATos {
                         enable = true
                         this.color = color
