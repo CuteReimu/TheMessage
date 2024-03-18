@@ -36,9 +36,15 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                 selected[player!!.location] = options[player.location].run {
                     if (Config.IsGmEnable) return@run firstOrNull()
                     val aiPreferRole = aiPreferRole.toMutableSet()
-                    if (player.identity == Black) { aiPreferRole -= sp_gu_xiao_meng}
-                    if (player.identity == Blue)  { aiPreferRole -= cp_xiao_jiu }
-                    if (player.identity == Red)   { aiPreferRole -= cp_han_mei }
+                    if (player.identity == Black) {
+                        aiPreferRole -= sp_gu_xiao_meng
+                    }
+                    if (player.identity == Blue) {
+                        aiPreferRole -= cp_xiao_jiu
+                    }
+                    if (player.identity == Red) {
+                        aiPreferRole -= cp_han_mei
+                    }
                     filter { it.role in aiPreferRole }.ifEmpty {
                         RoleCache.filterForbidRoles(aiPreferRole).filter {
                             options.all { option -> option.all { o -> it != o.role } }
