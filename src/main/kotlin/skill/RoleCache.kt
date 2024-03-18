@@ -143,21 +143,7 @@ object RoleCache {
      */
     fun getRandomRoles(n: Int): List<RoleSkillsData> = runBlocking {
         mu.withLock {
-            val cpIndex1 = cache.indexOfLast { it.role == cp_xiao_jiu }
-            val cpIndex2 = cache.indexOfLast { it.role == cp_han_mei }
-            val indexList = cache.indices.shuffled().take(n).toMutableList()
-            var changed = false
-            if (indexList.size >= 2) {
-                if (cpIndex1 >= 0 && cpIndex1 !in indexList) {
-                    indexList[0] = cpIndex1
-                    changed = true
-                }
-                if (cpIndex2 >= 0 && cpIndex2 !in indexList) {
-                    indexList[1] = cpIndex2
-                    changed = true
-                }
-            }
-            if (changed) indexList.shuffle()
+            val indexList = cache.indices.shuffled()
             List(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
         }
     }
