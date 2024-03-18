@@ -3,16 +3,15 @@ package com.fengsheng.phase
 import com.fengsheng.*
 import com.fengsheng.protos.Common.role.*
 import com.fengsheng.protos.Fengsheng.select_role_tos
-import com.fengsheng.protos.gameStartToc
-import com.fengsheng.protos.selectRoleToc
-import com.fengsheng.protos.selectRoleTos
-import com.fengsheng.protos.waitForSelectRoleToc
 import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessage
+import com.fengsheng.protos.Common.color.*
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
+import com.fengsheng.Player
+import com.fengsheng.protos.*
 
 /**
  * 等待玩家选择角色
@@ -36,6 +35,16 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             } else {
                 selected[player!!.location] = options[player.location].run {
                     if (Config.IsGmEnable) return@run firstOrNull()
+                    val aiPreferRole = aiPreferRole.toMutableSet()
+                    if (player.identity == Black) {
+                        aiPreferRole -= sp_gu_xiao_meng
+                    }
+                    if (player.identity == Blue) {
+                        aiPreferRole -= cp_xiao_jiu
+                    }
+                    if (player.identity == Red) {
+                        aiPreferRole -= cp_han_mei
+                    }
                     filter { it.role in aiPreferRole }.ifEmpty {
                         RoleCache.filterForbidRoles(aiPreferRole).filter {
                             options.all { option -> option.all { o -> it != o.role } }
