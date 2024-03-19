@@ -33,6 +33,12 @@ class RobotPlayer : Player() {
             val ai = aiSkillMainPhase[skill.skillId] ?: continue
             if (ai(fsm, skill as ActiveSkill)) return
         }
+        if (!game!!.players.any { it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) > 0 }) {
+            if (Random.nextInt(4) != 0) { // 对于0分的新人，机器人有3/4的概率在出牌阶段不打牌
+                GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
+                return
+            }
+        }
         if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null) {
             val cardTypes =
                 if (findSkill(JI_SONG) == null && (findSkill(GUANG_FA_BAO) == null || roleFaceUp))
