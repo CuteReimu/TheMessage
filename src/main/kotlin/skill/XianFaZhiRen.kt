@@ -6,7 +6,7 @@ import com.fengsheng.card.count
 import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.*
-import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.role.shang_yu
 import com.fengsheng.protos.Role.skill_xian_fa_zhi_ren_a_tos
 import com.fengsheng.protos.Role.skill_xian_fa_zhi_ren_b_tos
@@ -26,8 +26,9 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         var found = false
+        var e: AddMessageCardEvent? = null
         while (true) {
-            g.findEvent<AddMessageCardEvent>(this) { event ->
+            e = g.findEvent<AddMessageCardEvent>(this) { event ->
                 !askWhom.roleFaceUp || return@findEvent false
                 event.bySkill || return@findEvent false
                 g.players.any { it!!.messageCards.isNotEmpty() }
@@ -35,10 +36,10 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             found = true
         }
         if (!found) return null
-        return ResolveResult(executeXianFaZhiRenA(g.fsm!!, askWhom), true)
+        return ResolveResult(executeXianFaZhiRenA(g.fsm!!, e!!, askWhom), true)
     }
 
-    private data class executeXianFaZhiRenA(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class executeXianFaZhiRenA(val fsm: Fsm, val event: AddMessageCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->
@@ -55,18 +56,17 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val targetAndCard = g.players.flatMap {
-                        if (it!!.isPartnerOrSelf(r)) {
-                            if (it.messageCards.count(Black) < 3) emptyList()
-                            else it.messageCards.filter(Black).map { card -> PlayerAndCard(it, card) }
-                        } else {
-                            listOf(Red, Blue).flatMap { c ->
-                                if (it.messageCards.count(c) == 3)
-                                    it.messageCards.filter(c).map { card -> PlayerAndCard(it, card) }
-                                else emptyList()
+                    var targetAndCard: PlayerAndCard? = null
+                    var value = 100
+                    for (p in g.players.filter { it!!.alive }.shuffled()) {
+                        for (card in p!!.messageCards) {
+                            val v = r.calculateRemoveCardValue(event.whoseTurn, p, card)
+                            if (v > value) {
+                                value = v
+                                targetAndCard = PlayerAndCard(p, card)
                             }
                         }
-                    }.randomOrNull()
+                    }
                     g.tryContinueResolveProtocol(r, skillXianFaZhiRenATos {
                         if (targetAndCard != null) {
                             enable = true
