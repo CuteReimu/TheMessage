@@ -251,7 +251,6 @@ fun Player.calculateMessageCardValue(
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
  * @param colors 情报牌的颜色
- * @param sender 情报传出者，null表示这并不是在计算待收情报
  */
 fun Player.calculateMessageCardValue(
     whoseTurn: Player,
