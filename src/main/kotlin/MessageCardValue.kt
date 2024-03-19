@@ -35,6 +35,8 @@ fun Player.willDie(colors: List<color>) = messageCards.count(Black) >= 2 && Blac
 /**
  * 判断玩家是否能赢
  *
+ * TODO: 这里没有判断传出者
+ *
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
  * @param card 情报牌
@@ -44,6 +46,8 @@ fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, card: Card) =
 
 /**
  * 判断玩家是否能赢
+ *
+ * TODO: 这里没有判断传出者
  *
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
@@ -164,13 +168,15 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
  * @param card 情报牌
+ * @param sender 情报传出者，null表示这并不是在计算待收情报
  */
 fun Player.calculateMessageCardValue(
     whoseTurn: Player,
     inFrontOfWhom: Player,
     card: Card,
-    checkThreeSame: Boolean = false
-) = calculateMessageCardValue(whoseTurn, inFrontOfWhom, card.colors, checkThreeSame)
+    checkThreeSame: Boolean = false,
+    sender: Player? = null
+) = calculateMessageCardValue(whoseTurn, inFrontOfWhom, card.colors, checkThreeSame, sender)
 
 /**
  * 计算移除一张情报牌的价值
@@ -189,6 +195,63 @@ fun Player.calculateRemoveCardValue(whoseTurn: Player, from: Player, card: Card)
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
  * @param colors 情报牌的颜色
+ * @param sender 情报传出者，null表示这并不是在计算待收情报
+ */
+fun Player.calculateMessageCardValue(
+    whoseTurn: Player,
+    inFrontOfWhom: Player,
+    colors: List<color>,
+    checkThreeSame: Boolean = false,
+    sender: Player? = null
+): Int {
+    var v1 = calculateMessageCardValue(whoseTurn, inFrontOfWhom, colors, checkThreeSame)
+    if (sender != null) {
+        if (sender.skills.any { it is MianLiCangZhen }) {
+            var valueSender = -1
+            var valueMe = 0
+            for (c in sender.cards.filter(Card::isBlack)) {
+                val v = sender.calculateMessageCardValue(whoseTurn, inFrontOfWhom, c.colors, checkThreeSame)
+                if (v > valueSender) {
+                    valueSender = v
+                    valueMe = calculateMessageCardValue(whoseTurn, inFrontOfWhom, c.colors, checkThreeSame)
+                }
+            }
+            v1 += valueMe
+        }
+        if (Black !in colors && sender.skills.any { it is ChiZiZhiXin }) {
+            var valueSender = 30
+            var valueMe = 0
+            for (c in sender.cards.filter { it.colors.any { c -> c in colors } }) {
+                val v = sender.calculateMessageCardValue(whoseTurn, sender, c.colors, checkThreeSame)
+                if (v > valueSender) {
+                    valueSender = v
+                    valueMe = calculateMessageCardValue(whoseTurn, sender, c.colors, checkThreeSame)
+                }
+            }
+            v1 += when {
+                valueSender > 30 -> valueMe
+                isPartnerOrSelf(sender) -> 20
+                else -> -20
+            }
+        }
+        // TODO CP韩梅还要判断一下拿牌，这里就暂时先不写了
+        if (Blue in colors && sender.skills.any { it is AnCangShaJi }) {
+            if (sender.cards.any { it.isPureBlack() }) {
+                val v = sender.calculateMessageCardValue(whoseTurn, inFrontOfWhom, listOf(Black))
+                if (v > 0) v1 += calculateMessageCardValue(whoseTurn, inFrontOfWhom, listOf(Black))
+            }
+        }
+    }
+    return v1
+}
+
+/**
+ * 计算情报牌的价值
+ *
+ * @param whoseTurn 当前回合玩家
+ * @param inFrontOfWhom 情报在谁面前
+ * @param colors 情报牌的颜色
+ * @param sender 情报传出者，null表示这并不是在计算待收情报
  */
 fun Player.calculateMessageCardValue(
     whoseTurn: Player,
@@ -439,7 +502,7 @@ fun Player.calSendMessageCard(
                 val targets = game!!.sortedFrom(game!!.players.filter { it!!.alive }, location)
                 for (i in listOf(0) + ((targets.size - 1) downTo 1)) {
                     val target = targets[i]
-                    val v = calculateMessageCardValue(whoseTurn, target, result.card)
+                    val v = calculateMessageCardValue(whoseTurn, target, result.card, sender = this)
                     if (v > maxValue) {
                         maxValue = v
                         lockTarget = target
@@ -450,7 +513,7 @@ fun Player.calSendMessageCard(
             Right -> {
                 val targets = game!!.sortedFrom(game!!.players.filter { it!!.alive }, location)
                 for (target in targets) {
-                    val v = calculateMessageCardValue(whoseTurn, target, result.card)
+                    val v = calculateMessageCardValue(whoseTurn, target, result.card, sender = this)
                     if (v > maxValue) {
                         maxValue = v
                         lockTarget = target
@@ -460,7 +523,7 @@ fun Player.calSendMessageCard(
 
             else -> {
                 for (player in listOf(this, result.target)) {
-                    val v = calculateMessageCardValue(whoseTurn, player, result.card)
+                    val v = calculateMessageCardValue(whoseTurn, player, result.card, sender = this)
                     if (v > maxValue) {
                         maxValue = v
                         lockTarget = player
@@ -539,7 +602,7 @@ fun Player.calFightPhase(
             order[2] = Diao_Bao
         }
     }
-    val oldValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+    val oldValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard, sender = e.sender)
     var value = oldValue
     var result: FightPhaseResult? = null
     val cards = availableCards.sortCards(identity)
@@ -550,7 +613,7 @@ fun Player.calFightPhase(
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
-                    val newValue = calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard)
+                    val newValue = calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard, sender = e.sender)
                     if (newValue > value) {
                         result = FightPhaseResult(
                             cardType,
@@ -566,7 +629,7 @@ fun Player.calFightPhase(
                 }
 
                 Diao_Bao -> {
-                    val newValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card)
+                    val newValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card, sender = e.sender)
                     if (newValue > value) {
                         result = FightPhaseResult(
                             cardType,
@@ -583,7 +646,8 @@ fun Player.calFightPhase(
                 else -> { // Wu_Dao
                     val calLeft = {
                         val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
-                        val newValueLeft = calculateMessageCardValue(e.whoseTurn, left, e.messageCard)
+                        val newValueLeft =
+                            calculateMessageCardValue(e.whoseTurn, left, e.messageCard, sender = e.sender)
                         if (newValueLeft > value) {
                             result = FightPhaseResult(
                                 cardType,
@@ -598,7 +662,8 @@ fun Player.calFightPhase(
                     }
                     val calRight = {
                         val right = e.inFrontOfWhom.getNextRightAlivePlayer()
-                        val newValueRight = calculateMessageCardValue(e.whoseTurn, right, e.messageCard)
+                        val newValueRight =
+                            calculateMessageCardValue(e.whoseTurn, right, e.messageCard, sender = e.sender)
                         if (newValueRight > value) {
                             result = FightPhaseResult(
                                 cardType,

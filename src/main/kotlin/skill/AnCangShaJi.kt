@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.RobotPlayer.Companion.sortCards
+import com.fengsheng.RobotPlayer.Companion.bestCardOrNull
 import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Fengsheng.end_receive_phase_tos
@@ -125,7 +125,7 @@ class AnCangShaJi : TriggeredSkill {
             if (fsm0 !is executeAnCangShaJi) return false
             val p = fsm0.r
             val target = fsm0.target
-            var card = p.cards.filter { it.isPureBlack() }.sortCards(p.identity, true).firstOrNull()
+            var card = p.cards.filter { it.isPureBlack() }.bestCardOrNull(p.identity, true)
             if (card != null) {
                 val v = p.calculateMessageCardValue(fsm0.event.whoseTurn, target, card)
                 if (v <= 0) card = null

@@ -108,8 +108,10 @@ class YingBianZiRu : ActiveSkill {
                 GameExecutor.post(r.game!!, {
                     val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
                     val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
-                    val leftValue = r.calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard)
-                    val rightValue = r.calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard)
+                    val leftValue =
+                        r.calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard, sender = fsm.sender)
+                    val rightValue =
+                        r.calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard, sender = fsm.sender)
                     val target = if (leftValue > rightValue) left else right
                     r.game!!.tryContinueResolveProtocol(r, skillYingBianZiRuBTos {
                         targetPlayerId = r.getAlternativeLocation(target.location)

@@ -107,12 +107,13 @@ class JiSong : ActiveSkill {
             val player = e.whoseFightTurn
             player.getSkillUseCount(SkillId.JI_SONG) == 0 || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
-            val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            val oldValue =
+                player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard, sender = e.sender)
             var value = oldValue
             var target = e.inFrontOfWhom
             for (p in player.game!!.sortedFrom(player.game!!.players, player.location)) {
                 p.alive || continue
-                val v = player.calculateMessageCardValue(e.whoseTurn, p, e.messageCard)
+                val v = player.calculateMessageCardValue(e.whoseTurn, p, e.messageCard, sender = e.sender)
                 if (v > value) {
                     value = v
                     target = p

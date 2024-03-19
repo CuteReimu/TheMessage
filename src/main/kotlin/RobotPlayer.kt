@@ -113,27 +113,39 @@ class RobotPlayer : Player() {
             val receive = fsm.mustReceiveMessage() || // 如果必须接收，则接收
                     !fsm.cannotReceiveMessage() && // 如果不能接收，则不接收
                     run {
-                        val oldValue = calculateMessageCardValue(fsm.whoseTurn, this, fsm.messageCard)
+                        val oldValue =
+                            calculateMessageCardValue(fsm.whoseTurn, this, fsm.messageCard, sender = fsm.sender)
                         var newValue =
                             when (fsm.dir) {
                                 Left -> {
                                     val left = fsm.inFrontOfWhom.getNextLeftAlivePlayer()
-                                    calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard)
+                                    calculateMessageCardValue(fsm.whoseTurn, left, fsm.messageCard, sender = fsm.sender)
                                 }
 
                                 Right -> {
                                     val right = fsm.inFrontOfWhom.getNextRightAlivePlayer()
-                                    calculateMessageCardValue(fsm.whoseTurn, right, fsm.messageCard)
+                                    calculateMessageCardValue(
+                                        fsm.whoseTurn,
+                                        right,
+                                        fsm.messageCard,
+                                        sender = fsm.sender
+                                    )
                                 }
 
                                 else -> {
-                                    calculateMessageCardValue(fsm.whoseTurn, fsm.sender, fsm.messageCard)
+                                    calculateMessageCardValue(
+                                        fsm.whoseTurn,
+                                        fsm.sender,
+                                        fsm.messageCard,
+                                        sender = fsm.sender
+                                    )
                                 }
                             }
                         newValue = (newValue * 10 + calculateMessageCardValue(
                             fsm.whoseTurn,
                             fsm.lockedPlayers.ifEmpty { listOf(fsm.sender) }.first(),
-                            fsm.messageCard
+                            fsm.messageCard,
+                            sender = fsm.sender
                         )) / 11
                         newValue <= oldValue
                     }
@@ -386,6 +398,11 @@ class RobotPlayer : Player() {
         fun Iterable<Card>.bestCard(c: color, reverse: Boolean = false): Card {
             return if (reverse) minBy { -cardOrder[it.type]!! * 100 + if (c in it.colors) 1 else 0 }
             else minBy { cardOrder[it.type]!! + if (c in it.colors) 1 else 0 }
+        }
+
+        fun Iterable<Card>.bestCardOrNull(c: color, reverse: Boolean = false): Card? {
+            return if (reverse) minByOrNull { -cardOrder[it.type]!! * 100 + if (c in it.colors) 1 else 0 }
+            else minByOrNull { cardOrder[it.type]!! + if (c in it.colors) 1 else 0 }
         }
     }
 }

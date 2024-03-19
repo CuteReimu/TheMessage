@@ -69,7 +69,7 @@ class DingLun : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             player === e.inFrontOfWhom || return false
-            val value = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard)
+            val value = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard, sender = e.sender)
             val asMessage = !player.checkThreeSameMessageCard(e.messageCard)
             value == 0 || (asMessage == (value > 0)) || return false
             GameExecutor.post(e.whoseFightTurn.game!!, {

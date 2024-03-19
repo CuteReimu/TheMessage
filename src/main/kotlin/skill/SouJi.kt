@@ -91,8 +91,12 @@ class SouJi : ActiveSkill {
                 GameExecutor.post(g, {
                     g.tryContinueResolveProtocol(r, skillSouJiBTos {
                         cardIds.addAll(target.cards.filter(Black).map { it.id })
-                        messageCard = fsm.messageCard.isBlack() &&
-                                r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard) <= 10
+                        messageCard = fsm.messageCard.isBlack() && r.calculateMessageCardValue(
+                            fsm.whoseTurn,
+                            fsm.inFrontOfWhom,
+                            fsm.messageCard,
+                            sender = fsm.sender
+                        ) <= 10
                     })
                 }, 3, TimeUnit.SECONDS)
             }

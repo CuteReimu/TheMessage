@@ -76,8 +76,18 @@ class JinKouYiKai : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val oldValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
-                    val newValue = r.calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, cards.first())
+                    val oldValue = r.calculateMessageCardValue(
+                        fsm.whoseTurn,
+                        fsm.inFrontOfWhom,
+                        fsm.messageCard,
+                        sender = fsm.sender
+                    )
+                    val newValue = r.calculateMessageCardValue(
+                        fsm.whoseTurn,
+                        fsm.inFrontOfWhom,
+                        cards.first(),
+                        sender = fsm.sender
+                    )
                     g.tryContinueResolveProtocol(r, skillJinKouYiKaiBTos { exchange = newValue > oldValue + 10 })
                 }, 3, TimeUnit.SECONDS)
             }

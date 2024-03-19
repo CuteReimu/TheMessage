@@ -50,8 +50,9 @@ class TouTian : ActiveSkill {
             !player.roleFaceUp || return false
             !player.game!!.isEarly || player.game!!.players.anyoneWillWinOrDie(e) || return false
             e.inFrontOfWhom !== player || return false
-            val oldValue = player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
-            val newValue = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard)
+            val oldValue =
+                player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard, sender = e.sender)
+            val newValue = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard, sender = e.sender)
             newValue > oldValue || return false
             val result = player.calFightPhase(e)
             if (result != null && result.cardType in listOf(Jie_Huo, Wu_Dao) && result.value >= newValue) return false

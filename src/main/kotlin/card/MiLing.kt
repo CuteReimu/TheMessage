@@ -321,7 +321,7 @@ class MiLing : Card {
                         val inFrontOfWhom = players[(i + 1) % players.size]
                         var m = currentPercent
                         if (player.isPartnerOrSelf(inFrontOfWhom)) m *= 1.2
-                        val v = player.calculateMessageCardValue(player, inFrontOfWhom, listOf(c))
+                        val v = player.calculateMessageCardValue(player, inFrontOfWhom, listOf(c), sender = p)
                         sum += v * m
                         n += m
                     }
@@ -330,7 +330,7 @@ class MiLing : Card {
                         val inFrontOfWhom = players[(i + 1) % players.size]
                         var m = currentPercent
                         if (player.isPartnerOrSelf(inFrontOfWhom)) m *= 1.2
-                        val v = player.calculateMessageCardValue(player, inFrontOfWhom, listOf(c))
+                        val v = player.calculateMessageCardValue(player, inFrontOfWhom, listOf(c), sender = p)
                         sum += v * m
                         n += m
                     }
