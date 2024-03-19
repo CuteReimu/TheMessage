@@ -386,11 +386,10 @@ fun Player.calSendMessageCard(
             val nextValue = calculateMessageCardValue(whoseTurn, nextPlayer, card)
             val me = currentPlayer.nextPlayerFunc()
             val myValue = calculateMessageCardValue(whoseTurn, me, card)
-            return when {
-                canLock && nextValue >= myValue -> nextValue
-                nextPlayer.isEnemy(me) -> minOf(nextValue, myValue)
-                else -> maxOf(nextValue, myValue)
-            }.toDouble()
+            if (canLock && nextValue >= myValue) return nextValue.toDouble()
+            val nextValue2 = nextPlayer.calculateMessageCardValue(whoseTurn, nextPlayer, card)
+            val myValue2 = nextPlayer.calculateMessageCardValue(whoseTurn, me, card)
+            return (if (nextValue2 >= myValue2) nextValue else myValue).toDouble()
         }
         while (true) {
             var m = currentPercent
