@@ -15,23 +15,7 @@ data class StartGame(val game: Game, val whoseTurn: Int) : Fsm {
         game.turn = 0
         game.deck.init(players.size)
         for (i in players.indices) players[(whoseTurn + i) % players.size]!!.init()
-        for (i in players.indices) {
-            val player = players[(whoseTurn + i) % players.size]!!
-            if (player is HumanPlayer && players.size in 5..8) {
-                val score = Statistics.getScore(player.playerName)!!
-                val addShiTanCount = when {
-                    score >= 40 -> 0
-                    score >= 20 -> Random.nextInt(2)
-                    else -> when (Random.nextInt(4)) {
-                        3 -> 2
-                        1, 2 -> 1
-                        else -> 0
-                    }
-                }
-                game.deck.pushShiTan(addShiTanCount)
-            }
-            player.draw(Config.HandCardCountBegin)
-        }
+        for (i in players.indices) players[(whoseTurn + i) % players.size]!!.draw(Config.HandCardCountBegin)
         GameExecutor.post(game, { game.resolve(DrawPhase(players[whoseTurn]!!)) }, 1, TimeUnit.SECONDS)
         return null
     }
