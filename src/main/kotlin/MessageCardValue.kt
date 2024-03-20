@@ -216,6 +216,7 @@ fun Player.calculateMessageCardValue(
                     valueMe = calculateMessageCardValue(whoseTurn, inFrontOfWhom, c.colors, checkThreeSame)
                 }
             }
+            logger.debug("这是[邵秀]传出的情报，计算[绵里藏针]额外分数为$valueMe")
             v1 += valueMe
         }
         if (Black !in colors && sender.skills.any { it is ChiZiZhiXin }) {
@@ -228,6 +229,7 @@ fun Player.calculateMessageCardValue(
                     valueMe = calculateMessageCardValue(whoseTurn, sender, c.colors, checkThreeSame)
                 }
             }
+            logger.debug("这是[SP小九]传出的情报，计算[赤子之心]额外分数为$valueMe")
             v1 += when {
                 valueSender > 30 -> valueMe
                 isPartnerOrSelf(sender) -> 20
@@ -238,6 +240,7 @@ fun Player.calculateMessageCardValue(
         if (Blue in colors && sender.skills.any { it is AnCangShaJi }) {
             if (sender.cards.any { it.isPureBlack() }) {
                 val v = sender.calculateMessageCardValue(whoseTurn, inFrontOfWhom, listOf(Black))
+                logger.debug("这是[CP韩梅]传出的情报，计算[暗藏杀机]额外分数为$v")
                 if (v > 0) v1 += calculateMessageCardValue(whoseTurn, inFrontOfWhom, listOf(Black))
             }
         }
@@ -418,7 +421,7 @@ class SendMessageCardResult(
 /**
  * 计算应该选择哪张情报传出
  *
- * @param availableCards 可以选择的牌，默认为r的所有手牌
+ * @param availableCards 可以选择的牌，默认为该玩家的所有手牌
  */
 fun Player.calSendMessageCard(
     whoseTurn: Player = this,
