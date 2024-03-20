@@ -59,7 +59,7 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                     var targetAndCard: PlayerAndCard? = null
                     var value = 100
                     for (p in g.players.filter { it!!.alive }.shuffled()) {
-                        for (card in p!!.messageCards) {
+                        for (card in p!!.messageCards.toList()) {
                             val v = r.calculateRemoveCardValue(event.whoseTurn, p, card)
                             if (v > value) {
                                 value = v
