@@ -33,7 +33,9 @@ class RobotPlayer : Player() {
             val ai = aiSkillMainPhase[skill.skillId] ?: continue
             if (ai(fsm, skill as ActiveSkill)) return
         }
-        if (!game!!.players.any { it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) > 0 }) {
+        if (!Config.IsGmEnable && !game!!.players.any {
+                it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) > 0
+            }) {
             if (Random.nextInt(4) != 0) { // 对于0分的新人，机器人有3/4的概率在出牌阶段不打牌
                 GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
                 return
@@ -171,7 +173,9 @@ class RobotPlayer : Player() {
     override fun notifyFightPhase(waitSecond: Int) {
         val fsm = game!!.fsm as FightPhaseIdle
         this === fsm.whoseFightTurn || return
-        if (!game!!.players.any { it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) > 0 }) {
+        if (!Config.IsGmEnable && !game!!.players.any {
+                it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) > 0
+            }) {
             if (Random.nextInt(4) != 0) { // 对于0分的新人，机器人有3/4的概率在争夺阶段不打牌
                 GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500, TimeUnit.MILLISECONDS)
                 return
