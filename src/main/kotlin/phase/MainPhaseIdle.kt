@@ -8,7 +8,11 @@ import com.fengsheng.ResolveResult
 /**
  * 出牌阶段空闲时点
  */
-data class MainPhaseIdle(override val whoseTurn: Player) : ProcessFsm() {
+data class MainPhaseIdle(
+    /**
+     * 表示当前回合的玩家。 **/
+    override val whoseTurn: Player
+) : ProcessFsm() {
     override fun resolve0(): ResolveResult? {
         if (!whoseTurn.alive) {
             return ResolveResult(NextTurn(whoseTurn), true)

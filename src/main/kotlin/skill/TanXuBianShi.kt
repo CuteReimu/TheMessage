@@ -173,6 +173,7 @@ class TanXuBianShi : MainPhaseSkill() {
             }.run {
                 if (e.whoseTurn.game!!.isEarly) this
                 else filter { it!!.isEnemy(e.whoseTurn) }.ifEmpty { this }
+                    .run { if (e.whoseTurn.identity != Black) filter { it!!.identity != Black }.ifEmpty { this } else this }
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillTanXuBianShiATos {

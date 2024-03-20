@@ -176,7 +176,8 @@ class YuSiWangPo : MainPhaseSkill() {
             !e.whoseTurn.game!!.isEarly || return false
             val card = e.whoseTurn.cards.ifEmpty { return false }.bestCard(e.whoseTurn.identity, true)
             val target =
-                e.whoseTurn.game!!.players.filter { it!!.alive && it.isEnemy(e.whoseTurn) && it.cards.size >= 2 }
+                e.whoseTurn.game!!.players.filter { it!!.alive && it.isEnemy(e.whoseTurn) && it.cards.size >= 1 }
+                    .run{if (e.whoseTurn.identity !=Black) filter{it!!.identity !=Black}.ifEmpty{ this} else this }
                     .randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillYuSiWangPoATos {
