@@ -240,8 +240,10 @@ fun Player.calculateMessageCardValue(
         if (Blue in colors && sender.skills.any { it is AnCangShaJi }) {
             if (sender.cards.any { it.isPureBlack() }) {
                 val v = sender.calculateMessageCardValue(whoseTurn, inFrontOfWhom, listOf(Black))
-                logger.debug("这是[CP韩梅]传出的情报，计算[暗藏杀机]额外分数为$v")
-                if (v > 0) v1 += calculateMessageCardValue(whoseTurn, inFrontOfWhom, listOf(Black))
+                var valueMe = 0
+                if (v > 0) valueMe = calculateMessageCardValue(whoseTurn, inFrontOfWhom, listOf(Black))
+                logger.debug("这是[CP韩梅]传出的情报，计算[暗藏杀机]额外分数为$valueMe")
+                v1 += valueMe
             }
         }
     }
