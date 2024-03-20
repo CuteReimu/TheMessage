@@ -206,7 +206,14 @@ fun Player.calculateMessageCardValue(
 ): Int {
     var v1 = calculateMessageCardValue(whoseTurn, inFrontOfWhom, colors, checkThreeSame)
     if (sender != null) {
+        // TODO 临时这样写，后续应该改成调用Player.countMessageCard来计数
+        class TmpCard(colors: List<color>) : Card(999, colors, Up, false) {
+            override val type: card_type = card_type.UNRECOGNIZED
+            override fun canUse(g: Game, r: Player, vararg args: Any) = false
+            override fun execute(g: Game, r: Player, vararg args: Any) = Unit
+        }
         if (sender.skills.any { it is MianLiCangZhen }) {
+            inFrontOfWhom.messageCards.add(TmpCard(colors))
             var valueSender = -1
             var valueMe = 0
             for (c in sender.cards.filter(Card::isBlack)) {
@@ -218,8 +225,10 @@ fun Player.calculateMessageCardValue(
             }
             logger.debug("这是[邵秀]传出的情报，计算[绵里藏针]额外分数为$valueMe")
             v1 += valueMe
+            inFrontOfWhom.messageCards.removeLast()
         }
         if (Black !in colors && sender.skills.any { it is ChiZiZhiXin }) {
+            inFrontOfWhom.messageCards.add(TmpCard(colors))
             var valueSender = 30
             var valueMe = 0
             for (c in sender.cards.filter { it.colors.any { c -> c in colors } }) {
@@ -235,9 +244,11 @@ fun Player.calculateMessageCardValue(
                 isPartnerOrSelf(sender) -> 20
                 else -> -20
             }
+            inFrontOfWhom.messageCards.removeLast()
         }
         // TODO CP韩梅还要判断一下拿牌，这里就暂时先不写了
         if (Blue in colors && sender.skills.any { it is AnCangShaJi }) {
+            inFrontOfWhom.messageCards.add(TmpCard(colors))
             if (sender.cards.any { it.isPureBlack() }) {
                 val v = sender.calculateMessageCardValue(whoseTurn, inFrontOfWhom, listOf(Black))
                 var valueMe = 0
@@ -245,6 +256,7 @@ fun Player.calculateMessageCardValue(
                 logger.debug("这是[CP韩梅]传出的情报，计算[暗藏杀机]额外分数为$valueMe")
                 v1 += valueMe
             }
+            inFrontOfWhom.messageCards.removeLast()
         }
     }
     return v1
