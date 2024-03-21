@@ -51,7 +51,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var mainPhaseAlreadyNotify = false
 
     fun setStartTimer() {
-        val delay = if (players.count { it is HumanPlayer } <= 1) 0L else 5L
+        val delay = if (Config.IsGmEnable || players.count { it is HumanPlayer } <= 1) 0L else 5L
         gameStartTimeout = GameExecutor.post(this, { start() }, delay, TimeUnit.SECONDS)
     }
 
