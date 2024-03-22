@@ -240,7 +240,7 @@ class DuiZhengXiaYao : ActiveSkill {
                 return null
             }
             r.incrSeq()
-            logger.info("${r}弃掉了${target}面前的${card}")
+            logger.info("${r}弃掉了${target}面前的$card")
             g.deck.discard(target.deleteMessageCard(card.id)!!)
             g.players.send {
                 skillDuiZhengXiaYaoCToc {

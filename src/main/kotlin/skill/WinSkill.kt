@@ -10,15 +10,10 @@ interface WinSkill : Skill {
     /**
      * @param r 有技能的那个人
      * @param whoseTurn 谁的回合
-     * @param declaredWinners 宣胜的玩家
-     * @param winners 胜利的玩家
+     * @param declaredWinner 宣胜的玩家
+     * @param winner 胜利的玩家
      */
-    fun checkWin(
-        r: Player,
-        whoseTurn: Player,
-        declaredWinner: MutableMap<Int, Player>,
-        winner: MutableMap<Int, Player>
-    )
+    fun checkWin(r: Player, whoseTurn: Player, declaredWinner: MutableMap<Int, Player>, winner: MutableMap<Int, Player>)
 }
 
 fun Game.checkWin(whoseTurn: Player, declaredWinner: MutableMap<Int, Player>, winner: MutableMap<Int, Player>) {

@@ -42,7 +42,7 @@ class GongFen : ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[共焚]")
         val q = ArrayDeque<Player>(g.players.size)
-        for (i in r.location..<(r.location + g.players.size)) {
+        for (i in r.location until (r.location + g.players.size)) {
             val player = g.players[i % g.players.size]!!
             if (player.alive) q.addLast(player)
         }

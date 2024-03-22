@@ -100,7 +100,7 @@ class RuBiZhiShi : ActiveSkill {
                             when (result.cardType) {
                                 Jie_Huo -> g.tryContinueResolveProtocol(r, useJieHuoTos { cardId = result.card.id })
                                 Diao_Bao -> g.tryContinueResolveProtocol(r, useDiaoBaoTos { cardId = result.card.id })
-                                else ->  // Wu_Dao
+                                else -> // Wu_Dao
                                     g.tryContinueResolveProtocol(r, useWuDaoTos {
                                         cardId = result.card.id
                                         targetPlayerId = r.getAlternativeLocation(result.wuDaoTarget!!.location)

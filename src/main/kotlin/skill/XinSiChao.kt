@@ -18,8 +18,7 @@ class XinSiChao : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
+    override fun mainPhaseNeedNotify(r: Player): Boolean = super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {

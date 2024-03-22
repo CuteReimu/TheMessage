@@ -97,14 +97,14 @@ private fun Player.willWinInternal(
 ): Boolean {
     if (!alive) return false
     if (identity != Black) {
-        return (if (partnerTogether) isPartnerOrSelf(inFrontOfWhom) else this === inFrontOfWhom)
-                && identity in colors && inFrontOfWhom.messageCards.count(identity) >= 2
+        return (if (partnerTogether) isPartnerOrSelf(inFrontOfWhom) else this === inFrontOfWhom) &&
+            identity in colors && inFrontOfWhom.messageCards.count(identity) >= 2
     } else {
         return when (secretTask) {
             Killer, Pioneer, Sweeper -> {
                 if (game!!.players.any {
                         (it!!.identity != Black || it.secretTask in listOf(Collector, Mutator)) &&
-                                it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                            it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) {
                     return false
                 }
@@ -120,14 +120,14 @@ private fun Player.willWinInternal(
 
             Collector ->
                 this === inFrontOfWhom &&
-                        if (Red in colors) messageCards.count(Red) >= 2
-                        else if (Blue in colors) messageCards.count(Blue) >= 2
-                        else false
+                    if (Red in colors) messageCards.count(Red) >= 2
+                    else if (Blue in colors) messageCards.count(Blue) >= 2
+                    else false
 
             Mutator -> {
                 if (inFrontOfWhom.let {
                         (it.identity != Black || it.secretTask == Collector) &&
-                                it.willWinInternal(whoseTurn, it, colors)
+                            it.willWinInternal(whoseTurn, it, colors)
                     }) {
                     return false
                 }
@@ -138,8 +138,11 @@ private fun Player.willWinInternal(
 
             Disturber ->
                 if (Red in colors || Blue in colors)
-                    game!!.players.all { it === this || it === inFrontOfWhom || !it!!.alive || it.messageCards.countTrueCard() >= 2 }
-                            && inFrontOfWhom.messageCards.countTrueCard() >= 1
+                    game!!.players.all {
+                        it === this || it === inFrontOfWhom || !it!!.alive ||
+                            it.messageCards.countTrueCard() >= 2
+                    } &&
+                        inFrontOfWhom.messageCards.countTrueCard() >= 1
                 else
                     game!!.players.all { it === this || !it!!.alive || it.messageCards.countTrueCard() >= 2 }
 
@@ -288,12 +291,12 @@ fun Player.calculateMessageCardValue(
         } else if (whoseTurn.roleFaceUp && whoseTurn.skills.any { it is BiYiShuangFei }) {
             if (this === whoseTurn) { // 秦圆圆的回合，任何男性角色赢了，秦圆圆都会赢
                 if (game!!.players.any {
-                        it !== disturber && (isPartnerOrSelf(it!!) || it.isMale)
-                                && it.willWinInternalCp(whoseTurn, inFrontOfWhom, colors, false)
+                        it !== disturber && (isPartnerOrSelf(it!!) || it.isMale) &&
+                            it.willWinInternalCp(whoseTurn, inFrontOfWhom, colors, false)
                     }) return 600
                 if (game!!.players.any {
-                        it !== disturber && !(isPartnerOrSelf(it!!) || it.isMale)
-                                && it.willWinInternalCp(whoseTurn, inFrontOfWhom, colors, false)
+                        it !== disturber && !(isPartnerOrSelf(it!!) || it.isMale) &&
+                            it.willWinInternalCp(whoseTurn, inFrontOfWhom, colors, false)
                     }) return -600
             } else if (identity == Black) { // 秦圆圆的回合，神秘人没关系，反正没有队友
                 if (game!!.players.any {
@@ -450,11 +453,7 @@ fun Player.calSendMessageCard(
     // 先随便填一个，反正后面要替换
     var result = SendMessageCardResult(availableCards[0], game!!.players[0]!!, Up, emptyList(), 0.0)
 
-    fun calAveValue(
-        card: Card,
-        attenuation: Double,
-        nextPlayerFunc: Player.() -> Player
-    ): Double {
+    fun calAveValue(card: Card, attenuation: Double, nextPlayerFunc: Player.() -> Player): Double {
         var sum = 0.0
         var n = 0.0
         var currentPlayer = nextPlayerFunc()
@@ -587,11 +586,7 @@ class FightPhaseResult(
     val convertCardSkill: ConvertCardSkill?
 )
 
-fun Player.calFightPhase(
-    e: FightPhaseIdle,
-    whoUse: Player = this,
-    availableCards: List<Card> = this.cards
-): FightPhaseResult? {
+fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCards: List<Card> = this.cards): FightPhaseResult? {
     val order = mutableListOf(Wu_Dao, Jie_Huo, Diao_Bao)
     if (skills.any { it is YouDao || it is JiangJiJiuJi }) {
         if (roleFaceUp) {

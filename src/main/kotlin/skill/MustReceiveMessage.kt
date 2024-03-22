@@ -25,8 +25,8 @@ abstract class MustReceiveMessage : OneTurnSkill {
  * @see MustReceiveMessage
  * @see cannotReceiveMessage
  */
-fun SendPhaseIdle.mustReceiveMessage() = inFrontOfWhom === sender || lockedPlayers.any { it === inFrontOfWhom }
-        || inFrontOfWhom.skills.any { it is MustReceiveMessage && it.mustReceive(this) }
+fun SendPhaseIdle.mustReceiveMessage() = inFrontOfWhom === sender || lockedPlayers.any { it === inFrontOfWhom } ||
+    inFrontOfWhom.skills.any { it is MustReceiveMessage && it.mustReceive(this) }
 
 /**
  * 判断[当前玩家][SendPhaseIdle.inFrontOfWhom]是否不能接收情报。
@@ -36,5 +36,4 @@ fun SendPhaseIdle.mustReceiveMessage() = inFrontOfWhom === sender || lockedPlaye
  * @see MustReceiveMessage
  * @see mustReceiveMessage
  */
-fun SendPhaseIdle.cannotReceiveMessage() =
-    inFrontOfWhom.skills.any { it is MustReceiveMessage && it.cannotReceive(this) }
+fun SendPhaseIdle.cannotReceiveMessage() = inFrontOfWhom.skills.any { it is MustReceiveMessage && it.cannotReceive(this) }

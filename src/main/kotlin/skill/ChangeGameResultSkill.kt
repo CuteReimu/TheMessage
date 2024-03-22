@@ -13,12 +13,7 @@ interface ChangeGameResultSkill : Skill {
      * @param declaredWinners 宣胜的玩家
      * @param winners 胜利的玩家
      */
-    fun changeGameResult(
-        r: Player,
-        whoseTurn: Player,
-        declaredWinners: MutableList<Player>,
-        winners: MutableList<Player>
-    )
+    fun changeGameResult(r: Player, whoseTurn: Player, declaredWinners: MutableList<Player>, winners: MutableList<Player>)
 }
 
 fun Game.changeGameResult(whoseTurn: Player, declaredWinners: MutableList<Player>, winners: MutableList<Player>) {

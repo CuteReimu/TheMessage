@@ -33,6 +33,6 @@ data class FightPhaseIdle(
     }
 
     override fun toString(): String {
-        return "${whoseTurn}的回合的争夺阶段，情报在${inFrontOfWhom}面前，正在询问${whoseFightTurn}"
+        return "${whoseTurn}的回合的争夺阶段，情报在${inFrontOfWhom}面前，正在询问$whoseFightTurn"
     }
 }

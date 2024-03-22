@@ -113,7 +113,8 @@ object ScoreFactory : Logging {
                         else if (originSecretTask == Sweeper && list[Sweeper.number + 3].rate > list[Mutator.number + 3].rate)
                             list[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
                         else list[index].rate
-                    if (list[index].gameCount > 0) score *= (100.0 - list[0].rate) / (100.0 - rate.coerceIn(8.0..50.0)) // 胜率有效范围在8%至50%
+                    if (list[index].gameCount > 0)
+                        score *= (100.0 - list[0].rate) / (100.0 - rate.coerceIn(8.0..50.0)) // 胜率有效范围在8%至50%
                     list
                 }
             }

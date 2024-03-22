@@ -27,7 +27,7 @@ data class OnReceiveCard(
         if (player.alive) {
             player.messageCards.add(messageCard)
             player.messageCards.run {
-                logger.info("${player}成功接收情报${messageCard}，现在有${count(Red)}红${count(Blue)}蓝${count(Black)}黑")
+                logger.info("${player}成功接收情报$messageCard，现在有${count(Red)}红${count(Blue)}蓝${count(Black)}黑")
             }
             for (p in player.game!!.players) p!!.notifyReceivePhase()
             val next = ReceivePhaseIdle(whoseTurn, sender, messageCard, inFrontOfWhom)

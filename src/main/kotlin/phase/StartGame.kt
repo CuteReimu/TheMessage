@@ -3,7 +3,6 @@ package com.fengsheng.phase
 import com.fengsheng.*
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 游戏马上开始

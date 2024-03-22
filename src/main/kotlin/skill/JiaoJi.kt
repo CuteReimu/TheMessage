@@ -127,8 +127,8 @@ class JiaoJi : MainPhaseSkill() {
                 return null
             }
             if (message.cardIdsCount !in needReturnCount) {
-                logger.error("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
-                player.sendErrorMessage("卡牌数量不正确，需要返还：${needReturnCount}，实际返还：${message.cardIdsCount}")
+                logger.error("卡牌数量不正确，需要返还：$needReturnCount，实际返还：${message.cardIdsCount}")
+                player.sendErrorMessage("卡牌数量不正确，需要返还：$needReturnCount，实际返还：${message.cardIdsCount}")
                 return null
             }
             val r = fsm.whoseTurn

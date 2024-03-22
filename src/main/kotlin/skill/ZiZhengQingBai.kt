@@ -19,10 +19,9 @@ class ZiZhengQingBai : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && (
-                r.identity == Black && r.cards.isNotEmpty() ||
-                        r.identity != Black && r.cards.any { r.identity !in it.colors })
+    override fun mainPhaseNeedNotify(r: Player): Boolean = super.mainPhaseNeedNotify(r) && (
+        r.identity == Black && r.cards.isNotEmpty() ||
+            r.identity != Black && r.cards.any { r.identity !in it.colors })
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {

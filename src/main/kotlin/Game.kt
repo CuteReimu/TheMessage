@@ -188,7 +188,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                             score,
                             i == humanPlayers.size - 1
                         )
-                        logger.info("${p}(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：${newScore}")
+                        logger.info("$p(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：$newScore")
                         addScoreMap[p.playerName] = deltaScore
                         newScoreMap[p.playerName] = newScore
                     }
@@ -314,7 +314,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             if (fsm !is WaitingFsm) {
                 logger.error(
                     "时机错误，当前时点为：$fsm，收到: ${pb.javaClass.simpleName} | " +
-                            printer.printToString(pb).replace("\n *".toRegex(), " ")
+                        printer.printToString(pb).replace("\n *".toRegex(), " ")
                 )
                 player.sendErrorMessage("时机错误")
                 return@post
@@ -374,7 +374,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                 Black -> return false
                 it.identity -> {}
                 else -> {
-                    if (this.players.size != 4 || it.identity == Black) // 四人局潜伏和军情会同时获胜
+                    // 四人局潜伏和军情会同时获胜
+                    if (this.players.size != 4 || it.identity == Black)
                         return false
                 }
             }
@@ -382,7 +383,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         }
         val winner =
             if (identity == Red || identity == Blue) {
-                if (this.players.size == 4) // 四人局潜伏和军情会同时获胜
+                // 四人局潜伏和军情会同时获胜
+                if (this.players.size == 4)
                     players.filter { it.identity == Red || it.identity == Blue }.toMutableList()
                 else
                     players.filter { identity == it.identity }.toMutableList()
@@ -431,9 +433,9 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
 
         val onlineCount: Int
             get() = gameCache.values.sumOf { it.players.size } + newGame.players.count { it != null } +
-                    Random(System.currentTimeMillis() / 300000).run {
-                        (0..nextInt(1..4)).sumOf { nextInt(5..9) }
-                    }
+                Random(System.currentTimeMillis() / 300000).run {
+                    (0..nextInt(1..4)).sumOf { nextInt(5..9) }
+                }
 
         @Throws(IOException::class, ClassNotFoundException::class)
         @JvmStatic

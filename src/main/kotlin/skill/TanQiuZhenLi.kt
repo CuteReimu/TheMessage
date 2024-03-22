@@ -26,10 +26,9 @@ class TanQiuZhenLi : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && r.game!!.players.any {
-            it !== r && it!!.alive && it.messageCards.any { c -> Red in c.colors || Blue in c.colors }
-        }
+    override fun mainPhaseNeedNotify(r: Player) = super.mainPhaseNeedNotify(r) && r.game!!.players.any {
+        it !== r && it!!.alive && it.messageCards.any { c -> Red in c.colors || Blue in c.colors }
+    }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
@@ -110,7 +109,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
                     for (c in target.messageCards.toList()) {
                         c.isPureBlack() || continue
                         val v = target.calculateRemoveCardValue(r, target, c) +
-                                target.calculateMessageCardValue(r, r, c)
+                            target.calculateMessageCardValue(r, r, c)
                         if (v > value) {
                             value = v
                             card = c

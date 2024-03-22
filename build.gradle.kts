@@ -5,6 +5,8 @@ plugins {
     application
     idea
     id("com.google.protobuf") version "0.9.4"
+    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("org.jlleitschuh.gradle.ktlint-idea") version "11.6.1"
 }
 
 group = "com.fengsheng"
@@ -67,4 +69,8 @@ tasks.withType<Jar> {
     from({
         configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
     })
+}
+
+ktlint {
+    version.set("0.50.0")
 }

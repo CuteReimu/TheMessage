@@ -78,7 +78,7 @@ class MiaoBiQiaoBian : ActiveSkill {
             val g = r.game!!
             target1.deleteMessageCard(card1.id)
             r.cards.add(card1)
-            logger.info("${r}发动了[妙笔巧辩]，拿走了${target1}面前的${card1}")
+            logger.info("${r}发动了[妙笔巧辩]，拿走了${target1}面前的$card1")
             val canTakeAnother = g.players.any {
                 it!!.alive && it.messageCards.any { c -> !c.hasSameColor(card1) }
             }

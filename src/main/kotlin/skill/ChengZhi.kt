@@ -77,20 +77,19 @@ class ChengZhi : TriggeredSkill {
                 }
             }
             if (r is RobotPlayer) GameExecutor.post(r.game!!, {
-                fun Player.process(identity: color, secretTask: secret_task) =
-                    if (identity != Black) {
-                        maxOf(game!!.players.filter { it!!.alive && it.identity == identity }
-                            .maxOf { it!!.messageCards.count(identity) * 10 },
-                            r.messageCards.count(identity) * 10
-                        )
-                    } else when (secretTask) {
-                        Collector -> maxOf(messageCards.count(Red), messageCards.count(Blue)) * 2 - 3
-                        Mutator -> game!!.players.filter { it!!.alive }
-                            .maxOf { maxOf(it!!.messageCards.count(Red), it.messageCards.count(Blue)) * 2 - 2 }
+                fun Player.process(identity: color, secretTask: secret_task) = if (identity != Black) {
+                    maxOf(game!!.players.filter { it!!.alive && it.identity == identity }
+                        .maxOf { it!!.messageCards.count(identity) * 10 },
+                        r.messageCards.count(identity) * 10
+                    )
+                } else when (secretTask) {
+                    Collector -> maxOf(messageCards.count(Red), messageCards.count(Blue)) * 2 - 3
+                    Mutator -> game!!.players.filter { it!!.alive }
+                        .maxOf { maxOf(it!!.messageCards.count(Red), it.messageCards.count(Blue)) * 2 - 2 }
 
-                        Pioneer -> messageCards.count(Black) * 10 - 1
-                        else -> -100
-                    }
+                    Pioneer -> messageCards.count(Black) * 10 - 1
+                    else -> -100
+                }
                 r.game!!.tryContinueResolveProtocol(r, skillChengZhiTos {
                     enable = r.process(whoDie.identity, whoDie.secretTask) > r.process(r.identity, r.secretTask)
                 })

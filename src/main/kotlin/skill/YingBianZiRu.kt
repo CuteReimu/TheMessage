@@ -69,7 +69,8 @@ class YingBianZiRu : ActiveSkill {
         g.fsm = fsm.copy(isMessageCardFaceUp = true)
         if (fsm.messageCard.colors.size == 1) {
             if (fsm.messageCard.colors.first() == Black) { // 黑单色，误导
-                if (fsm.inFrontOfWhom === fsm.inFrontOfWhom.getNextLeftAlivePlayer() && fsm.inFrontOfWhom === fsm.inFrontOfWhom.getNextRightAlivePlayer()) {
+                if (fsm.inFrontOfWhom === fsm.inFrontOfWhom.getNextLeftAlivePlayer() &&
+                    fsm.inFrontOfWhom === fsm.inFrontOfWhom.getNextRightAlivePlayer()) {
                     // 死光了，只剩一个人了
                     r.draw(2)
                     g.resolve(WuDao.onUseCard(null, g, r, fsm.inFrontOfWhom))
@@ -149,7 +150,8 @@ class YingBianZiRu : ActiveSkill {
                 player.sendErrorMessage("目标已死亡")
                 return null
             }
-            if (target !== fsm.inFrontOfWhom.getNextLeftAlivePlayer() && target !== fsm.inFrontOfWhom.getNextRightAlivePlayer()) {
+            if (target !== fsm.inFrontOfWhom.getNextLeftAlivePlayer() &&
+                target !== fsm.inFrontOfWhom.getNextRightAlivePlayer()) {
                 logger.error("只能误导给左右两边的玩家")
                 player.sendErrorMessage("只能误导给左右两边的玩家")
                 return null
@@ -170,8 +172,8 @@ class YingBianZiRu : ActiveSkill {
             player.game!!.players.any {
                 it!!.isEnemy(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             } || e.inFrontOfWhom.run {
-                isPartnerOrSelf(player) && willDie(e.messageCard)
-                        && !willWin(e.whoseTurn, this, e.messageCard)
+                isPartnerOrSelf(player) && willDie(e.messageCard) &&
+                    !willWin(e.whoseTurn, this, e.messageCard)
             } || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillYingBianZiRuATos { })
