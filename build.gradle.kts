@@ -5,7 +5,7 @@ plugins {
     application
     idea
     id("com.google.protobuf") version "0.9.4"
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.6.1"
 }
 
