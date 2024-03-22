@@ -14,10 +14,19 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+      - name: Get Commit Info
+        id: get-commit-info
+        run: |
+          COMMIT_EMAIL=$(git log -1 --pretty=format:'%ae')
+          COMMIT_USERNAME=$(git log -1 --pretty=format:'%an')
+          echo "COMMIT_EMAIL=$(git log -1 --pretty=format:'%ae' src/main/proto)" >> "$GITHUB_OUTPUT"
+          echo "COMMIT_USERNAME=$(git log -1 --pretty=format:'%an' src/main/proto)" >> "$GITHUB_OUTPUT"
       - name: Run GitHub File Sync
         uses: BetaHuhn/repo-file-sync-action@v1
         with:
           GH_PAT: ${{ secrets.GH_PAT }}
           SKIP_PR: true
           COMMIT_EACH_FILE: false
+          GIT_EMAIL: ${{ steps.get-commit-info.outputs.COMMIT_EMAIL }}
+          GIT_USERNAME: ${{ steps.get-commit-info.outputs.COMMIT_USERNAME }}
     if: github.repository_owner == 'CuteReimu'
