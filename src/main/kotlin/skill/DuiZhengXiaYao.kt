@@ -3,8 +3,6 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
-import com.fengsheng.card.count
-import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color
@@ -281,11 +279,7 @@ class DuiZhengXiaYao : ActiveSkill {
             val g = player.game!!
             !player.roleFaceUp || return false
             !g.players.any {
-                it!!.isPartnerOrSelf(player) && it.willWin(
-                    e.whoseTurn,
-                    e.inFrontOfWhom,
-                    e.messageCard
-                )
+                it!!.isPartnerOrSelf(player) && it.willDie(e.messageCard)
             } || return false
             g.players.any {
                 it!!.isEnemy(player) && it.willWin(
@@ -294,21 +288,6 @@ class DuiZhengXiaYao : ActiveSkill {
                     e.messageCard
                 )
             } || target.isPartnerOrSelf(player) && target.willDie(e.messageCard) || return false
-            var cards =
-                e.messageCard.colors.filter { it != color.Black && target.messageCards.count(it) == 2 }
-                    .flatMap { color ->
-                        target.messageCards.filter { color in it.colors }
-                            .run { filter { !it.isBlack() }.ifEmpty { this } }
-                    }
-            if (cards.isEmpty() && e.messageCard.isBlack() && target.messageCards.count(color.Black) == 2) {
-                cards = target.messageCards.filter(color.Black).run {
-                    filter { it.isPureBlack() }.ifEmpty { this }
-                }
-            }
-            var card =
-                cards.run { filter { player.identity !in it.colors }.ifEmpty { this } }
-                    .randomOrNull() ?: return false
-            player.game!!.players.anyoneWillWinOrDie(e) || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillDuiZhengXiaYaoATos { })
             }, 3, TimeUnit.SECONDS)
