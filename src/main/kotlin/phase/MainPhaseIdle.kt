@@ -7,10 +7,9 @@ import com.fengsheng.ResolveResult
 
 /**
  * 出牌阶段空闲时点
+ * @param whoseTurn 表示当前回合的玩家。
  */
 data class MainPhaseIdle(
-    /**
-     * 表示当前回合的玩家。 **/
     override val whoseTurn: Player
 ) : ProcessFsm() {
     override fun resolve0(): ResolveResult? {

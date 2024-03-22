@@ -11,6 +11,7 @@ import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.color.forNumber
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.*
@@ -51,7 +52,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var mainPhaseAlreadyNotify = false
 
     fun setStartTimer() {
-        val delay = if (players.count { it is HumanPlayer } <= 1) 0L else 5L
+        val delay = if (Config.IsGmEnable || players.count { it is HumanPlayer } <= 1) 0L else 5L
         gameStartTimeout = GameExecutor.post(this, { start() }, delay, TimeUnit.SECONDS)
     }
 
@@ -103,8 +104,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         val identities = ArrayList<color>()
         when (players.size) {
             2 -> Random.nextInt(4).let {
-                identities.add(color.forNumber(it and 1)!!)
-                identities.add(color.forNumber(it and 2)!!)
+                identities.add(forNumber(it and 1)!!)
+                identities.add(forNumber(it and 2)!!)
             }
 
             3, 4 -> {
@@ -164,7 +165,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                 roleSkillsDataList[it],
                 roleSkillsDataList[it + players.size],
                 roleSkillsDataList[it + players.size * 2]
-            ).filter { r -> r.role != role.unknown }
+            ).filter { r -> r.role != unknown }
         }))
     }
 

@@ -23,8 +23,7 @@ class TanXuBianShi : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
+    override fun mainPhaseNeedNotify(r: Player): Boolean = super.mainPhaseNeedNotify(r) && r.cards.isNotEmpty()
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         if (r !== (g.fsm as? MainPhaseIdle)?.whoseTurn) {
@@ -71,18 +70,14 @@ class TanXuBianShi : MainPhaseSkill() {
     }
 
     private data class executeTanXuBianShi(
-        val fsm: Fsm,
-        val r: Player,
-        val target: Player,
-        val card: Card
+        val fsm: Fsm, val r: Player, val target: Player, val card: Card
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             logger.info("${r}发动了[探虚辨实]，给了${target}一张$card")
             r.deleteCard(card.id)
             target.cards.add(card)
-            val mustGiveColor =
-                if (target.identity == Black || target.cards.all { target.identity !in it.colors }) null
-                else target.identity
+            val mustGiveColor = if (target.identity == Black || target.cards.all { target.identity !in it.colors }) null
+            else target.identity
             r.game!!.players.send { p ->
                 skillTanXuBianShiAToc {
                     playerId = p.getAlternativeLocation(r.location)
@@ -95,9 +90,8 @@ class TanXuBianShi : MainPhaseSkill() {
                         p.timeout = GameExecutor.post(p.game!!, {
                             if (p.checkSeq(seq)) {
                                 p.game!!.tryContinueResolveProtocol(p, skillTanXuBianShiBTos {
-                                    cardId =
-                                        if (mustGiveColor == null) target.cards.first().id
-                                        else target.cards.first { mustGiveColor in it.colors }.id
+                                    cardId = if (mustGiveColor == null) target.cards.first().id
+                                    else target.cards.first { mustGiveColor in it.colors }.id
                                     this.seq = seq
                                 })
                             }
@@ -105,14 +99,12 @@ class TanXuBianShi : MainPhaseSkill() {
                     }
                 }
             }
-            if (target is RobotPlayer)
-                GameExecutor.post(target.game!!, {
-                    target.game!!.tryContinueResolveProtocol(target, skillTanXuBianShiBTos {
-                        cardId =
-                            if (mustGiveColor == null) target.cards.bestCard(target.identity, true).id
-                            else target.cards.filter { mustGiveColor in it.colors }.bestCard(target.identity, true).id
-                    })
-                }, 3, TimeUnit.SECONDS)
+            if (target is RobotPlayer) GameExecutor.post(target.game!!, {
+                target.game!!.tryContinueResolveProtocol(target, skillTanXuBianShiBTos {
+                    cardId = if (mustGiveColor == null) target.cards.bestCard(target.identity, true).id
+                    else target.cards.filter { mustGiveColor in it.colors }.bestCard(target.identity, true).id
+                })
+            }, 3, TimeUnit.SECONDS)
             return null
         }
 
@@ -139,9 +131,8 @@ class TanXuBianShi : MainPhaseSkill() {
                 player.sendErrorMessage("没有这张牌")
                 return null
             }
-            val mustGiveColor =
-                if (target.identity == Black || target.cards.all { target.identity !in it.colors }) null
-                else target.identity
+            val mustGiveColor = if (target.identity == Black || target.cards.all { target.identity !in it.colors }) null
+            else target.identity
             if (mustGiveColor != null && mustGiveColor !in card.colors) {
                 logger.error("你必须选择含你身份颜色的牌")
                 player.sendErrorMessage("你必须选择含你身份颜色的牌")
@@ -172,7 +163,7 @@ class TanXuBianShi : MainPhaseSkill() {
                 p !== e.whoseTurn && p!!.alive && p.cards.isNotEmpty()
             }.run {
                 if (e.whoseTurn.game!!.isEarly) this
-                else filter { it!!.isEnemy(e.whoseTurn) }.ifEmpty { this }
+                else filter { it!!.isEnemy(e.whoseTurn) }.ifEmpty { return false }
                     .run { if (e.whoseTurn.identity != Black) filter { it!!.identity != Black }.ifEmpty { this } else this }
             }.randomOrNull() ?: return false
             GameExecutor.post(e.whoseTurn.game!!, {
