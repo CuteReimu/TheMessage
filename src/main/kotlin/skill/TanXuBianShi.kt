@@ -70,7 +70,10 @@ class TanXuBianShi : MainPhaseSkill() {
     }
 
     private data class executeTanXuBianShi(
-        val fsm: Fsm, val r: Player, val target: Player, val card: Card
+        val fsm: Fsm,
+        val r: Player,
+        val target: Player,
+        val card: Card
     ) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             logger.info("${r}发动了[探虚辨实]，给了${target}一张$card")

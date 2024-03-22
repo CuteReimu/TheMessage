@@ -12,7 +12,7 @@ class addrobot : Function<Map<String, String>, Any> {
             val g = Game.newGame
             GameExecutor.post(g) {
                 count = min(count, g.players.count { it == null })
-                for (i in 0..<count) {
+                for (i in 0 until count) {
                     if (g.isStarted) break
                     val robotPlayer: Player = RobotPlayer()
                     robotPlayer.playerName = Player.randPlayerName(g)

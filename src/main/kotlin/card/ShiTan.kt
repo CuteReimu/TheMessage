@@ -21,7 +21,7 @@ class ShiTan : Card {
     private val whoDrawCard: List<color>
 
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean, whoDrawCard: List<color>) :
-            super(id, colors, direction, lockable) {
+        super(id, colors, direction, lockable) {
         this.whoDrawCard = whoDrawCard
     }
 
@@ -234,8 +234,8 @@ class ShiTan : Card {
                         return false // 开局不使用-1试探队友
                     player.game!!.players.filter {
                         it !== player && it!!.alive && (!it.roleFaceUp ||
-                                (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
-                                it.cards.isNotEmpty() // 不对没有手牌的人使用
+                            (it.findSkill(CHENG_FU) == null && it.findSkill(SHOU_KOU_RU_PING) == null)) &&
+                            it.cards.isNotEmpty() // 不对没有手牌的人使用
                     }
                 }
 
@@ -259,15 +259,15 @@ class ShiTan : Card {
                 else -> {
                     player.game!!.players.filter {
                         it !== player && it!!.alive && (!it.roleFaceUp ||
-                                (it.findSkill(CHENG_FU) == null && it.findSkill(CONG_RONG_YING_DUI) == null))
+                            (it.findSkill(CHENG_FU) == null && it.findSkill(CONG_RONG_YING_DUI) == null))
                     }.run {
                         filter {
                             it!!.isPartner(player) &&
-                                    (it.findSkill(SHOU_KOU_RU_PING) != null || it.identity in (card as ShiTan).whoDrawCard)
+                                (it.findSkill(SHOU_KOU_RU_PING) != null || it.identity in (card as ShiTan).whoDrawCard)
                         }.ifEmpty {
                             filter {
                                 it!!.isEnemy(player) && it.findSkill(SHOU_KOU_RU_PING) == null &&
-                                        it.identity !in (card as ShiTan).whoDrawCard && it.cards.isNotEmpty()
+                                    it.identity !in (card as ShiTan).whoDrawCard && it.cards.isNotEmpty()
                             }
                         }
                     }

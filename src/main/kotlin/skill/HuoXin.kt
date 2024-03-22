@@ -140,10 +140,10 @@ class HuoXin : MainPhaseSkill() {
             r.incrSeq()
             val joinIntoHand = card.hasSameColor(showCard)
             if (joinIntoHand) {
-                logger.info("${r}弃掉了${target}的${card}，并加入自己的手牌")
+                logger.info("${r}弃掉了${target}的$card，并加入自己的手牌")
                 r.cards.add(card)
             } else {
-                logger.info("${r}弃掉了${target}的${card}")
+                logger.info("${r}弃掉了${target}的$card")
                 r.game!!.deck.discard(card)
             }
             r.game!!.players.send { p ->

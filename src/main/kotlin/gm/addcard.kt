@@ -24,7 +24,7 @@ class addcard : Function<Map<String, String>, Any> {
                     if (!g.isStarted || g.fsm == null || g.fsm is WaitForSelectRole) return@post
                     if (playerId < g.players.size && playerId >= 0 && g.players[playerId]!!.alive) {
                         val cardList = ArrayList<Card>()
-                        for (i in 0..<finalCount) {
+                        for (i in 0 until finalCount) {
                             val c = availableCards.random()
                             cardList.add(
                                 when (cardType) {

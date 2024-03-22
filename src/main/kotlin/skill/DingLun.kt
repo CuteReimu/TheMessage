@@ -19,8 +19,7 @@ class DingLun : ActiveSkill {
 
     override val isInitialSkill = true
 
-    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean =
-        !r.roleFaceUp && fightPhase.inFrontOfWhom === r
+    override fun canUse(fightPhase: FightPhaseIdle, r: Player): Boolean = !r.roleFaceUp && fightPhase.inFrontOfWhom === r
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? FightPhaseIdle

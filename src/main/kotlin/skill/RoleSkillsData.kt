@@ -23,7 +23,7 @@ class RoleSkillsData private constructor(
     constructor() : this("无角色", Common.role.unknown, false, false)
 
     constructor(name: String, role: role, female: Boolean, isPublicRole: Boolean, vararg skills: Skill) :
-            this(name, role, female, isPublicRole) {
+        this(name, role, female, isPublicRole) {
         this.skills = skills.toList()
     }
 

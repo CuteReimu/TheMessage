@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 
 class PingHeng : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
-            super(id, colors, direction, lockable)
+        super(id, colors, direction, lockable)
 
     constructor(id: Int, card: Card) : super(id, card)
 

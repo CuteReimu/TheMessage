@@ -62,7 +62,7 @@ class die_give_card_tos : AbstractProtoHandler<Fengsheng.die_give_card_tos>() {
             return
         }
         target.cards.addAll(cards)
-        logger.info("${r}给了${target}$${cards.joinToString()}")
+        logger.info("${r}给了$target$${cards.joinToString()}")
         r.game!!.players.send { p ->
             notifyDieGiveCardToc {
                 playerId = p.getAlternativeLocation(r.location)

@@ -189,8 +189,8 @@ class MiaoShou : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             val p = player.game!!.players.find {
-                it!!.alive && player.isEnemy(it)
-                        && it.identity != color.Black && it.messageCards.count(it.identity) >= 2
+                it!!.alive && player.isEnemy(it) &&
+                    it.identity != color.Black && it.messageCards.count(it.identity) >= 2
             } ?: return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillMiaoShouATos {

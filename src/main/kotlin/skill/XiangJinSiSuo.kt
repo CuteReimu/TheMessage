@@ -113,7 +113,7 @@ class XiangJinSiSuo : TriggeredSkill {
             }
             r.incrSeq()
             r.skills += XiangJinSiSuo2(target)
-            logger.info("${r}发动了[详尽思索]，指定了${target}")
+            logger.info("${r}发动了[详尽思索]，指定了$target")
             r.game!!.players.send {
                 skillXiangJinSiSuoAToc {
                     playerId = it.getAlternativeLocation(r.location)

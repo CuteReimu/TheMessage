@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 
 class FengYunBianHuan : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
-            super(id, colors, direction, lockable)
+        super(id, colors, direction, lockable)
 
     constructor(id: Int, card: Card) : super(id, card)
 
@@ -52,7 +52,7 @@ class FengYunBianHuan : Card {
         val fsm = g.fsm as MainPhaseIdle
         r.deleteCard(id)
         val players = LinkedList<Player>()
-        for (i in r.location..<r.location + g.players.size) {
+        for (i in r.location until r.location + g.players.size) {
             val player = g.players[i % g.players.size]!!
             if (player.alive) players.add(player)
         }
@@ -61,7 +61,7 @@ class FengYunBianHuan : Card {
             players.removeLast() // 兼容牌库抽完的情况
         }
         g.turn += g.players.size
-        logger.info("${r}使用了${this}，翻开了${drawCards.joinToString()}")
+        logger.info("${r}使用了$this，翻开了${drawCards.joinToString()}")
         r.game!!.players.send {
             useFengYunBianHuanToc {
                 card = toPbCard()
@@ -219,7 +219,8 @@ class FengYunBianHuan : Card {
                     if (player.messageCards.any { !it.isPureBlack() }) return false
 
                 player.identity != Black -> if (player.game!!.players.all {
-                        !it!!.alive || it.identity != player.identity || it.messageCards.any { c -> player.identity in c.colors }
+                        !it!!.alive || it.identity != player.identity ||
+                            it.messageCards.any { c -> player.identity in c.colors }
                     }) return false
             }
             GameExecutor.post(player.game!!, {

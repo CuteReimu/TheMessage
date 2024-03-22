@@ -85,7 +85,8 @@ class YiYaHuanYa : TriggeredSkill {
                 player.sendErrorMessage("目标已死亡")
                 return null
             }
-            if (target !== event.sender && target !== event.sender.getNextLeftAlivePlayer() && target !== event.sender.getNextRightAlivePlayer()) {
+            if (target !== event.sender &&
+                target !== event.sender.getNextLeftAlivePlayer() && target !== event.sender.getNextRightAlivePlayer()) {
                 logger.error("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
                 player.sendErrorMessage("你只能选择情报传出者或者其左边或右边的角色作为目标：${message.targetPlayerId}")
                 return null

@@ -166,7 +166,7 @@ class LengXueXunLian : ActiveSkill {
                 return null
             }
             player.incrSeq()
-            logger.info("${player}传出了${card}，方向是${card.direction}，传给了${target}，并锁定了[${lockPlayer}]")
+            logger.info("${player}传出了$card，方向是${card.direction}，传给了$target，并锁定了[$lockPlayer]")
             logger.info("[调包]的被禁止使用了")
             logger.info("${player}将${anotherCard}加入了手牌")
             player.game!!.players.forEach { it!!.skills += CannotPlayCard(cardType = listOf(Diao_Bao)) }

@@ -47,6 +47,6 @@ data class SendPhaseIdle(
     }
 
     override fun toString(): String {
-        return "${whoseTurn}的回合的情报传递阶段，传出者是${sender}，情报在${inFrontOfWhom}面前"
+        return "${whoseTurn}的回合的情报传递阶段，传出者是$sender，情报在${inFrontOfWhom}面前"
     }
 }
