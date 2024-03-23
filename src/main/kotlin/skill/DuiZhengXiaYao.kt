@@ -240,7 +240,7 @@ class DuiZhengXiaYao : ActiveSkill {
                 return null
             }
             r.incrSeq()
-            logger.info("${r}弃掉了${target}面前的${card}")
+            logger.info("${r}弃掉了${target}面前的$card")
             g.deck.discard(target.deleteMessageCard(card.id)!!)
             g.players.send {
                 skillDuiZhengXiaYaoCToc {
@@ -275,8 +275,19 @@ class DuiZhengXiaYao : ActiveSkill {
 
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
+            val target = e.inFrontOfWhom
+            val g = player.game!!
             !player.roleFaceUp || return false
-            player.game!!.players.anyoneWillWinOrDie(e) || return false
+            !g.players.any {
+                it!!.isPartnerOrSelf(player) && it.willDie(e.messageCard)
+            } || return false
+            g.players.any {
+                it!!.isEnemy(player) && it.willWin(
+                    e.whoseTurn,
+                    e.inFrontOfWhom,
+                    e.messageCard
+                )
+            } || target.isPartnerOrSelf(player) && target.willDie(e.messageCard) || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillDuiZhengXiaYaoATos { })
             }, 3, TimeUnit.SECONDS)

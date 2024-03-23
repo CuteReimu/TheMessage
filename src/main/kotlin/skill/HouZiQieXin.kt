@@ -20,12 +20,11 @@ class HouZiQieXin : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun mainPhaseNeedNotify(r: Player) =
-        super.mainPhaseNeedNotify(r) && r.game!!.players.any {
-            it !== r && it!!.alive && it.messageCards.any { card1 ->
-                r.cards.any { card2 -> card1.colorExactlyTheSame(card2) }
-            }
+    override fun mainPhaseNeedNotify(r: Player) = super.mainPhaseNeedNotify(r) && r.game!!.players.any {
+        it !== r && it!!.alive && it.messageCards.any { card1 ->
+            r.cards.any { card2 -> card1.colorExactlyTheSame(card2) }
         }
+    }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? MainPhaseIdle

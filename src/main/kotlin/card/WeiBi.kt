@@ -22,7 +22,7 @@ import kotlin.random.Random
 
 class WeiBi : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
-            super(id, colors, direction, lockable)
+        super(id, colors, direction, lockable)
 
     constructor(id: Int, card: Card) : super(id, card)
 
@@ -226,9 +226,9 @@ class WeiBi : Card {
             }
             val p = player.game!!.players.filter {
                 it !== player && it!!.alive &&
-                        (!it.roleFaceUp || !it.skills.any { s -> s is ChengFu || s is ShouKouRuPing || s is CunBuBuRang }) &&
-                        it.isEnemy(player) &&
-                        it.cards.any { card -> card.type in availableCardType }
+                    (!it.roleFaceUp || !it.skills.any { s -> s is ChengFu || s is ShouKouRuPing || s is CunBuBuRang }) &&
+                    it.isEnemy(player) &&
+                    it.cards.any { card -> card.type in availableCardType }
             }.run {
                 filter { it!!.cards.any { card -> card.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) } }.ifEmpty { this }
                     .run { if (player.identity != Black) filter { it!!.identity != Black }.ifEmpty { this } else this }

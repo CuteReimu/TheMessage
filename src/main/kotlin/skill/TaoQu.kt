@@ -25,12 +25,11 @@ class TaoQu : MainPhaseSkill() {
 
     override val isInitialSkill = true
 
-    override fun mainPhaseNeedNotify(r: Player): Boolean =
-        super.mainPhaseNeedNotify(r) && listOf(Black, Red, Blue).any {
-            r.cards.count(it) >= 2 && r.game!!.players.any { p ->
-                p !== r && p!!.alive && p.messageCards.any { c -> it in c.colors }
-            }
+    override fun mainPhaseNeedNotify(r: Player): Boolean = super.mainPhaseNeedNotify(r) && listOf(Black, Red, Blue).any {
+        r.cards.count(it) >= 2 && r.game!!.players.any { p ->
+            p !== r && p!!.alive && p.messageCards.any { c -> it in c.colors }
         }
+    }
 
     override fun executeProtocol(g: Game, r: Player, message: GeneratedMessage) {
         val fsm = g.fsm as? MainPhaseIdle

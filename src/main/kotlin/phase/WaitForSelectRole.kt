@@ -1,17 +1,17 @@
 package com.fengsheng.phase
 
 import com.fengsheng.*
+import com.fengsheng.Player
+import com.fengsheng.protos.*
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.role.*
 import com.fengsheng.protos.Fengsheng.select_role_tos
 import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessage
-import com.fengsheng.protos.Common.color.*
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
-import com.fengsheng.Player
-import com.fengsheng.protos.*
 
 /**
  * 等待玩家选择角色
@@ -47,8 +47,8 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                     }
                     filter { it.role in aiPreferRole }.ifEmpty {
                         RoleCache.filterForbidRoles(aiPreferRole).filter {
-                            options.all { option -> option.all { o -> it != o.role } }
-                                    && selected.all { o -> it != o?.role }
+                            options.all { option -> option.all { o -> it != o.role } } &&
+                                selected.all { o -> it != o?.role }
                         }.map { RoleCache.getRoleSkillsData(it) }
                     }.ifEmpty { this }.randomOrNull()
                 } ?: RoleSkillsData()
@@ -164,6 +164,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
             huo_che_si_ji,
             cp_xiao_jiu,
             cp_han_mei,
+            huang_ji_ren,
         )
     }
 }

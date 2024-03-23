@@ -93,7 +93,7 @@ class join_room_tos : ProtoHandler {
                 player.sendErrorMessage("登录异常，请稍后重试")
                 return@post
             }
-            oldPlayer2?.apply {// 顶号
+            oldPlayer2?.apply { // 顶号
                 logger.info("${playerName}离开了房间")
                 newGame.players = newGame.players.toMutableList().apply { set(location, null) }
                 newGame.cancelStartTimer()

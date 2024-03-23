@@ -85,7 +85,7 @@ class JiSong : ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         if (messageCard != null) {
-            logger.info("${r}发动了[急送]，弃掉了面前的${messageCard}，将情报移至${target}面前")
+            logger.info("${r}发动了[急送]，弃掉了面前的$messageCard，将情报移至${target}面前")
             r.deleteMessageCard(messageCard.id)
         } else {
             logger.info("${r}发动了[急送]，选择弃掉两张手牌，将情报移至${target}面前")

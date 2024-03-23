@@ -23,7 +23,7 @@ class MiLing : Card {
     private val secret: List<color>
 
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean, secret: List<color>) :
-            super(id, colors, direction, lockable) {
+        super(id, colors, direction, lockable) {
         this.secret = secret
     }
 
@@ -310,8 +310,8 @@ class MiLing : Card {
             var target: Player? = null
             var color = Black
             for (p in player.game!!.players.shuffled()) {
-                p!!.alive && p !== player && (player.game!!.isEarly || p.isEnemy(player))
-                        && p.findSkill(LENG_XUE_XUN_LIAN) == null && p.cards.isNotEmpty() || continue
+                p!!.alive && p !== player && (player.game!!.isEarly || p.isEnemy(player)) &&
+                    p.findSkill(LENG_XUE_XUN_LIAN) == null && p.cards.isNotEmpty() || continue
                 val players = player.game!!.sortedFrom(player.game!!.players.filter { it!!.alive }, p.location)
                 for (c in listOf(Black, Red, Blue)) {
                     var sum = 0.0

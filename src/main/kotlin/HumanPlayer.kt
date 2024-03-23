@@ -74,7 +74,7 @@ class HumanPlayer(
         if (message is notify_player_update_toc) return
         logger.debug(
             "send@${channel.id().asShortText()} len: ${buf.size} $name | " +
-                    printer.printToString(message).replace(Regex("\n *"), " ")
+                printer.printToString(message).replace(Regex("\n *"), " ")
         )
     }
 

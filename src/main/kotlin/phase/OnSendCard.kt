@@ -32,7 +32,7 @@ data class OnSendCard(
     val needNotify: Boolean = true
 ) : Fsm {
     override fun resolve(): ResolveResult {
-        var s = "${sender}传出了${messageCard}，方向是${dir}，传给了${targetPlayer}"
+        var s = "${sender}传出了$messageCard，方向是$dir，传给了$targetPlayer"
         if (lockedPlayers.isNotEmpty()) s += "，并锁定了${lockedPlayers.joinToString()}"
         logger.info(s)
         if (needRemoveCard)

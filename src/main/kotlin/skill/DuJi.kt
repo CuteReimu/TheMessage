@@ -220,7 +220,7 @@ class DuJi : ActiveSkill {
             val p = selection.waitingPlayer
             if (p is RobotPlayer) {
                 val inFrontOfMe = p.calculateMessageCardValue(fsm.whoseTurn, p, selection.card) >
-                        p.calculateMessageCardValue(fsm.whoseTurn, selection.fromPlayer, selection.card)
+                    p.calculateMessageCardValue(fsm.whoseTurn, selection.fromPlayer, selection.card)
                 GameExecutor.post(g, {
                     g.tryContinueResolveProtocol(p, skillDuJiCTos {
                         this.inFrontOfMe = inFrontOfMe

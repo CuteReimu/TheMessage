@@ -88,7 +88,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         if (id != heartMsgId && id != autoPlayMsgId) {
             logger.debug(
                 "recv@${ctx.channel().id().asShortText()} len: ${msgLen - 2} ${protoInfo.name} | " +
-                        printer.printToString(message).replace("\n *".toRegex(), " ")
+                    printer.printToString(message).replace("\n *".toRegex(), " ")
             )
         }
         val player = Game.playerCache[ctx.channel().id().asLongText()]!!

@@ -22,11 +22,7 @@ abstract class ConvertCardSkill(val cardTypeA: card_type?, val cardTypeB: List<c
  * @param onlyMust 是否只看“必须”的技能（盛老板发动技能使用别人的牌时，只看“必须”的技能）
  * @see ConvertCardSkill
  */
-fun Player.canUseCardTypes(
-    needType: card_type,
-    actualCard: Card,
-    onlyMust: Boolean = false
-): Pair<Boolean, ConvertCardSkill?> {
+fun Player.canUseCardTypes(needType: card_type, actualCard: Card, onlyMust: Boolean = false): Pair<Boolean, ConvertCardSkill?> {
     val actualType = actualCard.type
     var ok = needType == actualType
     var convertCardSkill: ConvertCardSkill? = null

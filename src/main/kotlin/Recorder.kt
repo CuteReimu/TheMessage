@@ -49,7 +49,7 @@ class Recorder {
             sb.append(RoleCache.getRoleName(player!!.originRole))
         }
         val recordId = ((now.time / 1000 * 1000 + g.id % 100 * 10 + p.location) %
-                (36L * 36 * 36 * 36 * 36 * 36)).toString(Character.MAX_RADIX).addLeadingZero(6)
+            (36L * 36 * 36 * 36 * 36 * 36)).toString(Character.MAX_RADIX).addLeadingZero(6)
         val fileName = timeStr + "-" + sb + "-" + p.location + "-" + recordId
         val recordFile = recordFile {
             clientVersion = Config.ClientVersion.get()
