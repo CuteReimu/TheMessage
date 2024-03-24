@@ -3,9 +3,12 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
+import com.fengsheng.card.count
+import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Role.*
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
@@ -70,24 +73,31 @@ class DuiZhengXiaYao : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val cache = hashMapOf<color, ArrayList<Card>>(
-                        color.Black to ArrayList(),
-                        color.Red to ArrayList(),
-                        color.Blue to ArrayList()
-                    )
-                    for (card in r.cards) {
-                        for (color in card.colors) cache[color]!!.add(card)
-                    }
-                    for ((key, cards) in cache) {
-                        if (cards.size >= 2 && findColorMessageCard(g, listOf(key)) != null) {
-                            g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos {
-                                enable = true
-                                cards.take(2).forEach { cardIds.add(it.id) }
-                            })
-                            return@post
+                    val messageCards = fsm.inFrontOfWhom.messageCards.toList()
+                    fsm.inFrontOfWhom.messageCards.add(fsm.messageCard) // 先假设这个人已经获得了这张情报
+                    var chooseColor = Black
+                    var value = -1
+                    for (c in listOf(Red, Blue, Black)) { // 对红、蓝、黑三种颜色进行判断
+                        r.cards.count(c) >= 2 || continue // 如果这个颜色不够2张，则跳过
+                        for (card in messageCards) { // 遍历目标角色面前的所有情报
+                            c in card.colors || continue // 如果这张情报不含有这个颜色，则跳过
+                            val v = r.calculateRemoveCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, card) // 计算弃掉这张情报的价值
+                            if (v > value) { // 如果这张情报的价值更高，则选这张
+                                value = v
+                                chooseColor = c
+                            }
                         }
                     }
-                    g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos { })
+                    fsm.inFrontOfWhom.messageCards.removeLast() // 把刚才加上的那张情报移除
+                    if (value < 0) { // 如果没有找到合适的情报，则不展示两张牌
+                        g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos { })
+                        return@post
+                    }
+                    val cards = r.cards.filter(chooseColor).shuffled().take(2) // 随机选这个颜色的两张牌
+                    g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos {
+                        enable = true
+                        cards.forEach { cardIds.add(it.id) }
+                    })
                 }, 3, TimeUnit.SECONDS)
             }
             return null
@@ -140,7 +150,7 @@ class DuiZhengXiaYao : ActiveSkill {
                 player.sendErrorMessage("两张牌没有相同的颜色")
                 return null
             }
-            val playerAndCard = findColorMessageCard(g, colors)
+            val playerAndCard = r.findColorMessageCard(colors)
             if (playerAndCard == null) {
                 logger.error("场上没有选择的颜色的情报牌")
                 player.sendErrorMessage("场上没有选择的颜色的情报牌")
@@ -184,9 +194,25 @@ class DuiZhengXiaYao : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
+                    fsm.inFrontOfWhom.messageCards.add(fsm.messageCard) // 先假设这个人已经获得了这张情报
+                    var playerAndCard: PlayerAndCard? = null
+                    var value = Int.MIN_VALUE
+                    for (p in g.players) {
+                        p!!.alive || continue
+                        for (card in p.messageCards) { // 遍历所有玩家面前的所有情报
+                            card.colors.any { it in colors } || continue // 如果这张情报不含有这个颜色，则跳过
+                            val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
+                            if (v > value) { // 如果这张情报的价值更高，则选这张
+                                value = v
+                                playerAndCard = PlayerAndCard(p, card)
+                            }
+                        }
+                    }
+                    fsm.inFrontOfWhom.messageCards.removeLast() // 把刚才加上的那张情报移除
+                    playerAndCard!! // 从逻辑上来说，必定能找到一个合适的情报，否则上一条协议会拦截
                     g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoCTos {
-                        targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)
-                        messageCardId = defaultSelection.card.id
+                        targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
+                        messageCardId = playerAndCard.card.id
                     })
                 }, 3, TimeUnit.SECONDS)
             }
@@ -254,19 +280,14 @@ class DuiZhengXiaYao : ActiveSkill {
     }
 
     companion object {
-        private fun getSameColors(card1: Card, card2: Card): List<color> {
-            val colors = ArrayList<color>()
-            for (color in listOf(color.Black, color.Red, color.Blue)) {
-                if (card1.colors.contains(color) && card2.colors.contains(color)) colors.add(color)
-            }
-            return colors
-        }
+        private fun getSameColors(card1: Card, card2: Card) =
+            listOf(Black, Red, Blue).filter { it in card1.colors && it in card2.colors }
 
-        private fun findColorMessageCard(game: Game, colors: List<color?>): PlayerAndCard? {
-            for (player in game.players) {
-                for (card in player!!.messageCards) {
+        private fun Player.findColorMessageCard(colors: List<color?>): PlayerAndCard? {
+            for (player in game!!.sortedFrom(game!!.players, location)) {
+                for (card in player.messageCards) {
                     for (color in card.colors) {
-                        if (colors.contains(color)) return PlayerAndCard(player, card)
+                        if (color in colors) return PlayerAndCard(player, card)
                     }
                 }
             }
