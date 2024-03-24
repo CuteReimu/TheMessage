@@ -300,6 +300,9 @@ class DuiZhengXiaYao : ActiveSkill {
             val target = e.inFrontOfWhom
             val g = player.game!!
             !player.roleFaceUp || return false
+            if (g.players.any {
+                    it!!.isPartnerOrSelf(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+                }) return false
             g.players.any {
                 it!!.isEnemy(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             } || target.isPartnerOrSelf(player) && target.willDie(e.messageCard) || return false
