@@ -300,11 +300,7 @@ class DuiZhengXiaYao : ActiveSkill {
             val g = player.game!!
             !player.roleFaceUp || return false
             g.players.any {
-                it!!.isEnemy(player) && it.willWin(
-                    e.whoseTurn,
-                    e.inFrontOfWhom,
-                    e.messageCard
-                )
+                it!!.isEnemy(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
             } || target.isPartnerOrSelf(player) && target.willDie(e.messageCard) || return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillDuiZhengXiaYaoATos { })
