@@ -278,7 +278,7 @@ class DuiZhengXiaYao : ActiveSkill {
             val target = e.inFrontOfWhom
             val g = player.game!!
             !player.roleFaceUp || return false
-            g.players.any{
+            g.players.any {
                 it!!.isEnemy(player) && it.willWin(
                     e.whoseTurn,
                     e.inFrontOfWhom,
