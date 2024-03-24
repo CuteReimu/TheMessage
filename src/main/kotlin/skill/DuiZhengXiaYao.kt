@@ -199,7 +199,8 @@ class DuiZhengXiaYao : ActiveSkill {
                     var value = Int.MIN_VALUE
                     for (p in g.players) {
                         p!!.alive || continue
-                        for (card in p.messageCards) { // 遍历所有玩家面前的所有情报
+                        for (card in p.messageCards.toList()) { // 遍历所有玩家面前的所有情报
+                            card !== fsm.messageCard || continue // 如果遍历到了前面假设获得的那张情报，则跳过
                             card.colors.any { it in colors } || continue // 如果这张情报不含有这个颜色，则跳过
                             val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
                             if (v > value) { // 如果这张情报的价值更高，则选这张
