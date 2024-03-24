@@ -11,7 +11,6 @@ import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
-import com.fengsheng.protos.Common.color.forNumber
 import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.*
@@ -104,8 +103,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         val identities = ArrayList<color>()
         when (players.size) {
             2 -> Random.nextInt(4).let {
-                identities.add(forNumber(it and 1)!!)
-                identities.add(forNumber(it and 2)!!)
+                identities.add(color.forNumber(it and 1)!!)
+                identities.add(color.forNumber(it and 2)!!)
             }
 
             3, 4 -> {
