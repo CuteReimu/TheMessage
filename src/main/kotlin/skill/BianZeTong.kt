@@ -29,10 +29,10 @@ class BianZeTong : TriggeredSkill {
         g.findEvent<SendPhaseStartEvent>(this) { event ->
             askWhom === event.whoseTurn
         } ?: return null
-        return ResolveResult(executeBianZeTong(g.fsm!!, askWhom), true)
+        return ResolveResult(ExecuteBianZeTong(g.fsm!!, askWhom), true)
     }
 
-    private data class executeBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class ExecuteBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             logger.info("${r}发动了[变则通]")
             r.game!!.players.send { p ->

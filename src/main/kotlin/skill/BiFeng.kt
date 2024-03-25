@@ -26,10 +26,10 @@ class BiFeng : TriggeredSkill {
             event.cardType in listOf(Jie_Huo, Wu_Dao) || return@findEvent false
             askWhom.getSkillUseCount(skillId) == 0
         } ?: return null
-        return ResolveResult(excuteBiFeng(g.fsm!!, event, askWhom), true)
+        return ResolveResult(ExcuteBiFeng(g.fsm!!, event, askWhom), true)
     }
 
-    private data class excuteBiFeng(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
+    private data class ExcuteBiFeng(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->

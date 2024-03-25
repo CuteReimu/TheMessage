@@ -13,6 +13,7 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
+import org.apache.commons.text.CaseUtils.toCamelCase
 import org.apache.logging.log4j.kotlin.logger
 import java.lang.reflect.InvocationTargetException
 import java.net.SocketException
@@ -145,7 +146,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
             for (d in descriptor.messageTypes) {
                 val name = d.name
                 if (!name.endsWith("_tos")) continue
-                val id: Short = stringHash(name)
+                val id = stringHash(name)
                 if (id.toInt() == 0) {
                     throw RuntimeException("message meta require 'ID' field: $name")
                 }
@@ -153,7 +154,8 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
                 val cls = protoCls.classLoader.loadClass(className)
                 val parser = cls.getDeclaredMethod("parser").invoke(null) as Parser<*>
                 try {
-                    val handlerClass = protoCls.classLoader.loadClass("com.fengsheng.handler.$name")
+                    val handlerClassName = toCamelCase(name, true, '_')
+                    val handlerClass = protoCls.classLoader.loadClass("com.fengsheng.handler.$handlerClassName")
                     val handler = handlerClass.getDeclaredConstructor().newInstance() as ProtoHandler
                     if (ProtoInfoMap.putIfAbsent(id, ProtoInfo(name, parser, handler)) != null) {
                         throw RuntimeException("Duplicate message meta register by id: $id")

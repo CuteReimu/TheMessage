@@ -88,14 +88,14 @@ class MiLing : Card {
                 }
             }
             if (hasColor)
-                executeMiLing(this@MiLing, target, secret, null, fsm, timeout)
+                ExecuteMiLing(this@MiLing, target, secret, null, fsm, timeout)
             else
-                miLingChooseCard(this@MiLing, r, target, secret, fsm, timeout)
+                MiLingChooseCard(this@MiLing, r, target, secret, fsm, timeout)
         }
         g.resolve(ResolveCard(r, r, target, getOriginCard(), Mi_Ling, resolveFunc, fsm))
     }
 
-    private data class miLingChooseCard(
+    private data class MiLingChooseCard(
         val card: MiLing,
         val player: Player,
         val target: Player,
@@ -160,11 +160,11 @@ class MiLing : Card {
                     if (p === target) seq = p.seq
                 }
             }
-            return ResolveResult(executeMiLing(this.card, target, secret, card, sendPhase, timeout), true)
+            return ResolveResult(ExecuteMiLing(this.card, target, secret, card, sendPhase, timeout), true)
         }
     }
 
-    data class executeMiLing(
+    data class ExecuteMiLing(
         val card: MiLing,
         val target: Player,
         val secret: Int,

@@ -70,13 +70,13 @@ class FengYunBianHuan : Card {
             }
         }
         val resolveFunc = { _: Boolean ->
-            executeFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
+            ExecuteFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
         players.forEach { it.weiBiFailRate = 0 }
         g.resolve(ResolveCard(r, r, null, getOriginCard(), Feng_Yun_Bian_Huan, resolveFunc, fsm))
     }
 
-    private data class executeFengYunBianHuan(
+    private data class ExecuteFengYunBianHuan(
         val card: FengYunBianHuan,
         val drawCards: MutableList<Card>,
         val players: LinkedList<Player>,

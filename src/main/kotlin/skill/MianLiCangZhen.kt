@@ -25,10 +25,10 @@ class MianLiCangZhen : TriggeredSkill {
             askWhom === event.sender || return@findEvent false
             askWhom.cards.isNotEmpty()
         } ?: return null
-        return ResolveResult(executeMianLiCangZhen(g.fsm!!, event), true)
+        return ResolveResult(ExecuteMianLiCangZhen(g.fsm!!, event), true)
     }
 
-    private data class executeMianLiCangZhen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteMianLiCangZhen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.sender.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
@@ -97,7 +97,7 @@ class MianLiCangZhen : TriggeredSkill {
 
     companion object {
         fun ai(fsm: Fsm): Boolean {
-            if (fsm !is executeMianLiCangZhen) return false
+            if (fsm !is ExecuteMianLiCangZhen) return false
             val p = fsm.event.sender
             val target = fsm.event.inFrontOfWhom
             if (!target.alive) return false

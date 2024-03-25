@@ -81,10 +81,10 @@ class TaoQu : MainPhaseSkill() {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[套取]，展示了${cards.joinToString()}")
-        g.resolve(executeTaoQu(fsm, r, cards, colors))
+        g.resolve(ExecuteTaoQu(fsm, r, cards, colors))
     }
 
-    private data class executeTaoQu(
+    private data class ExecuteTaoQu(
         val fsm: MainPhaseIdle,
         val r: Player,
         val cards: List<Card>,
@@ -96,8 +96,8 @@ class TaoQu : MainPhaseSkill() {
             g.players.send { p ->
                 skillTaoQuAToc {
                     playerId = p.getAlternativeLocation(r.location)
-                    colors.addAll(this@executeTaoQu.colors)
-                    this@executeTaoQu.cards.forEach { cards.add(it.toPbCard()) }
+                    colors.addAll(this@ExecuteTaoQu.colors)
+                    this@ExecuteTaoQu.cards.forEach { cards.add(it.toPbCard()) }
                     waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq

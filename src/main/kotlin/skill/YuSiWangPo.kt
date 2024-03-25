@@ -94,11 +94,11 @@ class YuSiWangPo : MainPhaseSkill() {
             g.playerDiscardCard(target, target.cards.toList())
             g.continueResolve()
         } else {
-            g.resolve(executeYuSiWangPo(g.fsm!!, r, target, discardCount, timeout))
+            g.resolve(ExecuteYuSiWangPo(g.fsm!!, r, target, discardCount, timeout))
         }
     }
 
-    private data class executeYuSiWangPo(
+    private data class ExecuteYuSiWangPo(
         val fsm: Fsm,
         val r: Player,
         val target: Player,

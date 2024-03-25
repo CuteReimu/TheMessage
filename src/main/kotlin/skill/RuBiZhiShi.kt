@@ -65,10 +65,10 @@ class RuBiZhiShi : ActiveSkill {
         logger.info("${r}发动了[如臂指使]，查看了${target}的手牌")
         g.playerSetRoleFaceUp(r, true)
         r.weiBiFailRate = 0
-        g.resolve(executeRuBiZhiShi(fsm as ProcessFsm, r, target))
+        g.resolve(ExecuteRuBiZhiShi(fsm as ProcessFsm, r, target))
     }
 
-    data class executeRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
+    data class ExecuteRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->

@@ -24,10 +24,10 @@ class CongRongYingDui : TriggeredSkill {
             askWhom === event.player || askWhom === event.targetPlayer
         } ?: return null
         val target = if (askWhom === event.player) event.targetPlayer!! else event.player
-        return ResolveResult(executeCongRongYingDui(g.fsm!!, event, askWhom, target), true)
+        return ResolveResult(ExecuteCongRongYingDui(g.fsm!!, event, askWhom, target), true)
     }
 
-    private data class executeCongRongYingDui(
+    private data class ExecuteCongRongYingDui(
         val fsm: Fsm,
         val event: FinishResolveCardEvent,
         val r: Player,

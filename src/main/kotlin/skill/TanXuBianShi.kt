@@ -66,10 +66,10 @@ class TanXuBianShi : MainPhaseSkill() {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        g.resolve(executeTanXuBianShi(g.fsm!!, r, target, card))
+        g.resolve(ExecuteTanXuBianShi(g.fsm!!, r, target, card))
     }
 
-    private data class executeTanXuBianShi(
+    private data class ExecuteTanXuBianShi(
         val fsm: Fsm,
         val r: Player,
         val target: Player,
@@ -85,7 +85,7 @@ class TanXuBianShi : MainPhaseSkill() {
                 skillTanXuBianShiAToc {
                     playerId = p.getAlternativeLocation(r.location)
                     targetPlayerId = p.getAlternativeLocation(target.location)
-                    if (p === r || p === target) card = this@executeTanXuBianShi.card.toPbCard()
+                    if (p === r || p === target) card = this@ExecuteTanXuBianShi.card.toPbCard()
                     waitingSecond = Config.WaitSecond
                     if (p === target) {
                         val seq = p.seq

@@ -47,10 +47,10 @@ class DuiZhengXiaYao : ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         logger.info("${r}发动了[对症下药]")
         r.draw(3)
-        g.resolve(executeDuiZhengXiaYaoA(fsm, r))
+        g.resolve(ExecuteDuiZhengXiaYaoA(fsm, r))
     }
 
-    private data class executeDuiZhengXiaYaoA(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
+    private data class ExecuteDuiZhengXiaYaoA(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->
@@ -157,11 +157,11 @@ class DuiZhengXiaYao : ActiveSkill {
                 return null
             }
             r.incrSeq()
-            return ResolveResult(executeDuiZhengXiaYaoB(fsm, r, cards, colors, playerAndCard), true)
+            return ResolveResult(ExecuteDuiZhengXiaYaoB(fsm, r, cards, colors, playerAndCard), true)
         }
     }
 
-    private data class executeDuiZhengXiaYaoB(
+    private data class ExecuteDuiZhengXiaYaoB(
         val fsm: FightPhaseIdle,
         val r: Player,
         val cards: List<Card>,
@@ -175,7 +175,7 @@ class DuiZhengXiaYao : ActiveSkill {
                 skillDuiZhengXiaYaoBToc {
                     playerId = p.getAlternativeLocation(r.location)
                     enable = true
-                    this@executeDuiZhengXiaYaoB.cards.forEach { cards.add(it.toPbCard()) }
+                    this@ExecuteDuiZhengXiaYaoB.cards.forEach { cards.add(it.toPbCard()) }
                     waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq2 = p.seq

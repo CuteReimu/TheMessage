@@ -34,10 +34,10 @@ class AnCangShaJi : TriggeredSkill {
             Blue in event.messageCard.colors || return@findEvent false
             askWhom.cards.isNotEmpty() || target.cards.isNotEmpty()
         } ?: return null
-        return ResolveResult(executeAnCangShaJi(g.fsm!!, event, askWhom, target), true)
+        return ResolveResult(ExecuteAnCangShaJi(g.fsm!!, event, askWhom, target), true)
     }
 
-    private data class executeAnCangShaJi(
+    private data class ExecuteAnCangShaJi(
         val fsm: Fsm,
         val event: ReceiveCardEvent,
         val r: Player,
@@ -122,7 +122,7 @@ class AnCangShaJi : TriggeredSkill {
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeAnCangShaJi) return false
+            if (fsm0 !is ExecuteAnCangShaJi) return false
             val p = fsm0.r
             val target = fsm0.target
             var card = p.cards.filter { it.isPureBlack() }.bestCardOrNull(p.identity, true)

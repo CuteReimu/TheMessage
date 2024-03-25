@@ -28,10 +28,10 @@ class ChiZiZhiXin : TriggeredSkill {
             !event.messageCard.isBlack() || return@findEvent false
             askWhom !== event.inFrontOfWhom
         } ?: return null
-        return ResolveResult(executeChiZiZhiXinA(g.fsm!!, event), true)
+        return ResolveResult(ExecuteChiZiZhiXinA(g.fsm!!, event), true)
     }
 
-    private data class executeChiZiZhiXinA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteChiZiZhiXinA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.sender.game!!.players)
                 p!!.notifyReceivePhase(
@@ -70,11 +70,11 @@ class ChiZiZhiXin : TriggeredSkill {
                 return null
             }
             player.incrSeq()
-            return ResolveResult(executeChiZiZhiXinB(fsm, event), true)
+            return ResolveResult(ExecuteChiZiZhiXinB(fsm, event), true)
         }
     }
 
-    private data class executeChiZiZhiXinB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteChiZiZhiXinB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = event.sender
             r.game!!.players.send { p ->
@@ -172,7 +172,7 @@ class ChiZiZhiXin : TriggeredSkill {
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeChiZiZhiXinA) return false
+            if (fsm0 !is ExecuteChiZiZhiXinA) return false
             val p = fsm0.event.sender
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skillChiZiZhiXinATos { })

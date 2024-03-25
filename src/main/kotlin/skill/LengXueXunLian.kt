@@ -2,7 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.card.MiLing.executeMiLing
+import com.fengsheng.card.MiLing.ExecuteMiLing
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.OnSendCard
@@ -39,8 +39,8 @@ class LengXueXunLian : ActiveSkill {
         }
         val fsm = g.fsm
         if (fsm is SendPhaseStart && r === fsm.whoseTurn) {
-            g.resolve(executeLengXueXunLian(fsm.whoseTurn, fsm.whoseTurn, g.deck.draw(2)))
-        } else if (fsm is executeMiLing && r === fsm.target) {
+            g.resolve(ExecuteLengXueXunLian(fsm.whoseTurn, fsm.whoseTurn, g.deck.draw(2)))
+        } else if (fsm is ExecuteMiLing && r === fsm.target) {
             g.resolve(
                 OnFinishResolveCard(
                     fsm.sendPhase.whoseTurn,
@@ -48,7 +48,7 @@ class LengXueXunLian : ActiveSkill {
                     fsm.target,
                     fsm.card,
                     Mi_Ling,
-                    executeLengXueXunLian(fsm.sendPhase.whoseTurn, fsm.target, g.deck.draw(2)),
+                    ExecuteLengXueXunLian(fsm.sendPhase.whoseTurn, fsm.target, g.deck.draw(2)),
                     discardAfterResolve = false
                 )
             )
@@ -58,7 +58,7 @@ class LengXueXunLian : ActiveSkill {
         }
     }
 
-    private data class executeLengXueXunLian(
+    private data class ExecuteLengXueXunLian(
         val whoseTurn: Player,
         val r: Player,
         val cards: List<Card>
@@ -71,7 +71,7 @@ class LengXueXunLian : ActiveSkill {
             g.players.send { p ->
                 skillLengXueXunLianAToc {
                     playerId = p.getAlternativeLocation(r.location)
-                    this@executeLengXueXunLian.cards.forEach { cards.add(it.toPbCard()) }
+                    this@ExecuteLengXueXunLian.cards.forEach { cards.add(it.toPbCard()) }
                     waitingSecond = Config.WaitSecond
                     if (p === r) {
                         val seq = p.seq
@@ -79,7 +79,7 @@ class LengXueXunLian : ActiveSkill {
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq)) {
                                 g.tryContinueResolveProtocol(p, skillLengXueXunLianBTos {
-                                    val card = this@executeLengXueXunLian.cards.minBy { !it.isBlack() }
+                                    val card = this@ExecuteLengXueXunLian.cards.minBy { !it.isBlack() }
                                     sendCardId = card.id
                                     when (card.direction) {
                                         Left -> targetPlayerId =

@@ -24,10 +24,10 @@ class XiangJinSiSuo : TriggeredSkill {
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<SendCardEvent>(this) { true } ?: return null
-        return ResolveResult(executeXiangJinSiSuoA(g.fsm!!, event, askWhom), true)
+        return ResolveResult(ExecuteXiangJinSiSuoA(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeXiangJinSiSuoA(val fsm: Fsm, val event: SendCardEvent, val r: Player) : WaitingFsm {
+    private data class ExecuteXiangJinSiSuoA(val fsm: Fsm, val event: SendCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForXiangJinSiSuoToc {

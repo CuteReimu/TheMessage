@@ -25,10 +25,10 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
             askWhom.cards.isNotEmpty() || return@findEvent false
             g.players.any { it!!.alive }
         } ?: return null
-        return ResolveResult(executeYiXin(g.fsm!!, event, askWhom), true)
+        return ResolveResult(ExecuteYiXin(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeYiXin(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
+    private data class ExecuteYiXin(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForYiXinToc {

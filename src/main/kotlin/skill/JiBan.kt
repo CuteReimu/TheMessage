@@ -41,10 +41,10 @@ class JiBan : MainPhaseSkill() {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        g.resolve(executeJiBan(g.fsm!!, r))
+        g.resolve(ExecuteJiBan(g.fsm!!, r))
     }
 
-    private data class executeJiBan(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class ExecuteJiBan(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[羁绊]")

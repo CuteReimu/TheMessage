@@ -32,10 +32,10 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
             event.dir !== Up || return@findEvent false
             askWhom.messageCards.any { it.isBlack() }
         } ?: return null
-        return ResolveResult(executeWorkersAreKnowledgable(g.fsm!!, askWhom), true)
+        return ResolveResult(ExecuteWorkersAreKnowledgable(g.fsm!!, askWhom), true)
     }
 
-    private data class executeWorkersAreKnowledgable(val fsm: Fsm, val r: Player) :
+    private data class ExecuteWorkersAreKnowledgable(val fsm: Fsm, val r: Player) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->

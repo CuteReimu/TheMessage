@@ -75,7 +75,7 @@ class YingBianZiRu : ActiveSkill {
                     r.draw(2)
                     g.resolve(WuDao.onUseCard(null, g, r, fsm.inFrontOfWhom))
                 } else {
-                    g.resolve(executeYingBianZiRu(fsm, r, timeout))
+                    g.resolve(ExecuteYingBianZiRu(fsm, r, timeout))
                 }
             } else { // 红蓝，截获
                 r.draw(1)
@@ -88,7 +88,7 @@ class YingBianZiRu : ActiveSkill {
         }
     }
 
-    private data class executeYingBianZiRu(val fsm: FightPhaseIdle, val r: Player, val waitingSecond: Int) :
+    private data class ExecuteYingBianZiRu(val fsm: FightPhaseIdle, val r: Player, val waitingSecond: Int) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (r is HumanPlayer) {

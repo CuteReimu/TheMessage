@@ -25,10 +25,10 @@ class LianMin : TriggeredSkill {
             !event.messageCard.isBlack() || return@findEvent false
             askWhom.messageCards.any { it.isBlack() } || event.inFrontOfWhom.messageCards.any { it.isBlack() }
         } ?: return null
-        return ResolveResult(executeLianMin(g.fsm!!, event), true)
+        return ResolveResult(ExecuteLianMin(g.fsm!!, event), true)
     }
 
-    private data class executeLianMin(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteLianMin(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.sender.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
@@ -105,7 +105,7 @@ class LianMin : TriggeredSkill {
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeLianMin) return false
+            if (fsm0 !is ExecuteLianMin) return false
             val p = fsm0.event.sender
             var value = 0
             var card: Card? = null

@@ -10,7 +10,6 @@ ktlint_standard_if-else-wrapping = disabled
 ktlint_standard_wrapping = disabled
 ktlint_standard_trailing-comma-on-call-site = disabled
 ktlint_standard_trailing-comma-on-declaration-site = disabled
-ktlint_standard_class-naming = disabled
 
 [build/**]
 ktlint_standard = disabled

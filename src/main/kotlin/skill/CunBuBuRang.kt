@@ -25,11 +25,11 @@ class CunBuBuRang : TriggeredSkill {
             event.toPlayer.cards.isNotEmpty()
         }
         if (event != null)
-            return ResolveResult(executeCunBuBuRang(g.fsm!!, event.whoseTurn, askWhom, event.toPlayer), true)
+            return ResolveResult(ExecuteCunBuBuRang(g.fsm!!, event.whoseTurn, askWhom, event.toPlayer), true)
         return null
     }
 
-    private data class executeCunBuBuRang(
+    private data class ExecuteCunBuBuRang(
         val fsm: Fsm,
         val whoseTurn: Player,
         val r: Player,

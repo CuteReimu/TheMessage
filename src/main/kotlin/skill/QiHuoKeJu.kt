@@ -23,10 +23,10 @@ class QiHuoKeJu : TriggeredSkill {
             askWhom === event.inFrontOfWhom || return@findEvent false
             event.messageCard.colors.size == 2
         } ?: return null
-        return ResolveResult(executeQiHuoKeJu(g.fsm!!, event), true)
+        return ResolveResult(ExecuteQiHuoKeJu(g.fsm!!, event), true)
     }
 
-    private data class executeQiHuoKeJu(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteQiHuoKeJu(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
@@ -82,7 +82,7 @@ class QiHuoKeJu : TriggeredSkill {
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeQiHuoKeJu) return false
+            if (fsm0 !is ExecuteQiHuoKeJu) return false
             val p = fsm0.event.inFrontOfWhom
             val card = p.messageCards.find { it.colors.contains(color.Black) } ?: return false
             GameExecutor.post(p.game!!, {

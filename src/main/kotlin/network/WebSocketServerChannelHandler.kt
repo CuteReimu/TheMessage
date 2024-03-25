@@ -14,6 +14,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketFrame
+import org.apache.commons.text.CaseUtils.toCamelCase
 import org.apache.logging.log4j.kotlin.logger
 import java.lang.reflect.InvocationTargetException
 import java.net.SocketException
@@ -151,7 +152,8 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
                 val cls = protoCls.classLoader.loadClass(className)
                 val parser = cls.getDeclaredMethod("parser").invoke(null) as Parser<*>
                 try {
-                    val handlerClass = protoCls.classLoader.loadClass("com.fengsheng.handler.$name")
+                    val handlerClassName = toCamelCase(name, true, '_')
+                    val handlerClass = protoCls.classLoader.loadClass("com.fengsheng.handler.$handlerClassName")
                     val handler = handlerClass.getDeclaredConstructor().newInstance() as ProtoHandler
                     if (ProtoInfoMap.putIfAbsent(name, ProtoInfo(name, parser, handler)) != null) {
                         throw RuntimeException("Duplicate message meta register by name: $name")

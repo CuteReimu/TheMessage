@@ -23,10 +23,10 @@ class JianDiFengXing : TriggeredSkill {
             askWhom === event.sender || return@findEvent false
             askWhom !== event.inFrontOfWhom
         } ?: return null
-        return ResolveResult(executeJianDiFengXingA(g.fsm!!, event), true)
+        return ResolveResult(ExecuteJianDiFengXingA(g.fsm!!, event), true)
     }
 
-    private data class executeJianDiFengXingA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteJianDiFengXingA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.sender.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
@@ -61,11 +61,11 @@ class JianDiFengXing : TriggeredSkill {
             player.incrSeq()
             logger.info("${player}发动了[歼敌风行]")
             player.draw(2)
-            return ResolveResult(executeJianDiFengXingB(fsm, event), true)
+            return ResolveResult(ExecuteJianDiFengXingB(fsm, event), true)
         }
     }
 
-    private data class executeJianDiFengXingB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteJianDiFengXingB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = event.sender
             val hasBlack = r.cards.any { it.isPureBlack() }
@@ -133,11 +133,11 @@ class JianDiFengXing : TriggeredSkill {
             player.deleteCard(card.id)
             player.messageCards.add(card)
             player.game!!.addEvent(AddMessageCardEvent(event.whoseTurn))
-            return ResolveResult(executeJianDiFengXingC(fsm, event, card), true)
+            return ResolveResult(ExecuteJianDiFengXingC(fsm, event, card), true)
         }
     }
 
-    private data class executeJianDiFengXingC(val fsm: Fsm, val event: ReceiveCardEvent, val card: Card) : WaitingFsm {
+    private data class ExecuteJianDiFengXingC(val fsm: Fsm, val event: ReceiveCardEvent, val card: Card) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = event.sender
             val messageExists = event.inFrontOfWhom.messageCards.any { it.id == event.messageCard.id }
@@ -145,7 +145,7 @@ class JianDiFengXing : TriggeredSkill {
             r.game!!.players.send { p ->
                 skillJianDiFengXingBToc {
                     playerId = p.getAlternativeLocation(r.location)
-                    card = this@executeJianDiFengXingC.card.toPbCard()
+                    card = this@ExecuteJianDiFengXingC.card.toPbCard()
                     if (messageExists) {
                         waitingSecond = Config.WaitSecond
                         if (p === r) {
@@ -239,7 +239,7 @@ class JianDiFengXing : TriggeredSkill {
 
     companion object {
         fun ai(fsm: Fsm): Boolean {
-            if (fsm !is executeJianDiFengXingA) return false
+            if (fsm !is ExecuteJianDiFengXingA) return false
             val p = fsm.event.sender
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skillJianDiFengXingATos { })

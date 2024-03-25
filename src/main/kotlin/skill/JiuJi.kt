@@ -23,10 +23,10 @@ class JiuJi : TriggeredSkill {
             event.cardType in cardTypes || return@findEvent false
             !askWhom.roleFaceUp
         } ?: return null
-        return ResolveResult(executeJiuJi(g.fsm!!, event, askWhom), true)
+        return ResolveResult(ExecuteJiuJi(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeJiuJi(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
+    private data class ExecuteJiuJi(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 if (player === r) skillWaitForJiuJiToc {

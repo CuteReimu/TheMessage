@@ -25,10 +25,10 @@ class ZhuanJiao : TriggeredSkill {
             askWhom.alive || return@findEvent false
             askWhom.messageCards.any { !it.isBlack() }
         } ?: return null
-        return ResolveResult(executeZhuanJiao(g.fsm!!, event.whoseTurn, askWhom), true)
+        return ResolveResult(ExecuteZhuanJiao(g.fsm!!, event.whoseTurn, askWhom), true)
     }
 
-    private data class executeZhuanJiao(val fsm: Fsm, val whoseTurn: Player, val r: Player) : WaitingFsm {
+    private data class ExecuteZhuanJiao(val fsm: Fsm, val whoseTurn: Player, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForZhuanJiaoToc {

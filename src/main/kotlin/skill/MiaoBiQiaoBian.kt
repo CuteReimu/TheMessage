@@ -65,10 +65,10 @@ class MiaoBiQiaoBian : ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        g.resolve(executeMiaoBiQiaoBian(fsm, r, target, card))
+        g.resolve(ExecuteMiaoBiQiaoBian(fsm, r, target, card))
     }
 
-    private data class executeMiaoBiQiaoBian(
+    private data class ExecuteMiaoBiQiaoBian(
         val fsm: FightPhaseIdle,
         val r: Player,
         val target1: Player,

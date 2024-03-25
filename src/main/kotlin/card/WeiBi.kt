@@ -52,7 +52,7 @@ class WeiBi : Card {
         execute(this, g, r, target, wantType)
     }
 
-    private data class executeWeiBi(
+    private data class ExecuteWeiBi(
         val fsm: MainPhaseIdle,
         val r: Player,
         val target: Player,
@@ -63,8 +63,8 @@ class WeiBi : Card {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { p ->
                 weiBiWaitForGiveCardToc {
-                    if (this@executeWeiBi.card != null) card = this@executeWeiBi.card.toPbCard()
-                    wantType = this@executeWeiBi.wantType
+                    if (this@ExecuteWeiBi.card != null) card = this@ExecuteWeiBi.card.toPbCard()
+                    wantType = this@ExecuteWeiBi.wantType
                     waitingSecond = Config.WaitSecond
                     playerId = p.getAlternativeLocation(r.location)
                     targetPlayerId = p.getAlternativeLocation(target.location)
@@ -174,7 +174,7 @@ class WeiBi : Card {
                     OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm)
                 } else if (hasCard(target, wantType)) {
                     r.weiBiFailRate++
-                    executeWeiBi(fsm, r, target, card, wantType)
+                    ExecuteWeiBi(fsm, r, target, card, wantType)
                 } else {
                     r.weiBiFailRate = 0
                     logger.info("${target}向${r}展示了所有手牌")
