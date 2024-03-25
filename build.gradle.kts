@@ -5,8 +5,7 @@ plugins {
     application
     idea
     id("com.google.protobuf") version "0.9.4"
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("org.jlleitschuh.gradle.ktlint-idea") version "11.6.1"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
 }
 
 group = "com.fengsheng"
@@ -19,7 +18,7 @@ repositories {
 
 dependencies {
     implementation("com.typesafe.akka:akka-actor_2.13:2.8.5")
-    implementation("io.netty:netty-all:4.1.107.Final")
+    implementation("io.netty:netty-all:4.1.108.Final")
     implementation("com.google.protobuf:protobuf-kotlin:4.26.0")
     implementation("org.apache.logging.log4j:log4j-api:2.23.1")
     implementation("org.apache.logging.log4j:log4j-api-kotlin:1.4.0")
@@ -72,5 +71,5 @@ tasks.withType<Jar> {
 }
 
 ktlint {
-    version.set("0.50.0")
+    version.set("1.2.1")
 }
