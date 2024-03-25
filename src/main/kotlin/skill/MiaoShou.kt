@@ -65,10 +65,10 @@ class MiaoShou : ActiveSkill {
             return
         }
         r.weiBiFailRate = 0
-        g.resolve(executeMiaoShou(fsm, r, target))
+        g.resolve(ExecuteMiaoShou(fsm, r, target))
     }
 
-    private data class executeMiaoShou(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
+    private data class ExecuteMiaoShou(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}对${target}发动了[妙手]")

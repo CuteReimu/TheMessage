@@ -64,10 +64,10 @@ class HouLaiRen : ActiveSkill {
         r.messageCards.add(card)
         g.deck.discard(discardCards)
         logger.info("${r}抽取了三张角色牌：${roles.joinToString { it.name }}")
-        g.resolve(executeHouLaiRen(fsm, r, message.remainCardId, roles))
+        g.resolve(ExecuteHouLaiRen(fsm, r, message.remainCardId, roles))
     }
 
-    private data class executeHouLaiRen(
+    private data class ExecuteHouLaiRen(
         val fsm: WaitForChengQing,
         val r: Player,
         val remainCardId: Int,
@@ -78,16 +78,16 @@ class HouLaiRen : ActiveSkill {
             g.players.send { p ->
                 skillHouLaiRenAToc {
                     playerId = p.getAlternativeLocation(r.location)
-                    remainCardId = this@executeHouLaiRen.remainCardId
+                    remainCardId = this@ExecuteHouLaiRen.remainCardId
                     waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
-                        this@executeHouLaiRen.roles.forEach { roles.add(it.role) }
+                        this@ExecuteHouLaiRen.roles.forEach { roles.add(it.role) }
                         val seq2 = p.seq
                         seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
                                 g.tryContinueResolveProtocol(r, skillHouLaiRenBTos {
-                                    role = this@executeHouLaiRen.roles.first().role
+                                    role = this@ExecuteHouLaiRen.roles.first().role
                                     seq = seq2
                                 })
                             }

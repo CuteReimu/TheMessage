@@ -46,10 +46,10 @@ class GongFen : ActiveSkill {
             val player = g.players[i % g.players.size]!!
             if (player.alive) q.addLast(player)
         }
-        g.resolve(executeGongFen(fsm, q))
+        g.resolve(ExecuteGongFen(fsm, q))
     }
 
-    private data class executeGongFen(
+    private data class ExecuteGongFen(
         val fsm: FightPhaseIdle,
         val q: ArrayDeque<Player>,
         val asMessage: Boolean = false

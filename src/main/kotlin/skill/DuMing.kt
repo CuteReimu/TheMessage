@@ -32,18 +32,18 @@ class DuMing : TriggeredSkill {
             askWhom.getSkillUseCount(skillId) == 0
         }
         if (event1 != null)
-            return ResolveResult(waitForDuMing(event1.nextFsm, event1, askWhom), true)
+            return ResolveResult(WaitForDuMing(event1.nextFsm, event1, askWhom), true)
         val event2 = g.findEvent<MessageMoveNextEvent>(this) { event ->
             !event.isMessageCardFaceUp || return@findEvent false
             askWhom === event.inFrontOfWhom || return@findEvent false
             askWhom.getSkillUseCount(skillId) == 0
         }
         if (event2 != null)
-            return ResolveResult(waitForDuMing(g.fsm!!, event2, askWhom), true)
+            return ResolveResult(WaitForDuMing(g.fsm!!, event2, askWhom), true)
         return null
     }
 
-    private data class waitForDuMing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
+    private data class WaitForDuMing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->
@@ -154,10 +154,10 @@ class DuMing : TriggeredSkill {
                     return null
                 }
                 r.incrSeq()
-                return ResolveResult(executeDuMing(fsm, event, r, message.color, fightPhase.messageCard), true)
+                return ResolveResult(ExecuteDuMing(fsm, event, r, message.color, fightPhase.messageCard), true)
             } else if (event is MessageMoveNextEvent) {
                 r.incrSeq()
-                return ResolveResult(executeDuMing(fsm, event, r, message.color, event.messageCard), true)
+                return ResolveResult(ExecuteDuMing(fsm, event, r, message.color, event.messageCard), true)
             }
             logger.error("状态错误：$fsm")
             player.sendErrorMessage("服务器内部错误，无法发动技能")
@@ -165,7 +165,7 @@ class DuMing : TriggeredSkill {
         }
     }
 
-    private data class executeDuMing(
+    private data class ExecuteDuMing(
         val fsm: Fsm,
         val event: Event,
         val r: Player,
@@ -182,7 +182,7 @@ class DuMing : TriggeredSkill {
                 skillDuMingAToc {
                     playerId = p.getAlternativeLocation(r.location)
                     color = c
-                    if (p === r) card = this@executeDuMing.card.toPbCard()
+                    if (p === r) card = this@ExecuteDuMing.card.toPbCard()
                     if (needPutBlack) {
                         waitingSecond = Config.WaitSecond
                         if (p === r) {

@@ -27,10 +27,10 @@ class JingMeng : TriggeredSkill {
             g.players.any { it!!.alive && it.cards.isNotEmpty() }
             event.messageCard.isBlack()
         } ?: return null
-        return ResolveResult(executeJingMengA(g.fsm!!, event), true)
+        return ResolveResult(ExecuteJingMengA(g.fsm!!, event), true)
     }
 
-    private data class executeJingMengA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteJingMengA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
@@ -83,11 +83,11 @@ class JingMeng : TriggeredSkill {
             r.incrSeq()
             logger.info("${r}发动了[惊梦]，查看了${target}的手牌")
             r.weiBiFailRate = 0
-            return ResolveResult(executeJingMengB(fsm, event, target), true)
+            return ResolveResult(ExecuteJingMengB(fsm, event, target), true)
         }
     }
 
-    private data class executeJingMengB(val fsm: Fsm, val event: ReceiveCardEvent, val target: Player) : WaitingFsm {
+    private data class ExecuteJingMengB(val fsm: Fsm, val event: ReceiveCardEvent, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = event.inFrontOfWhom
             val g = r.game!!
@@ -162,7 +162,7 @@ class JingMeng : TriggeredSkill {
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeJingMengA) return false
+            if (fsm0 !is ExecuteJingMengA) return false
             val p = fsm0.event.inFrontOfWhom
             val target = p.game!!.players.filter {
                 it!!.alive && p.isEnemy(it) && it.cards.isNotEmpty()

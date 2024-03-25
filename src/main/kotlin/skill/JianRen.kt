@@ -24,10 +24,10 @@ class JianRen : TriggeredSkill {
             askWhom === event.inFrontOfWhom || return@findEvent false
             event.messageCard.isBlack()
         } ?: return null
-        return ResolveResult(executeJianRenA(g.fsm!!, event), true)
+        return ResolveResult(ExecuteJianRenA(g.fsm!!, event), true)
     }
 
-    private data class executeJianRenA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteJianRenA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
@@ -69,11 +69,11 @@ class JianRen : TriggeredSkill {
             }
             r.incrSeq()
             logger.info("${r}发动了[坚韧]，展示了${cards[0]}")
-            return ResolveResult(executeJianRenB(fsm, event, cards), true)
+            return ResolveResult(ExecuteJianRenB(fsm, event, cards), true)
         }
     }
 
-    private data class executeJianRenB(val fsm: Fsm, val event: ReceiveCardEvent, val cards: List<Card>) : WaitingFsm {
+    private data class ExecuteJianRenB(val fsm: Fsm, val event: ReceiveCardEvent, val cards: List<Card>) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = event.inFrontOfWhom
             val autoChoose = r.chooseBlackMessageCard()
@@ -188,7 +188,7 @@ class JianRen : TriggeredSkill {
         }
 
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeJianRenA) return false
+            if (fsm0 !is ExecuteJianRenA) return false
             val p: Player = fsm0.event.inFrontOfWhom
             GameExecutor.post(p.game!!, {
                 p.game!!.tryContinueResolveProtocol(p, skillJianRenATos { })

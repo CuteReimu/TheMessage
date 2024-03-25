@@ -25,10 +25,10 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
             event.whoseTurn.alive || return@findEvent false
             askWhom.messageCards.isNotEmpty()
         } ?: return null
-        return ResolveResult(executeRuGui(g.fsm!!, event, askWhom), true)
+        return ResolveResult(ExecuteRuGui(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeRuGui(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
+    private data class ExecuteRuGui(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForRuGuiToc {

@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
 import io.netty.util.CharsetUtil
+import org.apache.commons.text.CaseUtils.toCamelCase
 import org.apache.logging.log4j.kotlin.logger
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -39,7 +40,7 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
                             form.putIfAbsent(arr[0], value)
                         }
                     }
-                    val name = uri.path.replace("/", "")
+                    val name = toCamelCase(uri.path.replace("/", ""), true, '_')
                     val cls = this.javaClass.classLoader.loadClass("com.fengsheng.gm.$name")
 
                     @Suppress("UNCHECKED_CAST")

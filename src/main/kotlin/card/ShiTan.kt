@@ -70,7 +70,7 @@ class ShiTan : Card {
                         if (it === r) cardId = id
                     }
                 }
-                executeShiTan(fsm, r, target, this@ShiTan)
+                ExecuteShiTan(fsm, r, target, this@ShiTan)
             } else {
                 OnFinishResolveCard(
                     r, r, target, getOriginCard(), Shi_Tan, fsm,
@@ -95,7 +95,7 @@ class ShiTan : Card {
         }
     }
 
-    private data class executeShiTan(
+    private data class ExecuteShiTan(
         val fsm: MainPhaseIdle,
         val r: Player,
         val target: Player,
@@ -110,14 +110,14 @@ class ShiTan : Card {
                     if (p === target) {
                         val seq2 = p.seq
                         seq = seq2
-                        card = this@executeShiTan.card.toPbCard()
+                        card = this@ExecuteShiTan.card.toPbCard()
                         p.timeout = GameExecutor.post(r.game!!, {
                             if (p.checkSeq(seq2)) {
                                 autoSelect()
                             }
                         }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     } else if (p === r) {
-                        card = this@executeShiTan.card.toPbCard()
+                        card = this@ExecuteShiTan.card.toPbCard()
                     }
                 }
             }

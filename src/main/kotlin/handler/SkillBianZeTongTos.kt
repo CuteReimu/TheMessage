@@ -1,0 +1,18 @@
+package com.fengsheng.handler
+
+import com.fengsheng.HumanPlayer
+import com.fengsheng.protos.Role
+import com.fengsheng.skill.SkillId
+import org.apache.logging.log4j.kotlin.logger
+
+class SkillBianZeTongTos : AbstractProtoHandler<Role.skill_bian_ze_tong_tos>() {
+    override fun handle0(r: HumanPlayer, pb: Role.skill_bian_ze_tong_tos) {
+        val skill = r.findSkill(SkillId.BIAN_ZE_TONG)
+        if (skill == null) {
+            logger.error("你没有这个技能")
+            r.sendErrorMessage("你没有这个技能")
+            return
+        }
+        r.game!!.tryContinueResolveProtocol(r, pb)
+    }
+}

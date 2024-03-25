@@ -5,22 +5,22 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
-import java.util.concurrent.CountDownLatch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 object Network {
     fun init() {
-//         Thread { initGameNetwork() }.start()
-        Thread { initGameWebSocketNetwork() }.start()
-        Thread { initGmNetwork() }.start()
-        try {
-            cd.await()
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-            throw RuntimeException(e)
+        runBlocking {
+            listOf(
+//                launch(Dispatchers.IO) { initGameNetwork() },
+                launch(Dispatchers.IO) { initGameWebSocketNetwork() },
+                launch(Dispatchers.IO) { initGmNetwork() },
+            ).joinAll()
         }
     }
 
-    private val cd = CountDownLatch(3)
 //    private fun initGameNetwork() {
 //        val bossGroup: EventLoopGroup = NioEventLoopGroup()
 //        val workerGroup: EventLoopGroup = NioEventLoopGroup()
@@ -30,11 +30,10 @@ object Network {
 //                .channel(NioServerSocketChannel::class.java)
 //                .childHandler(ProtoServerInitializer())
 //            val future = bootstrap.bind(Config.ListenPort)
-//            cd.countDown()
+//            future.addListener { channelFuture ->
+//                channelFuture.isSuccess || throw channelFuture.cause()
+//            }
 //            future.channel().closeFuture().sync()
-//        } catch (e: InterruptedException) {
-//            Thread.currentThread().interrupt()
-//            throw RuntimeException(e)
 //        } finally {
 //            bossGroup.shutdownGracefully()
 //            workerGroup.shutdownGracefully()
@@ -50,11 +49,10 @@ object Network {
                 .channel(NioServerSocketChannel::class.java)
                 .childHandler(WebSocketServerInitializer())
             val future = bootstrap.bind(Config.ListenWebSocketPort)
-            cd.countDown()
+            future.addListener { channelFuture ->
+                channelFuture.isSuccess || throw channelFuture.cause()
+            }
             future.channel().closeFuture().sync()
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-            throw RuntimeException(e)
         } finally {
             bossGroup.shutdownGracefully()
             workerGroup.shutdownGracefully()
@@ -70,11 +68,10 @@ object Network {
                 .channel(NioServerSocketChannel::class.java)
                 .childHandler(HttpServerInitializer())
             val future = bootstrap.bind(Config.GmListenPort)
-            cd.countDown()
+            future.addListener { channelFuture ->
+                channelFuture.isSuccess || throw channelFuture.cause()
+            }
             future.channel().closeFuture().sync()
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-            throw RuntimeException(e)
         } finally {
             bossGroup.shutdownGracefully()
             workerGroup.shutdownGracefully()

@@ -24,10 +24,10 @@ class JinShen : TriggeredSkill {
             event.messageCard.colors.size == 2 || return@findEvent false
             askWhom.findMessageCard(event.messageCard.id) != null
         } ?: return null
-        return ResolveResult(executeJinShen(g.fsm!!, event), true)
+        return ResolveResult(ExecuteJinShen(g.fsm!!, event), true)
     }
 
-    private data class executeJinShen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteJinShen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
@@ -88,7 +88,7 @@ class JinShen : TriggeredSkill {
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeJinShen) return false
+            if (fsm0 !is ExecuteJinShen) return false
             val p = fsm0.event.inFrontOfWhom
             val card = p.cards.find { !it.colors.contains(color.Black) } ?: return false
             GameExecutor.post(p.game!!, {

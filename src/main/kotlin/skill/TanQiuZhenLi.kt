@@ -85,10 +85,10 @@ class TanQiuZhenLi : MainPhaseSkill() {
             }
         }
         g.addEvent(AddMessageCardEvent(r))
-        g.resolve(executeTanQiuZhenLi(g.fsm!!, r, target, waitingSecond))
+        g.resolve(ExecuteTanQiuZhenLi(g.fsm!!, r, target, waitingSecond))
     }
 
-    private data class executeTanQiuZhenLi(
+    private data class ExecuteTanQiuZhenLi(
         val fsm: Fsm,
         val r: Player,
         val target: Player,

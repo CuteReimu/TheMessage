@@ -57,10 +57,10 @@ class JinBi : MainPhaseSkill() {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         logger.info("${r}对${target}发动了[禁闭]")
-        g.resolve(executeJinBi(g.fsm!!, r, target))
+        g.resolve(ExecuteJinBi(g.fsm!!, r, target))
     }
 
-    private data class executeJinBi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
+    private data class ExecuteJinBi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             if (target.cards.size < 2) {
                 doExecuteJinBi()

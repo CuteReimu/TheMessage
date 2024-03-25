@@ -23,10 +23,10 @@ class XinGeLianLuo : TriggeredSkill {
         g.findEvent<SendCardEvent>(this) { event ->
             askWhom === event.sender && event.dir !== Up
         } ?: return null
-        return ResolveResult(executeXinGeLianLuo(g.fsm!!, askWhom), true)
+        return ResolveResult(ExecuteXinGeLianLuo(g.fsm!!, askWhom), true)
     }
 
-    private data class executeXinGeLianLuo(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class ExecuteXinGeLianLuo(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForXinGeLianLuoToc {

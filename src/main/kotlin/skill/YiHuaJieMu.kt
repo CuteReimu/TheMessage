@@ -47,10 +47,10 @@ class YiHuaJieMu : ActiveSkill {
         g.playerSetRoleFaceUp(r, true)
         r.addSkillUseCount(skillId)
         logger.info("${r}发动了[移花接木]")
-        g.resolve(executeYiHuaJieMu(fsm, r))
+        g.resolve(ExecuteYiHuaJieMu(fsm, r))
     }
 
-    private data class executeYiHuaJieMu(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
+    private data class ExecuteYiHuaJieMu(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val alivePlayers = r.game!!.players.filterNotNull().filter { it.alive }
             val fromPlayer = alivePlayers.filter { it.messageCards.isNotEmpty() }.random()

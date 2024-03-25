@@ -46,10 +46,10 @@ class GuangFaBao : ActiveSkill {
         logger.info("${r}发动了[广发报]")
         g.players.send { skillGuangFaBaoAToc { playerId = it.getAlternativeLocation(r.location) } }
         r.draw(3)
-        g.resolve(executeGuangFaBao(fsm, r, false))
+        g.resolve(ExecuteGuangFaBao(fsm, r, false))
     }
 
-    private data class executeGuangFaBao(val fsm: FightPhaseIdle, val r: Player, val putCard: Boolean) : WaitingFsm {
+    private data class ExecuteGuangFaBao(val fsm: FightPhaseIdle, val r: Player, val putCard: Boolean) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->

@@ -40,10 +40,10 @@ class BoAi : MainPhaseSkill() {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        g.resolve(executeBoAi(g.fsm!!, r))
+        g.resolve(ExecuteBoAi(g.fsm!!, r))
     }
 
-    private data class executeBoAi(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class ExecuteBoAi(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[博爱]")

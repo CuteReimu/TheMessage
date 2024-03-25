@@ -49,17 +49,17 @@ class PoYi : Card {
         logger.info("${r}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
-            executePoYi(this@PoYi, fsm)
+            ExecutePoYi(this@PoYi, fsm)
         }
         g.resolve(ResolveCard(fsm.whoseTurn, r, null, getOriginCard(), Po_Yi, resolveFunc, fsm))
     }
 
-    private data class executePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {
+    private data class ExecutePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = sendPhase.inFrontOfWhom
             r.game!!.players.send { player ->
                 usePoYiToc {
-                    card = this@executePoYi.card.toPbCard()
+                    card = this@ExecutePoYi.card.toPbCard()
                     playerId = player.getAlternativeLocation(r.location)
                     if (!sendPhase.isMessageCardFaceUp) waitingSecond = Config.WaitSecond
                     if (player === r) {

@@ -68,10 +68,10 @@ class JieDaoShaRen : ActiveSkill {
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
         val card = target.cards.random()
-        g.resolve(executeJieDaoShaRen(fsm, r, target, card))
+        g.resolve(ExecuteJieDaoShaRen(fsm, r, target, card))
     }
 
-    private data class executeJieDaoShaRen(val fsm: FightPhaseIdle, val r: Player, val target: Player, val card: Card) :
+    private data class ExecuteJieDaoShaRen(val fsm: FightPhaseIdle, val r: Player, val target: Player, val card: Card) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
@@ -83,8 +83,8 @@ class JieDaoShaRen : ActiveSkill {
                 skillJieDaoShaRenAToc {
                     playerId = p.getAlternativeLocation(r.location)
                     targetPlayerId = p.getAlternativeLocation(target.location)
-                    card = this@executeJieDaoShaRen.card.toPbCard()
-                    if (this@executeJieDaoShaRen.card.isBlack()) {
+                    card = this@ExecuteJieDaoShaRen.card.toPbCard()
+                    if (this@ExecuteJieDaoShaRen.card.isBlack()) {
                         waitingSecond = Config.WaitSecond
                         if (p === r) {
                             val seq2 = p.seq
@@ -170,7 +170,7 @@ class JieDaoShaRen : ActiveSkill {
             target.messageCards.add(card)
             g.players.send {
                 skillJieDaoShaRenBToc {
-                    card = this@executeJieDaoShaRen.card.toPbCard()
+                    card = this@ExecuteJieDaoShaRen.card.toPbCard()
                     playerId = it.getAlternativeLocation(r.location)
                     enable = true
                     targetPlayerId = it.getAlternativeLocation(target.location)

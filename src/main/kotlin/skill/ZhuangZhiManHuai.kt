@@ -27,10 +27,10 @@ class ZhuangZhiManHuai : TriggeredSkill {
             askWhom === event.sender || askWhom === event.inFrontOfWhom || return@findEvent false
             Red in event.messageCard.colors
         } ?: return null
-        return ResolveResult(executeZhuangZhiManHuai(g.fsm!!, event, askWhom), true)
+        return ResolveResult(ExecuteZhuangZhiManHuai(g.fsm!!, event, askWhom), true)
     }
 
-    private data class executeZhuangZhiManHuai(val fsm: Fsm, val event: ReceiveCardEvent, val r: Player) : WaitingFsm {
+    private data class ExecuteZhuangZhiManHuai(val fsm: Fsm, val event: ReceiveCardEvent, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, r)
@@ -106,7 +106,7 @@ class ZhuangZhiManHuai : TriggeredSkill {
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeZhuangZhiManHuai) return false
+            if (fsm0 !is ExecuteZhuangZhiManHuai) return false
             val p = fsm0.r
             var value = 0
             var card: Card? = null

@@ -30,12 +30,12 @@ class ChengZhi : TriggeredSkill {
         } ?: return null
         val whoDie = event.whoDie
         return ResolveResult(
-            executeChengZhi(g.fsm!!, event.whoseTurn, askWhom, whoDie, whoDie.cards.isNotEmpty()),
+            ExecuteChengZhi(g.fsm!!, event.whoseTurn, askWhom, whoDie, whoDie.cards.isNotEmpty()),
             true
         )
     }
 
-    private data class executeChengZhi(
+    private data class ExecuteChengZhi(
         val fsm: Fsm,
         val whoseTurn: Player,
         val r: Player,

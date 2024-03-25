@@ -51,10 +51,10 @@ class JinKouYiKai : ActiveSkill {
         }
         r.incrSeq()
         r.addSkillUseCount(skillId)
-        g.resolve(executeJinKouYiKai(fsm, r, cards))
+        g.resolve(ExecuteJinKouYiKai(fsm, r, cards))
     }
 
-    private data class executeJinKouYiKai(val fsm: FightPhaseIdle, val r: Player, val cards: List<Card>) :
+    private data class ExecuteJinKouYiKai(val fsm: FightPhaseIdle, val r: Player, val cards: List<Card>) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!

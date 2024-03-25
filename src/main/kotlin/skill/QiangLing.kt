@@ -23,17 +23,17 @@ class QiangLing : TriggeredSkill {
             askWhom === event.sender
         }
         if (event1 != null)
-            return ResolveResult(executeQiangLing(g.fsm!!, event1, askWhom), true)
+            return ResolveResult(ExecuteQiangLing(g.fsm!!, event1, askWhom), true)
         val event2 = g.findEvent<ChooseReceiveCardEvent>(this) { event ->
             askWhom === event.inFrontOfWhom
         }
         if (event2 != null) {
-            return ResolveResult(executeQiangLing(g.fsm!!, event2, askWhom), true)
+            return ResolveResult(ExecuteQiangLing(g.fsm!!, event2, askWhom), true)
         }
         return null
     }
 
-    private data class executeQiangLing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
+    private data class ExecuteQiangLing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForQiangLingToc {

@@ -24,10 +24,10 @@ class JiangHuLing : TriggeredSkill {
         g.findEvent<SendCardEvent>(this) { event ->
             askWhom === event.sender
         } ?: return null
-        return ResolveResult(executeJiangHuLingA(g.fsm!!, askWhom), true)
+        return ResolveResult(ExecuteJiangHuLingA(g.fsm!!, askWhom), true)
     }
 
-    private data class executeJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private data class ExecuteJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForJiangHuLingAToc {
@@ -118,16 +118,16 @@ class JiangHuLing : TriggeredSkill {
                 }
                 return null
             }
-            return ResolveResult(executeJiangHuLingB(g.fsm!!, event, color), true)
+            return ResolveResult(ExecuteJiangHuLingB(g.fsm!!, event, color), true)
         }
     }
 
-    private data class executeJiangHuLingB(val fsm: Fsm, val event: ReceiveCardEvent, val color: color) : WaitingFsm {
+    private data class ExecuteJiangHuLingB(val fsm: Fsm, val event: ReceiveCardEvent, val color: color) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             event.sender.game!!.players.send { p ->
                 skillWaitForJiangHuLingBToc {
                     playerId = p.getAlternativeLocation(event.sender.location)
-                    color = this@executeJiangHuLingB.color
+                    color = this@ExecuteJiangHuLingB.color
                     waitingSecond = Config.WaitSecond
                     if (p === event.sender) {
                         val seq = p.seq

@@ -44,13 +44,13 @@ class CangShenJiaoTang : TriggeredSkill {
             askWhom.draw(1)
         }
         if (isHiddenRole && target.roleFaceUp)
-            return ResolveResult(executeCangShenJiaoTangB(g.fsm!!, event, timeoutSecond), true)
+            return ResolveResult(ExecuteCangShenJiaoTangB(g.fsm!!, event, timeoutSecond), true)
         if (!isHiddenRole && target.messageCards.count(Black) > 0)
-            return ResolveResult(executeCangShenJiaoTangC(g.fsm!!, event, timeoutSecond), true)
+            return ResolveResult(ExecuteCangShenJiaoTangC(g.fsm!!, event, timeoutSecond), true)
         return null
     }
 
-    private data class executeCangShenJiaoTangB(
+    private data class ExecuteCangShenJiaoTangB(
         val fsm: Fsm,
         val event: ReceiveCardEvent,
         val timeoutSecond: Int
@@ -103,7 +103,7 @@ class CangShenJiaoTang : TriggeredSkill {
         }
     }
 
-    private data class executeCangShenJiaoTangC(
+    private data class ExecuteCangShenJiaoTangC(
         val fsm: Fsm,
         val event: ReceiveCardEvent,
         val timeoutSecond: Int

@@ -26,10 +26,10 @@ class LianXin : TriggeredSkill {
             !askWhom.roleFaceUp
         } ?: return null
         val color = event.messageCard.colors
-        return ResolveResult(executeLianXinA(g.fsm!!, event) { card -> card.colors.any { it in color } }, true)
+        return ResolveResult(ExecuteLianXinA(g.fsm!!, event) { card -> card.colors.any { it in color } }, true)
     }
 
-    private data class executeLianXinA(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
+    private data class ExecuteLianXinA(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players) {
@@ -87,11 +87,11 @@ class LianXin : TriggeredSkill {
             }
             if (!hasNext)
                 return ResolveResult(fsm, true)
-            return ResolveResult(executeLianXinB(fsm, event, checkCard), true)
+            return ResolveResult(ExecuteLianXinB(fsm, event, checkCard), true)
         }
     }
 
-    private data class executeLianXinB(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
+    private data class ExecuteLianXinB(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
         WaitingFsm {
         override fun resolve(): ResolveResult? {
             val r = event.inFrontOfWhom
@@ -172,7 +172,7 @@ class LianXin : TriggeredSkill {
 
     companion object {
         fun ai(fsm0: Fsm): Boolean {
-            if (fsm0 !is executeLianXinA) return false
+            if (fsm0 !is ExecuteLianXinA) return false
             val p = fsm0.event.inFrontOfWhom
             val target = fsm0.event.sender
             val card = fsm0.event.messageCard

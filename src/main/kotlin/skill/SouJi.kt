@@ -58,10 +58,10 @@ class SouJi : ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        g.resolve(executeSouJi(fsm, r, target))
+        g.resolve(ExecuteSouJi(fsm, r, target))
     }
 
-    private data class executeSouJi(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
+    private data class ExecuteSouJi(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}对${target}发动了[搜缉]")

@@ -82,10 +82,10 @@ class HuoXin : MainPhaseSkill() {
             return
         }
         r.weiBiFailRate = 0
-        g.resolve(executeHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))
+        g.resolve(ExecuteHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))
     }
 
-    private data class executeHuoXin(
+    private data class ExecuteHuoXin(
         val fsm: Fsm,
         val r: Player,
         val target: Player,

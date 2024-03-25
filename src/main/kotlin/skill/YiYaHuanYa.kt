@@ -26,10 +26,10 @@ class YiYaHuanYa : TriggeredSkill {
             event.messageCard.isBlack() || return@findEvent false
             askWhom.cards.isNotEmpty()
         } ?: return null
-        return ResolveResult(executeYiYaHuanYa(g.fsm!!, event), true)
+        return ResolveResult(ExecuteYiYaHuanYa(g.fsm!!, event), true)
     }
 
-    private data class executeYiYaHuanYa(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private data class ExecuteYiYaHuanYa(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
@@ -110,7 +110,7 @@ class YiYaHuanYa : TriggeredSkill {
 
     companion object {
         fun ai(fsm: Fsm): Boolean {
-            if (fsm !is executeYiYaHuanYa) return false
+            if (fsm !is ExecuteYiYaHuanYa) return false
             val player = fsm.event.inFrontOfWhom
             val target = fsm.event.sender
             var value = -1

@@ -70,10 +70,10 @@ class YunChouWeiWo : ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        g.resolve(executeYunChouWeiWo(fsm, r, cards))
+        g.resolve(ExecuteYunChouWeiWo(fsm, r, cards))
     }
 
-    private data class executeYunChouWeiWo(val fsm: Fsm, val r: Player, val cards: List<Card>) : WaitingFsm {
+    private data class ExecuteYunChouWeiWo(val fsm: Fsm, val r: Player, val cards: List<Card>) : WaitingFsm {
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[运筹帷幄]，查看了牌堆顶的五张牌")
@@ -82,14 +82,14 @@ class YunChouWeiWo : ActiveSkill {
                     playerId = p.getAlternativeLocation(r.location)
                     waitingSecond = Config.WaitSecond * 2
                     if (p === r) {
-                        this@executeYunChouWeiWo.cards.forEach { cards.add(it.toPbCard()) }
+                        this@ExecuteYunChouWeiWo.cards.forEach { cards.add(it.toPbCard()) }
                         val seq2 = p.seq
                         seq = seq2
                         p.timeout = GameExecutor.post(g, {
                             if (p.checkSeq(seq2)) {
                                 g.tryContinueResolveProtocol(r, skillYunChouWeiWoBTos {
-                                    deckCardIds.add(this@executeYunChouWeiWo.cards[1].id)
-                                    deckCardIds.add(this@executeYunChouWeiWo.cards[0].id)
+                                    deckCardIds.add(this@ExecuteYunChouWeiWo.cards[1].id)
+                                    deckCardIds.add(this@ExecuteYunChouWeiWo.cards[0].id)
                                     seq = seq2
                                 })
                                 return@post
