@@ -69,6 +69,7 @@ object GameExecutor {
         if (delay == 3L && unit == TimeUnit.SECONDS) {
             if (!game.players.any { it is HumanPlayer && it.alive })
                 return TimeWheel.newTimeout({ post(game, callback) }, 1, unit)
+            if (Config.IsGmEnable) return TimeWheel.newTimeout({ post(game, callback) }, 2, unit)
             if (game.players.any { it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) <= 100 })
                 return TimeWheel.newTimeout({ post(game, callback) }, 5, unit)
         }

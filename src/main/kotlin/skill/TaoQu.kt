@@ -1,9 +1,11 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
+import com.fengsheng.card.filter
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
@@ -123,13 +125,28 @@ class TaoQu : MainPhaseSkill() {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val playerAndCard = g.players.flatMap {
-                        if (!it!!.alive || !it.isEnemy(r)) emptyList()
-                        else it.messageCards.mapNotNull { card ->
-                            if (!card.colors.any { c -> c in colors }) null
-                            else PlayerAndCard(it, card)
+                    val color = listOf(Red, Blue, Black).filter {
+                        cards.count(it) >= 2
+                    } // 展示的两张牌都含有的颜色
+                    val players =
+                        g.players.filter { it!!.alive && it !== r && it.messageCards.isNotEmpty() } // 过滤出除了自己且存活有情报的玩家
+                    val moveplayerAndcards = ArrayList<PlayerAndCard>() // 存储可能指定的玩家以及情报牌的集合
+                    var value = Int.MIN_VALUE
+                    for (p in players) {
+                        for (movecard in p!!.messageCards.filter { c -> c.colors.any { it in color } }) {
+                            // 遍历到没有任意两张手牌含有相同的颜色跳过
+                            val v = r.calculateRemoveCardValue(r, p, movecard)
+                            if (v > value) {
+                                value = v
+                                moveplayerAndcards.clear()
+                                moveplayerAndcards.add(PlayerAndCard(p, movecard))
+                            } else if (v == value) {
+                                moveplayerAndcards.add(PlayerAndCard(p, movecard))
+                            }
                         }
-                    }.minBy { RobotPlayer.cardOrder[it.card.type]!! }
+                    }
+                    val bestcard = moveplayerAndcards.map { it.card }.bestCard(r.identity)
+                    val playerAndCard = moveplayerAndcards.first { it.card === bestcard } // 目标玩家和情报牌
                     g.tryContinueResolveProtocol(r, skillTaoQuBTos {
                         targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
                         cardId = playerAndCard.card.id
@@ -205,11 +222,27 @@ class TaoQu : MainPhaseSkill() {
             val player = e.whoseTurn
             player.getSkillUseCount(SkillId.TAO_QU) == 0 || return false
             val players =
-                player.game!!.players.filter { it!!.alive && it.isEnemy(player) && it.messageCards.isNotEmpty() }
-            val color = listOf(Red, Blue).filter {
-                player.cards.count(it) >= 2 && players.any { p -> p!!.messageCards.any { c -> it in c.colors } }
-            }.randomOrNull() ?: return false
-            val cardIds = player.cards.filter { color in it.colors }.shuffled().take(2).map { it.id }
+                player.game!!.players.filter { it!!.alive && it !== player && it.messageCards.isNotEmpty() }
+            players.isNotEmpty() || return false
+            val color = listOf(Red, Blue, Black).filter {
+                player.cards.count(it) >= 2
+            }
+            color.isNotEmpty() || return false
+            var value = 0
+            var choosecolor = Black
+            for (p in players) {
+                val messagecards = p!!.messageCards.toList()
+                for (card in messagecards) {
+                    val c = card.colors.shuffled().find { it in color } ?: continue
+                    val v = player.calculateRemoveCardValue(player, p, card)
+                    if (v > value) {
+                        value = v
+                        choosecolor = c
+                    }
+                }
+            }
+            value > 0 || return false // 如果没有找到合适的情报，则不发动
+            val cardIds = player.cards.filter(choosecolor).shuffled().take(2).map { it.id }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillTaoQuATos { this.cardIds.addAll(cardIds) })
             }, 3, TimeUnit.SECONDS)
