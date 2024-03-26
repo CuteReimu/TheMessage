@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.RobotPlayer.Companion.sortCards
+import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
@@ -128,25 +128,25 @@ class TaoQu : MainPhaseSkill() {
                     val color = listOf(Red, Blue, Black).filter {
                         r.cards.count(it) >= 2
                     } // 手牌中出现两次的颜色
-                    val movecards = ArrayList<Card>()
-                    val playerAndCard: PlayerAndCard?
+                    val players =
+                        g.players.filter { it!!.alive && it !== r && it.messageCards.isNotEmpty() } // 过滤出除了自己且存活有情报的玩家
+                    val moveplayerAndcards = ArrayList<PlayerAndCard>() // 存储可能指定的玩家以及情报牌的集合
                     var value = Int.MIN_VALUE
-                    for (p in g.players) {
-                        p!!.alive || continue // 死亡玩家跳过
-                        for (movecard in p.messageCards.toList()) {
+                    for (p in players) {
+                        for (movecard in p!!.messageCards) { //
                             movecard.colors.any { color.contains(it) } || continue // 遍历到没有任意两张手牌含有相同的颜色跳过
                             val v = r.calculateRemoveCardValue(r, p, movecard)
                             if (v > value) {
                                 value = v
-                                movecards.clear()
-                                movecards.add(movecard)
+                                moveplayerAndcards.clear()
+                                moveplayerAndcards.add(PlayerAndCard(p, movecard))
                             } else if (v == value) {
-                                movecards.add(movecard)
+                                moveplayerAndcards.add(PlayerAndCard(p, movecard))
                             }
                         }
                     }
-                    val movecard = movecards.bestCard(r.identity)
-                    playerAndCard = PlayerAndCard(r, movecard)
+                    val bestcard = moveplayerAndcards.map { it.card }.bestCard(r.identity)
+                    val playerAndCard = moveplayerAndcards.first { it.card == bestcard } // 目标玩家和情报牌
                     g.tryContinueResolveProtocol(r, skillTaoQuBTos {
                         targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
                         cardId = playerAndCard.card.id
@@ -230,23 +230,25 @@ class TaoQu : MainPhaseSkill() {
             color.isNotEmpty() || return false
             var value = -1
             var choosecolor = Black
+            val processedCards = mutableSetOf<Card>()
             for (p in players) {
                 val messagecards = p!!.messageCards.toList()
                 for (c in color) {
                     for (card in messagecards) {
-                        c in card.colors || continue
+                        c in card.colors || card !in processedCards || continue
                         val v = p.calculateRemoveCardValue(player, p, card)
                         if (v > value) {
                             value = v
                             choosecolor = c
                         }
+                        processedCards.add(card)
                     }
                 }
             }
             value < 0 || return false // 如果没有找到合适的情报，则不发动
-            val cards = player.cards.filter(choosecolor).shuffled().take(2)
+            val cardIds = player.cards.filter(choosecolor).shuffled().take(2).map { it.id }
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skillTaoQuATos { cards.forEach { cardIds.add(it.id) } })
+                skill.executeProtocol(player.game!!, player, skillTaoQuATos { this.cardIds.addAll(cardIds) })
             }, 3, TimeUnit.SECONDS)
             return true
         }
