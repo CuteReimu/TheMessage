@@ -244,7 +244,7 @@ class TaoQu : MainPhaseSkill() {
                 }
             }
             value < 0 || return false // 如果没有找到合适的情报，则不发动
-            var cards = player.cards.filter(choosecolor).shuffled().take(2)
+            val cards = player.cards.filter(choosecolor).shuffled().take(2)
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillTaoQuATos { cards.forEach { cardIds.add(it.id) } })
             }, 3, TimeUnit.SECONDS)
