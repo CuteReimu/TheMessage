@@ -146,7 +146,7 @@ class TaoQu : MainPhaseSkill() {
                         }
                     }
                     val bestcard = moveplayerAndcards.map { it.card }.bestCard(r.identity)
-                    val playerAndCard = moveplayerAndcards.first { it.card == bestcard } // 目标玩家和情报牌
+                    val playerAndCard = moveplayerAndcards.first { it.card === bestcard } // 目标玩家和情报牌
                     g.tryContinueResolveProtocol(r, skillTaoQuBTos {
                         targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
                         cardId = playerAndCard.card.id
