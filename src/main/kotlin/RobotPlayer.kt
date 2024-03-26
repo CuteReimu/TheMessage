@@ -394,16 +394,38 @@ class RobotPlayer : Player() {
 
         fun Card.betterThan(card: Card) = cardOrder[type]!! < cardOrder[card.type]!!
 
+        /**
+         * 把牌排列
+         *
+         * @param c 对于相同的牌，会把这个颜色排在前面（无论参数`reverse`是`true`还是`false`）。一般传入想要排序的玩家的[identity]即可
+         * @param reverse 为`false`时，表示把有用的牌排在前面，没用的牌排在后面。不填为`false`
+         * @return 一个新的`List`，包含了排列好的牌
+         */
         fun Iterable<Card>.sortCards(c: color, reverse: Boolean = false): List<Card> {
             return if (reverse) sortedBy { -cardOrder[it.type]!! * 100 + if (c in it.colors) 1 else 0 }
             else sortedBy { cardOrder[it.type]!! + if (c in it.colors) 1 else 0 }
         }
 
+        /**
+         * 获得最有（最无）价值的牌（换句话说，就是[sortCards]后的第一个）
+         *
+         * @param c 对于相同的牌，会优先选这个颜色（无论参数`reverse`是`true`还是`false`）。一般传入想要排序的玩家的[identity]即可
+         * @param reverse 为`false`时，表示最有价值的牌。不填为`false`
+         * @return 最有（最无）价值的牌
+         * @throws NoSuchElementException 如果列表为空
+         */
         fun Iterable<Card>.bestCard(c: color, reverse: Boolean = false): Card {
             return if (reverse) minBy { -cardOrder[it.type]!! * 100 + if (c in it.colors) 1 else 0 }
             else minBy { cardOrder[it.type]!! + if (c in it.colors) 1 else 0 }
         }
 
+        /**
+         * 获得最有（最无）价值的牌（换句话说，就是[sortCards]后的第一个）
+         *
+         * @param c 对于相同的牌，会优先选这个颜色（无论参数`reverse`是`true`还是`false`）。一般传入想要排序的玩家的[identity]即可
+         * @param reverse 为`false`时，表示最有价值的牌。不填为`false`
+         * @return 最有（最无）价值的牌，如果列表为空，则返回`null`
+         */
         fun Iterable<Card>.bestCardOrNull(c: color, reverse: Boolean = false): Card? {
             return if (reverse) minByOrNull { -cardOrder[it.type]!! * 100 + if (c in it.colors) 1 else 0 }
             else minByOrNull { cardOrder[it.type]!! + if (c in it.colors) 1 else 0 }
