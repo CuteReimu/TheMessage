@@ -79,7 +79,7 @@ class ChengZhi : TriggeredSkill {
             if (r is RobotPlayer) GameExecutor.post(r.game!!, {
                 fun Player.process(identity: color, secretTask: secret_task) = if (identity != Black) {
                     maxOf(game!!.players.filter { it!!.alive && it.identity == identity }
-                        .maxOf { it!!.messageCards.count(identity) * 10 },
+                        .maxOfOrNull { it!!.messageCards.count(identity) * 10 } ?: 0,
                         r.messageCards.count(identity) * 10
                     )
                 } else when (secretTask) {
