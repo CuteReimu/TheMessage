@@ -177,7 +177,7 @@ object Statistics {
         val l1 = playerInfoMap.filter { (_, v) -> v.winCount > 0 }.map { (_, v) ->
             val days = ((System.currentTimeMillis() - v.lastTime) / (24 * 3600000L)).toInt()
             val decay = days / 7 * 20
-            v.copy(score = v.score - decay)
+            v.copy(score = (v.score - decay).coerceAtLeast(0))
         }.sortedWith { a, b ->
             if (a.score > b.score) -1
             else if (a.score < b.score) 1
