@@ -133,8 +133,8 @@ class TaoQu : MainPhaseSkill() {
                     val moveplayerAndcards = ArrayList<PlayerAndCard>() // 存储可能指定的玩家以及情报牌的集合
                     var value = Int.MIN_VALUE
                     for (p in players) {
-                        for (movecard in p!!.messageCards) { //
-                            movecard.colors.any { color.contains(it) } || continue // 遍历到没有任意两张手牌含有相同的颜色跳过
+                        for (movecard in p!!.messageCards.filter { c -> c.colors.any { color.contains(it) }) {
+                            // 遍历到没有任意两张手牌含有相同的颜色跳过
                             val v = r.calculateRemoveCardValue(r, p, movecard)
                             if (v > value) {
                                 value = v
