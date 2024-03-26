@@ -237,9 +237,10 @@ class TaoQu : MainPhaseSkill() {
                     for (card in messagecards) {
                         c in card.colors || continue
                         val v = p.calculateRemoveCardValue(player, p, card)
-                        if (v > value)
+                        if (v > value) {
                             value = v
-                        choosecolor = c
+                            choosecolor = c
+                        }
                     }
                 }
             }
