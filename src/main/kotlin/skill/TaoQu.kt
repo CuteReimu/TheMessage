@@ -145,8 +145,7 @@ class TaoQu : MainPhaseSkill() {
                             }
                         }
                     }
-                    val mostcolor = movecards.flatMap { it.colors }.groupingBy { it }.eachCount().maxBy { it.value }.key
-                    val movecard = movecards.sortCards(mostcolor, false)[0]
+                    val movecard = movecards.bestCard(r.identity)
                     playerAndCard = PlayerAndCard(r, movecard)
                     g.tryContinueResolveProtocol(r, skillTaoQuBTos {
                         targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
