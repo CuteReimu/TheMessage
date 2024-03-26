@@ -5,6 +5,7 @@ import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
 import com.fengsheng.card.count
+import com.fengsheng.card.filter
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
@@ -222,13 +223,14 @@ class TaoQu : MainPhaseSkill() {
             val player = e.whoseTurn
             player.getSkillUseCount(SkillId.TAO_QU) == 0 || return false
             val players =
-                player.game!!.players.filter { it!!.alive && it.messageCards.isNotEmpty() }
-            if (players.isEmpty()) return false
+                player.game!!.players.filter { it!!.alive && it != player && it.messageCards.isNotEmpty() }
+            players.isNotEmpty() || return false
             val color = listOf(Red, Blue, Black).filter {
                 player.cards.count(it) >= 2
             }
             color.isNotEmpty() || return false
             var value = -1
+            var choosecolor = Black
             for (p in players) {
                 val messagecards = p!!.messageCards.toList()
                 for (c in color) {
@@ -237,12 +239,14 @@ class TaoQu : MainPhaseSkill() {
                         val v = p.calculateRemoveCardValue(player, p, card)
                         if (v > value)
                             value = v
+                        choosecolor = c
                     }
                 }
             }
-            value < 0 || return false
+            value < 0 || return false // 如果没有找到合适的情报，则不发动
+            var cards = player.cards.filter(choosecolor).shuffled().take(2)
             GameExecutor.post(player.game!!, {
-                skill.executeProtocol(player.game!!, player, skillTaoQuATos { this.cardIds.addAll(cardIds) })
+                skill.executeProtocol(player.game!!, player, skillTaoQuATos { cards.forEach { cardIds.add(it.id) } })
             }, 3, TimeUnit.SECONDS)
             return true
         }
