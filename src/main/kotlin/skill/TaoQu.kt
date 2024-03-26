@@ -223,7 +223,7 @@ class TaoQu : MainPhaseSkill() {
             val player = e.whoseTurn
             player.getSkillUseCount(SkillId.TAO_QU) == 0 || return false
             val players =
-                player.game!!.players.filter { it!!.alive && it != player && it.messageCards.isNotEmpty() }
+                player.game!!.players.filter { it!!.alive && it !== player && it.messageCards.isNotEmpty() }
             players.isNotEmpty() || return false
             val color = listOf(Red, Blue, Black).filter {
                 player.cards.count(it) >= 2
