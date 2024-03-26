@@ -133,7 +133,7 @@ class TaoQu : MainPhaseSkill() {
                     var value = Int.MIN_VALUE
                     for (p in g.players) {
                         p!!.alive || continue // 死亡玩家跳过
-                        for (movecard in p.messageCards) {
+                        for (movecard in p.messageCards.toList()) {
                             movecard.colors.any { color.contains(it) } || continue // 遍历到没有任意两张手牌含有相同的颜色跳过
                             val v = r.calculateRemoveCardValue(r, p, movecard)
                             if (v > value) {
