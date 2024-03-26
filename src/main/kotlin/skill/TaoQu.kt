@@ -126,14 +126,14 @@ class TaoQu : MainPhaseSkill() {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     val color = listOf(Red, Blue, Black).filter {
-                        r.cards.count(it) >= 2
-                    } // 手牌中出现两次的颜色
+                        cards.count(it) >= 2
+                    } // 展示的两张牌都含有的颜色
                     val players =
                         g.players.filter { it!!.alive && it !== r && it.messageCards.isNotEmpty() } // 过滤出除了自己且存活有情报的玩家
                     val moveplayerAndcards = ArrayList<PlayerAndCard>() // 存储可能指定的玩家以及情报牌的集合
                     var value = Int.MIN_VALUE
                     for (p in players) {
-                        for (movecard in p!!.messageCards.filter { c -> c.colors.any { color.contains(it) }) {
+                        for (movecard in p!!.messageCards.filter { c -> c.colors.any { it in color } }) {
                             // 遍历到没有任意两张手牌含有相同的颜色跳过
                             val v = r.calculateRemoveCardValue(r, p, movecard)
                             if (v > value) {
@@ -230,22 +230,18 @@ class TaoQu : MainPhaseSkill() {
             color.isNotEmpty() || return false
             var value = -1
             var choosecolor = Black
-            val processedCards = mutableSetOf<Card>()
             for (p in players) {
                 val messagecards = p!!.messageCards.toList()
-                for (c in color) {
-                    for (card in messagecards) {
-                        c in card.colors || card !in processedCards || continue
-                        val v = p.calculateRemoveCardValue(player, p, card)
-                        if (v > value) {
-                            value = v
-                            choosecolor = c
-                        }
-                        processedCards.add(card)
+                for (card in messagecards) {
+                    val c = card.colors.shuffled().find { it in color } ?: continue
+                    val v = p.calculateRemoveCardValue(player, p, card)
+                    if (v > value) {
+                        value = v
+                        choosecolor = c
                     }
                 }
             }
-            value < 0 || return false // 如果没有找到合适的情报，则不发动
+            value >= 0 || return false // 如果没有找到合适的情报，则不发动
             val cardIds = player.cards.filter(choosecolor).shuffled().take(2).map { it.id }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillTaoQuATos { this.cardIds.addAll(cardIds) })
