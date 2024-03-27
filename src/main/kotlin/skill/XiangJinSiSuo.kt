@@ -28,6 +28,9 @@ class XiangJinSiSuo : TriggeredSkill {
     }
 
     private data class ExecuteXiangJinSiSuoA(val fsm: Fsm, val event: SendCardEvent, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForXiangJinSiSuoToc {

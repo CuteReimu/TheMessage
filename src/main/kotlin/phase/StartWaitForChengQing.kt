@@ -16,7 +16,7 @@ import java.util.*
  * @param afterDieResolve 濒死结算后的下一个动作
  */
 data class StartWaitForChengQing(
-    val whoseTurn: Player,
+    override val whoseTurn: Player,
     val dyingQueue: Queue<Player>,
     val diedQueue: ArrayList<Player>,
     val afterDieResolve: Fsm

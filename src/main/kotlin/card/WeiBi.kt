@@ -58,8 +58,10 @@ class WeiBi : Card {
         val target: Player,
         val card: WeiBi?,
         val wantType: card_type
-    ) :
-        WaitingFsm {
+    ) : WaitingFsm {
+        override val whoseTurn
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { p ->
                 weiBiWaitForGiveCardToc {

@@ -29,6 +29,9 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
     }
 
     private data class ExecuteRuGui(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForRuGuiToc {

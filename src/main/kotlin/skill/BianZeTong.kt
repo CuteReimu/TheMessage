@@ -33,6 +33,9 @@ class BianZeTong : TriggeredSkill {
     }
 
     private data class ExecuteBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             logger.info("${r}发动了[变则通]")
             r.game!!.players.send { p ->

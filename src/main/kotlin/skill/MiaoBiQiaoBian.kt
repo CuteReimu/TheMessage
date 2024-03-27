@@ -74,6 +74,9 @@ class MiaoBiQiaoBian : ActiveSkill {
         val target1: Player,
         val card1: Card
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             target1.deleteMessageCard(card1.id)

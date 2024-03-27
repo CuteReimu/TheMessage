@@ -15,6 +15,9 @@ import org.apache.logging.log4j.kotlin.logger
  * @param sendPhase 原先那个人的 [SendPhaseIdle] （不是下一个人的）
  */
 data class MessageMoveNext(val sendPhase: SendPhaseIdle) : Fsm {
+    override val whoseTurn
+        get() = sendPhase.whoseTurn
+
     override fun resolve(): ResolveResult {
         if (sendPhase.dir == Up) {
             return if (sendPhase.sender.alive) {

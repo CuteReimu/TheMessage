@@ -94,6 +94,9 @@ class TanQiuZhenLi : MainPhaseSkill() {
         val target: Player,
         val waitingSecond: Int
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             if (target is HumanPlayer) {
                 val seq = target.seq

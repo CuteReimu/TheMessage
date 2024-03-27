@@ -91,8 +91,10 @@ class TaoQu : MainPhaseSkill() {
         val r: Player,
         val cards: List<Card>,
         val colors: List<color>
-    ) :
-        WaitingFsm {
+    ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->

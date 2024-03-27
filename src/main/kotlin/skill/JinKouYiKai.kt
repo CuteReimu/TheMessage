@@ -54,8 +54,10 @@ class JinKouYiKai : ActiveSkill {
         g.resolve(ExecuteJinKouYiKai(fsm, r, cards))
     }
 
-    private data class ExecuteJinKouYiKai(val fsm: FightPhaseIdle, val r: Player, val cards: List<Card>) :
-        WaitingFsm {
+    private data class ExecuteJinKouYiKai(val fsm: FightPhaseIdle, val r: Player, val cards: List<Card>) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[金口一开]")

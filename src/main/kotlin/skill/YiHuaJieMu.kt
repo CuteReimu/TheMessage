@@ -51,6 +51,9 @@ class YiHuaJieMu : ActiveSkill {
     }
 
     private data class ExecuteYiHuaJieMu(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val alivePlayers = r.game!!.players.filterNotNull().filter { it.alive }
             val fromPlayer = alivePlayers.filter { it.messageCards.isNotEmpty() }.random()

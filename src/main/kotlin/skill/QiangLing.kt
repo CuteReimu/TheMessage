@@ -34,6 +34,9 @@ class QiangLing : TriggeredSkill {
     }
 
     private data class ExecuteQiangLing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForQiangLingToc {

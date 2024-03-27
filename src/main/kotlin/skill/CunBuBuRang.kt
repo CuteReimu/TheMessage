@@ -25,16 +25,18 @@ class CunBuBuRang : TriggeredSkill {
             event.toPlayer.cards.isNotEmpty()
         }
         if (event != null)
-            return ResolveResult(ExecuteCunBuBuRang(g.fsm!!, event.whoseTurn, askWhom, event.toPlayer), true)
+            return ResolveResult(ExecuteCunBuBuRang(g.fsm!!, askWhom, event.toPlayer), true)
         return null
     }
 
     private data class ExecuteCunBuBuRang(
         val fsm: Fsm,
-        val whoseTurn: Player,
         val r: Player,
         val target: Player
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             for (player in r.game!!.players) {
                 if (player is HumanPlayer) {

@@ -20,15 +20,18 @@ class ZhuanJiao : TriggeredSkill {
     override val isInitialSkill = true
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
-        val event = g.findEvent<FinishResolveCardEvent>(this) { event ->
+        g.findEvent<FinishResolveCardEvent>(this) { event ->
             askWhom === event.player || return@findEvent false
             askWhom.alive || return@findEvent false
             askWhom.messageCards.any { !it.isBlack() }
         } ?: return null
-        return ResolveResult(ExecuteZhuanJiao(g.fsm!!, event.whoseTurn, askWhom), true)
+        return ResolveResult(ExecuteZhuanJiao(g.fsm!!, askWhom), true)
     }
 
-    private data class ExecuteZhuanJiao(val fsm: Fsm, val whoseTurn: Player, val r: Player) : WaitingFsm {
+    private data class ExecuteZhuanJiao(val fsm: Fsm, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForZhuanJiaoToc {

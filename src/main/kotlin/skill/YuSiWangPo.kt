@@ -105,6 +105,9 @@ class YuSiWangPo : MainPhaseSkill() {
         val cardCount: Int,
         val waitingSecond: Int
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             if (target is HumanPlayer) {

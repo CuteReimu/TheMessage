@@ -29,6 +29,9 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
     }
 
     private data class ExecuteYiXin(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForYiXinToc {

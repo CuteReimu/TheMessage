@@ -88,8 +88,10 @@ class YingBianZiRu : ActiveSkill {
         }
     }
 
-    private data class ExecuteYingBianZiRu(val fsm: FightPhaseIdle, val r: Player, val waitingSecond: Int) :
-        WaitingFsm {
+    private data class ExecuteYingBianZiRu(val fsm: FightPhaseIdle, val r: Player, val waitingSecond: Int) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             if (r is HumanPlayer) {
                 val seq = r.seq

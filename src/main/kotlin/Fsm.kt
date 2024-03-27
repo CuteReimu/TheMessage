@@ -4,6 +4,8 @@ package com.fengsheng
  * 状态机
  */
 interface Fsm {
+    val whoseTurn: Player
+
     /**
      * 处理函数。
      *

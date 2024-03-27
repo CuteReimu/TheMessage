@@ -32,6 +32,9 @@ class ChiZiZhiXin : TriggeredSkill {
     }
 
     private data class ExecuteChiZiZhiXinA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             for (p in event.sender.game!!.players)
                 p!!.notifyReceivePhase(
@@ -75,6 +78,9 @@ class ChiZiZhiXin : TriggeredSkill {
     }
 
     private data class ExecuteChiZiZhiXinB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = event.sender
             r.game!!.players.send { p ->

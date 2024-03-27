@@ -27,6 +27,9 @@ class JianDiFengXing : TriggeredSkill {
     }
 
     private data class ExecuteJianDiFengXingA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             for (p in event.sender.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.sender)
@@ -66,6 +69,9 @@ class JianDiFengXing : TriggeredSkill {
     }
 
     private data class ExecuteJianDiFengXingB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = event.sender
             val hasBlack = r.cards.any { it.isPureBlack() }
@@ -138,6 +144,9 @@ class JianDiFengXing : TriggeredSkill {
     }
 
     private data class ExecuteJianDiFengXingC(val fsm: Fsm, val event: ReceiveCardEvent, val card: Card) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = event.sender
             val messageExists = event.inFrontOfWhom.messageCards.any { it.id == event.messageCard.id }

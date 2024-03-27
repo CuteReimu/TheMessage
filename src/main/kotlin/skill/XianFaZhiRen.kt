@@ -40,6 +40,9 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
     }
 
     private data class ExecuteXianFaZhiRenA(val fsm: Fsm, val event: AddMessageCardEvent, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->
@@ -188,8 +191,15 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
         r.game!!.resolve(ExecuteXianFaZhiRenB(fsm, r, target, timeout))
     }
 
-    private data class ExecuteXianFaZhiRenB(val fsm: Fsm, val r: Player, val defaultTarget: Player, val timeout: Int) :
-        WaitingFsm {
+    private data class ExecuteXianFaZhiRenB(
+        val fsm: Fsm,
+        val r: Player,
+        val defaultTarget: Player,
+        val timeout: Int
+    ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             if (r is HumanPlayer) {
                 val seq = r.seq

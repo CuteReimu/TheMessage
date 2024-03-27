@@ -59,7 +59,7 @@ class LengXueXunLian : ActiveSkill {
     }
 
     private data class ExecuteLengXueXunLian(
-        val whoseTurn: Player,
+        override val whoseTurn: Player,
         val r: Player,
         val cards: List<Card>
     ) : WaitingFsm {

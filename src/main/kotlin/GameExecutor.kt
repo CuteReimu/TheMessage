@@ -5,6 +5,7 @@ import akka.japi.pf.DeciderBuilder
 import akka.pattern.Patterns
 import io.netty.util.HashedWheelTimer
 import io.netty.util.Timeout
+import org.apache.logging.log4j.kotlin.logger
 import java.time.Duration
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
@@ -16,10 +17,18 @@ class GameActor : AbstractActor() {
     override fun createReceive(): Receive {
         return receiveBuilder()
             .match(Runnable::class.java) {
-                it.run()
+                try {
+                    it.run()
+                } catch (e: Throwable) {
+                    logger.error("Game Actor异常", e)
+                }
             }
             .match(Callable::class.java) {
-                sender.tell(it.call(), self)
+                try {
+                    sender.tell(it.call(), self)
+                } catch (e: Throwable) {
+                    logger.error("Game Actor异常", e)
+                }
             }
             .match(StopGameActor::class.java) {
                 context.stop(self)

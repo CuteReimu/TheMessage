@@ -51,6 +51,9 @@ class DuiZhengXiaYao : ActiveSkill {
     }
 
     private data class ExecuteDuiZhengXiaYaoA(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->
@@ -168,6 +171,9 @@ class DuiZhengXiaYao : ActiveSkill {
         val colors: List<color>,
         val defaultSelection: PlayerAndCard
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             logger.info("${r}展示了${cards.joinToString()}")
             val g = r.game!!

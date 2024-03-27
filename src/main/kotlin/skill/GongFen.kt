@@ -54,6 +54,9 @@ class GongFen : ActiveSkill {
         val q: ArrayDeque<Player>,
         val asMessage: Boolean = false
     ) : Fsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val target = q.removeFirstOrNull()
             if (target == null) {

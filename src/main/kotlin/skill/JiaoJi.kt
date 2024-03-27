@@ -109,8 +109,10 @@ class JiaoJi : MainPhaseSkill() {
         g.resolve(ExecuteJiaoJi(fsm, target, needReturnCount))
     }
 
-    private data class ExecuteJiaoJi(val fsm: MainPhaseIdle, val target: Player, val needReturnCount: IntRange) :
-        WaitingFsm {
+    private data class ExecuteJiaoJi(val fsm: MainPhaseIdle, val target: Player, val needReturnCount: IntRange) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             return null
         }

@@ -92,6 +92,9 @@ class HuoXin : MainPhaseSkill() {
         val showCard: Card,
         val waitingSecond: Int
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             if (r is HumanPlayer) {
                 val card = target.cards.run { find { it.hasSameColor(showCard) } ?: first() }
