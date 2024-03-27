@@ -301,14 +301,14 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
      */
     fun continueResolve() {
         gameIdleTimeout?.cancel()
+        gameIdleTimeout = GameExecutor.post(this, {
+            if (!isEnd) fsm?.let { resolve(NextTurn(it.whoseTurn)) }
+        }, (Config.WaitSecond * 3).toLong(), TimeUnit.SECONDS)
         while (true) {
             val result = fsm!!.resolve() ?: break
             fsm = result.next
             if (!result.continueResolve) break
         }
-        gameIdleTimeout = GameExecutor.post(this, {
-            if (!isEnd) fsm?.let { resolve(NextTurn(it.whoseTurn)) }
-        }, (Config.WaitSecond * 3).toLong(), TimeUnit.SECONDS)
     }
 
     private val printer = TextFormat.printer().escapingNonAscii(false)
