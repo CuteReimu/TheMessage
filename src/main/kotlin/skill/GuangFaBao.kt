@@ -50,6 +50,9 @@ class GuangFaBao : ActiveSkill {
     }
 
     private data class ExecuteGuangFaBao(val fsm: FightPhaseIdle, val r: Player, val putCard: Boolean) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->

@@ -44,6 +44,9 @@ class DuMing : TriggeredSkill {
     }
 
     private data class WaitForDuMing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->
@@ -172,6 +175,9 @@ class DuMing : TriggeredSkill {
         val c: color,
         val card: Card
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             r.addSkillUseCount(SkillId.DU_MING)

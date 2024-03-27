@@ -31,6 +31,9 @@ class JingMeng : TriggeredSkill {
     }
 
     private data class ExecuteJingMengA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
@@ -88,6 +91,9 @@ class JingMeng : TriggeredSkill {
     }
 
     private data class ExecuteJingMengB(val fsm: Fsm, val event: ReceiveCardEvent, val target: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = event.inFrontOfWhom
             val g = r.game!!

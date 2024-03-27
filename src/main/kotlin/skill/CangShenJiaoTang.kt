@@ -55,6 +55,9 @@ class CangShenJiaoTang : TriggeredSkill {
         val event: ReceiveCardEvent,
         val timeoutSecond: Int
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = event.sender
             if (r is HumanPlayer) {
@@ -108,6 +111,9 @@ class CangShenJiaoTang : TriggeredSkill {
         val event: ReceiveCardEvent,
         val timeoutSecond: Int
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = event.sender
             if (r is HumanPlayer) {

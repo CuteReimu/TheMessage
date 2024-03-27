@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
  * @param diedQueue       死亡顺序
  * @param afterDieResolve 死亡结算后的下一个动作
  */
-data class CheckKillerWin(val whoseTurn: Player, val diedQueue: List<Player>, val afterDieResolve: Fsm) : Fsm {
+data class CheckKillerWin(override val whoseTurn: Player, val diedQueue: List<Player>, val afterDieResolve: Fsm) : Fsm {
     override fun resolve(): ResolveResult {
         if (diedQueue.isEmpty())
             return ResolveResult(afterDieResolve, true)

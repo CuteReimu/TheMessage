@@ -75,6 +75,9 @@ class TanXuBianShi : MainPhaseSkill() {
         val target: Player,
         val card: Card
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             logger.info("${r}发动了[探虚辨实]，给了${target}一张$card")
             r.deleteCard(card.id)

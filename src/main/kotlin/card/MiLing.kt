@@ -103,6 +103,9 @@ class MiLing : Card {
         val sendPhase: SendPhaseStart,
         val timeout: Int
     ) : WaitingFsm {
+        override val whoseTurn
+            get() = sendPhase.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = player
             if (r is HumanPlayer) {
@@ -172,6 +175,9 @@ class MiLing : Card {
         val sendPhase: SendPhaseStart,
         val timeout: Int
     ) : WaitingFsm {
+        override val whoseTurn
+            get() = sendPhase.whoseTurn
+
         override fun resolve(): ResolveResult? {
             if (target is HumanPlayer) {
                 val seq2 = target.seq

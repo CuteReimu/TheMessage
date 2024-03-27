@@ -69,6 +69,9 @@ class RuBiZhiShi : ActiveSkill {
     }
 
     data class ExecuteRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             g.players.send { p ->

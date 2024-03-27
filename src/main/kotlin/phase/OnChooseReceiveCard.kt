@@ -17,7 +17,7 @@ import org.apache.logging.log4j.kotlin.logger
  * @param isMessageCardFaceUp 情报是否面朝上
  */
 data class OnChooseReceiveCard(
-    val whoseTurn: Player,
+    override val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,
     val inFrontOfWhom: Player,

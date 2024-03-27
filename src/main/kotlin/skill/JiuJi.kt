@@ -27,6 +27,9 @@ class JiuJi : TriggeredSkill {
     }
 
     private data class ExecuteJiuJi(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 if (player === r) skillWaitForJiuJiToc {

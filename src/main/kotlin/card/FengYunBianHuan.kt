@@ -83,6 +83,9 @@ class FengYunBianHuan : Card {
         val mainPhaseIdle: MainPhaseIdle,
         val asMessageCard: Boolean = false
     ) : WaitingFsm {
+        override val whoseTurn
+            get() = mainPhaseIdle.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val p = mainPhaseIdle.whoseTurn
             val r = players.firstOrNull()

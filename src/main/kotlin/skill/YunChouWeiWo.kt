@@ -74,6 +74,9 @@ class YunChouWeiWo : ActiveSkill {
     }
 
     private data class ExecuteYunChouWeiWo(val fsm: Fsm, val r: Player, val cards: List<Card>) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[运筹帷幄]，查看了牌堆顶的五张牌")

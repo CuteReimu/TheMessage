@@ -28,6 +28,9 @@ class JiangHuLing : TriggeredSkill {
     }
 
     private data class ExecuteJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForJiangHuLingAToc {
@@ -123,6 +126,9 @@ class JiangHuLing : TriggeredSkill {
     }
 
     private data class ExecuteJiangHuLingB(val fsm: Fsm, val event: ReceiveCardEvent, val color: color) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             event.sender.game!!.players.send { p ->
                 skillWaitForJiangHuLingBToc {

@@ -35,8 +35,10 @@ class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
         return ResolveResult(ExecuteWorkersAreKnowledgable(g.fsm!!, askWhom), true)
     }
 
-    private data class ExecuteWorkersAreKnowledgable(val fsm: Fsm, val r: Player) :
-        WaitingFsm {
+    private data class ExecuteWorkersAreKnowledgable(val fsm: Fsm, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { player ->
                 skillWaitForWorkersAreKnowledgableToc {

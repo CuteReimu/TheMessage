@@ -100,16 +100,18 @@ class DuJi : ActiveSkill {
             twoPlayersAndCards.add(TwoPlayersAndCard(target1, target2, card1))
         else
             r.game!!.addEvent(GiveCardEvent(fsm.whoseTurn, target2, r))
-        g.resolve(ExecuteDuJiA(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), fsm.whoseTurn, r, twoPlayersAndCards))
+        g.resolve(ExecuteDuJiA(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), r, twoPlayersAndCards))
     }
 
     private data class ExecuteDuJiA(
         val fsm: Fsm,
-        val whoseTurn: Player,
         val r: Player,
         val playerAndCards: ArrayList<TwoPlayersAndCard>,
         val asMessage: Boolean = false
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             if (playerAndCards.isEmpty()) {
                 if (asMessage) r.game!!.addEvent(AddMessageCardEvent(whoseTurn))
@@ -192,6 +194,9 @@ class DuJi : ActiveSkill {
     }
 
     private data class ExecuteDuJiB(val fsm: ExecuteDuJiA, val selection: TwoPlayersAndCard) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             logger.info("等待${selection.waitingPlayer}对${selection.card}进行选择")
             val g = selection.waitingPlayer.game!!

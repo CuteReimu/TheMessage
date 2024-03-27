@@ -29,8 +29,14 @@ class LianXin : TriggeredSkill {
         return ResolveResult(ExecuteLianXinA(g.fsm!!, event) { card -> card.colors.any { it in color } }, true)
     }
 
-    private data class ExecuteLianXinA(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
-        WaitingFsm {
+    private data class ExecuteLianXinA(
+        val fsm: Fsm,
+        val event: ReceiveCardEvent,
+        val checkCard: (Card) -> Boolean
+    ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players) {
                 if (p === event.inFrontOfWhom)
@@ -91,8 +97,14 @@ class LianXin : TriggeredSkill {
         }
     }
 
-    private data class ExecuteLianXinB(val fsm: Fsm, val event: ReceiveCardEvent, val checkCard: (Card) -> Boolean) :
-        WaitingFsm {
+    private data class ExecuteLianXinB(
+        val fsm: Fsm,
+        val event: ReceiveCardEvent,
+        val checkCard: (Card) -> Boolean
+    ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = event.inFrontOfWhom
             if (r is HumanPlayer) {

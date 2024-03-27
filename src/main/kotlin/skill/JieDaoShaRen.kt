@@ -71,8 +71,15 @@ class JieDaoShaRen : ActiveSkill {
         g.resolve(ExecuteJieDaoShaRen(fsm, r, target, card))
     }
 
-    private data class ExecuteJieDaoShaRen(val fsm: FightPhaseIdle, val r: Player, val target: Player, val card: Card) :
-        WaitingFsm {
+    private data class ExecuteJieDaoShaRen(
+        val fsm: FightPhaseIdle,
+        val r: Player,
+        val target: Player,
+        val card: Card
+    ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             target.deleteCard(card.id)

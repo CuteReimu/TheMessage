@@ -7,8 +7,9 @@ import java.util.concurrent.TimeUnit
 /**
  * 游戏马上开始
  */
-data class StartGame(val game: Game, val whoseTurn: Int) : Fsm {
+data class StartGame(val game: Game, override val whoseTurn: Player) : Fsm {
     override fun resolve(): ResolveResult? {
+        val whoseTurn = whoseTurn.location
         val players = game.players
         logger.info("游戏开始了，场上的角色依次是：${players.joinToString()}")
         game.turn = 0

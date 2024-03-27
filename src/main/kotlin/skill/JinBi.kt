@@ -61,6 +61,9 @@ class JinBi : MainPhaseSkill() {
     }
 
     private data class ExecuteJinBi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             if (target.cards.size < 2) {
                 doExecuteJinBi()

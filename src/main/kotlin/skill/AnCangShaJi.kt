@@ -43,6 +43,9 @@ class AnCangShaJi : TriggeredSkill {
         val r: Player,
         val target: Player
     ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             for (p in r.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, r)

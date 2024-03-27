@@ -28,6 +28,9 @@ class JianRen : TriggeredSkill {
     }
 
     private data class ExecuteJianRenA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)
@@ -74,6 +77,9 @@ class JianRen : TriggeredSkill {
     }
 
     private data class ExecuteJianRenB(val fsm: Fsm, val event: ReceiveCardEvent, val cards: List<Card>) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = event.inFrontOfWhom
             val autoChoose = r.chooseBlackMessageCard()

@@ -9,21 +9,21 @@ import org.apache.logging.log4j.kotlin.logger
 /**
  * 摸牌阶段
  */
-data class DrawPhase(val player: Player) : Fsm {
+data class DrawPhase(override val whoseTurn: Player) : Fsm {
     override fun resolve(): ResolveResult {
-        if (!player.alive) {
-            return ResolveResult(NextTurn(player), true)
+        if (!whoseTurn.alive) {
+            return ResolveResult(NextTurn(whoseTurn), true)
         }
-        player.game!!.turn++
-        logger.info("${player}的回合开始了")
-        for (p in player.game!!.players) {
+        whoseTurn.game!!.turn++
+        logger.info("${whoseTurn}的回合开始了")
+        for (p in whoseTurn.game!!.players) {
             p!!.notifyDrawPhase()
         }
-        player.draw(player.getDrawCardCountEachTurn())
-        return ResolveResult(MainPhaseIdle(player), true)
+        whoseTurn.draw(whoseTurn.getDrawCardCountEachTurn())
+        return ResolveResult(MainPhaseIdle(whoseTurn), true)
     }
 
     override fun toString(): String {
-        return player.toString() + "的摸牌阶段"
+        return "${whoseTurn}的摸牌阶段"
     }
 }

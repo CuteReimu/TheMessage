@@ -55,6 +55,9 @@ class PoYi : Card {
     }
 
     private data class ExecutePoYi(val card: PoYi, val sendPhase: SendPhaseIdle) : WaitingFsm {
+        override val whoseTurn
+            get() = sendPhase.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val r = sendPhase.inFrontOfWhom
             r.game!!.players.send { player ->

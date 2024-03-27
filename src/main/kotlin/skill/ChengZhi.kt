@@ -30,19 +30,20 @@ class ChengZhi : TriggeredSkill {
         } ?: return null
         val whoDie = event.whoDie
         return ResolveResult(
-            ExecuteChengZhi(g.fsm!!, event.whoseTurn, askWhom, whoDie, whoDie.cards.isNotEmpty()),
+            ExecuteChengZhi(g.fsm!!, askWhom, whoDie, whoDie.cards.isNotEmpty()),
             true
         )
     }
 
     private data class ExecuteChengZhi(
         val fsm: Fsm,
-        val whoseTurn: Player,
         val r: Player,
         val whoDie: Player,
         val hasCard: Boolean
-    ) :
-        WaitingFsm {
+    ) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val cards = whoDie.cards.toList()
             whoDie.cards.clear()

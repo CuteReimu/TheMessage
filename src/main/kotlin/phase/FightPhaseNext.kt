@@ -9,6 +9,9 @@ import com.fengsheng.ResolveResult
  * @param fightPhase 原先那个人的 [FightPhaseIdle] （不是下一个人的）
  */
 data class FightPhaseNext(val fightPhase: FightPhaseIdle) : Fsm {
+    override val whoseTurn
+        get() = fightPhase.whoseTurn
+
     override fun resolve(): ResolveResult {
         val game = fightPhase.whoseFightTurn.game!!
         val players = game.players

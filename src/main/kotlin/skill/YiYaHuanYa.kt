@@ -30,6 +30,9 @@ class YiYaHuanYa : TriggeredSkill {
     }
 
     private data class ExecuteYiYaHuanYa(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             for (p in event.whoseTurn.game!!.players)
                 p!!.notifyReceivePhase(event.whoseTurn, event.inFrontOfWhom, event.messageCard, event.inFrontOfWhom)

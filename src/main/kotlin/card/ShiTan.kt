@@ -101,6 +101,9 @@ class ShiTan : Card {
         val target: Player,
         val card: ShiTan
     ) : WaitingFsm {
+        override val whoseTurn
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             r.game!!.players.send { p ->
                 showShiTanToc {

@@ -7,6 +7,7 @@ import com.fengsheng.Statistics.PlayerGameResult
 import com.fengsheng.card.Card
 import com.fengsheng.card.Deck
 import com.fengsheng.network.Network
+import com.fengsheng.phase.NextTurn
 import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.*
@@ -30,6 +31,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     private var unresolvedEvents = ArrayList<Event>()
 
     private var gameStartTimeout: Timeout? = null
+
+    private var gameIdleTimeout: Timeout? = null
 
     @Volatile
     var isStarted = false
@@ -297,11 +300,15 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
      * 继续处理当前状态机
      */
     fun continueResolve() {
+        gameIdleTimeout?.cancel()
         while (true) {
             val result = fsm!!.resolve() ?: break
             fsm = result.next
             if (!result.continueResolve) break
         }
+        gameIdleTimeout = GameExecutor.post(this, {
+            if (!isEnd) fsm?.let { resolve(NextTurn(it.whoseTurn)) }
+        }, (Config.WaitSecond * 3).toLong(), TimeUnit.SECONDS)
     }
 
     private val printer = TextFormat.printer().escapingNonAscii(false)

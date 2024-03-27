@@ -179,7 +179,7 @@ class HumanPlayer(
     }
 
     override fun notifyDrawPhase() {
-        val player = (game!!.fsm as DrawPhase).player
+        val player = (game!!.fsm as DrawPhase).whoseTurn
         val playerId = getAlternativeLocation(player.location)
         send(notifyPhaseToc {
             currentPlayerId = playerId

@@ -1,6 +1,7 @@
 package com.fengsheng.phase
 
 import com.fengsheng.Fsm
+import com.fengsheng.Player
 import com.fengsheng.ResolveResult
 import com.fengsheng.skill.cannotPlayCardAndSkillForChengQing
 import org.apache.logging.log4j.kotlin.logger
@@ -9,6 +10,9 @@ import org.apache.logging.log4j.kotlin.logger
  * 濒死求澄清时，询问下一个人
  */
 data class WaitNextForChengQing(val waitForChengQing: WaitForChengQing) : Fsm {
+    override val whoseTurn: Player
+        get() = waitForChengQing.whoseTurn
+
     override fun resolve(): ResolveResult {
         val game = waitForChengQing.askWhom.game!!
         val players = game.players

@@ -45,6 +45,9 @@ class JiBan : MainPhaseSkill() {
     }
 
     private data class ExecuteJiBan(val fsm: Fsm, val r: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}发动了[羁绊]")

@@ -62,6 +62,9 @@ class SouJi : ActiveSkill {
     }
 
     private data class ExecuteSouJi(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
         override fun resolve(): ResolveResult? {
             val g = r.game!!
             logger.info("${r}对${target}发动了[搜缉]")
