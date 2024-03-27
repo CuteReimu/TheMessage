@@ -156,6 +156,7 @@ private fun Player.willWinInternal(
  *
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
+ * @param checkThreeSame 是否禁止三张同色。为`true`时，三张同色导致加入手牌认为是10分。为`false`时，三张同色就赢了/死了。默认为`false`。
  */
 fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, checkThreeSame: Boolean = false) =
     game!!.deck.colorRates.withIndex().sumOf { (i, rate) ->
@@ -171,6 +172,7 @@ fun Player.calculateMessageCardValue(whoseTurn: Player, inFrontOfWhom: Player, c
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
  * @param card 情报牌
+ * @param checkThreeSame 是否禁止三张同色。为`true`时，三张同色导致加入手牌认为是10分。为`false`时，三张同色就赢了/死了。默认为`false`。
  * @param sender 情报传出者，null表示这并不是在计算待收情报
  */
 fun Player.calculateMessageCardValue(
@@ -198,6 +200,7 @@ fun Player.calculateRemoveCardValue(whoseTurn: Player, from: Player, card: Card)
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
  * @param colors 情报牌的颜色
+ * @param checkThreeSame 是否禁止三张同色。为`true`时，三张同色导致加入手牌认为是10分。为`false`时，三张同色就赢了/死了。默认为`false`。
  * @param sender 情报传出者，null表示这并不是在计算待收情报
  */
 fun Player.calculateMessageCardValue(
@@ -271,6 +274,7 @@ fun Player.calculateMessageCardValue(
  * @param whoseTurn 当前回合玩家
  * @param inFrontOfWhom 情报在谁面前
  * @param colors 情报牌的颜色
+ * @param checkThreeSame 是否禁止三张同色。为`true`时，三张同色导致加入手牌认为是10分。为`false`时，三张同色就赢了/死了。默认为`false`。
  */
 fun Player.calculateMessageCardValue(
     whoseTurn: Player,
