@@ -72,16 +72,17 @@ private fun Player.willWinInternalCp(
     fun isCpHanMei(p: Player?) = p!!.alive && p.skills.any { it is BaiYueGuang }
     fun isHanMei(p: Player) = p.alive && p.roleName.endsWith("韩梅")
     fun isXiaoJiu(p: Player) = p.alive && p.roleName.endsWith("小九")
-    val counts = inFrontOfWhom.countMessageCard(colors)
-    if (isCpXiaoJiu(this) && isHanMei(inFrontOfWhom) && counts[Red.number] >= 3 &&
+    val counts = CountColors(inFrontOfWhom.messageCards)
+    counts += colors
+    if (isCpXiaoJiu(this) && isHanMei(inFrontOfWhom) && counts.red >= 3 &&
         !inFrontOfWhom.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
     ) return true
-    if (isCpHanMei(this) && isXiaoJiu(inFrontOfWhom) && counts[Blue.number] >= 3 &&
+    if (isCpHanMei(this) && isXiaoJiu(inFrontOfWhom) && counts.blue >= 3 &&
         !inFrontOfWhom.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
     ) return true
     if (this === inFrontOfWhom) {
-        if (isHanMei(this) && counts[Red.number] >= 3 && g.players.any(::isCpXiaoJiu)) return true
-        if (isXiaoJiu(this) && counts[Blue.number] >= 3 && g.players.any(::isCpHanMei)) return true
+        if (isHanMei(this) && counts.red >= 3 && g.players.any(::isCpXiaoJiu)) return true
+        if (isXiaoJiu(this) && counts.blue >= 3 && g.players.any(::isCpHanMei)) return true
     }
     return false
 }
@@ -108,12 +109,13 @@ private fun Player.willWinInternal(
                     }) {
                     return false
                 }
-                val counts = inFrontOfWhom.countMessageCard(colors)
-                counts[Black.number] >= 3 || return false
+                val counts = CountColors(inFrontOfWhom.messageCards)
+                counts += colors
+                counts.black >= 3 || return false
                 when (secretTask) {
-                    Killer -> this === whoseTurn && counts[3] >= 2
-                    Pioneer -> this === inFrontOfWhom && counts[3] >= 1
-                    Sweeper -> counts[Red.number] <= 1 && counts[Blue.number] <= 1
+                    Killer -> this === whoseTurn && counts.trueCard >= 2
+                    Pioneer -> this === inFrontOfWhom && counts.trueCard >= 1
+                    Sweeper -> counts.red <= 1 && counts.blue <= 1
                     else -> false
                 }
             }
