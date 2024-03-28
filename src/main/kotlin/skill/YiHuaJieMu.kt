@@ -100,7 +100,7 @@ class YiHuaJieMu : ActiveSkill {
                         }
                     }
                     // 当情报价值为最高值600时，检测一下是否有双真情报，有就选择双真情报，否则随机一张获得
-                    val fromPlayerAndCard = if (value == 600) {
+                    val fromPlayerAndCard = if (value >= 600) {
                         candidates.find { Red in it.card.colors && Blue in it.card.colors } ?: candidates.random()
                     } else candidates.random()
                     // 用来判断该情报谁获得的收益最高。
