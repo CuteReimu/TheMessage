@@ -66,11 +66,15 @@ class DingLun : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
+            val whoseTurn = e.whoseTurn
             !player.roleFaceUp || return false
             player === e.inFrontOfWhom || return false
-            val value = player.calculateMessageCardValue(e.whoseTurn, player, e.messageCard, sender = e.sender)
-            val asMessage = !player.checkThreeSameMessageCard(e.messageCard)
-            value == 0 || (asMessage == (value > 0)) || return false
+            // 如果正常获得情报会赢，不发动技能
+            !player.willWin(whoseTurn, e.inFrontOfWhom, e.messageCard) || return false
+            // 有收益的情况下才会发动技能
+            val v = player.calculateMessageCardValue(whoseTurn, player, e.messageCard, true, player)
+            logger.debug("价值为$v")
+            v >= 0 || return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
                 skill.executeProtocol(e.whoseFightTurn.game!!, e.whoseFightTurn, skillDingLunTos { })
             }, 1, TimeUnit.SECONDS)
