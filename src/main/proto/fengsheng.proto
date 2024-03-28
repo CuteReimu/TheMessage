@@ -600,3 +600,9 @@ message use_yu_qin_gu_zong_toc {
   repeated uint32 lock_player_ids = 5; // 被锁定的玩家ID
   direction       card_dir = 6; // 传递的方向
 }
+
+//gm发送请求让客户端令玩家获得情报
+message add_message_card_toc {
+  uint32        target_player_id = 1; // 获得情报玩家
+  repeated card message_card = 2; // 获得的情报
+}
