@@ -80,12 +80,15 @@ class YiHuaJieMu : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
-                    var fromPlayerAndCard: PlayerAndCard? = null
+                    fsm.inFrontOfWhom.messageCards.add(fsm.messageCard)
                     var value = Int.MIN_VALUE
+                    var value1 = Int.MIN_VALUE
                     val players = r.game!!.players.filter { it!!.alive }.shuffled()
+                    var toplayer: Player? = null
                     val candidates = mutableListOf<PlayerAndCard>() // 用于存储价值相同的卡牌
                     for (p in players) {
                         for (moveCard in p!!.messageCards.toList()) {
+                            moveCard !== fsm.messageCard || continue
                             val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, moveCard)
                             if (v > value) {
                                 value = v
@@ -96,19 +99,23 @@ class YiHuaJieMu : ActiveSkill {
                             }
                         }
                     }
-                    for (condidate in candidates) {
-                        if (condidate.card.colors.containsAll(setOf(Blue, Red))) {
-                            fromPlayerAndCard = condidate
-                            break
+                    // 判断是否有双真情报，有双真情报直接选择该情报
+                    val fromPlayerAndCard =
+                        candidates.find { Red in it.card.colors && Blue in it.card.colors } ?: candidates.random()
+                    // 用来判断该情报谁获得的收益最高。
+                    for (p in players) {
+                        p != fromPlayerAndCard.player || continue
+                        val v1 = r.calculateMessageCardValue(fsm.whoseTurn, p!!, fromPlayerAndCard.card, true)
+                        if (v1 > value1) {
+                            value1 = v1
+                            toplayer = p
                         }
                     }
-                    if (fromPlayerAndCard == null) {
-                        fromPlayerAndCard = candidates.random()
-                    }
+                    fsm.inFrontOfWhom.messageCards.removeLast()
                     r.game!!.tryContinueResolveProtocol(r, skillYiHuaJieMuBTos {
                         fromPlayerId = r.getAlternativeLocation(fromPlayerAndCard.player.location)
                         cardId = fromPlayerAndCard.card.id
-                        toPlayerId = r.getAlternativeLocation(r.location)
+                        toPlayerId = r.getAlternativeLocation(toplayer!!.location)
                     })
                 }, 3, TimeUnit.SECONDS)
             }
@@ -191,19 +198,18 @@ class YiHuaJieMu : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val p = e.whoseFightTurn
-            val player = e.whoseFightTurn
             val target = e.inFrontOfWhom
             if (p.roleFaceUp) return false
             val g = p.game!!
-            // 有两名存活玩家，至少一名玩家含有情报
-            if (g.players.count { it!!.alive } < 2 &&
-                g.players.any { it!!.messageCards.isEmpty() }) return false
+            if (g.players.all { !it!!.alive || it.messageCards.isEmpty() }) {
+                return false
+            }
             if (g.players.any {
-                    it!!.isPartnerOrSelf(player) &&
+                    it!!.isPartnerOrSelf(p) &&
                         it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
                 }) return false
-            g.players.any { it!!.isEnemy(player) && it.willWin(e.whoseTurn, target, e.messageCard) } ||
-                target.isPartnerOrSelf(player) && target.willDie(e.messageCard) || return false
+            g.players.any { it!!.isEnemy(p) && it.willWin(e.whoseTurn, target, e.messageCard) } ||
+                target.isPartnerOrSelf(p) && target.willDie(e.messageCard) || return false
             GameExecutor.post(e.whoseFightTurn.game!!, {
                 skill.executeProtocol(g, e.whoseFightTurn, skillYiHuaJieMuATos { })
             }, 3, TimeUnit.SECONDS)
