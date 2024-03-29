@@ -33,7 +33,7 @@ class HouZiQieXin : MainPhaseSkill() {
             r.sendErrorMessage("现在不是出牌阶段空闲时点")
             return
         }
-        if (r.getSkillUseCount(skillId) > 1) {
+        if (r.getSkillUseCount(skillId) > 0) {
             logger.error("[猴子窃信]一回合只能发动一次")
             r.sendErrorMessage("[猴子窃信]一回合只能发动一次")
             return
@@ -107,7 +107,7 @@ class HouZiQieXin : MainPhaseSkill() {
 
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
-            player.getSkillUseCount(SkillId.HOU_ZI_QIE_XIN) < 2 || return false
+            player.getSkillUseCount(SkillId.HOU_ZI_QIE_XIN) == 0 || return false
             val playerAndCard = player.game!!.players.flatMap {
                 if (it !== player && it!!.alive) {
                     it.messageCards.mapNotNull { card ->
