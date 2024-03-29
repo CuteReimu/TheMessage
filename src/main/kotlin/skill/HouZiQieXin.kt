@@ -34,8 +34,8 @@ class HouZiQieXin : MainPhaseSkill() {
             return
         }
         if (r.getSkillUseCount(skillId) > 0) {
-            logger.error("[猴子窃信]一回合只能发动一次")
-            r.sendErrorMessage("[猴子窃信]一回合只能发动一次")
+            logger.error("[猴子窃信]一回合只能发动两次")
+            r.sendErrorMessage("[猴子窃信]一回合只能发动两次")
             return
         }
         val pb = message as skill_hou_zi_qie_xin_tos
