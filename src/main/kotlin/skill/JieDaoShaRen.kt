@@ -2,9 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.Card
-import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_jie_dao_sha_ren_a_tos
 import com.fengsheng.protos.Role.skill_jie_dao_sha_ren_b_tos
 import com.fengsheng.protos.skillJieDaoShaRenAToc
@@ -196,7 +194,7 @@ class JieDaoShaRen : ActiveSkill {
             player.game!!.players.anyoneWillWinOrDie(e) || return false
             val target = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
-            }.shuffled().maxByOrNull { it!!.cards.count(Black).toDouble() / it.cards.size } ?: return false
+            }.shuffled().randomOrNull() ?: return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillJieDaoShaRenATos {
                     targetPlayerId = player.getAlternativeLocation(target.location)
