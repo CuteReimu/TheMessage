@@ -7,10 +7,12 @@ import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.addMessageCardToc
+import com.fengsheng.send
 import org.apache.logging.log4j.kotlin.logger
 import java.util.function.Function
 
-class Addmessage : Function<Map<String, String>, Any> {
+class Addmessagecard : Function<Map<String, String>, Any> {
     override fun apply(form: Map<String, String>): Any {
         return try {
             // player=0&card=0&color=0&count=1
@@ -51,13 +53,8 @@ class Addmessage : Function<Map<String, String>, Any> {
                         }
                         val p = g.players[playerId]!!
                         p.messageCards.addAll(cardList)
-                        logger.info("由于GM命令，${p}获得了${cardList.joinToString()}张情报")
-                        for (player in g.players) {
-                            if (player!!.location == playerId)
-                                player.notifyAddHandCard(playerId, 0, cardList)
-                            else
-                                player.notifyAddHandCard(playerId, cardList.size)
-                        }
+                        logger.info("由于GM命令，${p}获得了${cardList.joinToString()}情报")
+                        g.players.send { addMessageCardToc { } }
                     }
                 }
             }
