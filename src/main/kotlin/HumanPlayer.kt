@@ -14,7 +14,7 @@ import com.fengsheng.skill.SkillId.*
 import com.fengsheng.skill.cannotPlayCardAndSkillForFightPhase
 import com.fengsheng.skill.mustReceiveMessage
 import com.google.protobuf.GeneratedMessage
-import com.google.protobuf.TextFormat
+import com.google.protobuf.util.JsonFormat
 import io.netty.channel.Channel
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelFutureListener
@@ -74,7 +74,7 @@ class HumanPlayer(
         if (message is notify_player_update_toc) return
         logger.debug(
             "send@${channel.id().asShortText()} len: ${buf.size} $name | " +
-                printer.printToString(message).replace(Regex("\n *"), " ")
+                printer.print(message).replace(Regex("\n *"), " ")
         )
     }
 
@@ -489,7 +489,7 @@ class HumanPlayer(
     }
 
     companion object {
-        private val printer = TextFormat.printer().escapingNonAscii(false)
+        private val printer = JsonFormat.printer().alwaysPrintFieldsWithNoPresence()
 
         /**
          * 随机选择一张牌作为情报传出

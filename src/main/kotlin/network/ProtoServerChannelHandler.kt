@@ -8,7 +8,7 @@ import com.fengsheng.protos.leaveRoomToc
 import com.google.protobuf.Descriptors
 import com.google.protobuf.GeneratedMessage
 import com.google.protobuf.Parser
-import com.google.protobuf.TextFormat
+import com.google.protobuf.util.JsonFormat
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.ChannelHandlerContext
@@ -89,7 +89,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
         if (id != heartMsgId && id != autoPlayMsgId) {
             logger.debug(
                 "recv@${ctx.channel().id().asShortText()} len: ${msgLen - 2} ${protoInfo.name} | " +
-                    printer.printToString(message).replace("\n *".toRegex(), " ")
+                    printer.print(message).replace("\n *".toRegex(), " ")
             )
         }
         val player = Game.playerCache[ctx.channel().id().asLongText()]!!
@@ -112,7 +112,7 @@ class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
     private data class ProtoInfo(val name: String, val parser: Parser<*>, val handler: ProtoHandler)
 
     companion object {
-        private val printer = TextFormat.printer().escapingNonAscii(false)
+        private val printer = JsonFormat.printer().alwaysPrintFieldsWithNoPresence()
         private val ProtoInfoMap = HashMap<Short, ProtoInfo>()
         private val heartMsgId: Short = stringHash("heart_tos")
         private val autoPlayMsgId: Short = stringHash("auto_play_tos")

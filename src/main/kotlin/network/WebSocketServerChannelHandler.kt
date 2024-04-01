@@ -8,7 +8,7 @@ import com.fengsheng.protos.leaveRoomToc
 import com.google.protobuf.Descriptors
 import com.google.protobuf.GeneratedMessage
 import com.google.protobuf.Parser
-import com.google.protobuf.TextFormat
+import com.google.protobuf.util.JsonFormat
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
@@ -49,7 +49,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
             logger.debug(
                 "recv@%s len: %d %s | %s".format(
                     ctx.channel().id().asShortText(), buf.size, protoName,
-                    printer.printToString(message).replace("\n *".toRegex(), " ")
+                    printer.print(message).replace("\n *".toRegex(), " ")
                 )
             )
         }
@@ -116,7 +116,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
     private data class ProtoInfo(val name: String, val parser: Parser<*>, val handler: ProtoHandler)
 
     companion object {
-        private val printer = TextFormat.printer().escapingNonAscii(false)
+        private val printer = JsonFormat.printer().alwaysPrintFieldsWithNoPresence()
         private val ProtoInfoMap = HashMap<String, ProtoInfo>()
 
         init {

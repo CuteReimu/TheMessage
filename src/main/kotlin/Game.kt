@@ -16,7 +16,7 @@ import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.*
 import com.google.protobuf.GeneratedMessage
-import com.google.protobuf.TextFormat
+import com.google.protobuf.util.JsonFormat
 import io.netty.util.Timeout
 import org.apache.logging.log4j.kotlin.logger
 import java.io.IOException
@@ -311,7 +311,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         }
     }
 
-    private val printer = TextFormat.printer().escapingNonAscii(false)
+    private val printer = JsonFormat.printer().alwaysPrintFieldsWithNoPresence()
 
     /**
      * 对于[WaitingFsm]，当收到玩家协议时，继续处理当前状态机
@@ -321,7 +321,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             if (fsm !is WaitingFsm) {
                 logger.error(
                     "时机错误，当前时点为：$fsm，收到: ${pb.javaClass.simpleName} | " +
-                        printer.printToString(pb).replace("\n *".toRegex(), " ")
+                        printer.print(pb).replace("\n *".toRegex(), " ")
                 )
                 player.sendErrorMessage("时机错误")
                 return@post
