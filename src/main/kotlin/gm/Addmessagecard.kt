@@ -15,16 +15,17 @@ import java.util.function.Function
 class Addmessagecard : Function<Map<String, String>, Any> {
     override fun apply(form: Map<String, String>): Any {
         return try {
-            // Addmessagecard?player=0&card=0&color=0&count=1
+            // addmessagecard?player=0&card=0&colors=0&count=1
             val playerId = form["player"]?.toInt() ?: 0
             val cardTypeNum = form["card"]!!.toInt()
             val cardType = card_type.forNumber(cardTypeNum)
-            val colorNum = form["color"]!!.toInt()
-            val color = color.forNumber(colorNum)
+            val colorNumlist = form["colors"]!!.split(',')
+            val colorNumber = colorNumlist.map { it.toInt() }
+            val colors: List<color> = colorNumber.map { color.forNumber(it) }
             if (cardType == null || cardType == UNRECOGNIZED) return "{\"error\": \"参数错误\"}"
             val count = form["count"]
             val finalCount = count?.toInt()?.coerceIn(1..99) ?: 1
-            val availableCards = Deck.DefaultDeck.filter { it.type == cardType && it.colors.contains(color) }
+            val availableCards = Deck.DefaultDeck.filter { card -> card.type == cardType && colors.all { it in card.colors } }
             if (availableCards.isEmpty()) return "{\"error\": \"牌堆没有该颜色卡牌\"}"
             for (g in Game.gameCache.values) {
                 GameExecutor.post(g) {
