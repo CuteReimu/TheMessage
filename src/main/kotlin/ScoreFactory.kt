@@ -95,6 +95,8 @@ object ScoreFactory : Logging {
                             list[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
                         else if (originSecretTask == Sweeper && list[Sweeper.number + 3].rate > list[Mutator.number + 3].rate)
                             list[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
+                        else if (originIdentity == Black && originSecretTask != Mutator)
+                            list[index].rate.coerceAtMost(list[0].rate) // 诱变者以外的神秘人加分不能少于阵营方
                         else list[index].rate
                     if (list[index].gameCount > 0) score *= list[0].rate / rate.coerceIn(8.0..50.0) // 胜率有效范围在8%至50%
                     list
@@ -112,6 +114,8 @@ object ScoreFactory : Logging {
                             list[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
                         else if (originSecretTask == Sweeper && list[Sweeper.number + 3].rate > list[Mutator.number + 3].rate)
                             list[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
+                        else if (originIdentity == Black && originSecretTask != Mutator)
+                            list[index].rate.coerceAtMost(list[0].rate) // 诱变者以外的神秘人加分不能少于阵营方
                         else list[index].rate
                     if (list[index].gameCount > 0)
                         score *= (100.0 - list[0].rate) / (100.0 - rate.coerceIn(8.0..50.0)) // 胜率有效范围在8%至50%

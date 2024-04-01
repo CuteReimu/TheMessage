@@ -9,20 +9,15 @@ name: Build
 
 on:
   push:
-    branches: [ "master", "kotlin" ]
+    branches:
+      - kotlin
   pull_request:
-    branches: [ "master", "kotlin" ]
-
-permissions:
-  contents: read
+    branches:
+      - kotlin
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [ 'ubuntu-latest', 'windows-latest' ]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: 'ubuntu-latest'
 
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +30,23 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Format code
+        run: ./gradlew ktlintFormat
+
       - name: Execute Gradle build
         env:
           GRADLE_OPTS: '-Xmx4g'
         run: ./gradlew build
+
+      - name: Push formatted code
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+          git config --local user.name 'github-actions[bot]'
+          git config --local user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit -m "gradlew ktlintFormat"
+          git push
+          else
+          echo "No changes to the output on this push; exiting."
+          fi
+        if: ${{ github.event_name == 'push' }}

@@ -4,16 +4,14 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_jie_dao_sha_ren_a_tos
 import com.fengsheng.protos.Role.skill_jie_dao_sha_ren_b_tos
-import com.fengsheng.protos.skillJieDaoShaRenAToc
-import com.fengsheng.protos.skillJieDaoShaRenATos
-import com.fengsheng.protos.skillJieDaoShaRenBToc
-import com.fengsheng.protos.skillJieDaoShaRenBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * 商玉技能【借刀杀人】：争夺阶段，你可以翻开此角色牌，然后抽取另一名角色的一张手牌并展示之。若展示的牌是：**黑色**，则你可以将其置入一名角色的情报区，并将你的角色牌翻至面朝下。**非黑色**，则你摸一张牌。
@@ -194,9 +192,21 @@ class JieDaoShaRen : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
-            val target = player.game!!.players.filter {
+            val weights = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
-            }.shuffled().maxByOrNull { it!!.cards.count(Black).toDouble() / it.cards.size } ?: return false
+            }.shuffled().map { it!! to it.cards.count(Black).toDouble() / it.cards.size }
+            val totalWeight = weights.sumOf { it.second }
+            totalWeight > 0.0 || return false
+            // 按权重随机
+            var target = weights.first().first
+            var weight = Random.nextDouble(totalWeight)
+            for ((p, w) in weights) {
+                if (weight < w) {
+                    target = p
+                    break
+                }
+                weight -= w
+            }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillJieDaoShaRenATos {
                     targetPlayerId = player.getAlternativeLocation(target.location)
