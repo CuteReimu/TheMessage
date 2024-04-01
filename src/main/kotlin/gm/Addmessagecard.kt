@@ -15,7 +15,7 @@ import java.util.function.Function
 class Addmessagecard : Function<Map<String, String>, Any> {
     override fun apply(form: Map<String, String>): Any {
         return try {
-            // player=0&card=0&color=0&count=1
+            // player=0&card=0&colors=0&count=1
             val playerId = form["player"]?.toInt() ?: 0
             val cardTypeNum = form["card"]!!.toInt()
             val cardType = card_type.forNumber(cardTypeNum)
@@ -25,6 +25,7 @@ class Addmessagecard : Function<Map<String, String>, Any> {
             val count = form["count"]
             val finalCount = count?.toInt()?.coerceIn(1..99) ?: 1
             val availableCards = Deck.DefaultDeck.filter { it.type == cardType && it.colors.contains(color) }
+            if (availableCards.isEmpty()) return "{\"error\": \"牌堆没有该颜色卡牌\"}"
             for (g in Game.gameCache.values) {
                 GameExecutor.post(g) {
                     if (!g.isStarted || g.fsm == null || g.fsm is WaitForSelectRole) return@post
@@ -54,7 +55,13 @@ class Addmessagecard : Function<Map<String, String>, Any> {
                         val p = g.players[playerId]!!
                         p.messageCards.addAll(cardList)
                         logger.info("由于GM命令，${p}获得了${cardList.joinToString()}情报")
-                        g.players.send { addMessageCardToc { } }
+                        g.players.send {
+                            addMessageCardToc {
+                                targetPlayerId = playerId
+                                for (card in cardList)
+                                    messageCard.add(card.toPbCard())
+                            }
+                        }
                     }
                 }
             }
