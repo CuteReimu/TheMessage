@@ -85,9 +85,35 @@ object GameExecutor {
         return TimeWheel.newTimeout({ post(game, callback) }, delay, unit)
     }
 
-    fun newGame(lastTotalPlayerCount: Int): Game {
-        val id = Game.increaseId.incrementAndGet()
-        val actorRef = system.actorOf(Props.create(GameActor::class.java), "game-$id")
-        return Game(id, lastTotalPlayerCount, actorRef)
+    fun getGame(id: Int, playerCount: Int): Game {
+        val count =
+            if (playerCount == 0) Config.TotalPlayerCount
+            else playerCount.coerceIn(5..9)
+        // 找房间
+        if (id == 0) {
+            val game = Game.gameCache.values.shuffled().find { !it.isStarted }
+            if (game != null) return game
+        } else {
+            val game = Game.gameCache[id]
+            if (game != null) return game
+        }
+        // 新建房间
+        val newId = if (id == 0) {
+            var id0: Int
+            while (true) {
+                id0 = Game.increaseId.incrementAndGet()
+                if (!Game.gameCache.containsKey(id0)) break
+            }
+            id0
+        } else {
+            id
+        }
+        val actorRef = system.actorOf(Props.create(GameActor::class.java), "game-$newId")
+        val game = Game(newId, count, actorRef)
+        if (Game.gameCache.putIfAbsent(newId, game) != null) {
+            game.actorRef.tell(StopGameActor(), ActorRef.noSender())
+            throw IllegalStateException("游戏ID冲突")
+        }
+        return game
     }
 }

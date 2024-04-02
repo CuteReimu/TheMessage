@@ -10,9 +10,10 @@ import com.fengsheng.network.Network
 import com.fengsheng.phase.NextTurn
 import com.fengsheng.phase.WaitForSelectRole
 import com.fengsheng.protos.*
-import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.role.unknown
+import com.fengsheng.protos.Common.secret_task
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.*
 import com.google.protobuf.GeneratedMessage
@@ -100,8 +101,6 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         players.all { it != null } || return
         !isStarted || return
         isStarted = true
-        gameCache[id] = this
-        newInstance()
         MiraiPusher.notifyStart()
         val identities = ArrayList<color>()
         when (players.size) {
@@ -418,9 +417,6 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         @Volatile
         var lastTotalPlayerCount = Config.TotalPlayerCount
 
-        @Volatile
-        var newGame = GameExecutor.newGame(lastTotalPlayerCount)
-
         fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
             oldPlayer.channel = newPlayer.channel
             oldPlayer.needWaitLoad = newPlayer.needWaitLoad
@@ -429,17 +425,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             }
         }
 
-        /**
-         * 不是线程安全的
-         */
-        fun newInstance() {
-            if (newGame.players.all { it is HumanPlayer } && newGame.players.size >= 5)
-                lastTotalPlayerCount = newGame.players.size + 1
-            newGame = GameExecutor.newGame(lastTotalPlayerCount.coerceIn(minOf(5, Config.TotalPlayerCount)..8))
-        }
-
         val onlineCount: Int
-            get() = gameCache.values.sumOf { it.players.size } + newGame.players.count { it != null } +
+            get() = gameCache.values.sumOf { it.players.count { p -> p != null } } +
                 Random(System.currentTimeMillis() / 300000).run {
                     (0..nextInt(1..4)).sumOf { nextInt(5..9) }
                 }

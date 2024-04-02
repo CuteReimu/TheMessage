@@ -69,7 +69,7 @@ class JoinRoomTos : ProtoHandler {
             player.sendErrorMessage("房间已满，请稍后再试")
             return
         }
-        val newGame = Game.newGame
+        val newGame = GameExecutor.getGame(pb.roomId, pb.playerCount)
         GameExecutor.post(newGame) {
             if (player.game !== null) {
                 logger.warn("${player}登录异常")
