@@ -196,9 +196,9 @@ class JieDaoShaRen : ActiveSkill {
                 it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
             }.shuffled().map { it!! to it.cards.count(Black).toDouble() / it.cards.size }
             val totalWeight = weights.sumOf { it.second }
-            totalWeight > 0.0 || return false
+            var target: Player?
             // 按权重随机
-            var target = weights.first().first
+            target = weights.first().first
             var weight = Random.nextDouble(totalWeight)
             for ((p, w) in weights) {
                 if (weight < w) {
@@ -207,9 +207,13 @@ class JieDaoShaRen : ActiveSkill {
                 }
                 weight -= w
             }
+            if (totalWeight < 0.0) {
+                target = player.game!!.players.filter { it!!.alive && it.cards.isNotEmpty() }.random()
+                target != null || return false
+            }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillJieDaoShaRenATos {
-                    targetPlayerId = player.getAlternativeLocation(target.location)
+                    targetPlayerId = player.getAlternativeLocation(target!!.location)
                 })
             }, 3, TimeUnit.SECONDS)
             return true
