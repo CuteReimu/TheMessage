@@ -5,18 +5,18 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: Build
+name: Format
 
 on:
-  push:
-    branches:
-      - kotlin
   pull_request:
     branches:
       - kotlin
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  format:
     runs-on: 'ubuntu-latest'
 
     steps:
@@ -30,7 +30,17 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Execute Gradle build
-        env:
-          GRADLE_OPTS: '-Xmx4g'
-        run: ./gradlew build
+      - name: Format code
+        run: ./gradlew ktlintFormat
+
+      - name: Push formatted code
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+          git config --local user.name 'github-actions[bot]'
+          git config --local user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit -m "gradlew ktlintFormat"
+          git push
+          else
+          echo "No changes to the output on this push; exiting."
+          fi
