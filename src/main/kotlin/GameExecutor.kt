@@ -88,6 +88,7 @@ object GameExecutor {
     fun getGame(id: Int, playerCount: Int): Game {
         val count =
             if (playerCount == 0) Config.TotalPlayerCount
+            else if (Config.IsGmEnable) playerCount.coerceIn(2..9)
             else playerCount.coerceIn(5..9)
         // 找房间
         if (id == 0) {
