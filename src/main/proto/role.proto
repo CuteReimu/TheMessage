@@ -1428,7 +1428,7 @@ message skill_tao_qu_a_toc {
   uint32 seq = 5;
 }
 
-// SP白菲菲【套取】B：将一名其他角色情报区的一张同色情报加入手牌，其摸一张牌
+// SP白菲菲【套取】B：将一名其他角色情报区的一张同色情报加入手牌
 message skill_tao_qu_b_tos {
   uint32 target_player_id = 1;
   uint32 card_id = 2;

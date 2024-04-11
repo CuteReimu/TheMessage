@@ -55,7 +55,8 @@ class QiangLing : TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     if (event is ChooseReceiveCardEvent) {
-                        if (!r.willWin(event.whoseTurn, r, event.messageCard) && r.willDie(event.messageCard)) {
+                        val v = r.calculateMessageCardValue(event.whoseTurn, r, event.messageCard, sender = event.sender)
+                        if (v < 0) { // 如果情报不值得接收，就不发动强令
                             r.game!!.tryContinueResolveProtocol(r, skillQiangLingTos { })
                             return@post
                         }

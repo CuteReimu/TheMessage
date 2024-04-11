@@ -82,6 +82,7 @@ message get_room_info_toc {
   repeated string ranks = 6; // 所有人的段位段数
   repeated int32  scores = 7; // 所有人的段位分数
   string          notice = 8; // 房间公告
+  uint32          room_id = 9; // 房间号
 }
 
 // 请求加一个机器人

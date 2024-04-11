@@ -25,7 +25,7 @@ data class OnChooseReceiveCard(
 ) : Fsm {
     override fun resolve(): ResolveResult {
         logger.info("${inFrontOfWhom}选择接收情报")
-        whoseTurn.game!!.addEvent(ChooseReceiveCardEvent(whoseTurn, inFrontOfWhom, messageCard))
+        whoseTurn.game!!.addEvent(ChooseReceiveCardEvent(whoseTurn, inFrontOfWhom, messageCard, sender))
         for (p in whoseTurn.game!!.players) p!!.notifyChooseReceiveCard(inFrontOfWhom)
         return ResolveResult(
             FightPhaseIdle(whoseTurn, sender, messageCard, inFrontOfWhom, inFrontOfWhom, isMessageCardFaceUp),

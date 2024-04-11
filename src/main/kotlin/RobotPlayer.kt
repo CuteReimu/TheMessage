@@ -186,9 +186,8 @@ class RobotPlayer : Player() {
             if (ai(fsm, skill as? ActiveSkill)) return
         }
         if (!game!!.isEarly || this === fsm.whoseTurn || game!!.players.any {
-                if (isEnemy(it!!)) it.willWin(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard)
-                else it.willDie(fsm.messageCard)
-            }) {
+                isPartnerOrSelf(it!!) && it.willDie(fsm.messageCard)
+            } || calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard) <= -110) {
             val result = calFightPhase(fsm)
             if (result != null && result.deltaValue > 10) {
                 GameExecutor.post(game!!, {

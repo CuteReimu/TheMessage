@@ -4,10 +4,13 @@ import com.fengsheng.*
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_jie_dao_sha_ren_a_tos
 import com.fengsheng.protos.Role.skill_jie_dao_sha_ren_b_tos
+import com.fengsheng.protos.skillJieDaoShaRenAToc
+import com.fengsheng.protos.skillJieDaoShaRenATos
+import com.fengsheng.protos.skillJieDaoShaRenBToc
+import com.fengsheng.protos.skillJieDaoShaRenBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -192,20 +195,23 @@ class JieDaoShaRen : ActiveSkill {
             val player = e.whoseFightTurn
             !player.roleFaceUp || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
-            val weights = player.game!!.players.filter {
+            val availableTargets = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player) && it.cards.isNotEmpty()
-            }.shuffled().map { it!! to it.cards.count(Black).toDouble() / it.cards.size }
+            }.ifEmpty { return false }
+            val weights = availableTargets.map { it!! to it.cards.count(Black).toDouble() / it.cards.size }
             val totalWeight = weights.sumOf { it.second }
-            totalWeight > 0.0 || return false
-            // 按权重随机
-            var target = weights.first().first
-            var weight = Random.nextDouble(totalWeight)
-            for ((p, w) in weights) {
-                if (weight < w) {
-                    target = p
-                    break
+            var target = availableTargets.first()!!
+            if (totalWeight > 0.0) { // 按权重随机
+                var weight = Random.nextDouble(totalWeight)
+                for ((p, w) in weights) {
+                    if (weight < w) {
+                        target = p
+                        break
+                    }
+                    weight -= w
                 }
-                weight -= w
+            } else {
+                target = availableTargets.random()!!
             }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillJieDaoShaRenATos {
