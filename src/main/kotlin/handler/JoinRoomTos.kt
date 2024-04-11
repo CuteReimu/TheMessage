@@ -140,6 +140,7 @@ class JoinRoomTos : ProtoHandler {
                     scores.add(score)
                 }
                 notice = "${Config.Notice.get()}\n\n${Statistics.rankList25.get()}"
+                roomId = newGame.id
             })
         }
     }
