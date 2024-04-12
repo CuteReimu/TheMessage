@@ -317,11 +317,9 @@ fun Player.calculateMessageCardValue(
                 ) 600 else -600
             }
         } else {
+            if (willWinInternalCp(whoseTurn, inFrontOfWhom, colors)) return 600
             if (game!!.players.any {
-                    it !== disturber && !isEnemy(it!!) && it.willWinInternalCp(whoseTurn, inFrontOfWhom, colors)
-                }) return 600
-            if (game!!.players.any {
-                    it !== disturber && isEnemy(it!!) && it.willWinInternalCp(whoseTurn, inFrontOfWhom, colors)
+                    it !== disturber && it !== this && it!!.willWinInternalCp(whoseTurn, inFrontOfWhom, colors)
                 }) return -600
         }
     }
