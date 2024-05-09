@@ -19,7 +19,7 @@ repositories {
 dependencies {
     implementation("com.typesafe.akka:akka-actor_2.13:2.8.5")
     implementation("io.netty:netty-all:4.1.108.Final")
-    implementation("io.ktor:ktor-server-netty:2.3.10")
+    implementation("io.ktor:ktor-server-netty:2.3.11")
     implementation("io.ktor:ktor-server-core:2.3.10")
     implementation("com.google.protobuf:protobuf-java-util:4.26.0")
     implementation("com.google.protobuf:protobuf-kotlin:4.26.0")
