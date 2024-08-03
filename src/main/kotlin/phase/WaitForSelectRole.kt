@@ -1,10 +1,13 @@
 package com.fengsheng.phase
 
 import com.fengsheng.*
-import com.fengsheng.protos.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.role.*
 import com.fengsheng.protos.Fengsheng.select_role_tos
+import com.fengsheng.protos.gameStartToc
+import com.fengsheng.protos.selectRoleToc
+import com.fengsheng.protos.selectRoleTos
+import com.fengsheng.protos.waitForSelectRoleToc
 import com.fengsheng.skill.RoleCache
 import com.fengsheng.skill.RoleSkillsData
 import com.google.protobuf.GeneratedMessage
@@ -54,6 +57,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                 player.originRole = selected[player.location]!!.role
             }
         }
+        game.playTime = System.currentTimeMillis().toInt()
         for (role in selected) if (role == null) return null
         return ResolveResult(StartGame(game, whoseTurn), true)
     }

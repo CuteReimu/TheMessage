@@ -46,6 +46,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var fsm: Fsm? = null
     var possibleSecretTasks: List<secret_task> = emptyList()
     var turn = 0
+    var playTime = 0
     val isEarly: Boolean
         get() = turn <= players.size - players.size / 2
 
