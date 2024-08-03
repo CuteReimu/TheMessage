@@ -137,7 +137,8 @@ class SendCardEvent(
     val sender: Player,
     val messageCard: Card,
     val targetPlayer: Player,
-    val dir: direction
+    val dir: direction,
+    val lockedPlayers: List<Player>
 ) : Event()
 
 /**

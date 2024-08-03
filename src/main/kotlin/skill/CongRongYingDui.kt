@@ -62,7 +62,7 @@ class CongRongYingDui : TriggeredSkill {
                         enable = true
                         drawCard = target.cards.isEmpty() || target.isPartnerOrSelf(r)
                     })
-                }, 1, TimeUnit.SECONDS)
+                }, 2, TimeUnit.SECONDS)
             }
             return null
         }

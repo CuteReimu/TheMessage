@@ -1,5 +1,6 @@
 package com.fengsheng.network
 
+import akka.actor.ActorRef
 import com.fengsheng.*
 import com.fengsheng.handler.ProtoHandler
 import com.fengsheng.protos.Fengsheng
@@ -102,6 +103,8 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
                 val reply = leaveRoomToc { position = player.location }
                 game.players.send { reply }
                 game.cancelStartTimer()
+                if (game.players.all { it !is HumanPlayer })
+                    game.actorRef.tell(StopGameActor(game), ActorRef.noSender())
             }
         }
     }

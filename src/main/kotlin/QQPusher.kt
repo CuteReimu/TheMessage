@@ -15,11 +15,14 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.apache.logging.log4j.kotlin.logger
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicLong
 
-object MiraiPusher {
+object QQPusher {
     private val mu = Mutex()
     private val notifyQueueOnStart = HashSet<Long>()
     private val notifyQueueOnEnd = HashSet<Long>()
+    private val lastPushTime = AtomicLong()
+    private val lastAtAllTime = AtomicLong()
 
     fun addIntoNotifyQueue(qq: Long, onStart: Boolean) = runBlocking {
         mu.withLock {
@@ -31,19 +34,29 @@ object MiraiPusher {
     }
 
     fun notifyStart() {
+        var atAll = false
+        var s: String? = null
+        val (r, h) = Game.humanPlayerCount
+        if (h >= 3) {
+            val now = System.currentTimeMillis()
+            val last = lastPushTime.get()
+            if (now - last >= 3600000 && lastPushTime.compareAndSet(last, now))
+                s = "当前有${h}位群友在${r}桌房间进行游戏"
+            val last2 = lastAtAllTime.get()
+            if (now - last2 >= 12 * 3600000 && lastAtAllTime.compareAndSet(last2, now))
+                atAll = true
+        }
         val at = runBlocking {
             mu.withLock {
                 notifyQueueOnStart.toLongArray().apply { notifyQueueOnStart.clear() }
             }
         }
-        if (at.isNotEmpty()) {
+        if (at.isNotEmpty() || s != null) {
+            s = s ?: "开了"
             @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch {
                 try {
-                    val session = verify()
-                    bind(session)
-                    Config.PushQQGroups.forEach { sendGroupMessage(session, it, "开了", *at) }
-                    release(session)
+                    Config.PushQQGroups.forEach { sendGroupMessage(it, s, atAll, *at) }
                 } catch (e: Throwable) {
                     logger.error("catch throwable", e)
                 }
@@ -66,6 +79,7 @@ object MiraiPusher {
             var roleName = player.roleName
             if (player.role != player.originRole)
                 RoleCache.getRoleName(player.originRole)?.let { roleName += "(原$it)" }
+            if (!player.alive) roleName += "(死亡)"
             var identity = Player.identityColorToString(player.identity, player.secretTask)
             if (player.identity != player.originIdentity || player.secretTask != player.originSecretTask)
                 identity += "(原${Player.identityColorToString(player.originIdentity, player.originSecretTask)})"
@@ -84,7 +98,7 @@ object MiraiPusher {
             val rank = ScoreFactory.getRankNameByScore(newScore)
             lines.add("$name,$roleName,$identity,$result,$rank,$newScore($addScoreStr)")
         }
-        val text = lines.joinToString(separator = "\n")
+        val text = lines.joinToString(separator = "\\n")
         val at = runBlocking {
             mu.withLock {
                 notifyQueueOnEnd.toLongArray().apply { notifyQueueOnEnd.clear() }
@@ -93,56 +107,33 @@ object MiraiPusher {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
             try {
-                val session = verify()
-                bind(session)
-                Config.PushQQGroups.forEach { sendGroupMessage(session, it, text, *at) }
-                release(session)
+                Config.PushQQGroups.forEach { sendGroupMessage(it, text, false, *at) }
             } catch (e: Throwable) {
                 logger.error("catch throwable", e)
             }
         }
     }
 
-    private fun verify(): String {
-        val postData = """{"verifyKey":"${Config.MiraiVerifyKey}"}""".toRequestBody(contentType)
-        val request = Request.Builder().url("${Config.MiraiHttpUrl}/verify").post(postData).build()
-        val resp = client.newCall(request).execute()
-        val json = gson.fromJson(resp.body!!.string(), JsonElement::class.java)
-        val code = json.asJsonObject["code"].asInt
-        if (code != 0) throw Exception("verify failed: $code")
-        return json.asJsonObject["session"].asString
-    }
-
-    private fun bind(sessionKey: String) {
-        val postData = """{"sessionKey":"$sessionKey","qq":${Config.RobotQQ}}""".toRequestBody(contentType)
-        val request = Request.Builder().url("${Config.MiraiHttpUrl}/bind").post(postData).build()
-        val resp = client.newCall(request).execute()
-        val json = gson.fromJson(resp.body!!.string(), JsonElement::class.java)
-        val code = json.asJsonObject["code"].asInt
-        if (code != 0) throw Exception("bind failed: $code")
-    }
-
-    private fun sendGroupMessage(sessionKey: String, groupId: Long, message: String, vararg at: Long) {
-        val atStr = at.joinToString(separator = "") { "{\"type\":\"At\",\"target\":$it}," }
+    private fun sendGroupMessage(groupId: Long, message: String, atAll: Boolean, vararg at: Long) {
+        val atStr =
+            if (atAll) "{\"type\":\"at\",\"data\":{\"qq\":\"all\"}},"
+            else at.joinToString(separator = "") { "{\"type\":\"at\",\"data\":{\"qq\":\"$it\"}}," }
         val postData = """{
-            "sessionKey":"$sessionKey",
-            "target":$groupId,
-            "messageChain":[$atStr{"type":"Plain","text":"$message"}]
+            "group_id":$groupId,
+            "message":[$atStr{"type":"text","data":{"text":"$message"}}]
         }""".trimMargin().toRequestBody(contentType)
-        val request = Request.Builder().url("${Config.MiraiHttpUrl}/sendGroupMessage").post(postData).build()
+        val request = Request.Builder()
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer ${Config.MiraiVerifyKey}")
+            .url("${Config.MiraiHttpUrl}/send_group_msg").post(postData).build()
         val resp = client.newCall(request).execute()
+        if (resp.code != 200) {
+            resp.close()
+            throw Exception("sendGroupMessage failed, status code: ${resp.code}")
+        }
         val json = gson.fromJson(resp.body!!.string(), JsonElement::class.java)
-        val code = json.asJsonObject["code"].asInt
-        if (code != 0) throw Exception("sendGroupMessage failed: $code")
-    }
-
-    private fun release(sessionKey: String) {
-        val postData = """{"sessionKey":"$sessionKey","qq":${Config.RobotQQ}}""".toRequestBody(contentType)
-        val request = Request.Builder().url("${Config.MiraiHttpUrl}/release").post(postData).build()
-        val resp = client.newCall(request).execute()
-        val json = gson.fromJson(resp.body!!.string(), JsonElement::class.java)
-        val code = json.asJsonObject["code"].asInt
-        if (code != 0) throw Exception("release failed: $code")
+        val code = json.asJsonObject["retcode"].asInt
+        if (code != 0) throw Exception("sendGroupMessage failed, retcode: $code")
     }
 
     private val client = OkHttpClient().newBuilder().connectTimeout(Duration.ofMillis(20000)).build()

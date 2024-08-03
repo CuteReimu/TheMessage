@@ -3,6 +3,7 @@
 ![](https://img.shields.io/github/languages/top/CuteReimu/TheMessage "语言")
 ![](https://img.shields.io/badge/java%20version-17-informational "Java 17")
 [![](https://img.shields.io/github/actions/workflow/status/CuteReimu/TheMessage/build.yml?branch=kotlin)](https://github.com/CuteReimu/TheMessage/actions/workflows/build.yml "代码分析")
+[![](https://img.shields.io/github/issues/CuteReimu/TheMessage)](https://github.com/CuteReimu/TheMessage/issues "issues")
 [![](https://img.shields.io/github/contributors/CuteReimu/TheMessage)](https://github.com/CuteReimu/TheMessage/graphs/contributors "贡献者")
 [![](https://img.shields.io/github/license/CuteReimu/TheMessage)](https://github.com/CuteReimu/TheMessage/blob/kotlin/LICENSE "许可协议")
 
@@ -32,6 +33,8 @@
 file_server_port=9091
 # 服务端监听端口
 listen_websocket_port=9091
+# 播放录像时最大间隔时间（秒）
+rule.record_max_interval=3
 # 游戏开始时摸牌数
 rule.hand_card_count_begin=3
 # 每回合摸牌数
@@ -96,16 +99,43 @@ push.push_qq_groups=12345678
 | /forbidplayer     | name=aaa&hour=72                 | 封号，其中name是用户名，hour是小时                                                                  |
 | /releaseplayer    | name=aaa                         | 解封，其中name是用户名                                                                          |
 | /winrate          | 无                                | 返回一张胜率统计的png图片                                                                         |
-| /updatetitle      | name=aaa&title=bbb               | 更新玩家的称号，其中name是用户名，title是称号，title为空就是删除称号                                              |
 | /resetseason      | 无                                | 重置赛季，重置前请手动备份PlayerInfo.csv                                                            |
+| /addenergy        | name=aaa&energy=1                | 增加精力                                                                                   |
+
+## 把战绩推送到QQ群
+
+将配置文件`application.properties`中的`push.enable_push`设置为`true`，就可以开启将战绩推送到QQ群的功能。
+
+在使用推送功能之前，你应该首先自行搭建一个支持 [onebot-11](https://github.com/botuniverse/onebot-11) 接口的QQ机器人。例如：
+
+- [NapCat](https://github.com/NapNeko/NapCatQQ) 基于NTQQ的无头Bot框架
+- [OpenShamrock](https://github.com/whitechi73/OpenShamrock) 基于 Lsposed(Non-Riru) 实现 Kritor 标准的 QQ 机器人框架
+- [Lagrange](https://github.com/LagrangeDev/Lagrange.Core) 一个基于纯C#的NTQQ协议实现，源自Konata.Core
+- [LiteLoaderQQNT](https://github.com/LiteLoaderQQNT/LiteLoaderQQNT) QQNT 插件加载器
+- [Gensokyo](https://github.com/Hoshinonyaruko/Gensokyo) 基于qq官方api开发的符合onebot标准的golang实现，轻量、原生跨平台
+- [LLOneBot](https://github.com/LLOneBot/LLOneBot) LiteLoaderQQNT插件，使你的NTQQ支持OneBot11协议进行QQ机器人开发
+
+> [!IMPORTANT]
+> 本功能是基于onebot的正向http接口，因此你需要开启对应机器人项目的http监听。
+
+*纯人机局不会推送，至少要有2名真人玩家时才会推送。*
 
 ## 关于文件服务器
 
 提供了一个文件服务器端口，供客户端下载资源文件，`file_server_port`字段配成0就是不启用文件服务器。
 
-启动后，访问`http://ip:port/`即可看到`files`文件夹（自行创建一个`files`文件夹）下的文件列表，点击文件名即可下载。（目前暂不支持嵌套文件夹）
+启动后，访问`http://ip:port/`即可看到`files`文件夹（事先自行创建一个`files`文件夹）下的文件列表，点击文件名即可下载。（目前暂不支持嵌套文件夹）
 
 ## 开发相关
+
+### gradle镜像
+
+如果gradle下载太慢，可以修改`gradle/wrapper/gradle-wrapper.properties`中的`distributionUrl`：
+
+```diff
+- distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
++ distributionUrl=https\://mirrors.cloud.tencent.com/gradle/gradle-8.7-bin.zip
+```
 
 ### IDEA问题
 

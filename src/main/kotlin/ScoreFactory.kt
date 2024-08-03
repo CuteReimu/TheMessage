@@ -92,7 +92,7 @@ object ScoreFactory : Logging {
                 playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, list ->
                     val rate =
                         if (originSecretTask == Mutator && list[Mutator.number + 3].rate < list[Collector.number + 3].rate)
-                            list[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
+                            list[Collector.number + 3].rate // 如果诱变者胜率低于双面间谍，则取双重间谍的胜率
                         else if (originSecretTask == Sweeper && list[Sweeper.number + 3].rate > list[Mutator.number + 3].rate)
                             list[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
                         else if (originIdentity == Black && originSecretTask != Mutator)
@@ -111,7 +111,7 @@ object ScoreFactory : Logging {
                 playerCountCount.computeIfPresent(players.size.coerceAtMost(8)) { _, list ->
                     val rate =
                         if (originSecretTask == Mutator && list[Mutator.number + 3].rate < list[Collector.number + 3].rate)
-                            list[Collector.number + 3].rate // 如果诱变者胜率低于双重间谍，则取双重间谍的胜率
+                            list[Collector.number + 3].rate // 如果诱变者胜率低于双面间谍，则取双重间谍的胜率
                         else if (originSecretTask == Sweeper && list[Sweeper.number + 3].rate > list[Mutator.number + 3].rate)
                             list[Mutator.number + 3].rate // 如果清道夫胜率高于诱变者，则取诱变者的胜率
                         else if (originIdentity == Black && originSecretTask != Mutator)

@@ -6,6 +6,10 @@
 /records/
 application.properties
 
+# IDE workspace file
+/.vscode/
+/.idea/
+
 # Compiled class file
 /build/
 *.class

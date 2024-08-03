@@ -201,7 +201,7 @@ class LengXueXunLian : ActiveSkill {
 
     companion object {
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
-            e.whoseTurn.calSendMessageCard().value <= 111 || return false
+            e.whoseTurn.cards.isEmpty() || e.whoseTurn.calSendMessageCard().value <= 111 || return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillLengXueXunLianATos { })
             }, 1, TimeUnit.SECONDS)

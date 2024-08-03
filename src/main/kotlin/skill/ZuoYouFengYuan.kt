@@ -8,6 +8,7 @@ import com.fengsheng.protos.skillZuoYouFengYuanTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 /**
  * 秦圆圆技能【左右逢源】：争夺阶段，你可以翻开此角色牌，然后指定两名角色，他们弃置所有手牌，然后摸三张牌（由你指定的角色先摸）。
@@ -77,26 +78,17 @@ class ZuoYouFengYuan : ActiveSkill {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val r = e.whoseFightTurn
             !r.roleFaceUp || return false
-            val players = r.game!!.players.toMutableList()
-            players.removeIf { !it!!.alive }
-            val willWin = players.find { it!!.isEnemy(r) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard) }
-            if (willWin != null) {
-                players.removeIf { it!!.isPartnerOrSelf(willWin) }
-                if (players.size == 1) players.add(
-                    r.game!!.players.filter { it !== players.first() && it!!.alive }.maxBy { it!!.cards.size })
-                else if (players.size >= 2) players.sortBy { it!!.cards.size }
-                else return false
-            } else if (e.inFrontOfWhom.willDie(e.messageCard) && e.inFrontOfWhom.isPartnerOrSelf(r)) {
-                players.removeIf { it!!.isEnemy(r) }
-                if (players.size == 1) players.add(
-                    r.game!!.players.filter { it !== players.first() && it!!.alive }.maxBy { it!!.cards.size })
-                else if (players.size >= 2) players.sortBy { it!!.cards.size }
-                else return false
-            } else {
-                players.removeIf { if (it!!.isEnemy(r)) it.cards.size <= 3 else it.cards.size >= 3 }
-                players.size >= 2 || return false
-                players.shuffle()
-            }
+            val alivePlayers = r.game!!.players.filter { it!!.alive }
+            val inFront = e.inFrontOfWhom
+            val card = e.messageCard
+            val willWinOrDie = // 敌人要赢了或者队友要死了
+                alivePlayers.any { it!!.isEnemy(r) && it.willWin(e.whoseTurn, inFront, card) } ||
+                    inFront.isPartnerOrSelf(r) && !r.willWin(e.whoseTurn, inFront, card) && inFront.willDie(card)
+            val p =
+                if (!willWinOrDie) alivePlayers.filter { if (it!!.isEnemy(r)) it.cards.size > 3 else it.cards.size < 3 }
+                else alivePlayers.filter { it === r || if (it!!.isEnemy(r)) it.cards.size >= 3 else it.cards.size <= 3 }
+            p.size >= 2 || return false
+            val players = p.sortedByDescending { abs(it!!.cards.size - 3.1) } // 7牌＞0牌＞6牌＞1牌＞5牌＞2牌＞4牌＞3牌
             GameExecutor.post(r.game!!, {
                 skill.executeProtocol(r.game!!, r, skillZuoYouFengYuanTos {
                     targetPlayerIds.add(r.getAlternativeLocation(players[0]!!.location))

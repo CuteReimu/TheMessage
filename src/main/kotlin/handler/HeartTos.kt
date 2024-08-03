@@ -7,7 +7,9 @@ import com.google.protobuf.GeneratedMessage
 
 class HeartTos : ProtoHandler {
     override fun handle(player: HumanPlayer, message: GeneratedMessage) {
-        val c = Game.onlineCount
-        player.send("heart_toc", heartToc { onlineCount = c }.toByteArray(), true)
+        player.send("heart_toc", heartToc {
+            onlineCount = Game.onlineCount
+            inGameCount = Game.inGameCount
+        }.toByteArray(), true)
     }
 }

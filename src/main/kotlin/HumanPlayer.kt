@@ -94,8 +94,8 @@ class HumanPlayer(
         recorder.save(game!!, this, channel.isActive)
     }
 
-    fun loadRecord(version: Int, recordId: String) {
-        recorder.load(version, recordId, this)
+    fun loadRecord(version: Int, recordId: String, skipCount: Int) {
+        recorder.load(version, recordId, skipCount, this)
     }
 
     val isLoadingRecord: Boolean

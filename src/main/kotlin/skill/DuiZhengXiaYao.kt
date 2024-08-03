@@ -205,7 +205,8 @@ class DuiZhengXiaYao : ActiveSkill {
                     var value = Int.MIN_VALUE
                     for (p in g.players) {
                         p!!.alive || continue
-                        for (card in p.messageCards.toList()) { // 遍历所有玩家面前的所有情报
+                        for (card in p.messageCards.sortedBy { it.isBlack() }) { // 遍历所有玩家面前的所有情报
+                            // 先遍历不带黑颜色的情报，这样就不会出现优先弃掉对方的真黑双色情报的问题了
                             card !== fsm.messageCard || continue // 如果遍历到了前面假设获得的那张情报，则跳过
                             card.colors.any { it in colors } || continue // 如果这张情报不含有这个颜色，则跳过
                             val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值

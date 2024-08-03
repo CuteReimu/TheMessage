@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
-import kotlin.random.nextInt
 
 class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var resolvingEvents = emptyList<Event>()
@@ -45,10 +44,11 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var deck = Deck(this)
     var fsm: Fsm? = null
     var possibleSecretTasks: List<secret_task> = emptyList()
+    var realTurn = 0
     var turn = 0
     var playTime = 0
     val isEarly: Boolean
-        get() = turn <= players.size - players.size / 2
+        get() = turn <= players.size
 
     /**
      * 用于出牌阶段结束时提醒还未发动的技能
@@ -87,6 +87,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             gameCount = count.gameCount
             score = Statistics.getScore(name) ?: 0
             rank = if (player is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
+            title = player.playerTitle
         }
         players.forEach { if (it !== player && it is HumanPlayer) it.send(msg) }
         if (unready == 0) {
@@ -102,7 +103,9 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         players.all { it != null } || return
         !isStarted || return
         isStarted = true
-        MiraiPusher.notifyStart()
+        players = players.shuffled()
+        players.forEachIndexed { i, p -> p!!.location = i }
+        QQPusher.notifyStart()
         val identities = ArrayList<color>()
         when (players.size) {
             2 -> Random.nextInt(4).let {
@@ -139,6 +142,14 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             }
         }
         identities.shuffle()
+        if (!Config.IsGmEnable && players.count { it is HumanPlayer } == 1) {
+            val i = players.indexOfFirst { it is HumanPlayer }
+            if (Statistics.getScore(players[i]!!.playerName) == 0 && identities[i] == Black) { // 对于0分的新人，确保一定是阵营方
+                val j = identities.indexOfFirst { it != Black }
+                identities[i] = identities[j]
+                identities[j] = Black
+            }
+        }
         val tasks = arrayListOf(Killer, Stealer, Collector, Pioneer)
         if (players.size >= 5) tasks.addAll(listOf(Mutator, Disturber, Sweeper))
         tasks.shuffle()
@@ -173,7 +184,6 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
 
     fun end(declaredWinners: List<Player>?, winners: List<Player>?, forceEnd: Boolean = false) {
         isEnd = true
-        gameCache.remove(id)
         val humanPlayers = players.filterIsInstance<HumanPlayer>()
         val addScoreMap = HashMap<String, Int>()
         val newScoreMap = HashMap<String, Int>()
@@ -185,7 +195,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                     val totalLoser = totalPlayers - totalWinners
                     val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
                     for ((i, p) in players.withIndex()) {
-                        val score = p!!.calScore(players.filterNotNull(), winners, delta / 10)
+                        var score = p!!.calScore(players.filterNotNull(), winners, delta / 10)
+                        if (score > 0 && humanPlayers.size > 1) score += 2 * humanPlayers.size
                         val (newScore, deltaScore) = Statistics.updateScore(p, score, i == humanPlayers.size - 1)
                         logger.info("$p(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：$newScore")
                         addScoreMap[p.playerName] = deltaScore
@@ -209,20 +220,21 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                     Statistics.add(records)
                 }
                 for (p in humanPlayers) {
+                    if (humanPlayers.size <= 1) Statistics.addEnergy(p.playerName, -1)
+                    else Statistics.addEnergy(p.playerName, humanPlayers.size * 2)
                     playerGameResultList.add(PlayerGameResult(p.playerName, winners.any { it === p }))
                 }
                 Statistics.addPlayerGameCount(playerGameResultList)
                 Statistics.calculateRankList()
                 if (humanPlayers.size > 1)
-                    MiraiPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
+                    QQPusher.push(this, declaredWinners, winners, addScoreMap, newScoreMap)
             }
             players.forEach { it!!.notifyWin(declaredWinners, winners, addScoreMap, newScoreMap) }
         }
         humanPlayers.forEach { it.saveRecord() }
         humanPlayers.forEach { playerNameCache.remove(it.playerName) }
-        players.forEach { it!!.reset() }
         if (forceEnd) humanPlayers.forEach { it.send(notifyKickedToc {}) }
-        actorRef.tell(StopGameActor(), ActorRef.noSender())
+        actorRef.tell(StopGameActor(this), ActorRef.noSender())
     }
 
     /**
@@ -411,9 +423,6 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         val playerNameCache = ConcurrentHashMap<String, HumanPlayer>()
         val increaseId = AtomicInteger(0)
 
-        @Volatile
-        var lastTotalPlayerCount = Config.TotalPlayerCount
-
         fun exchangePlayer(oldPlayer: HumanPlayer, newPlayer: HumanPlayer) {
             oldPlayer.channel = newPlayer.channel
             oldPlayer.needWaitLoad = newPlayer.needWaitLoad
@@ -423,10 +432,22 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         }
 
         val onlineCount: Int
-            get() = gameCache.values.sumOf { it.players.count { p -> p != null } } +
-                Random(System.currentTimeMillis() / 300000).run {
-                    (0..nextInt(1..4)).sumOf { nextInt(5..9) }
+            get() = gameCache.values.sumOf { it.players.count { p -> p is HumanPlayer } }
+
+        val humanPlayerCount: Pair<Int, Int>
+            get() {
+                var roomCount = 0
+                var humanCount = 0
+                gameCache.values.forEach {
+                    val c = it.players.count { p -> p is HumanPlayer }
+                    humanCount += c
+                    if (c > 0) roomCount++
                 }
+                return roomCount to humanCount
+            }
+
+        val inGameCount: Int
+            get() = gameCache.values.count { it.isStarted }
 
         @Throws(IOException::class, ClassNotFoundException::class)
         @JvmStatic

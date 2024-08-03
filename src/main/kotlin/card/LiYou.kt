@@ -6,6 +6,7 @@ import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.useLiYouToc
 import com.fengsheng.skill.ConvertCardSkill
@@ -81,7 +82,9 @@ class LiYou : Card {
                         logger.info("${deckCards.joinToString()}加入了${r}的手牌")
                     } else {
                         target.messageCards.addAll(deckCards)
-                        logger.info("${deckCards.joinToString()}加入了${target}的的情报区")
+                        val m = target.messageCards
+                        logger.info("${deckCards.joinToString()}加入了${target}的的情报区，" +
+                            "现在有${m.count(Red)}红${m.count(Blue)}蓝${m.count(Black)}黑")
                     }
                 }
                 g.players.send {

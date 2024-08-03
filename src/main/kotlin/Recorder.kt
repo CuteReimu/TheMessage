@@ -20,6 +20,7 @@ import kotlin.concurrent.fixedRateTimer
 class Recorder {
     private var list: MutableList<recorder_line> = ArrayList()
     private var currentIndex = 0
+    private var skipCount = 0
 
     @Volatile
     var loading = false
@@ -70,7 +71,7 @@ class Recorder {
         }
     }
 
-    fun load(version: Int, recordId: String, player: HumanPlayer) {
+    fun load(version: Int, recordId: String, skipCount: Int, player: HumanPlayer) {
         val file = File("records/")
         if (!file.exists() || !file.isDirectory) {
             player.sendErrorMessage("录像不存在")
@@ -82,6 +83,7 @@ class Recorder {
             return
         }
         val recordFile = files[0]
+        this.skipCount = skipCount
         loading = true
         saveLoadPool.trySend {
             try {
@@ -111,6 +113,16 @@ class Recorder {
     }
 
     fun displayNext(player: HumanPlayer) {
+        if (skipCount > 0) {
+            player.send(reconnectToc { isEnd = false })
+            while (currentIndex <= skipCount && currentIndex < list.size) {
+                val line = list[currentIndex]
+                if ("wait_for_select_role_toc" != line.protoName && "select_role_toc" != line.protoName)
+                    player.send(line.protoName, line.messageBuf.toByteArray(), true)
+                currentIndex++
+            }
+            player.send(reconnectToc { isEnd = true })
+        }
         while (true) {
             if (!player.isActive) {
                 loading = false
@@ -140,7 +152,7 @@ class Recorder {
             }
             val diffNanoTime = list[currentIndex].nanoTime - line.nanoTime
             if (diffNanoTime > 100000000) {
-                var maxInterval = 2000000000L
+                var maxInterval = 1000000000L * Config.RecordMaxInterval
                 if (list[currentIndex].protoName in fastDisplayProtoNames && line.protoName in fastDisplayProtoNames)
                     maxInterval /= 2
                 GameExecutor.TimeWheel.newTimeout(

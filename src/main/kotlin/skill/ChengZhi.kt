@@ -92,7 +92,8 @@ class ChengZhi : TriggeredSkill {
                     else -> -100
                 }
                 r.game!!.tryContinueResolveProtocol(r, skillChengZhiTos {
-                    enable = r.process(whoDie.identity, whoDie.secretTask) > r.process(r.identity, r.secretTask)
+                    enable = whoDie.identity == r.identity && whoDie.secretTask == r.secretTask ||
+                        r.process(whoDie.identity, whoDie.secretTask) > r.process(r.identity, r.secretTask)
                 })
             }, 3, TimeUnit.SECONDS)
             return null

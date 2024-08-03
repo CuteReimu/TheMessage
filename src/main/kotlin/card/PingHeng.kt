@@ -12,6 +12,7 @@ import com.fengsheng.skill.ConvertCardSkill
 import com.fengsheng.skill.cannotPlayCard
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class PingHeng : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -89,10 +90,12 @@ class PingHeng : Card {
                 if (it === player || !it!!.alive) false
                 else if (identity != color.Black && identity == it.identity) it.cards.size <= 3
                 else it.cards.size >= 3
-            }.randomOrNull() ?: return false
+            }
+            p.size >= 1 || return false
+            val target = p.maxBy { abs(it!!.cards.size - 3.1) }
             GameExecutor.post(player.game!!, {
                 convertCardSkill?.onConvert(player)
-                card.asCard(Ping_Heng).execute(player.game!!, player, p)
+                card.asCard(Ping_Heng).execute(player.game!!, player, target!!)
             }, 3, TimeUnit.SECONDS)
             return true
         }

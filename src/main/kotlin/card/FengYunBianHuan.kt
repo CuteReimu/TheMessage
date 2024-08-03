@@ -72,7 +72,7 @@ class FengYunBianHuan : Card {
         val resolveFunc = { _: Boolean ->
             ExecuteFengYunBianHuan(this@FengYunBianHuan, drawCards, players, fsm)
         }
-        players.forEach { it.weiBiFailRate = 0 }
+        r.weiBiFailRate = 0
         g.resolve(ResolveCard(r, r, null, getOriginCard(), Feng_Yun_Bian_Huan, resolveFunc, fsm))
     }
 

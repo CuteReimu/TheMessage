@@ -32,9 +32,9 @@ object Image {
         fun getColor(value: Double): Color {
             if (average.isNaN()) return Color.WHITE
             return when {
+                value == average -> aveColor
                 value <= min -> minColor
                 value >= max -> maxColor
-                value == average -> aveColor
                 value < average -> {
                     val red = aveColor.red - (aveColor.red - minColor.red) * (average - value) / (average - min)
                     val green = aveColor.green - (aveColor.green - minColor.green) * (average - value) / (average - min)
@@ -75,7 +75,7 @@ object Image {
 
         val columns = listOf(
             "角色", "场次", "总胜率", "军潜", "神秘人",
-            "镇压者", "簒夺者", "双重间谍", "诱变者", "先行者", "搅局者", "清道夫",
+            "镇压者", "簒夺者", "双面间谍", "诱变者", "先行者", "搅局者", "清道夫",
         )
         val appearCount = HashMap<Common.role, IntArray>()
         val winCount = HashMap<Common.role, IntArray>()
@@ -183,7 +183,7 @@ object Image {
 
     fun genRankListImage(lines: List<PlayerInfo>): BufferedImage {
         val img =
-            BufferedImage(CELL_W * 7 + 1 + font.size * 4, CELL_H * (lines.size + 1) + 1, BufferedImage.TYPE_INT_RGB)
+            BufferedImage(CELL_W * 8 + 1 + font.size * 4, CELL_H * (lines.size + 1) + 1, BufferedImage.TYPE_INT_RGB)
         val g = img.createGraphics()
         g.color = Color.WHITE
         g.fillRect(img.minX, img.minY, img.width, img.height)
@@ -206,10 +206,13 @@ object Image {
         g.drawString("赛季场次", CELL_W * 4 + font.size * 2 + 3, CELL_H - 3)
         g.drawString("赛季胜率", CELL_W * 5 + font.size * 2 + 3, CELL_H - 3)
         g.drawString("最近一局", CELL_W * 6 + font.size * 2 + 3, CELL_H - 3)
+        g.drawString("精力", CELL_W * 7 + font.size * 4 + 3, CELL_H - 3)
         val g1 = Gradient(lines.map { it.score.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
         val g2 = Gradient(lines.map { it.gameCount.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
-        val g3 = Gradient(lines.map { PlayerGameCount(it.winCount, it.gameCount).rate.coerceIn(8.0..50.0) })
+        val g3 = Gradient(lines.filter { it.gameCount > 0 }
+            .map { PlayerGameCount(it.winCount, it.gameCount).rate.coerceIn(8.0..50.0) })
         val g4 = Gradient(lines.mapNotNull { if (it.lastTime == 0L) null else it.lastTime.toDouble() })
+        val g5 = Gradient(lines.map { it.energy.toDouble() }, minColor = Color.WHITE, aveColor = aveColor)
         lines.forEachIndexed { index, line ->
             val rank = ScoreFactory.getRankStringNameByScore(line.score)
             g.color = g1.getColor(line.score.toDouble())
@@ -222,10 +225,12 @@ object Image {
             g.fillRect(CELL_W * 4 + font.size * 2, (index + 1) * CELL_H, CELL_W, CELL_H)
             g.color = Color.BLACK
             g.drawString(count.gameCount.toString(), CELL_W * 4 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
-            g.color = g3.getColor(count.rate)
-            g.fillRect(CELL_W * 5 + font.size * 2, (index + 1) * CELL_H, CELL_W, CELL_H)
-            g.color = Color.BLACK
-            g.drawString("%.2f%%".format(count.rate), CELL_W * 5 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
+            if (line.gameCount > 0) {
+                g.color = g3.getColor(count.rate)
+                g.fillRect(CELL_W * 5 + font.size * 2, (index + 1) * CELL_H, CELL_W, CELL_H)
+                g.color = Color.BLACK
+                g.drawString("%.2f%%".format(count.rate), CELL_W * 5 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
+            }
             if (line.lastTime > 0) {
                 g.color = g4.getColor(line.lastTime.toDouble())
                 g.fillRect(CELL_W * 6 + font.size * 2, (index + 1) * CELL_H, CELL_W + font.size * 2, CELL_H)
@@ -233,12 +238,16 @@ object Image {
                 val dateString = dateFormat.format(Date(line.lastTime))
                 g.drawString(dateString, CELL_W * 6 + font.size * 2 + 3, (index + 2) * CELL_H - 3)
             }
+            g.color = g5.getColor(line.energy.toDouble())
+            g.fillRect(CELL_W * 7 + font.size * 4, (index + 1) * CELL_H, CELL_W + font.size * 2, CELL_H)
+            g.color = Color.BLACK
+            g.drawString(line.energy.toString(), CELL_W * 7 + font.size * 4 + 3, (index + 2) * CELL_H - 3)
         }
         g.color = Color(205, 204, 200)
         repeat(lines.size + 2) {
             g.drawLine(0, it * CELL_H, img.width, it * CELL_H)
         }
-        repeat(8) { i ->
+        repeat(9) { i ->
             if (i < 2)
                 g.drawLine(i * CELL_W, 0, i * CELL_W, img.height)
             else if (i < 7)

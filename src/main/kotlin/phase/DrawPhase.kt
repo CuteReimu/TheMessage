@@ -15,6 +15,7 @@ data class DrawPhase(override val whoseTurn: Player) : Fsm {
             return ResolveResult(NextTurn(whoseTurn), true)
         }
         whoseTurn.game!!.turn++
+        whoseTurn.game!!.realTurn++
         logger.info("${whoseTurn}的回合开始了")
         for (p in whoseTurn.game!!.players) {
             p!!.notifyDrawPhase()

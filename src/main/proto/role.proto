@@ -2,6 +2,13 @@ syntax = "proto3";
 option java_package = "com.fengsheng.protos";
 import "common.proto";
 
+// 广播询问客户端使用【奇货可居】
+message wait_for_skill_qi_huo_ke_ju_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
 // 毛不拔【奇货可居】：你接收双色情报后，可以从你的情报区选择一张情报加入手牌。
 message skill_qi_huo_ke_ju_tos {
   uint32 card_id = 1;
@@ -27,6 +34,13 @@ message skill_gui_zha_toc {
   uint32    player_id = 1;
   uint32    target_player_id = 2;
   card_type card_type = 3;
+}
+
+// 广播询问客户端使用【以牙还牙】
+message wait_for_skill_yi_ya_huan_ya_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
 }
 
 // 王魁【以牙还牙】：你接收黑色情报后，可以将一张黑色手牌置入情报传出者或其相邻角色的情报区，然后摸一张牌。
@@ -102,6 +116,13 @@ message skill_ji_song_toc {
   uint32 target_player_id = 3;
 }
 
+// 广播询问客户端使用【绵里藏针】
+message wait_for_skill_mian_li_cang_zhen_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
 // 邵秀【绵里藏针】：你传出的情报被接收后，可以将一张黑色手牌置入接收者的情报区，然后摸一张牌。
 message skill_mian_li_cang_zhen_tos {
   uint32 card_id = 1;
@@ -115,6 +136,13 @@ message skill_mian_li_cang_zhen_toc {
   uint32 target_player_id = 3;
 }
 
+// 广播询问客户端使用【谨慎】
+message wait_for_skill_jin_shen_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
 // 金生火【谨慎】：你接收双色情报后，可以用一张手牌与该情报面朝上互换。
 message skill_jin_shen_tos {
   uint32 card_id = 1;
@@ -126,6 +154,13 @@ message skill_jin_shen_toc {
   uint32 player_id = 1;
   card   card = 2;
   uint32 message_card_id = 3;
+}
+
+// 广播询问客户端使用【怜悯】
+message wait_for_skill_lian_min_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
 }
 
 // 白菲菲【怜悯】：你传出的非黑色情报被接收后，可以从你或接收者的情报区选择一张黑色情报加入你的手牌。
@@ -307,6 +342,13 @@ message skill_yi_xin_toc {
 // 广播使用【知音】：你接收红色或蓝色情报后，你和传出者各摸一张牌
 message skill_zhi_yin_toc {
   uint32 player_id = 1;
+}
+
+// 广播询问客户端使用【惊梦】
+message wait_for_skill_jing_meng_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
 }
 
 // 程小蝶【惊梦】A：你接收黑色情报后，可以查看一名角色的手牌。
@@ -674,6 +716,13 @@ message skill_qiang_ling_tos {
 message skill_qiang_ling_toc {
   uint32             player_id = 1;
   repeated card_type types = 2;
+}
+
+// 广播询问客户端使用【坚韧】
+message wait_for_skill_jian_ren_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
 }
 
 // 吴志国【坚韧】A：你接收黑色情报后，可以展示牌堆顶的一张牌，若是黑色牌，则将展示的牌加入你的手牌。
@@ -1112,6 +1161,13 @@ message skill_cong_rong_ying_dui_toc {
   card card = 5; // 被抽取的手牌，只有简先生和那名玩家可以看见
 }
 
+// 广播询问客户端使用【赤子之心】
+message wait_for_skill_chi_zi_zhi_xin_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
 // SP小九【赤子之心】A：你传出的非黑色情报被其他角色接收后
 message skill_chi_zi_zhi_xin_a_tos {
   uint32 seq = 1;
@@ -1260,12 +1316,19 @@ message skill_du_ming_b_toc {
   card card = 2; // 置入的牌
 }
 
-// 成年小九【联信】A：接收其他角色情报后，可以翻开此角色，摸两张牌
+// 广播询问客户端使用【暗度陈仓】
+message wait_for_skill_lian_xin_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
+// 成年小九、成年韩梅【暗度陈仓】A：接收其他角色情报后，可以翻开此角色，摸两张牌
 message skill_lian_xin_a_tos {
   uint32 seq = 1;
 }
 
-// 广播使用【联信】A，摸牌走摸牌协议
+// 广播使用【暗度陈仓】A，摸牌走摸牌协议
 message skill_lian_xin_a_toc {
   uint32 player_id = 1; // 成年小九的ID
   uint32 target_player_id = 2;
@@ -1274,13 +1337,13 @@ message skill_lian_xin_a_toc {
   uint32 seq = 5;
 }
 
-// 成年小九【联信】B：然后将一张含该情报相同颜色的手牌置入传出者的情报区
+// 成年小九、成年韩梅【暗度陈仓】B：然后将一张含该情报相同颜色的手牌置入传出者的情报区
 message skill_lian_xin_b_tos {
   uint32 card_id = 1;
   uint32 seq = 2;
 }
 
-// 广播使用【联信】B
+// 广播使用【暗度陈仓】B
 message skill_lian_xin_b_toc {
   uint32 player_id = 1; // 成年小九的ID
   uint32 target_player_id = 2;
@@ -1290,33 +1353,6 @@ message skill_lian_xin_b_toc {
 // 广播使用【顺势而为】：你使用【截获】或者你面前的情报被【截获】后，可以将此角色牌翻回背面，摸一张牌。
 message skill_shun_shi_er_wei_toc {
   uint32 player_id = 1;
-}
-
-// 成年韩梅【密信】A：接收其他角色情报后，可以翻开此角色，摸两张牌
-message skill_mi_xin_a_tos {
-  uint32 seq = 1;
-}
-
-// 广播使用【密信】A，摸牌走摸牌协议
-message skill_mi_xin_a_toc {
-  uint32 player_id = 1; // 成年韩梅的ID
-  uint32 target_player_id = 2;
-  card message_card = 3;
-  uint32 waiting_second = 4; // 如果没有满足条件的手牌，则这个字段为0
-  uint32 seq = 5;
-}
-
-// 成年韩梅【密信】B：然后将一张含该情报不同颜色的手牌置入传出者的情报区
-message skill_mi_xin_b_tos {
-  uint32 card_id = 1;
-  uint32 seq = 2;
-}
-
-// 广播使用【密信】B
-message skill_mi_xin_b_toc {
-  uint32 player_id = 1; // 成年韩梅的ID
-  uint32 target_player_id = 2;
-  card card = 3;
 }
 
 // 广播使用【将计就计】：你使用【误导】或者你面前的情报被【误导】后，可以将此角色牌翻回背面，摸一张牌。
@@ -1572,6 +1608,13 @@ message skill_you_di_shen_ru_toc {
   direction       card_dir = 5; // 传递的方向
 }
 
+// 广播询问客户端使用【歼敌风行】
+message wait_for_skill_jian_di_feng_xing_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
 // 边云疆【歼敌风行】A：其他玩家收到你的情报后，你可以摸两张牌
 message skill_jian_di_feng_xing_a_tos {
   uint32 seq = 1;
@@ -1659,6 +1702,13 @@ message skill_workers_are_knowledgable_toc {
   repeated uint32 target_player_id = 2;
 }
 
+// 广播询问客户端使用【壮志满怀】
+message wait_for_skill_zhuang_zhi_man_huai_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
+}
+
 // CP小九【壮志满怀】：你接收红色情报或你传出的红色情报被接收后，可以选择一项：
 // 1. 拿取一张你或其的黑色情报到手中。
 // 2. 双方各摸一张牌。
@@ -1672,6 +1722,13 @@ message skill_zhuang_zhi_man_huai_toc {
   uint32 player_id = 1;
   card   card = 2; // 目标卡牌，为空就是选另一个选项
   uint32 target_player_id = 3;
+}
+
+// 广播询问客户端使用【暗藏杀机】
+message wait_for_skill_an_cang_sha_ji_toc {
+  uint32 player_id = 1;
+  uint32 waiting_second = 2;
+  uint32 seq = 3;
 }
 
 // CP韩梅【暗藏杀机】：你接收蓝色情报或你传出的蓝色情报被接收后，可以选择一项：

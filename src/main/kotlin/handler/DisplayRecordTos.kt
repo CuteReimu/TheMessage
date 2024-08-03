@@ -13,6 +13,6 @@ class DisplayRecordTos : ProtoHandler {
             return
         }
         val pb = message as Fengsheng.display_record_tos
-        player.loadRecord(pb.version, pb.recordId)
+        player.loadRecord(pb.version, pb.recordId, pb.skipCount)
     }
 }

@@ -33,12 +33,18 @@ class RobotPlayer : Player() {
             val ai = aiSkillMainPhase[skill.skillId] ?: continue
             if (ai(fsm, skill as ActiveSkill)) return
         }
-        if (!Config.IsGmEnable && !game!!.players.any {
-                it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) > 0
-            }) {
-            if (Random.nextInt(4) != 0) { // 对于0分的新人，机器人有3/4的概率在出牌阶段不打牌
-                GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
-                return
+        if (!Config.IsGmEnable && game!!.players.count { it is HumanPlayer } == 1) {
+            val human = game!!.players.first { it is HumanPlayer }!!
+            if (isEnemy(human)) { // 对于低分的新人，敌方机器人可能不出牌
+                val info = Statistics.getPlayerInfo(human.playerName)
+                if (info != null) {
+                    val score = info.score
+                    val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
+                    if (!isPowerfulPlayer && score < 60 && Random.nextInt(60) >= score) {
+                        GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
+                        return
+                    }
+                }
             }
         }
         if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null) {
@@ -163,7 +169,7 @@ class RobotPlayer : Player() {
                 else
                     MessageMoveNext(fsm)
             )
-        }, 1, TimeUnit.SECONDS)
+        }, 1500, TimeUnit.MILLISECONDS)
     }
 
     override fun notifyChooseReceiveCard(player: Player) {
@@ -173,21 +179,27 @@ class RobotPlayer : Player() {
     override fun notifyFightPhase(waitSecond: Int) {
         val fsm = game!!.fsm as FightPhaseIdle
         this === fsm.whoseFightTurn || return
-        if (!Config.IsGmEnable && !game!!.players.any {
-                it is HumanPlayer && (Statistics.getScore(it.playerName) ?: 0) > 0
-            }) {
-            if (Random.nextInt(4) != 0) { // 对于0分的新人，机器人有3/4的概率在争夺阶段不打牌
-                GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500, TimeUnit.MILLISECONDS)
-                return
+        if (!Config.IsGmEnable && game!!.players.count { it is HumanPlayer } == 1) {
+            val human = game!!.players.first { it is HumanPlayer }!!
+            if (isEnemy(human)) { // 对于低分的新人，敌方机器人可能不出牌
+                val info = Statistics.getPlayerInfo(human.playerName)
+                if (info != null) {
+                    val score = info.score
+                    val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
+                    if (!isPowerfulPlayer && score < 60 && Random.nextInt(60) >= score) {
+                        GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500, TimeUnit.MILLISECONDS)
+                        return
+                    }
+                }
             }
         }
         for (skill in skills) {
             val ai = aiSkillFightPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as? ActiveSkill)) return
         }
-        if (!game!!.isEarly || this === fsm.whoseTurn || game!!.players.any {
-                isPartnerOrSelf(it!!) && it.willDie(fsm.messageCard)
-            } || calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard) <= -110) {
+        if (!game!!.isEarly || this === fsm.whoseTurn ||
+            isPartnerOrSelf(fsm.inFrontOfWhom) && fsm.inFrontOfWhom.willDie(fsm.messageCard) ||
+            calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, sender = fsm.sender) <= -110) {
             val result = calFightPhase(fsm)
             if (result != null && result.deltaValue > 10) {
                 GameExecutor.post(game!!, {
@@ -348,7 +360,6 @@ class RobotPlayer : Player() {
             JIAN_REN to JianRen::ai,
             CHI_ZI_ZHI_XIN to ChiZiZhiXin::ai,
             LIAN_XIN to LianXin::ai,
-            MI_XIN to MiXin::ai,
             JIAN_DI_FENG_XING to JianDiFengXing::ai,
             ZHUANG_ZHI_MAN_HUAI to ZhuangZhiManHuai::ai,
             AN_CANG_SHA_JI to AnCangShaJi::ai,

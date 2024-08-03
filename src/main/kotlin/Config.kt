@@ -12,6 +12,8 @@ object Config {
     val FileServerPort: Int
     val ListenWebSocketPort: Int
     val TotalPlayerCount: Int
+    val RecordMaxInterval: Int
+        get() = field.coerceAtLeast(1)
     val HandCardCountBegin: Int
     val HandCardCountEachTurn: Int
     val IsGmEnable: Boolean
@@ -42,6 +44,7 @@ object Config {
         pps.putIfAbsent("file_server_port", "9091")
         pps.putIfAbsent("listen_websocket_port", "12222")
         pps.putIfAbsent("player.total_count", "5")
+        pps.putIfAbsent("rule.record_max_interval", "3")
         pps.putIfAbsent("rule.hand_card_count_begin", "3")
         pps.putIfAbsent("rule.hand_card_count_each_turn", "3")
         pps.putIfAbsent("gm.enable", "false")
@@ -59,6 +62,7 @@ object Config {
         pps.putIfAbsent("waiting_second", "15")
         FileServerPort = pps.getProperty("file_server_port").toInt()
         ListenWebSocketPort = pps.getProperty("listen_websocket_port").toInt()
+        RecordMaxInterval = pps.getProperty("rule.record_max_interval").toInt()
         TotalPlayerCount = pps.getProperty("player.total_count").toInt()
         HandCardCountBegin = pps.getProperty("rule.hand_card_count_begin").toInt()
         HandCardCountEachTurn = pps.getProperty("rule.hand_card_count_each_turn").toInt()
@@ -97,6 +101,7 @@ object Config {
             pps["file_server_port"] = FileServerPort.toString()
             pps["listen_websocket_port"] = ListenWebSocketPort.toString()
             pps["player.total_count"] = TotalPlayerCount.toString()
+            pps["rule.record_max_interval"] = RecordMaxInterval.toString()
             pps["rule.hand_card_count_begin"] = HandCardCountBegin.toString()
             pps["rule.hand_card_count_each_turn"] = HandCardCountEachTurn.toString()
             pps["gm.enable"] = IsGmEnable.toString()

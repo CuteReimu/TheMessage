@@ -18,7 +18,6 @@ import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class WeiBi : Card {
     constructor(id: Int, colors: List<color>, direction: direction, lockable: Boolean) :
@@ -119,6 +118,7 @@ class WeiBi : Card {
                 }
             }
             r.game!!.addEvent(GiveCardEvent(r, target, r))
+            target.weiBiFailRate = 0
             return ResolveResult(
                 OnFinishResolveCard(r, r, target, card?.getOriginCard(), Wei_Bi, fsm), true
             )
@@ -236,7 +236,7 @@ class WeiBi : Card {
                     .run { if (player.identity != Black) filter { it!!.identity != Black }.ifEmpty { this } else this }
             }.randomOrNull() ?: return false
             val cardType =
-                if (Random.nextInt(2) < player.weiBiFailRate) listOf(Jie_Huo, Wu_Dao, Diao_Bao).random() // N/2的概率纯随机
+                if (player.weiBiFailRate > 0) listOf(Jie_Huo, Wu_Dao, Diao_Bao).random() // 威逼成功后一定纯随机
                 else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.run {
                     filter { it != Cheng_Qing }.ifEmpty { this }
                 }.random()

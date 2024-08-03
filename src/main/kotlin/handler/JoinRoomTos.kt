@@ -6,7 +6,6 @@ import com.fengsheng.protos.*
 import com.google.protobuf.GeneratedMessage
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.logger
-import java.nio.charset.StandardCharsets
 
 class JoinRoomTos : ProtoHandler {
     override fun handle(player: HumanPlayer, message: GeneratedMessage) {
@@ -17,7 +16,7 @@ class JoinRoomTos : ProtoHandler {
         }
         val pb = message as Fengsheng.join_room_tos
         val playerName = pb.name
-        if (playerName.toByteArray(StandardCharsets.UTF_8).size > 24) {
+        if (playerName.length > 12) {
             player.sendErrorMessage("名字太长了")
             return
         }
@@ -71,6 +70,10 @@ class JoinRoomTos : ProtoHandler {
         }
         val newGame = GameExecutor.getGame(pb.roomId, pb.playerCount)
         GameExecutor.post(newGame) {
+            if (newGame.isStarted) {
+                player.sendErrorMessage("游戏已经开始，无法进入")
+                return@post
+            }
             if (player.game !== null) {
                 logger.warn("${player}登录异常")
                 player.sendErrorMessage("登录异常，请稍后重试")
@@ -118,6 +121,7 @@ class JoinRoomTos : ProtoHandler {
             player.send(getRoomInfoToc {
                 myPosition = player.location
                 onlineCount = Game.onlineCount
+                inGameCount = Game.inGameCount
                 for (p in player.game!!.players) {
                     if (p == null) {
                         names.add("")
@@ -125,6 +129,7 @@ class JoinRoomTos : ProtoHandler {
                         gameCounts.add(0)
                         ranks.add("")
                         scores.add(0)
+                        title.add("")
                         continue
                     }
                     val name = p.playerName
@@ -138,6 +143,7 @@ class JoinRoomTos : ProtoHandler {
                     gameCounts.add(c.gameCount)
                     ranks.add(rank)
                     scores.add(score)
+                    title.add(p.playerTitle)
                 }
                 notice = "${Config.Notice.get()}\n\n${Statistics.rankList25.get()}"
                 roomId = newGame.id

@@ -71,7 +71,7 @@ class CunBuBuRang : TriggeredSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(r.game!!, {
                     r.game!!.tryContinueResolveProtocol(r, skillCunBuBuRangTos { enable = true })
-                }, 1, TimeUnit.SECONDS)
+                }, 2, TimeUnit.SECONDS)
             }
             return null
         }

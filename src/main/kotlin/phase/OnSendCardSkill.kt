@@ -28,7 +28,7 @@ data class OnSendCardSkill(
     val isMessageCardFaceUp: Boolean,
 ) : ProcessFsm() {
     override fun onSwitch() {
-        sender.game!!.addEvent(SendCardEvent(whoseTurn, sender, messageCard, targetPlayer, dir))
+        sender.game!!.addEvent(SendCardEvent(whoseTurn, sender, messageCard, targetPlayer, dir, lockedPlayers))
     }
 
     override fun resolve0(): ResolveResult {

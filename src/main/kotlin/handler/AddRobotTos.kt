@@ -2,13 +2,14 @@ package com.fengsheng.handler
 
 import com.fengsheng.*
 import com.fengsheng.protos.Fengsheng
-import org.apache.logging.log4j.kotlin.logger
 
 class AddRobotTos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
     override fun handle0(r: HumanPlayer, pb: Fengsheng.add_robot_tos) {
         if (r.game!!.isStarted) {
-            logger.error("the game has already started")
-            r.sendErrorMessage("游戏已经开始了")
+            return
+        }
+        val emptyPosition = r.game!!.players.count { it == null }
+        if (emptyPosition == 0) {
             return
         }
         if (!Config.IsGmEnable) {
@@ -24,8 +25,8 @@ class AddRobotTos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
 //                }
 //            }
             val humanCount = r.game!!.players.count { it is HumanPlayer }
-            if (humanCount >= 5) {
-                r.sendErrorMessage("房间内有其他玩家，禁止添加机器人")
+            if (humanCount <= 1 && emptyPosition == 1 && Statistics.getEnergy(r.playerName) <= 0) {
+                r.sendErrorMessage("你的精力不足，不能进行人机局。签到或者与朋友一起游戏可获得精力。")
                 return
             }
         }

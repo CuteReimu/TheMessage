@@ -12,14 +12,16 @@ class Getscore : Function<Map<String, String>, Any> {
             if (playerInfo == null) {
                 "{\"result\": \"${name}已身死道消\"}"
             } else {
-                val days = ((System.currentTimeMillis() - playerInfo.lastTime) / (24 * 3600000L)).toInt()
-                val decay = days / 7 * 20
-                val score = (playerInfo.score - decay).coerceAtLeast(0)
+                val score = playerInfo.scoreWithDecay
                 val rank = ScoreFactory.getRankNameByScore(score)
+                val total = playerInfo.gameCount
                 val winRate =
                     if (playerInfo.gameCount == 0) "0.00%"
-                    else "%.2f%%".format(playerInfo.winCount * 100.0 / playerInfo.gameCount)
-                "{\"result\": \"$name·$rank·$score，总场次：${playerInfo.gameCount}，胜率：$winRate\"}"
+                    else "%.2f%%".format(playerInfo.winCount * 100.0 / total)
+                val energy = playerInfo.energy
+                var s = "$name·$rank·$score，总场次：$total，胜率：$winRate，精力：$energy"
+                if (playerInfo.score != score) s += "（长期不打会掉分，打一场即可全部恢复）"
+                "{\"result\": \"$s\"}"
             }
         } catch (e: NullPointerException) {
             "{\"error\": \"参数错误\"}"

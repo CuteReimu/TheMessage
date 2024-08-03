@@ -1,11 +1,11 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
-import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.NextTurn
-import com.fengsheng.protos.Common.color
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_miao_shou_a_tos
 import com.fengsheng.protos.Role.skill_miao_shou_b_tos
 import com.fengsheng.protos.skillMiaoShouAToc
@@ -102,10 +102,32 @@ class MiaoShou : ActiveSkill {
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
                     g.tryContinueResolveProtocol(r, skillMiaoShouBTos {
-                        messageCardId = target.messageCards.firstOrNull()?.id ?: 0
-                        if (messageCardId == 0)
-                            cardId = target.cards.firstOrNull()?.id ?: 0
-                        targetPlayerId = 0
+                        var value = Int.MIN_VALUE
+                        val players = g.players.filterNotNull().filter { it.alive }.shuffled()
+                        val handCardScore = if (target.isEnemy(r)) 10 else -10
+                        for (card in target.cards.sortCards(r.identity, handCardScore < 0)) {
+                            for (moveTarget in players) {
+                                val v = r.calculateMessageCardValue(fsm.whoseTurn, moveTarget, card) + handCardScore
+                                if (v > value) {
+                                    value = v
+                                    cardId = card.id
+                                    messageCardId = 0
+                                    targetPlayerId = r.getAlternativeLocation(moveTarget.location)
+                                }
+                            }
+                        }
+                        for (card in target.messageCards.toList()) {
+                            val removeValue = r.calculateRemoveCardValue(fsm.whoseTurn, target, card)
+                            for (moveTarget in players) {
+                                val v = r.calculateMessageCardValue(fsm.whoseTurn, moveTarget, card) + removeValue
+                                if (v > value) {
+                                    value = v
+                                    cardId = 0
+                                    messageCardId = card.id
+                                    targetPlayerId = r.getAlternativeLocation(moveTarget.location)
+                                }
+                            }
+                        }
                     })
                 }, 3, TimeUnit.SECONDS)
             }
@@ -190,14 +212,46 @@ class MiaoShou : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
+            val g = player.game!!
             !player.roleFaceUp || return false
-            val p = player.game!!.players.find {
-                it!!.alive && player.isEnemy(it) &&
-                    it.identity != color.Black && it.messageCards.count(it.identity) >= 2
-            } ?: return false
+            if (g.players.any {
+                    it!!.isPartnerOrSelf(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+                }) return false
+            g.players.any {
+                it!!.isEnemy(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            } || e.inFrontOfWhom.isPartnerOrSelf(player) && e.inFrontOfWhom.willDie(e.messageCard) || return false
+            var target: Player? = null
+            var count = 0
+            fun updateMax(p: Player) {
+                val c = p.cards.size + p.messageCards.size
+                if (c > count) {
+                    target = p
+                    count = c
+                }
+            }
+            val players = g.players.filterNotNull().filter { it.alive }.shuffled()
+            if (player.identity != Black) {
+                for (p in players) {
+                    p.identity != player.identity && p.identity != Black || continue
+                    updateMax(p)
+                }
+            }
+            if (target == null) {
+                for (p in players) {
+                    p.isEnemy(player) || continue
+                    updateMax(p)
+                }
+            }
+            if (target == null) {
+                for (p in players) {
+                    p.isPartnerOrSelf(player) || continue
+                    updateMax(p)
+                }
+            }
+            target ?: return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillMiaoShouATos {
-                    targetPlayerId = player.getAlternativeLocation(p.location)
+                    targetPlayerId = player.getAlternativeLocation(target!!.location)
                 })
             }, 3, TimeUnit.SECONDS)
             return true

@@ -1,11 +1,10 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.card.PlayerAndCard
-import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_miao_bi_qiao_bian_a_tos
 import com.fengsheng.protos.Role.skill_miao_bi_qiao_bian_b_tos
 import com.fengsheng.protos.skillMiaoBiQiaoBianAToc
@@ -15,7 +14,6 @@ import com.fengsheng.protos.skillMiaoBiQiaoBianBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 连鸢技能【妙笔巧辩】：争夺阶段，你可以翻开此角色牌，然后从所有角色的情报区选择合计至多两张不含有相同颜色的情报，将其加入你的手牌。
@@ -105,18 +103,27 @@ class MiaoBiQiaoBian : ActiveSkill {
             }
             if (canTakeAnother && r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val playerAndCards = ArrayList<PlayerAndCard>()
+                    val target = fsm.inFrontOfWhom
+                    target.messageCards.add(fsm.messageCard) // 假装那个人先获得了这张情报
+                    var playerAndCard: PlayerAndCard? = null
+                    var value = -11
                     for (p in g.players) {
                         if (p!!.alive) {
-                            for (c in p.messageCards) {
-                                if (!card1.hasSameColor(c)) playerAndCards.add(PlayerAndCard(p, c))
+                            for (c in p.messageCards.sortCards(r.identity)) {
+                                c !== fsm.messageCard || continue
+                                !card1.hasSameColor(c) || continue
+                                val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, c)
+                                if (v > value) {
+                                    value = v
+                                    playerAndCard = PlayerAndCard(p, c)
+                                }
                             }
                         }
                     }
-                    if (playerAndCards.isEmpty()) {
+                    target.deleteMessageCard(fsm.messageCard.id)
+                    if (playerAndCard == null) {
                         g.tryContinueResolveProtocol(r, skillMiaoBiQiaoBianBTos {})
                     } else {
-                        val playerAndCard = playerAndCards[Random.nextInt(playerAndCards.size)]
                         g.tryContinueResolveProtocol(r, skillMiaoBiQiaoBianBTos {
                             enable = true
                             targetPlayerId = r.getAlternativeLocation(playerAndCard.player.location)
@@ -195,15 +202,32 @@ class MiaoBiQiaoBian : ActiveSkill {
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
             val player = e.whoseFightTurn
+            val target = e.inFrontOfWhom
+            val g = player.game!!
             !player.roleFaceUp || return false
-            val playerAndCard = player.game!!.players.find {
-                it!!.alive && player.isEnemy(it) && it.identity != color.Black && it.messageCards.count(it.identity) >= 2
-            }?.run {
-                val card = messageCards.filter { identity in it.colors }.run {
-                    find { it.colors.size == 1 } ?: first() // 优先找纯色
+            if (g.players.any {
+                    it!!.isPartnerOrSelf(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+                }) return false
+            g.players.any {
+                it!!.isEnemy(player) && it.willWin(e.whoseTurn, e.inFrontOfWhom, e.messageCard)
+            } || target.isPartnerOrSelf(player) && target.willDie(e.messageCard) || return false
+            target.messageCards.add(e.messageCard) // 假装那个人先获得了这张情报
+            var playerAndCard: PlayerAndCard? = null
+            var value = -11
+            for (p in g.players) {
+                if (p!!.alive) {
+                    for (c in p.messageCards.sortCards(player.identity)) {
+                        c !== e.messageCard || continue
+                        val v = player.calculateRemoveCardValue(e.whoseTurn, p, c)
+                        if (v > value) {
+                            value = v
+                            playerAndCard = PlayerAndCard(p, c)
+                        }
+                    }
                 }
-                PlayerAndCard(this, card)
-            } ?: return false
+            }
+            target.deleteMessageCard(e.messageCard.id)
+            playerAndCard ?: return false
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillMiaoBiQiaoBianATos {
                     cardId = playerAndCard.card.id

@@ -39,7 +39,7 @@ abstract class Player protected constructor() {
     var hasEverFaceUp = false
 
     /**
-     * 威逼不透视概率，用于机器人。开局二分之一的概率威逼不透视，每次失败变为零，每次成功加二分之一。
+     * 威逼不透视概率，用于机器人。开局威逼百分之百不透视，每次失败变为零，每次成功加一。
      */
     var weiBiFailRate = 1
 
@@ -307,7 +307,7 @@ abstract class Player protected constructor() {
                 Black -> when (task) {
                     Killer -> "神秘人[镇压者]"
                     Stealer -> "神秘人[簒夺者]"
-                    Collector -> "神秘人[双重间谍]"
+                    Collector -> "神秘人[双面间谍]"
                     Mutator -> "神秘人[诱变者]"
                     Pioneer -> "神秘人[先行者]"
                     Disturber -> "神秘人[搅局者]"
@@ -326,7 +326,10 @@ abstract class Player protected constructor() {
                 listOf("激动", "愉悦", "喜悦", "悲伤", "欢乐", "愤怒", "恐惧", "忧虑", "开心", "感激", "失望", "放松")
                     .filter { except.all { s -> !s.startsWith("${it}的") } }.randomOrNull()
             val part2 = RoleCache.randRoleName()
-            if (part1 != null && part2 != null) return "${part1}的${part2.replaceFirst("SP", "", true)}"
+                ?.replaceFirst("SP", "", true)
+                ?.replaceFirst("CP", "", true)
+                ?.replaceFirst("成年", "")
+            if (part1 != null && part2 != null) return "${part1}的$part2"
             return (setOf(
                 "这是机器人", "去群里喊人", "喊人一起玩", "不要单机",
                 "人多才好玩", "单机没意思", "别玩人机局", "多喊点人",
