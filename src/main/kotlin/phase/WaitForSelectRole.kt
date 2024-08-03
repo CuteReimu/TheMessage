@@ -57,7 +57,7 @@ data class WaitForSelectRole(val game: Game, val options: List<List<RoleSkillsDa
                 player.originRole = selected[player.location]!!.role
             }
         }
-        game.playTime = System.currentTimeMillis().toInt()
+        game.playTime = System.currentTimeMillis()
         for (role in selected) if (role == null) return null
         return ResolveResult(StartGame(game, whoseTurn), true)
     }

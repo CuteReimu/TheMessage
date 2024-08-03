@@ -34,7 +34,7 @@ class Getallgames : Function<Map<String, String>, Any> {
                     )
                 }
             }
-            if (turn == -1) null else GameData(game.id, turn, players)
+            if (turn == -1) null else GameData(game.id, turn, players, now - game.playTime)
         }.sortedBy { it.id }
         return gson.toJson(games)
     }
@@ -47,11 +47,13 @@ class Getallgames : Function<Map<String, String>, Any> {
         val messageCards: IntArray = intArrayOf(),
         val isTurn: Boolean = false,
     )
+    val now = System.currentTimeMillis()
 
     private class GameData(
         val id: Int,
         val turn: Int,
         val players: List<PlayerData>,
+        val playTime: Long
     )
 
     companion object {
