@@ -85,7 +85,7 @@ class GuiZha : MainPhaseSkill() {
             val game = player.game!!
 
             // 当前场上只要有一个队友（包括自己）没听牌，或自己是搅局者，就利诱
-            if (player.identity === Black && player.secretTask == Disturber || player.identity !== Black &&
+            if (player.identity == Black && player.secretTask == Disturber || player.identity != Black &&
                 !game.players.any { it!!.alive && it.isPartnerOrSelf(player) && it.messageCards.count(it.identity) == 2 }) {
                 var target = player
                 if (!game.isEarly) {
