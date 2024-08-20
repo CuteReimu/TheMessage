@@ -3,12 +3,17 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.card.LiYou
 import com.fengsheng.card.WeiBi
+import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Common.card_type.Wei_Bi
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_gui_zha_tos
 import com.fengsheng.protos.skillGuiZhaToc
 import com.fengsheng.protos.skillGuiZhaTos
+import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
@@ -77,24 +82,81 @@ class GuiZha : MainPhaseSkill() {
             val player = e.whoseTurn
             player.getSkillUseCount(SkillId.GUI_ZHA) == 0 || return false
             val game = player.game!!
-            var target = player
-            if (!game.isEarly) {
-                var value = 0.9
-                for (p in game.sortedFrom(game.players, player.location)) {
-                    p.alive || continue
-                    val result = player.calculateMessageCardValue(player, p, true)
-                    if (result > value) {
-                        value = result
-                        target = p
+
+            // 当前场上只要有一个队友（包括自己）没听牌就利诱
+            if (!game.players.any { it!!.alive && it.isPartnerOrSelf(player) && it.messageCards.count(it.identity) == 2 }) {
+                var target = player
+                if (!game.isEarly) {
+                    var value = 0.9
+                    for (p in game.sortedFrom(game.players, player.location)) {
+                        p.alive || continue
+                        val result = player.calculateMessageCardValue(player, p, true)
+                        if (result > value) {
+                            value = result
+                            target = p
+                        }
                     }
                 }
+                GameExecutor.post(game, {
+                    skill.executeProtocol(game, e.whoseTurn, skillGuiZhaTos {
+                        cardType = Li_You
+                        targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
+                    })
+                }, 3, TimeUnit.SECONDS)
             }
-            GameExecutor.post(game, {
-                skill.executeProtocol(game, e.whoseTurn, skillGuiZhaTos {
-                    cardType = Li_You
-                    targetPlayerId = e.whoseTurn.getAlternativeLocation(target.location)
-                })
-            }, 3, TimeUnit.SECONDS)
+            // 当前场上只要有一个队友（包括自己）听牌就威逼
+            else {
+                val availableCardType = listOf(Cheng_Qing, Jie_Huo, Diao_Bao, Wu_Dao)
+                val yaPao = player.game!!.players.find {
+                    it!!.alive && it.findSkill(SHOU_KOU_RU_PING) != null
+                }
+                if (yaPao === player) {
+                    val p = player.game!!.players.run {
+                        filter { it!!.alive && it.isPartner(player) }.randomOrNull()
+                            ?: filter { it !== player && it!!.alive }.randomOrNull()
+                    } ?: return false
+                    val chosenCard = availableCardType.random()
+                    GameExecutor.post(game, {
+                        skill.executeProtocol(game, e.whoseTurn, skillGuiZhaTos {
+                            cardType = Wei_Bi
+                            targetPlayerId = p.location
+                            wantType = chosenCard
+                        })
+                    }, 3, TimeUnit.SECONDS)
+                    return true
+                } else if (yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0) {
+                    val chosenCard = availableCardType.random()
+                    GameExecutor.post(game, {
+                        skill.executeProtocol(game, e.whoseTurn, skillGuiZhaTos {
+                            cardType = Wei_Bi
+                            targetPlayerId = yaPao.location
+                            wantType = chosenCard
+                        })
+                    }, 3, TimeUnit.SECONDS)
+                    return true
+                }
+                val p = player.game!!.players.filter {
+                    it !== player && it!!.alive &&
+                        (!it.roleFaceUp || !it.skills.any { s -> s is ChengFu || s is ShouKouRuPing || s is CunBuBuRang }) &&
+                        it.isEnemy(player) &&
+                        it.cards.any { card -> card.type in availableCardType }
+                }.run {
+                    filter { it!!.cards.any { card -> card.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) } }.ifEmpty { this }
+                        .run { if (player.identity != Black) filter { it!!.identity != Black }.ifEmpty { this } else this }
+                }.randomOrNull() ?: return false
+                val chosenCard =
+                    if (player.weiBiFailRate > 0) listOf(Jie_Huo, Wu_Dao, Diao_Bao).random() // 威逼成功后一定纯随机
+                    else availableCardType.filter { cardType -> p.cards.any { it.type == cardType } }.run {
+                        filter { it != Cheng_Qing }.ifEmpty { this }
+                    }.random()
+                GameExecutor.post(game, {
+                    skill.executeProtocol(game, e.whoseTurn, skillGuiZhaTos {
+                        cardType = Wei_Bi
+                        targetPlayerId = e.whoseTurn.getAlternativeLocation(p.location)
+                        wantType = chosenCard
+                    })
+                }, 3, TimeUnit.SECONDS)
+            }
             return true
         }
     }
