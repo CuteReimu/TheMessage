@@ -10,6 +10,7 @@ import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.card_type.Li_You
 import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.skill_gui_zha_tos
 import com.fengsheng.protos.skillGuiZhaToc
 import com.fengsheng.protos.skillGuiZhaTos
@@ -83,8 +84,9 @@ class GuiZha : MainPhaseSkill() {
             player.getSkillUseCount(SkillId.GUI_ZHA) == 0 || return false
             val game = player.game!!
 
-            // 当前场上只要有一个队友（包括自己）没听牌就利诱
-            if (!game.players.any { it!!.alive && it.isPartnerOrSelf(player) && it.messageCards.count(it.identity) == 2 }) {
+            // 当前场上只要有一个队友（包括自己）没听牌，或自己是搅局者，就利诱
+            if (player.secretTask == Disturber || player.identity !== Black &&
+                !game.players.any { it!!.alive && it.isPartnerOrSelf(player) && it.messageCards.count(it.identity) == 2 }) {
                 var target = player
                 if (!game.isEarly) {
                     var value = 0.9
@@ -104,7 +106,7 @@ class GuiZha : MainPhaseSkill() {
                     })
                 }, 3, TimeUnit.SECONDS)
             }
-            // 当前场上只要有一个队友（包括自己）听牌就威逼
+            // 当前场上只要有一个队友（包括自己）听牌，或自己是除搅局者以外的神秘人，就威逼
             else {
                 val availableCardType = listOf(Cheng_Qing, Jie_Huo, Diao_Bao, Wu_Dao)
                 val yaPao = player.game!!.players.find {
