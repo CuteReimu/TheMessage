@@ -3,7 +3,6 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
-import com.fengsheng.card.WeiBi
 import com.fengsheng.card.count
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.color
@@ -166,7 +165,6 @@ class JiaoJi : MainPhaseSkill() {
             g.addEvent(GiveCardEvent(r, target, r))
             if (cards.isNotEmpty()) {
                 g.addEvent(GiveCardEvent(r, r, target))
-                if (cards.any { it.type in WeiBi.availableCardType }) r.weiBiFailRate = 0
             }
             return ResolveResult(fsm, true)
         }
