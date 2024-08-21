@@ -4,6 +4,8 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.WeiBi
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.skill_ji_ban_a_tos
 import com.fengsheng.protos.Role.skill_ji_ban_b_tos
 import com.fengsheng.protos.skillJiBanAToc
@@ -136,19 +138,29 @@ class JiBan : MainPhaseSkill() {
 
         private fun autoSelect(seq: Int) {
             val availableTargets = r.game!!.players.filter { it!!.alive && it !== r } // 如果所有人都死了游戏就结束了，所以这里一定不为空
-            val card =
-                if (seq != 0) r.cards.random()
-                else r.cards.bestCard(r.identity, true)
+            val chosenCard =
+                if (seq != 0) listOf(r.cards.random())
+                else {
+                    // 如果手里有平衡，把除平衡外所有牌都给出去
+                    if (r.cards.any { card -> card.type == Ping_Heng }) {
+                        r.cards.sortedBy { card -> card.type == Ping_Heng }.dropLast(1)
+                    }
+                    // 如果手里没有平衡，选价值最低的牌给出去
+                    else {
+                        listOf(r.cards.bestCard(r.identity, true))
+                    }
+                }
+
             val players =
                 if (seq != 0) availableTargets
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty {
-                    if (card.type in WeiBi.availableCardType) r.weiBiFailRate = 0
+                    if (r.cards.any { card -> card.type in WeiBi.availableCardType }) r.weiBiFailRate = 0
                     availableTargets
                 } // 机器人优先选队友
             val player = players.random()!!
             r.game!!.tryContinueResolveProtocol(r, skillJiBanBTos {
                 targetPlayerId = r.getAlternativeLocation(player.location)
-                cardIds.add(card.id)
+                chosenCard.forEach { cardIds.add(it.id) }
                 this.seq = seq
             })
         }
