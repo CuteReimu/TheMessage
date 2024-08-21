@@ -6,12 +6,13 @@ import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.phase.OnFinishResolveCard
 import com.fengsheng.phase.ResolveCard
 import com.fengsheng.protos.*
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.card_type.Feng_Yun_Bian_Huan
-import com.fengsheng.protos.Common.card_type.Wei_Bi
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.phase.Main_Phase
+import com.fengsheng.protos.Common.role.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Fengsheng.feng_yun_bian_huan_choose_card_tos
 import com.fengsheng.skill.ConvertCardSkill
@@ -195,11 +196,43 @@ class FengYunBianHuan : Card {
                         asMessageCard = true
                     } else {
                         if (r === mainPhaseIdle.whoseTurn) {
-                            cardId = drawCards.filter { it.type == Wei_Bi }
-                                .ifEmpty { drawCards }.bestCard(r.identity).id
+                            // 不同角色会有不同的拿牌偏好，目前已完成：郑文先、sp李宁玉、池静海、盛老板、简先生
+                            cardId = when (r.role) {
+                                zheng_wen_xian ->
+                                    drawCards.filter { it.type == Wei_Bi || it.type == Diao_Bao || it.type == Po_Yi }
+                                        .ifEmpty { drawCards }.bestCard(r.identity).id
+                                sp_li_ning_yu, chi_jing_hai ->
+                                    drawCards.filter { it.type == Wei_Bi || it.type == Jie_Huo || it.type == Wu_Dao }
+                                        .ifEmpty { drawCards }.bestCard(r.identity).id
+                                sheng_lao_ban ->
+                                    drawCards.filter {
+                                        it.type == Wei_Bi || it.type == Jie_Huo || it.type == Feng_Yun_Bian_Huan
+                                    }
+                                        .ifEmpty { drawCards }.bestCard(r.identity).id
+                                jian_xian_sheng ->
+                                    drawCards.filter { it.type == Wei_Bi || it.type == Shi_Tan }
+                                        .ifEmpty { drawCards }.bestCard(r.identity).id
+                                else -> drawCards.bestCard(r.identity).id
+                            }
                             asMessageCard = false
                         } else {
-                            cardId = drawCards.bestCard(r.identity).id
+                            cardId = when (r.role) {
+                                zheng_wen_xian ->
+                                    drawCards.filter { it.type == Diao_Bao || it.type == Po_Yi }
+                                        .ifEmpty { drawCards }.bestCard(r.identity).id
+                                sp_li_ning_yu, chi_jing_hai ->
+                                    drawCards.filter { it.type == Jie_Huo || it.type == Wu_Dao }
+                                        .ifEmpty { drawCards }.bestCard(r.identity).id
+                                sheng_lao_ban ->
+                                    drawCards.filter {
+                                        it.type == Wei_Bi || it.type == Jie_Huo || it.type == Feng_Yun_Bian_Huan
+                                    }
+                                        .ifEmpty { drawCards }.bestCard(r.identity).id
+                                jian_xian_sheng ->
+                                    drawCards.filter { it.type == Shi_Tan }
+                                        .ifEmpty { drawCards }.bestCard(r.identity).id
+                                else -> drawCards.bestCard(r.identity).id
+                            }
                             asMessageCard = false
                         }
                     }
