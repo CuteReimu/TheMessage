@@ -330,8 +330,9 @@ abstract class Player protected constructor() {
                     .filter { except.all { s -> !s.startsWith("${it}的") } }.randomOrNull()
             val part2 = RoleCache.randRoleName()
                 ?.replaceFirst("SP", "", true)
-                ?.replaceFirst("CP", "", true)
+                ?.replaceFirst("青年", "")
                 ?.replaceFirst("成年", "")
+                ?.replaceFirst("间谍", "")
             if (part1 != null && part2 != null) return "${part1}的$part2"
             return (setOf(
                 "这是机器人", "去群里喊人", "喊人一起玩", "不要单机",
