@@ -53,7 +53,7 @@ object RoleCache {
         RoleSkillsData("SP李宁玉", sp_li_ning_yu, true, true, YingBian(), YouDao()),
         RoleSkillsData("玛利亚", ma_li_ya, true, true, CangShenJiaoTang()),
         RoleSkillsData("钱敏", qian_min, false, false, XianFaZhiRen()),
-        RoleSkillsData("SP韩梅", sp_han_mei, true, true, LengXueXunLian()),
+        RoleSkillsData("韩梅", sp_han_mei, true, true, LengXueXunLian()),
         RoleSkillsData("池镜海", chi_jing_hai, false, true, GuanHai(), BiFeng()),
         RoleSkillsData("秦圆圆", qin_yuan_yuan, true, false, ZuoYouFengYuan(), BiYiShuangFei()),
         RoleSkillsData("SP连鸢", sp_lian_yuan, true, true, TanQiuZhenLi()),
