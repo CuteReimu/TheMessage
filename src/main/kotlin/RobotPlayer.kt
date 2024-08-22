@@ -47,7 +47,7 @@ class RobotPlayer : Player() {
                 }
             }
         }
-        if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null) {
+        if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null || cards.size == 1 && cards.first().type == Ping_Heng) {
             val cardTypes =
                 if (findSkill(JI_SONG) == null && (findSkill(GUANG_FA_BAO) == null || roleFaceUp))
                     cardOrder.keys.sortedBy { cardOrder[it] }
