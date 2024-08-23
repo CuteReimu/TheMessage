@@ -13,6 +13,7 @@ import com.fengsheng.protos.poYiShowToc
 import com.fengsheng.protos.poYiShowTos
 import com.fengsheng.protos.usePoYiToc
 import com.fengsheng.skill.ConvertCardSkill
+import com.fengsheng.skill.SkillId.HUAN_RI
 import com.fengsheng.skill.cannotPlayCard
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
@@ -138,7 +139,7 @@ class PoYi : Card {
             card.type == Po_Yi || return false // 机器人不要把别的牌当破译用
             !player.cannotPlayCard(Po_Yi) || return false
             // 郑文先面朝上时，手里有破译就出
-            player.role == zheng_wen_xian && player.roleFaceUp ||
+            player.findSkill(HUAN_RI) != null && player.roleFaceUp ||
                 !e.isMessageCardFaceUp && e.messageCard.isBlack() ||
                 return false
             GameExecutor.post(player.game!!, {
