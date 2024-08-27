@@ -86,7 +86,6 @@ class PingHeng : Card {
             !player.cannotPlayCard(Ping_Heng) || return false
             // 打出平衡的时机：1）手牌小于等于3张，2）手牌大于3张但没有截获、误导、调包
             player.cards.size <= 3 || !player.cards.any {
-                    it ->
                 it.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao)
             } || return false
             val identity = player.identity
@@ -97,7 +96,7 @@ class PingHeng : Card {
             }.ifEmpty {
                 // 当敌人全部手牌小于3张时，优先选择手牌比自己多的敌人
                 player.game!!.players.filter {
-                    it !== player && !it!!.alive && identity != it.identity && it.cards.size >= player.cards.size
+                    it!!.alive && it.isEnemy(player) && it.cards.size >= player.cards.size
                 }
             }
             p.size >= 1 || return false
