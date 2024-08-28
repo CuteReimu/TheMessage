@@ -116,6 +116,7 @@ class ChengQing : Card {
             !player.cannotPlayCard(Cheng_Qing) || return false
             // 自己是秦无命和裴玲，如果还没有使用技能就不用澄清
             player.findSkill(PIN_MING_SAN_LANG) == null || player.getSkillUseCount(PIN_MING_SAN_LANG) > 0 || return false
+            player.findSkill(YU_SI_WANG_PO) == null || player.getSkillUseCount(YU_SI_WANG_PO) > 0 || return false
             player.findSkill(JIAO_JI) == null || player.getSkillUseCount(JIAO_JI) > 0 || return false
 
             val g = player.game!!
