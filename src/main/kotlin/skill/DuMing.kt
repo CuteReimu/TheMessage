@@ -88,11 +88,11 @@ class DuMing : TriggeredSkill {
                             if (r.identity == Black) r !== causer && Random.nextBoolean()
                             else causer.identity != r.identity
                         ) {
-                            if (messageCard.colors.all { it in listOf(Red, Blue) }) {
-                                color = listOf(causer.identity, Black).random()
-                            } else {
-                                color = (listOf(Red, Blue).filter { it !in messageCard.colors } + listOf(Black))
-                                    .random()
+                            color = when {
+                                messageCard.colors.all { it in listOf(Red, Blue) } ->
+                                    listOf(causer.identity, Black).random()
+                                else ->
+                                    (listOf(Red, Blue).filter { it !in messageCard.colors } + listOf(Black)).random()
                             }
                         } else {
                             var wrong = false
