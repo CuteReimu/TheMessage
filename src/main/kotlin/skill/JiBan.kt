@@ -2,6 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
+import com.fengsheng.card.filterByRole
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
@@ -150,7 +151,23 @@ class JiBan : MainPhaseSkill() {
                     if (r.cards.any { card -> card.type == Ping_Heng } && r.isPartner(player)) {
                         r.cards.sortedBy { card -> card.type == Ping_Heng }.dropLast(1)
                     }
-                    // 如果手里没有平衡，或选中了敌方，那么选价值最低的牌给出去
+                    // 如果手里没有平衡，且选中了队友，那么选对该角色价值最高的牌给出去
+                    else if (r.isPartner(player)) {
+                        val chosenCardTemp = r.cards.filterByRole(player.role)
+                        // 没有符合该角色特别需求的牌，那么就选中一个价值最高的牌
+                        if (chosenCardTemp.isEmpty()) {
+                            listOf(r.cards.bestCard(r.identity, false))
+                        }
+                        // 全部手牌都是该角色特别需求的牌，那么留一张当手牌其他全部给出去
+                        else if (chosenCardTemp.size == r.cards.size) {
+                            chosenCardTemp.dropLast(1)
+                        }
+                        // 把该角色特别需求的牌全部给出去
+                        else {
+                            chosenCardTemp
+                        }
+                    }
+                    // 如果手里没有平衡，且选中了敌方，那么选价值最低的牌给出去
                     else {
                         listOf(r.cards.bestCard(r.identity, true))
                     }
