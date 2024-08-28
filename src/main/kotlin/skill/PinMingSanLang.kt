@@ -5,6 +5,7 @@ import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.MainPhaseIdle
+import com.fengsheng.protos.Common.card_type.Cheng_Qing
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.skill_pin_ming_san_lang_tos
@@ -81,7 +82,8 @@ class PinMingSanLang : MainPhaseSkill() {
                         Sweeper -> if (p.messageCards.run { count(Red) > 1 || count(Blue) > 1 }) return false
                         else -> return false
                     }
-                } else return false
+                } else if (!p.cards.any { it.type == Cheng_Qing })
+                    return false
             }
             val card = p.cards.filter { it.isPureBlack() }.ifEmpty { return false }.bestCard(p.identity, true)
             GameExecutor.post(p.game!!, {
