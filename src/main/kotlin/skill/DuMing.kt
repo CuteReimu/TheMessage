@@ -69,7 +69,7 @@ class DuMing : TriggeredSkill {
                         val fightPhase = event.nextFsm as? FightPhaseIdle
                         if (fightPhase == null) {
                             logger.error("状态错误：${event.nextFsm}")
-                            null to null
+                            throw IllegalStateException()
                         } else {
                             fightPhase.messageCard to event.player
                         }
@@ -78,24 +78,21 @@ class DuMing : TriggeredSkill {
                     is MessageMoveNextEvent -> event.messageCard to event.whoseTurn
                     else -> {
                         logger.error("状态错误：$event")
-                        null to null
+                        throw IllegalStateException()
                     }
                 }
                 GameExecutor.post(g, {
                     g.tryContinueResolveProtocol(r, skillDuMingATos {
                         enable = true
-                        if (messageCard == null || causer == null ||
+                        if (
                             if (r.identity == Black) r !== causer && Random.nextBoolean()
                             else causer.identity != r.identity
                         ) {
                             if (messageCard.colors.all { it in listOf(Red, Blue) }) {
-                                color = {
-                                    listOf { causer.identity } + listOf { Black }
-                                }.random()
+                                color = listOf(causer.identity, Black).random()
                             } else {
-                                color = {
-                                    listOf(Red, Blue).filter { it !in messageCard.colors } + listOf { Black }
-                                }.random()
+                                color = (listOf(Red, Blue).filter { it !in messageCard.colors } + listOf(Black))
+                                    .random()
                             }
                         } else {
                             var wrong = false
