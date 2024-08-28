@@ -82,8 +82,7 @@ class PinMingSanLang : MainPhaseSkill() {
                         Sweeper -> if (p.messageCards.run { count(Red) > 1 || count(Blue) > 1 }) return false
                         else -> return false
                     }
-                } 
-                else if (!p.cards.any { it.type == Cheng_Qing })
+                } else if (!p.cards.any { it.type == Cheng_Qing })
                     return false
                 else
                     p.getSkillUseCount(SkillId.YU_SI_WANG_PO) > 0 || return false
