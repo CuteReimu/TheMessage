@@ -56,21 +56,26 @@ class ZhuanJiao : TriggeredSkill {
                     !messageCard.isBlack() || continue
                     val players = r.game!!.players.filter { p ->
                         if (p === r || !p!!.alive) return@filter false
-                        if (r.secretTask != Disturber) {
-                            if (r.identity == Black) {
+                        if (r.identity == Black) {
+                            if (r.secretTask != Disturber) {
                                 if (p.identity in messageCard.colors) return@filter false
-                            } else {
-                                if (p.isEnemy(r)) return@filter false
                             }
+                        } else {
+                            if (p.isEnemy(r)) return@filter false
                         }
                         !p.checkThreeSameMessageCard(messageCard)
                     }
                     if (players.isNotEmpty()) {
-                        val target = when (r.secretTask) {
-                            // 搅局者会从所有角色中选择情报最少的人
-                            Disturber -> players.minBy { it!!.messageCards.size }
-                            Mutator -> players.maxBy { it!!.messageCards.size }
-                            else -> players[Random.nextInt(players.size)]!!
+                        val target = run {
+                            if (r.identity == Black) {
+                                when (r.secretTask) {
+                                    // 搅局者会从所有角色中选择情报最少的人
+                                    Disturber -> return@run players.minBy { it!!.messageCards.size }
+                                    Mutator -> return@run players.maxBy { it!!.messageCards.size }
+                                    else -> players[Random.nextInt(players.size)]!!
+                                }
+                            }
+                            players[Random.nextInt(players.size)]!!
                         }
                         GameExecutor.post(r.game!!, {
                             r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {
