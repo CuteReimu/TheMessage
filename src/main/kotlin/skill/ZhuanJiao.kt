@@ -1,7 +1,9 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.skill_zhuan_jiao_tos
 import com.fengsheng.protos.skillWaitForZhuanJiaoToc
 import com.fengsheng.protos.skillZhuanJiaoToc
@@ -48,22 +50,31 @@ class ZhuanJiao : TriggeredSkill {
                 }
             }
             if (r is RobotPlayer) {
+                // 先行者会至少有2张情报才会发动技能
+                r.identity != Black || r.secretTask != Pioneer || r.messageCards.countTrueCard() > 1 || return null
                 for (messageCard in r.messageCards) {
                     !messageCard.isBlack() || continue
                     val players = r.game!!.players.filter { p ->
                         if (p === r || !p!!.alive) return@filter false
-                        if (r.identity == Black) {
-                            if (p.identity in messageCard.colors) return@filter false
-                        } else {
-                            if (p.isEnemy(r)) return@filter false
+                        if (r.secretTask != Disturber) {
+                            if (r.identity == Black) {
+                                if (p.identity in messageCard.colors) return@filter false
+                            } else {
+                                if (p.isEnemy(r)) return@filter false
+                            }
                         }
                         !p.checkThreeSameMessageCard(messageCard)
                     }
                     if (players.isNotEmpty()) {
-                        val target = players[Random.nextInt(players.size)]!!
+                        val target = when (r.secretTask) {
+                            // 搅局者会从所有角色中选择情报最少的人
+                            Disturber -> players.minBy { it!!.messageCards.size }
+                            Mutator -> players.maxBy { it!!.messageCards.size }
+                            else -> players[Random.nextInt(players.size)]!!
+                        }
                         GameExecutor.post(r.game!!, {
                             r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {
-                                targetPlayerId = r.getAlternativeLocation(target.location)
+                                targetPlayerId = r.getAlternativeLocation(target!!.location)
                                 enable = true
                                 cardId = messageCard.id
                             })
