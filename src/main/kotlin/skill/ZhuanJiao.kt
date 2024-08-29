@@ -68,12 +68,9 @@ class ZhuanJiao : TriggeredSkill {
                     if (players.isNotEmpty()) {
                         val target = run {
                             if (r.identity == Black) {
-                                when (r.secretTask) {
-                                    // 搅局者会从所有角色中选择情报最少的人
-                                    Disturber -> return@run players.minBy { it!!.messageCards.size }
-                                    Mutator -> return@run players.maxBy { it!!.messageCards.size }
-                                    else -> players[Random.nextInt(players.size)]!!
-                                }
+                                // 搅局者会从所有角色中选择情报最少的人
+                                if (r.secretTask == Disturber) return@run players.minBy { it!!.messageCards.size }
+                                if (r.secretTask == Mutator) return@run players.maxBy { it!!.messageCards.size }
                             }
                             players[Random.nextInt(players.size)]!!
                         }
