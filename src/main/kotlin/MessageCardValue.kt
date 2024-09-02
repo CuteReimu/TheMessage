@@ -269,9 +269,9 @@ fun Player.calculateMessageCardValue(
             inFrontOfWhom.messageCards.removeLast()
         }
         if (Black in colors && inFrontOfWhom.skills.any { it is ShiSi }) { // 老汉【视死】
-            if (inFrontOfWhom.identity == sender.identity) {
+            if (isPartnerOrSelf(inFrontOfWhom)) {
                 v1 += 20
-            } else if (inFrontOfWhom.identity != Black && inFrontOfWhom.identity != sender.identity) {
+            } else if (inFrontOfWhom.identity != Black && identity != Black) { // 自己是神秘人就无视，老汉是神秘人也无视
                 v1 -= 20
             }
         }
