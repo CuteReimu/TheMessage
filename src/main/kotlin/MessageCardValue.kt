@@ -633,7 +633,9 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
             }) {
             // 如果自己也是同一阵营，则不救
             if (isPartnerOrSelf(whoDie)) {
-                return false
+                val stealer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Stealer }
+                // 特殊情况：当前回合是篡夺者，则救
+                return whoseTurn === stealer
             }
             // 如果自己不是同一阵营，则救（防止发动技能后敌方胜利）
             return true
