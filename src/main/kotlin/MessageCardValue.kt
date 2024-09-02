@@ -5,6 +5,7 @@ import com.fengsheng.ScoreFactory.logger
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
+import com.fengsheng.card.filter
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
@@ -268,7 +269,11 @@ fun Player.calculateMessageCardValue(
             inFrontOfWhom.messageCards.removeLast()
         }
         if (Black in colors && inFrontOfWhom.skills.any { it is ShiSi }) { // 老汉【视死】
-            v1 += 20
+            if (inFrontOfWhom.identity == sender.identity) {
+                v1 += 20
+            } else if (inFrontOfWhom.identity != Black && inFrontOfWhom.identity != sender.identity) {
+                v1 -= 20
+            }
         }
         if (Black in colors && inFrontOfWhom.skills.any { it is YiXin } && inFrontOfWhom.messageCards.count(Black) == 2) {
             // 李宁玉【遗信】
@@ -606,9 +611,34 @@ fun Player.calSendMessageCard(
  * 是否要救人
  */
 fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
-    if (whoDie.skills.any { it is RuGui } && whoDie.messageCards.isNotEmpty() ||
-        whoDie.skills.any { it is YiXin } && whoDie.cards.isNotEmpty())
-        return false // 如果李宁玉有手牌|老汉有情报，则所有人都不救
+    // 如果死亡的是老汉且有情报
+    if (whoDie.skills.any { it is RuGui } && whoDie.messageCards.isNotEmpty()) {
+        // 如果老汉和当前回合角色是同一身份+老汉情报区有该颜色情报+当前回合角色听牌
+        if (whoDie !== whoseTurn && whoDie.identity == whoseTurn.identity &&
+            !whoDie.messageCards.filter(whoDie.identity).isEmpty() &&
+            whoseTurn.messageCards.count(whoseTurn.identity) == 2) {
+            // 如果自己也是同一阵营，则不救
+            if (isPartnerOrSelf(whoDie)) {
+                return false
+            }
+            // 如果自己不是同一阵营，则救（防止发动技能后敌方胜利）
+            return true
+        }
+    }
+    // 如果死亡的是李宁玉且有手牌
+    if (whoDie.skills.any { it is YiXin } && whoDie.cards.isNotEmpty()) {
+        // 如果李宁玉的队友听牌
+        if (whoDie.game!!.players.any {
+                it!!.alive && it !== whoDie && it.identity == whoDie.identity && it.messageCards.count(whoDie.identity) == 2
+            }) {
+            // 如果自己也是同一阵营，则不救
+            if (isPartnerOrSelf(whoDie)) {
+                return false
+            }
+            // 如果自己不是同一阵营，则救（防止发动技能后敌方胜利）
+            return true
+        }
+    }
     var save = isPartnerOrSelf(whoDie)
     var notSave = false
     val killer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Killer }
