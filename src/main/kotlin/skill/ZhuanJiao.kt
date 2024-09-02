@@ -1,9 +1,10 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.*
+import com.fengsheng.card.countTrueCard
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.protos.Common.secret_task.Disturber
+import com.fengsheng.protos.Common.secret_task.Pioneer
 import com.fengsheng.protos.Role.skill_zhuan_jiao_tos
 import com.fengsheng.protos.skillWaitForZhuanJiaoToc
 import com.fengsheng.protos.skillZhuanJiaoToc
@@ -51,7 +52,10 @@ class ZhuanJiao : TriggeredSkill {
             if (r is RobotPlayer) {
                 // 先行者会至少有2张情报才会发动技能
                 r.identity != Black || r.secretTask != Pioneer || r.messageCards.countTrueCard() > 1 || return null
-                for (messageCard in r.messageCards) {
+                var target: Player? = null
+                var value = -1
+                var mCard = r.messageCards.first()
+                for (messageCard in r.messageCards.toList()) {
                     !messageCard.isBlack() || continue
                     val players = r.game!!.players.filterNotNull().filter { p ->
                         if (p === r || !p.alive) return@filter false
@@ -59,34 +63,34 @@ class ZhuanJiao : TriggeredSkill {
                             if (r.secretTask != Disturber) {
                                 if (p.identity in messageCard.colors) return@filter false
                             }
-                        } else {
-                            if (p.isEnemy(r)) return@filter false
                         }
                         !p.checkThreeSameMessageCard(messageCard)
                     }
                     if (players.isNotEmpty()) {
-                        val target = run {
-                            if (r.identity == Black) {
-                                // 搅局者会从所有角色中选择情报最少的人
-                                if (r.secretTask == Disturber) return@run players.minBy { it.messageCards.size }
-                                // 诱变者会从所有角色中选择情报最多的人
-                                if (r.secretTask == Mutator) return@run players.maxBy { it.messageCards.size }
+                        val v1 = r.calculateRemoveCardValue(whoseTurn, r, messageCard)
+                        for (player in players) {
+                            val v = r.calculateMessageCardValue(whoseTurn, player, messageCard)
+                            if (v1 + v + 20 > value) {
+                                value = v1 + v + 20
+                                target = player
+                                mCard = messageCard
                             }
-                            players.maxBy { it.messageCards.count(it.identity) }
                         }
-                        GameExecutor.post(r.game!!, {
-                            r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {
-                                targetPlayerId = r.getAlternativeLocation(target.location)
-                                enable = true
-                                cardId = messageCard.id
-                            })
-                        }, 3, TimeUnit.SECONDS)
-                        return null
                     }
                 }
-                GameExecutor.post(r.game!!, {
-                    r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {})
-                }, 1, TimeUnit.SECONDS)
+                if (target != null) {
+                    GameExecutor.post(r.game!!, {
+                        r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {
+                            targetPlayerId = r.getAlternativeLocation(target.location)
+                            enable = true
+                            cardId = mCard.id
+                        })
+                    }, 3, TimeUnit.SECONDS)
+                } else {
+                    GameExecutor.post(r.game!!, {
+                        r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {})
+                    }, 1, TimeUnit.SECONDS)
+                }
             }
             return null
         }
