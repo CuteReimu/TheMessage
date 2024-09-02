@@ -70,9 +70,10 @@ class ZhuanJiao : TriggeredSkill {
                             if (r.identity == Black) {
                                 // 搅局者会从所有角色中选择情报最少的人
                                 if (r.secretTask == Disturber) return@run players.minBy { it.messageCards.size }
+                                // 诱变者会从所有角色中选择情报最多的人
                                 if (r.secretTask == Mutator) return@run players.maxBy { it.messageCards.size }
                             }
-                            players[Random.nextInt(players.size)]
+                            players.maxBy { it.messageCards.size }
                         }
                         GameExecutor.post(r.game!!, {
                             r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {
