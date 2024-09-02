@@ -1,7 +1,7 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.countTrueCard
+import com.fengsheng.card.*
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Role.skill_zhuan_jiao_tos
@@ -11,7 +11,6 @@ import com.fengsheng.protos.skillZhuanJiaoTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * 白小年技能【转交】：你使用一张手牌后，可以从你的情报区选择一张非黑色情报，将其置入另一名角色的情报区，然后你摸两张牌。你不能通过此技能让任何角色收集三张或更多同色情报。
@@ -73,7 +72,7 @@ class ZhuanJiao : TriggeredSkill {
                                 // 诱变者会从所有角色中选择情报最多的人
                                 if (r.secretTask == Mutator) return@run players.maxBy { it.messageCards.size }
                             }
-                            players.maxBy { it.messageCards.size }
+                            players.maxBy { it.messageCards.count(it.identity) }
                         }
                         GameExecutor.post(r.game!!, {
                             r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {
