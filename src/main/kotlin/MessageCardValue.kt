@@ -626,7 +626,7 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
         }
     }
     // 如果死亡的是李宁玉且有手牌
-    if (whoDie.skills.any { it is YiXin } && whoDie.cards.isNotEmpty()) {
+    if (whoDie.skills.any { it is YiXin } && whoDie.roleFaceUp && whoDie.cards.isNotEmpty()) {
         // 如果李宁玉的队友听牌
         if (whoDie.game!!.players.any {
                 it!!.alive && it !== whoDie && it.identity == whoDie.identity && it.messageCards.count(whoDie.identity) == 2
