@@ -275,7 +275,8 @@ fun Player.calculateMessageCardValue(
                 v1 -= 20
             }
         }
-        if (Black in colors && inFrontOfWhom.skills.any { it is YiXin } && inFrontOfWhom.messageCards.count(Black) == 2) {
+        if (Black in colors && inFrontOfWhom.roleFaceUp &&
+            inFrontOfWhom.skills.any { it is YiXin } && inFrontOfWhom.messageCards.count(Black) == 2) {
             // 李宁玉【遗信】
             var liNingYuValue = -1
             var myValue = 0
@@ -626,7 +627,7 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
         }
     }
     // 如果死亡的是李宁玉且有手牌
-    if (whoDie.skills.any { it is YiXin } && whoDie.roleFaceUp && whoDie.cards.isNotEmpty()) {
+    if (whoDie.roleFaceUp && whoDie.skills.any { it is YiXin } && whoDie.cards.isNotEmpty()) {
         // 如果李宁玉的队友听牌
         if (whoDie.game!!.players.any {
                 it!!.alive && it !== whoDie && it.identity == whoDie.identity && it.messageCards.count(whoDie.identity) == 2
