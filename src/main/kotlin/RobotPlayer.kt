@@ -210,7 +210,7 @@ class RobotPlayer : Player() {
             fsm.inFrontOfWhom.willDie(fsm.messageCard) ||
             calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, sender = fsm.sender) <= -110) {
             val result = calFightPhase(fsm)
-            if (result != null && result.deltaValue > 10) {
+            if (result != null && result.deltaValue > 11) {
                 var actualDelay = 3L
                 var timeUnit = TimeUnit.SECONDS
                 if (delay > 0) {
