@@ -412,7 +412,7 @@ fun Player.calculateMessageCardValue(
                 value -= when (inFrontOfWhom.messageCards.count(Black)) {
                     0 -> 1
                     1 -> 11
-                    else -> if (checkThreeSame) return 10 else 111
+                    else -> if (checkThreeSame) return 10 else 112
                 }
             }
         } else {
@@ -442,7 +442,7 @@ fun Player.calculateMessageCardValue(
                 value -= when (inFrontOfWhom.messageCards.count(Black)) {
                     0 -> 1
                     1 -> 11
-                    else -> if (checkThreeSame) return 10 else 111
+                    else -> if (checkThreeSame) return 10 else 112
                 }
             }
         } else if (inFrontOfWhom.identity == enemyColor) { // 敌人
@@ -457,7 +457,7 @@ fun Player.calculateMessageCardValue(
                 value += when (inFrontOfWhom.messageCards.count(Black)) {
                     0 -> 1
                     1 -> 11
-                    else -> if (checkThreeSame) return 10 else 111
+                    else -> if (checkThreeSame) return 10 else 112
                 }
             }
         }
