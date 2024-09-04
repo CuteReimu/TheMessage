@@ -256,18 +256,18 @@ class ShiTan : Card {
                 player.identity == Black -> {
                     // 按照和自己身份相同的情报数降序排列，然后按照手牌数升序排列
                     val c1: Comparator<Player?> = Comparator { p1, p2 ->
-                        if (p2!!.messageCards.count(p2.identity) == p1!!.messageCards.count(p1.identity)) {
-                            p1.cards.size.compareTo(p2.cards.size)
-                        } else {
-                            p2.messageCards.count(p2.identity) - p1.messageCards.count(p1.identity)
-                        }
+                        val p1MsgCount = p1!!.messageCards.count(p1.identity)
+                        val p2MsgCount = p2!!.messageCards.count(p2.identity)
+                        if (p1MsgCount != p2MsgCount)
+                            return@Comparator p2MsgCount.compareTo(p1MsgCount)
+                        p1.cards.size.compareTo(p2.cards.size)
                     }
                     val colors = listOf(Red, Blue).filter { it !in (card as ShiTan).whoDrawCard }
                     if (colors.isEmpty()) return false
                     else {
                         listOf(player.game!!.players.filter {
                             it!!.alive && it.identity in colors && it.cards.isNotEmpty()
-                        }.sortedWith(c1).first())
+                        }.minWithOrNull(c1))
                     }
                 }
 
