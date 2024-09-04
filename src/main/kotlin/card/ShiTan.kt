@@ -254,9 +254,9 @@ class ShiTan : Card {
                     }
 
                 player.identity == Black -> {
-                    if (player.game!!.players.filter {
-                            it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
-                        }.isEmpty()) return false
+                    player.game!!.players.any {
+                        it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
+                    } || return false
                     // 按照和自己身份相同的情报数降序排列，然后按照手牌数升序排列
                     val c1: Comparator<Player?> = Comparator { p1, p2 ->
                         val p1MsgCount = p1!!.messageCards.count(p1.identity)

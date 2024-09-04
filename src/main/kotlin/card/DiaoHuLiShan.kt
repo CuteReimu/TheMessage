@@ -89,9 +89,9 @@ class DiaoHuLiShan : Card {
             }
 
             // 只有在有阵营听牌时才会打出调虎离山
-            if (player.game!!.players.filter {
-                    it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
-                }.isEmpty()) return false
+            player.game!!.players.any {
+                it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
+            } || return false
 
             val enemies = player.game!!.players.filter {
                 it!!.alive && it.isEnemy(player)
