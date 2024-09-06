@@ -148,7 +148,17 @@ class RobotPlayer : Player() {
                     // 下家看自己的收益或我看自己的收益大于等于0时，才考虑比较双方收益，如果都小于0就不接
                     if (myValue >= 0 || nextNextValue >= 0) {
                         if (myValue > myNextValue) return@run true // 自己比下家收益高就接
-                        if (myValue == myNextValue && myValue >= 0) return@run true // 相等的情况下，收益不为负就接
+                        if (myValue == myNextValue && myValue >= 0) {
+                            // 下家和自己是队友，且下家是张一挺，程小蝶，王响，白小年就不接
+                            if (isPartner(nextPlayer) && (
+                                    nextPlayer.skills.any { it is QiangLing } ||
+                                        nextPlayer.skills.any { it is ZhiYin } ||
+                                        nextPlayer.skills.any { it is JieCheYunHuo } ||
+                                        nextPlayer.skills.any { it is ZhuanJiao })) {
+                                return@run false
+                            }
+                            return@run true // 相等的情况下，收益不为负就接
+                        }
                     }
                     val lockPlayer = fsm.lockedPlayers.ifEmpty { listOf(fsm.sender) }.first()
                     if (isPartner(lockPlayer)) { // 场上有被锁的队友
