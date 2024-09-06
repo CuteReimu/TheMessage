@@ -284,7 +284,25 @@ fun Player.calculateMessageCardValue(
                 if (identity == inFrontOfWhom.identity) v1 += 10
                 if (identity != inFrontOfWhom.identity) v1 -= 10
             } else if (inFrontOfWhom === this) {
-                v1 += 9
+                v1 += 10
+            }
+            if (sender.identity != Black) {
+                if (identity == sender.identity) v1 += 10
+                if (identity != sender.identity) v1 -= 10
+            } else if (sender === this) {
+                v1 += 10
+            }
+        }
+        if (inFrontOfWhom.skills.any { it is MingEr }) { // 老鳖【明饵】
+            if (Black in colors) {
+                if (identity == inFrontOfWhom.identity) v1 += 10
+                if (identity != inFrontOfWhom.identity) v1 -= 10
+            }
+            if (inFrontOfWhom.identity != Black) {
+                if (identity == inFrontOfWhom.identity) v1 += 10
+                if (identity != inFrontOfWhom.identity) v1 -= 10
+            } else if (inFrontOfWhom === this) {
+                v1 += 10
             }
             if (sender.identity != Black) {
                 if (identity == sender.identity) v1 += 10
