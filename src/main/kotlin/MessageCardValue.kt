@@ -275,6 +275,24 @@ fun Player.calculateMessageCardValue(
                 v1 -= 20
             }
         }
+        if (inFrontOfWhom.skills.any { it is ZhiYin }) { // 程小蝶【知音】
+            if (Black in colors) {
+                if (identity == inFrontOfWhom.identity) v1 += 10
+                if (identity != inFrontOfWhom.identity) v1 -= 10
+            }
+            if (inFrontOfWhom.identity != Black) {
+                if (identity == inFrontOfWhom.identity) v1 += 10
+                if (identity != inFrontOfWhom.identity) v1 -= 10
+            } else if (inFrontOfWhom === this) {
+                v1 += 9
+            }
+            if (sender.identity != Black) {
+                if (identity == sender.identity) v1 += 10
+                if (identity != sender.identity) v1 -= 10
+            } else if (sender === this) {
+                v1 += 10
+            }
+        }
         if (Black in colors && inFrontOfWhom.roleFaceUp &&
             inFrontOfWhom.skills.any { it is YiXin } && inFrontOfWhom.messageCards.count(Black) == 2) {
             // 李宁玉【遗信】
