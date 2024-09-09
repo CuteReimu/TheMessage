@@ -239,13 +239,13 @@ fun Player.calculateMessageCardValue(
         }
         if (Black in colors && inFrontOfWhom.skills.any { it is YiYaHuanYa }) { // 王魁
             inFrontOfWhom.messageCards.add(TmpCard(colors))
-            var valueSender = -1
+            var valueInFrontOfWhom = -1
             var valueMe = 0
             for (c in inFrontOfWhom.cards.filter(Card::isBlack)) {
                 for (p in listOf(sender, sender.getNextLeftAlivePlayer(), sender.getNextRightAlivePlayer())) {
-                    val v = sender.calculateMessageCardValue(whoseTurn, p, c.colors, checkThreeSame)
-                    if (v > valueSender) {
-                        valueSender = v
+                    val v = inFrontOfWhom.calculateMessageCardValue(whoseTurn, p, c.colors, checkThreeSame)
+                    if (v > valueInFrontOfWhom) {
+                        valueInFrontOfWhom = v
                         valueMe = calculateMessageCardValue(whoseTurn, p, c.colors, checkThreeSame)
                     }
                 }
