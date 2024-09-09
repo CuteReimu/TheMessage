@@ -237,6 +237,23 @@ fun Player.calculateMessageCardValue(
             v1 += valueMe
             inFrontOfWhom.messageCards.removeLast()
         }
+        if (Black in colors && inFrontOfWhom.skills.any { it is YiYaHuanYa }) { // 王魁
+            inFrontOfWhom.messageCards.add(TmpCard(colors))
+            var valueSender = -1
+            var valueMe = 0
+            for (c in inFrontOfWhom.cards.filter(Card::isBlack)) {
+                for (p in listOf(sender, sender.getNextLeftAlivePlayer(), sender.getNextRightAlivePlayer())) {
+                    val v = sender.calculateMessageCardValue(whoseTurn, p, c.colors, checkThreeSame)
+                    if (v > valueSender) {
+                        valueSender = v
+                        valueMe = calculateMessageCardValue(whoseTurn, p, c.colors, checkThreeSame)
+                    }
+                }
+            }
+            v1 += valueMe
+            logger.debug("这是[王魁]传出的情报，计算[以牙还牙]额外分数为$valueMe")
+            inFrontOfWhom.messageCards.removeLast()
+        }
         if (Black !in colors && sender.skills.any { it is ChiZiZhiXin } && sender !== inFrontOfWhom) { // 青年小九
             inFrontOfWhom.messageCards.add(TmpCard(colors))
             var valueSender = 30
