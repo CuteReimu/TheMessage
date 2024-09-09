@@ -2,8 +2,7 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
-import com.fengsheng.card.count
-import com.fengsheng.card.countTrueCard
+import com.fengsheng.card.*
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Common.card_type.Cheng_Qing
 import com.fengsheng.protos.Common.color.*
@@ -74,20 +73,32 @@ class PinMingSanLang : MainPhaseSkill() {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             val p = e.whoseTurn
             p.getSkillUseCount(SkillId.PIN_MING_SAN_LANG) == 0 || return false
-            if (p.messageCards.count(Black) == 2) {
-                if (p.identity == Black) {
-                    when (p.secretTask) {
-                        Killer -> if (p.messageCards.countTrueCard() < 2) return false
-                        Pioneer -> if (p.messageCards.countTrueCard() < 1) return false
-                        Sweeper -> if (p.messageCards.run { count(Red) > 1 || count(Blue) > 1 }) return false
-                        else -> return false
+            val card = p.cards.run {
+                // 已经有2黑
+                if (p.messageCards.count(Black) == 2) {
+                    if (p.identity == Black) {
+                        // 如果是镇压者、先行者、清道夫，且自身达到任务条件，可以不考虑澄清
+                        if ((p.secretTask == Killer && p.messageCards.countTrueCard() < 2) ||
+                            (p.secretTask == Pioneer && p.messageCards.countTrueCard() < 1) ||
+                            (p.secretTask == Sweeper && p.messageCards.run { count(Red) > 1 || count(Blue) > 1 })) {
+                            filter { it.isPureBlack() }.ifEmpty { return false }.bestCard(p.identity, true)
+                        }
+                        // 其他神秘人不能自杀
+                        else {
+                            filter { it.isPureBlack() && it.type != Cheng_Qing }
+                                .ifEmpty { return false }.bestCard(p.identity, true)
+                        }
                     }
-                } else if (!p.cards.any { it.type == Cheng_Qing })
-                    return false
-                else
-                    p.getSkillUseCount(SkillId.YU_SI_WANG_PO) > 0 || return false
+                    // 阵营角色不能自杀
+                    else {
+                        filter { it.isPureBlack() && it.type != Cheng_Qing }.ifEmpty { return false }.bestCard(p.identity, true)
+                    }
+                }
+                // 还没到2黑，可以随便选纯黑色牌
+                else {
+                    filter { it.isPureBlack() }.ifEmpty { return false }.bestCard(p.identity, true)
+                }
             }
-            val card = p.cards.filter { it.isPureBlack() }.ifEmpty { return false }.bestCard(p.identity, true)
             GameExecutor.post(p.game!!, {
                 skill.executeProtocol(p.game!!, p, skillPinMingSanLangTos { cardId = card.id })
             }, 3, TimeUnit.SECONDS)
