@@ -310,6 +310,15 @@ fun Player.calculateMessageCardValue(
                 v1 += 10
             }
         }
+        if (sender.skills.any { it is ZhenLi } && sender.roleFaceUp) { // 李书云【真理】
+            if (Black !in colors)
+                v1 += 10
+        }
+        if (sender.skills.any { it is HanHouLaoShi }) { // 哑炮【憨厚老实】
+            v1 -= 10
+            if (identity == sender.identity)
+                v1 -= 10
+        }
         if (inFrontOfWhom.skills.any { it is MingEr }) { // 老鳖【明饵】
             if (Black in colors) {
                 if (identity == inFrontOfWhom.identity) v1 += 10
