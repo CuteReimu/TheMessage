@@ -319,7 +319,7 @@ object Statistics {
                     val game = a[1].toInt()
                     val forbid = a.getOrNull(5)?.toLong() ?: 0
                     val title = a.getOrNull(6) ?: ""
-                    val lt = a.getOrNull(7)?.toLong() ?: 0
+                    val lt = (a.getOrNull(7)?.toLong() ?: 0).let { if (it == 0L) System.currentTimeMillis() else it }
                     val energy = a.getOrNull(8)?.toInt() ?: 0
                     val maxScore = a.getOrNull(9)?.toInt() ?: score
                     val p = PlayerInfo(name, score, pwd, win, game, forbid, title, lt, energy, maxScore)
