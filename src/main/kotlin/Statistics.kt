@@ -2,6 +2,7 @@ package com.fengsheng
 
 import com.fengsheng.ScoreFactory.addScore
 import com.fengsheng.protos.Common.*
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.getRecordListToc
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -74,16 +75,42 @@ object Statistics {
             val now = System.currentTimeMillis()
             var win = 0
             var game = 0
+            var rbwin = 0
+            var rbgame = 0
+            var blackwin = 0
+            var blackgame = 0
             var updateTrial = false
             for (count in playerGameResultList) {
                 if (count.isWin) {
+                    when (count.identity) {
+                        Black -> {
+                            blackwin++
+                        }
+                        else -> {
+                            rbwin++
+                        }
+                    }
                     win++
                     if (trialStartTime.remove(count.playerName) != null) updateTrial = true
+                }
+                when (count.identity) {
+                    Black -> {
+                        blackgame++
+                    }
+                    else -> {
+                        rbgame++
+                    }
                 }
                 game++
                 playerInfoMap.computeIfPresent(count.playerName) { _, v ->
                     val addWin = if (count.isWin) 1 else 0
-                    v.copy(winCount = v.winCount + addWin, gameCount = v.gameCount + 1, lastTime = now)
+                    val addRbWin = if (count.isWin && count.identity != Black) 1 else 0
+                    val addBlackWin = if (count.isWin && count.identity == Black) 1 else 0
+                    val addRbGame = if (count.identity != Black) 1 else 0
+                    val addBlackGame = if (count.identity == Black) 1 else 0
+                    v.copy(winCount = v.winCount + addWin, gameCount = v.gameCount + 1, lastTime = now,
+                        rbWinCount = v.rbWinCount + addRbWin, blackWinCount = v.blackWinCount + addBlackWin,
+                        rbGameCount = v.rbGameCount + addRbGame, blackGameCount = v.blackGameCount + addBlackGame)
                 }
             }
             totalWinCount.addAndGet(win)
@@ -99,7 +126,7 @@ object Statistics {
 
     fun register(name: String): Boolean {
         val now = System.currentTimeMillis()
-        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0, 0, "", now, 10, 0)) == null
+        val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0, 0, "", now, 10, 0, 0, 0, 0, 0)) == null
         if (result) pool.trySend(::savePlayerInfo)
         return result
     }
@@ -283,6 +310,10 @@ object Statistics {
             sb.append(info.lastTime).append(',')
             sb.append(info.energy).append(',')
             sb.append(info.maxScore).append('\n')
+            sb.append(info.rbWinCount).append('\n')
+            sb.append(info.rbGameCount).append('\n')
+            sb.append(info.blackWinCount).append('\n')
+            sb.append(info.blackGameCount).append('\n')
         }
         writeFile("playerInfo.csv", sb.toString().toByteArray())
         sb.clear()
@@ -322,7 +353,12 @@ object Statistics {
                     val lt = (a.getOrNull(7)?.toLong() ?: 0).let { if (it == 0L) System.currentTimeMillis() else it }
                     val energy = a.getOrNull(8)?.toInt() ?: 0
                     val maxScore = a.getOrNull(9)?.toInt() ?: score
-                    val p = PlayerInfo(name, score, pwd, win, game, forbid, title, lt, energy, maxScore)
+                    val rbWinCount = a.getOrNull(10)?.toInt() ?: 0
+                    val rbGameCount = a.getOrNull(11)?.toInt() ?: 0
+                    val blackWinCount = a.getOrNull(12)?.toInt() ?: 0
+                    val blackGameCount = a.getOrNull(13)?.toInt() ?: 0
+                    val p = PlayerInfo(name, score, pwd, win, game, forbid, title, lt, energy, maxScore,
+                        rbWinCount, rbGameCount, blackWinCount, blackGameCount)
                     if (playerInfoMap.put(name, p) != null)
                         throw RuntimeException("数据错误，有重复的玩家name")
                     winCount += win
@@ -407,7 +443,7 @@ object Statistics {
         val totalPlayerCount: Int
     )
 
-    class PlayerGameResult(val playerName: String, val isWin: Boolean)
+    class PlayerGameResult(val playerName: String, val isWin: Boolean, val identity: color)
 
     data class PlayerGameCount(val winCount: Int, val gameCount: Int) {
         fun random(): PlayerGameCount {
@@ -431,6 +467,10 @@ object Statistics {
         val lastTime: Long,
         val energy: Int,
         val maxScore: Int,
+        val rbWinCount: Int,
+        val rbGameCount: Int,
+        val blackWinCount: Int,
+        val blackGameCount: Int
     ) : Comparable<PlayerInfo> {
         val scoreWithDecay: Int
             get() {
