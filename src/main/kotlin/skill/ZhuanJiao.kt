@@ -51,7 +51,13 @@ class ZhuanJiao : TriggeredSkill {
             }
             if (r is RobotPlayer) {
                 // 先行者会至少有2张情报才会发动技能
-                r.identity != Black || r.secretTask != Pioneer || r.messageCards.countTrueCard() > 1 || return null
+                r.identity != Black || r.secretTask != Pioneer || r.messageCards.countTrueCard() > 1 ||
+                    {
+                        GameExecutor.post(r.game!!, {
+                            r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos {})
+                        }, 1, TimeUnit.SECONDS)
+                        return null
+                    }
                 var target: Player? = null
                 var value = -1
                 var mCard = r.messageCards.first()
