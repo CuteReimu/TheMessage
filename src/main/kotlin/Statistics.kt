@@ -309,10 +309,10 @@ object Statistics {
             sb.append(info.title).append(',')
             sb.append(info.lastTime).append(',')
             sb.append(info.energy).append(',')
-            sb.append(info.maxScore).append('\n')
-            sb.append(info.rbWinCount).append('\n')
-            sb.append(info.rbGameCount).append('\n')
-            sb.append(info.blackWinCount).append('\n')
+            sb.append(info.maxScore).append(',')
+            sb.append(info.rbWinCount).append(',')
+            sb.append(info.rbGameCount).append(',')
+            sb.append(info.blackWinCount).append(',')
             sb.append(info.blackGameCount).append('\n')
         }
         writeFile("playerInfo.csv", sb.toString().toByteArray())
@@ -342,7 +342,7 @@ object Statistics {
                 var line: String
                 while (true) {
                     line = reader.readLine() ?: break
-                    val a = line.split(",".toRegex(), limit = 10)
+                    val a = line.split(",".toRegex(), limit = 14)
                     val pwd = a[4]
                     val score = if (a[3].length < 6) a[3].toInt() else 0 // 以前这个位置是deviceId
                     val name = a[2]
