@@ -202,4 +202,45 @@ object ScoreFactory : Logging {
     }
 
     private val playerCountCount = ConcurrentHashMap<Int, MutableList<PlayerGameCount>>()
+
+    /**
+     * 获取所有角色的胜率
+     */
+    fun getAllWinRate(): Double {
+        var winCount = 0
+        var gameCount = 0
+        playerCountCount.forEach { (_, list) ->
+            winCount += list[0].winCount
+            gameCount += list[0].gameCount
+        }
+        return PlayerGameCount(winCount, gameCount).rate
+    }
+
+    /**
+     * 获取军潜的胜率
+     */
+    fun getRBWinRate(): Double {
+        var winCount = 0
+        var gameCount = 0
+        playerCountCount.forEach { (_, list) ->
+            winCount += list[1].winCount
+            gameCount += list[1].gameCount
+        }
+        return PlayerGameCount(winCount, gameCount).rate
+    }
+
+    /**
+     * 获取神秘人的胜率
+     *
+     * @param secretTask 神秘人的任务，传空表示获取所有神秘人的胜率
+     */
+    fun getBlackWinRate(secretTask: secret_task? = null): Double {
+        var winCount = 0
+        var gameCount = 0
+        playerCountCount.forEach { (_, list) ->
+            winCount += list[3 + (secretTask?.number ?: -1)].winCount
+            gameCount += list[3 + (secretTask?.number ?: -1)].gameCount
+        }
+        return PlayerGameCount(winCount, gameCount).rate
+    }
 }

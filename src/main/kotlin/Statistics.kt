@@ -131,42 +131,23 @@ object Statistics {
                     val addWin = if (count.isWin) 1 else 0
                     val addRbWin = if (count.isWin && count.identity != Black) 1 else 0
                     val addBlackWin = if (count.isWin && count.identity == Black) 1 else 0
-                    val addKillerWin = if (count.isWin && count.identity == Black && count.secret_task == Killer) 1 else 0
-                    val addStealerWin = if (count.isWin && count.identity == Black && count.secret_task == Stealer) 1 else 0
-                    val addCollectorWin = if (count.isWin && count.identity == Black && count.secret_task == Collector) 1 else 0
-                    val addMutatorWin = if (count.isWin && count.identity == Black && count.secret_task == Mutator) 1 else 0
-                    val addPioneerWin = if (count.isWin && count.identity == Black && count.secret_task == Pioneer) 1 else 0
-                    val addDisturberWin = if (count.isWin && count.identity == Black && count.secret_task == Disturber) 1 else 0
-                    val addSweeperWin = if (count.isWin && count.identity == Black && count.secret_task == Sweeper) 1 else 0
+                    val newBlacksWin = if (count.isWin && count.identity == Black)
+                        v.blacksWinCount + (count.secret_task to ((v.blacksWinCount[count.secret_task] ?: 0) + 1))
+                    else v.blacksWinCount
                     val addRbGame = if (count.identity != Black) 1 else 0
                     val addBlackGame = if (count.identity == Black) 1 else 0
-                    val addKillerGame = if (count.identity == Black && count.secret_task == Killer) 1 else 0
-                    val addStealerGame = if (count.identity == Black && count.secret_task == Stealer) 1 else 0
-                    val addCollectorGame = if (count.identity == Black && count.secret_task == Collector) 1 else 0
-                    val addMutatorGame = if (count.identity == Black && count.secret_task == Mutator) 1 else 0
-                    val addPioneerGame = if (count.identity == Black && count.secret_task == Pioneer) 1 else 0
-                    val addDisturberGame = if (count.identity == Black && count.secret_task == Disturber) 1 else 0
-                    val addSweeperGame = if (count.identity == Black && count.secret_task == Sweeper) 1 else 0
+                    val newBlacksGame = if (count.identity == Black)
+                        v.blacksGameCount + (count.secret_task to ((v.blacksWinCount[count.secret_task] ?: 0) + 1))
+                    else v.blacksGameCount
                     v.copy(winCount = v.winCount + addWin,
                         gameCount = v.gameCount + 1, lastTime = now,
                         rbWinCount = v.rbWinCount + addRbWin,
                         blackWinCount = v.blackWinCount + addBlackWin,
-                        killerWinCount = v.killerWinCount + addKillerWin,
-                        stealerWinCount = v.stealerWinCount + addStealerWin,
-                        collectorWinCount = v.collectorWinCount + addCollectorWin,
-                        mutatorWinCount = v.mutatorWinCount + addMutatorWin,
-                        pioneerWinCount = v.pioneerWinCount + addPioneerWin,
-                        disturberWinCount = v.disturberWinCount + addDisturberWin,
-                        sweeperWinCount = v.sweeperWinCount + addSweeperWin,
+                        blacksWinCount = newBlacksWin,
                         rbGameCount = v.rbGameCount + addRbGame,
                         blackGameCount = v.blackGameCount + addBlackGame,
-                        killerGameCount = v.killerGameCount + addKillerGame,
-                        stealerGameCount = v.stealerGameCount + addStealerGame,
-                        collectorGameCount = v.collectorGameCount + addCollectorGame,
-                        mutatorGameCount = v.mutatorGameCount + addMutatorGame,
-                        pioneerGameCount = v.pioneerGameCount + addPioneerGame,
-                        disturberGameCount = v.disturberGameCount + addDisturberGame,
-                        sweeperGameCount = v.sweeperGameCount + addSweeperGame)
+                        blacksGameCount = newBlacksGame,
+                    )
                 }
             }
             totalWinCount.addAndGet(win)
@@ -183,7 +164,7 @@ object Statistics {
     fun register(name: String): Boolean {
         val now = System.currentTimeMillis()
         val result = playerInfoMap.putIfAbsent(name, PlayerInfo(name, 0, "", 0, 0, 0, "", now, 10, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) == null
+            emptyMap(), emptyMap())) == null
         if (result) pool.trySend(::savePlayerInfo)
         return result
     }
@@ -370,21 +351,12 @@ object Statistics {
             sb.append(info.rbWinCount).append(',')
             sb.append(info.rbGameCount).append(',')
             sb.append(info.blackWinCount).append(',')
-            sb.append(info.blackGameCount).append(',')
-            sb.append(info.killerWinCount).append(',')
-            sb.append(info.killerGameCount).append(',')
-            sb.append(info.stealerWinCount).append(',')
-            sb.append(info.stealerGameCount).append(',')
-            sb.append(info.collectorWinCount).append(',')
-            sb.append(info.collectorGameCount).append(',')
-            sb.append(info.mutatorWinCount).append(',')
-            sb.append(info.mutatorGameCount).append(',')
-            sb.append(info.pioneerWinCount).append(',')
-            sb.append(info.pioneerGameCount).append(',')
-            sb.append(info.disturberWinCount).append(',')
-            sb.append(info.disturberGameCount).append(',')
-            sb.append(info.sweeperWinCount).append(',')
-            sb.append(info.sweeperGameCount).append('\n')
+            sb.append(info.blackGameCount)
+            listOf(Killer, Stealer, Collector, Mutator, Pioneer, Disturber, Sweeper).forEach {
+                sb.append(',').append(info.blacksWinCount[it])
+                sb.append(',').append(info.blacksGameCount[it])
+            }
+            sb.append('\n')
         }
         writeFile("playerInfo.csv", sb.toString().toByteArray())
         sb.clear()
@@ -428,26 +400,15 @@ object Statistics {
                     val rbGameCount = a.getOrNull(11)?.toInt() ?: 0
                     val blackWinCount = a.getOrNull(12)?.toInt() ?: 0
                     val blackGameCount = a.getOrNull(13)?.toInt() ?: 0
-                    val killerWinCount = a.getOrNull(14)?.toInt() ?: 0
-                    val killerGameCount = a.getOrNull(15)?.toInt() ?: 0
-                    val stealerWinCount = a.getOrNull(16)?.toInt() ?: 0
-                    val stealerGameCount = a.getOrNull(17)?.toInt() ?: 0
-                    val collectorWinCount = a.getOrNull(18)?.toInt() ?: 0
-                    val collectorGameCount = a.getOrNull(19)?.toInt() ?: 0
-                    val mutatorWinCount = a.getOrNull(20)?.toInt() ?: 0
-                    val mutatorGameCount = a.getOrNull(21)?.toInt() ?: 0
-                    val pioneerWinCount = a.getOrNull(22)?.toInt() ?: 0
-                    val pioneerGameCount = a.getOrNull(23)?.toInt() ?: 0
-                    val disturberWinCount = a.getOrNull(24)?.toInt() ?: 0
-                    val disturberGameCount = a.getOrNull(25)?.toInt() ?: 0
-                    val sweeperWinCount = a.getOrNull(26)?.toInt() ?: 0
-                    val sweeperGameCount = a.getOrNull(27)?.toInt() ?: 0
+                    val blacksWinCount = HashMap<secret_task, Int>()
+                    val blacksGameCount = HashMap<secret_task, Int>()
+                    listOf(Killer, Stealer, Collector, Mutator, Pioneer, Disturber, Sweeper).forEach {
+                        blacksWinCount[it] = a.getOrNull(it.number * 2 + 14)?.toInt() ?: 0
+                        blacksGameCount[it] = a.getOrNull(it.number * 2 + 15)?.toInt() ?: 0
+                    }
                     val p = PlayerInfo(name, score, pwd, win, game, forbid, title, lt, energy, maxScore,
                         rbWinCount, rbGameCount, blackWinCount, blackGameCount,
-                        killerWinCount, killerGameCount, stealerWinCount, stealerGameCount,
-                        collectorWinCount, collectorGameCount, mutatorWinCount, mutatorGameCount,
-                        pioneerWinCount, pioneerGameCount, disturberWinCount, disturberGameCount,
-                        sweeperWinCount, sweeperGameCount)
+                        blacksWinCount, blacksGameCount)
                     if (playerInfoMap.put(name, p) != null)
                         throw RuntimeException("数据错误，有重复的玩家name")
                     winCount += win
@@ -560,20 +521,8 @@ object Statistics {
         val rbGameCount: Int,
         val blackWinCount: Int,
         val blackGameCount: Int,
-        val killerWinCount: Int,
-        val killerGameCount: Int,
-        val stealerWinCount: Int,
-        val stealerGameCount: Int,
-        val collectorWinCount: Int,
-        val collectorGameCount: Int,
-        val mutatorWinCount: Int,
-        val mutatorGameCount: Int,
-        val pioneerWinCount: Int,
-        val pioneerGameCount: Int,
-        val disturberWinCount: Int,
-        val disturberGameCount: Int,
-        val sweeperWinCount: Int,
-        val sweeperGameCount: Int
+        val blacksWinCount: Map<secret_task, Int>,
+        val blacksGameCount: Map<secret_task, Int>,
     ) : Comparable<PlayerInfo> {
         val scoreWithDecay: Int
             get() {
