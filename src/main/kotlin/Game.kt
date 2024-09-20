@@ -238,7 +238,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                 for (p in humanPlayers) {
                     if (humanPlayers.size <= 1) Statistics.addEnergy(p.playerName, -1)
                     else Statistics.addEnergy(p.playerName, humanPlayers.size * 2)
-                    playerGameResultList.add(PlayerGameResult(p.playerName, winners.any { it === p }, p.originIdentity))
+                    playerGameResultList.add(PlayerGameResult(p.playerName, winners.any { it === p },
+                        p.originIdentity, p.originSecretTask))
                 }
                 Statistics.addPlayerGameCount(playerGameResultList)
                 Statistics.calculateRankList()
