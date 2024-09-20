@@ -46,7 +46,7 @@ class Getscore : Function<Map<String, String>, Any> {
                     val winRate1 =
                         if (gameCount1 == 0) "0.00%"
                         else "%.2f%%".format(winCount1 * 100.0 / gameCount1)
-                    val winRateSum1 = ScoreFactory.getBlackWinRate(secretTask)
+                    val winRateSum1 = "%.2f%%".format(ScoreFactory.getBlackWinRate(secretTask))
                     s += "$taskName\\t $winRate1\\t $winRateSum1\\t $gameCount1\\n"
                 }
                 s += "-----------------------------------\\n"
