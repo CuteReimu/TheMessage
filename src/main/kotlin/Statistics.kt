@@ -343,16 +343,30 @@ object Statistics {
     val totalPlayerGameCount: PlayerGameCount
         get() = PlayerGameCount(totalWinCount.get(), totalGameCount.get())
 
+    fun getTitleRank(title: String): Int = when (title) {
+        "\u2B50" -> 1 // score >= 2900
+        "\uD83D\uDC51" -> 2 // score >= 1900
+        "\uD83D\uDCA0" -> 3 // score >= 1400
+        "\uD83D\uDC8D" -> 4 // score >= 920
+        "\uD83E\uDD47" -> 5 // score >= 520
+        else -> 6 // Lower than 520
+    }
+
     fun sortTitles(titles: String): String {
-        fun getTitleRank(title: String): Int = when (title) {
-            "\u2B50" -> 1 // score >= 2900
-            "\uD83D\uDC51" -> 2 // score >= 1900
-            "\uD83D\uDCA0" -> 3 // score >= 1400
-            "\uD83D\uDC8D" -> 4 // score >= 920
-            "\uD83E\uDD47" -> 5 // score >= 520
-            else -> 6 // Lower than 520
+        val titleList = mutableListOf<String>()
+        var i = 0
+        while (i < titles.length) {
+            if (titles[i] == '\u2B50') {
+                // 如果是单字符 emoji（⭐）
+                titleList.add(titles[i].toString())
+                i += 1
+            } else {
+                // 处理其他双字符 emoji
+                titleList.add(titles.substring(i, i + 2))
+                i += 2
+            }
         }
-        return titles.toList().sortedBy { getTitleRank(it.toString()) }.joinToString("")
+        return titleList.sortedBy { getTitleRank(it) }.joinToString("")
     }
 
     private fun savePlayerInfo() {
