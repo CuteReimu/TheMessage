@@ -30,6 +30,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Execute Gradle test
+        env:
+          GRADLE_OPTS: '-Xmx4g'
+        run: ./gradlew test
+
       - name: Execute Gradle build
         env:
           GRADLE_OPTS: '-Xmx4g'
