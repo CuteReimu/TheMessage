@@ -342,16 +342,29 @@ object Statistics {
     val totalPlayerGameCount: PlayerGameCount
         get() = PlayerGameCount(totalWinCount.get(), totalGameCount.get())
 
+    fun sortTitles(titles: String): String {
+        fun getTitleRank(title: String): Int = when (title) {
+            "\u2B50" -> 1 // score >= 2900
+            "\uD83D\uDC51" -> 2 // score >= 1900
+            "\uD83D\uDCA0" -> 3 // score >= 1400
+            "\uD83D\uDC8D" -> 4 // score >= 920
+            "\uD83E\uDD47" -> 5 // score >= 520
+            else -> 6 // Lower than 520
+        }
+        return titles.toList().sortedBy { getTitleRank(it.toString()) }.joinToString("")
+    }
+
     private fun savePlayerInfo() {
         val sb = StringBuilder()
         for ((_, info) in playerInfoMap) {
+            val sortedTitles = sortTitles(info.title)
             sb.append(info.winCount).append(',')
             sb.append(info.gameCount).append(',')
             sb.append(info.name).append(',')
             sb.append(info.score).append(',')
             sb.append(info.password).append(',')
             sb.append(info.forbidUntil).append(',')
-            sb.append(info.title).append(',')
+            sb.append(sortedTitles).append(',')
             sb.append(info.lastTime).append(',')
             sb.append(info.energy).append(',')
             sb.append(info.maxScore).append(',')
