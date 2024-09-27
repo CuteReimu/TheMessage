@@ -314,10 +314,11 @@ object Statistics {
         playerInfoMap.keys.forEach {
             playerInfoMap.computeIfPresent(it) { _, v ->
                 if (v.score <= 1) return@computeIfPresent null
+                val newTitle = v.title + getSeasonTitleByScore(v.maxScore)
                 v.copy(
                     winCount = 0,
                     gameCount = 0,
-                    title = v.title + getSeasonTitleByScore(v.maxScore),
+                    title = sortTitles(newTitle),
                     score = v.score / 2,
                     energy = v.energy.coerceAtLeast(10),
                     maxScore = v.score / 2,
@@ -357,14 +358,13 @@ object Statistics {
     private fun savePlayerInfo() {
         val sb = StringBuilder()
         for ((_, info) in playerInfoMap) {
-            val sortedTitles = sortTitles(info.title)
             sb.append(info.winCount).append(',')
             sb.append(info.gameCount).append(',')
             sb.append(info.name).append(',')
             sb.append(info.score).append(',')
             sb.append(info.password).append(',')
             sb.append(info.forbidUntil).append(',')
-            sb.append(sortedTitles).append(',')
+            sb.append(info.title).append(',')
             sb.append(info.lastTime).append(',')
             sb.append(info.energy).append(',')
             sb.append(info.maxScore).append(',')
