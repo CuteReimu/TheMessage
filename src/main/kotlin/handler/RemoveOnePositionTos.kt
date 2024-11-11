@@ -31,19 +31,18 @@ class RemoveOnePositionTos : AbstractProtoHandler<Fengsheng.remove_one_position_
             p?.send(removeOnePositionToc { position = index })
         }
         if (players.any { it == null }) return
-        if (!Config.IsGmEnable && players.count { it is HumanPlayer } <= 1) {
-            if (Statistics.getEnergy(r.playerName) <= 0 || Game.gameCache.count { (_, v) ->
-                    !v.isStarted || v.players.any { it !is HumanPlayer } // 未开始或有空位的房间（含本房间）大于1，则禁止开局
-                } > 1) {
-                val robotPlayerIndex = players.indexOfLast { it is RobotPlayer }
-                if (robotPlayerIndex >= 0) {
-                    val robotPlayer = players[robotPlayerIndex]!!
-                    r.game!!.players = r.game!!.players.toMutableList().apply { set(robotPlayerIndex, null) }
-                    logger.info("${robotPlayer.playerName}离开了房间")
-                    val reply = leaveRoomToc { position = robotPlayer.location }
-                    players.send { reply }
-                    return
-                }
+        if (!Config.IsGmEnable && players.count { it is HumanPlayer } <= 1 && (Statistics.getEnergy(r.playerName) <= 0 ||
+                Game.gameCache.count { (_, v) -> // 未开始或有空位的房间（含本房间）大于1，则禁止开局
+                    !v.isStarted || v.players.any { it !is HumanPlayer }
+                } > 1)) {
+            val robotPlayerIndex = players.indexOfLast { it is RobotPlayer }
+            if (robotPlayerIndex >= 0) {
+                val robotPlayer = players[robotPlayerIndex]!!
+                r.game!!.players = r.game!!.players.toMutableList().apply { set(robotPlayerIndex, null) }
+                logger.info("${robotPlayer.playerName}离开了房间")
+                val reply = leaveRoomToc { position = robotPlayer.location }
+                players.send { reply }
+                return
             }
         }
         logger.info("已满${players.size}个人，游戏将在5秒内开始。。。")
