@@ -92,67 +92,75 @@ fun Player.willWin(whoseTurn: Player, inFrontOfWhom: Player, colors: List<color>
 
 /**
  * 判断玩家是否赢了，不考虑簒夺者
+ *
+ * @param checkAllSecretTask 是否判断所有神秘人的任务
  */
 private fun Player.willWinInternal(
     whoseTurn: Player,
     inFrontOfWhom: Player,
     colors: List<color>,
-    partnerTogether: Boolean = true
+    partnerTogether: Boolean = true,
+    checkAllSecretTask: Boolean = false,
 ): Boolean {
     if (!alive) return false
     if (identity != Black) {
         return (if (partnerTogether) isPartnerOrSelf(inFrontOfWhom) else this === inFrontOfWhom) &&
             identity in colors && inFrontOfWhom.messageCards.count(identity) >= 2
     } else {
-        return when (secretTask) {
-            Killer, Pioneer, Sweeper -> {
-                if (game!!.players.any {
-                        (it!!.identity != Black || it.secretTask in listOf(Collector, Mutator)) &&
-                            it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
-                    }) {
-                    return false
+        fun checkSecretTask(secretTask: secret_task): Boolean {
+            return when (secretTask) {
+                Killer, Pioneer, Sweeper -> {
+                    if (game!!.players.any {
+                            (it!!.identity != Black || it.secretTask in listOf(Collector, Mutator)) &&
+                                it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                        }) {
+                        return false
+                    }
+                    val counts = CountColors(inFrontOfWhom.messageCards)
+                    counts += colors
+                    counts.black >= 3 || return false
+                    when (secretTask) {
+                        Killer -> this === whoseTurn && counts.trueCard >= 2
+                        Pioneer -> this === inFrontOfWhom && counts.trueCard >= 1
+                        Sweeper -> counts.red <= 1 && counts.blue <= 1
+                        else -> false
+                    }
                 }
-                val counts = CountColors(inFrontOfWhom.messageCards)
-                counts += colors
-                counts.black >= 3 || return false
-                when (secretTask) {
-                    Killer -> this === whoseTurn && counts.trueCard >= 2
-                    Pioneer -> this === inFrontOfWhom && counts.trueCard >= 1
-                    Sweeper -> counts.red <= 1 && counts.blue <= 1
-                    else -> false
+
+                Collector ->
+                    this === inFrontOfWhom &&
+                        if (Red in colors) messageCards.count(Red) >= 2
+                        else if (Blue in colors) messageCards.count(Blue) >= 2
+                        else false
+
+                Mutator -> {
+                    if (inFrontOfWhom.let {
+                            (it.identity != Black || it.secretTask == Collector) &&
+                                it.willWinInternal(whoseTurn, it, colors)
+                        }) {
+                        return false
+                    }
+                    if (Red in colors && inFrontOfWhom.messageCards.count(Red) >= 2) return true
+                    if (Blue in colors && inFrontOfWhom.messageCards.count(Blue) >= 2) return true
+                    false
                 }
+
+                Disturber ->
+                    if (Red in colors || Blue in colors)
+                        game!!.players.all {
+                            it === this || it === inFrontOfWhom || !it!!.alive ||
+                                it.messageCards.countTrueCard() >= 2
+                        } &&
+                            inFrontOfWhom.messageCards.countTrueCard() >= 1
+                    else
+                        game!!.players.all { it === this || !it!!.alive || it.messageCards.countTrueCard() >= 2 }
+
+                else -> false
             }
-
-            Collector ->
-                this === inFrontOfWhom &&
-                    if (Red in colors) messageCards.count(Red) >= 2
-                    else if (Blue in colors) messageCards.count(Blue) >= 2
-                    else false
-
-            Mutator -> {
-                if (inFrontOfWhom.let {
-                        (it.identity != Black || it.secretTask == Collector) &&
-                            it.willWinInternal(whoseTurn, it, colors)
-                    }) {
-                    return false
-                }
-                if (Red in colors && inFrontOfWhom.messageCards.count(Red) >= 2) return true
-                if (Blue in colors && inFrontOfWhom.messageCards.count(Blue) >= 2) return true
-                false
-            }
-
-            Disturber ->
-                if (Red in colors || Blue in colors)
-                    game!!.players.all {
-                        it === this || it === inFrontOfWhom || !it!!.alive ||
-                            it.messageCards.countTrueCard() >= 2
-                    } &&
-                        inFrontOfWhom.messageCards.countTrueCard() >= 1
-                else
-                    game!!.players.all { it === this || !it!!.alive || it.messageCards.countTrueCard() >= 2 }
-
-            else -> false
         }
+        if (checkAllSecretTask && game!!.possibleSecretTasks.isNotEmpty())
+            return game!!.possibleSecretTasks.any { checkSecretTask(it) }
+        return checkSecretTask(secretTask)
     }
 }
 
@@ -430,9 +438,11 @@ fun Player.calculateMessageCardValue(
                 if (game!!.players.any {
                         it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return 600
+                val coefficient = if (coefficientA >= 1) coefficientA - 0.2 else coefficientA
                 if (game!!.players.any {
-                        it !== disturber && isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
-                    }) return -600
+                        it !== disturber && isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors,
+                            checkAllSecretTask = coefficientA >= 1) // 激进型需要判断所有神秘人任务
+                    }) return if (Random.nextDouble() < coefficient) -600 else 0 // 根据打牌风格，有80%到100%几率管
             } else if (inFrontOfWhom.identity in colors && inFrontOfWhom.messageCards.count(inFrontOfWhom.identity) >= 2) {
                 return if (inFrontOfWhom === this || isPartner(inFrontOfWhom) &&
                     (!inFrontOfWhom.isMale || isPartnerOrSelf(whoseTurn))
