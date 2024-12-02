@@ -75,12 +75,6 @@ object Statistics {
     fun addPlayerGameCount(playerGameResultList: List<PlayerGameResult>) {
         try {
             val now = System.currentTimeMillis()
-            var win = 0
-            var game = 0
-            var rbwin = 0
-            var rbgame = 0
-            var blackwin = 0
-            var blackgame = 0
             var updateTrial = false
             for (count in playerGameResultList) {
                 if (count.isWin) {
