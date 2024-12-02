@@ -81,53 +81,11 @@ object Statistics {
             var rbgame = 0
             var blackwin = 0
             var blackgame = 0
-            var killerwin = 0
-            var killergame = 0
-            var stealerwin = 0
-            var stealergame = 0
-            var collectorwin = 0
-            var collectorgame = 0
-            var mutatorwin = 0
-            var mutatorgame = 0
-            var pioneerwin = 0
-            var pioneergame = 0
-            var disturberwin = 0
-            var disturbergame = 0
-            var sweeperwin = 0
-            var sweepergame = 0
             var updateTrial = false
             for (count in playerGameResultList) {
                 if (count.isWin) {
-                    if (count.identity == Black) {
-                        blackwin++
-                        when (count.secret_task) {
-                            Killer -> killerwin++
-                            Stealer -> stealerwin++
-                            Collector -> collectorwin++
-                            Mutator -> mutatorwin++
-                            Pioneer -> pioneerwin++
-                            Disturber -> disturberwin++
-                            Sweeper -> sweeperwin++
-                            else -> {}
-                        }
-                    } else rbwin++
-                    win++
                     if (trialStartTime.remove(count.playerName) != null) updateTrial = true
                 }
-                if (count.identity == Black) {
-                    blackgame++
-                    when (count.secret_task) {
-                        Killer -> killergame++
-                        Stealer -> stealergame++
-                        Collector -> collectorgame++
-                        Mutator -> mutatorgame++
-                        Pioneer -> pioneergame++
-                        Disturber -> disturbergame++
-                        Sweeper -> sweepergame++
-                        else -> {}
-                    }
-                } else rbgame++
-                game++
                 playerInfoMap.computeIfPresent(count.playerName) { _, v ->
                     val addWin = if (count.isWin) 1 else 0
                     val addRbWin = if (count.isWin && count.identity != Black) 1 else 0
@@ -138,7 +96,7 @@ object Statistics {
                     val addRbGame = if (count.identity != Black) 1 else 0
                     val addBlackGame = if (count.identity == Black) 1 else 0
                     val newBlacksGame = if (count.identity == Black)
-                        v.blacksGameCount + (count.secret_task to ((v.blacksWinCount[count.secret_task] ?: 0) + 1))
+                        v.blacksGameCount + (count.secret_task to ((v.blacksGameCount[count.secret_task] ?: 0) + 1))
                     else v.blacksGameCount
                     v.copy(winCount = v.winCount + addWin,
                         gameCount = v.gameCount + 1, lastTime = now,
