@@ -24,7 +24,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java-util:4.26.0")
     implementation("com.google.protobuf:protobuf-kotlin:4.26.0")
     implementation("org.apache.logging.log4j:log4j-api:2.23.1")
-    implementation("org.apache.logging.log4j:log4j-api-kotlin:1.4.0")
+    implementation("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
