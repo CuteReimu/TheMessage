@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
-    implementation("com.typesafe.akka:akka-actor_2.13:2.8.5")
+    implementation("com.typesafe.akka:akka-actor_2.13:2.8.8")
     implementation("io.netty:netty-all:4.1.108.Final")
     implementation("io.ktor:ktor-server-netty:3.0.3")
     implementation("io.ktor:ktor-server-core:3.0.3")
