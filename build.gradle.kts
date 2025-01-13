@@ -28,7 +28,7 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:2.24.3")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.apache.commons:commons-text:1.11.0")
