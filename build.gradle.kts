@@ -18,7 +18,7 @@ repositories {
 dependencies {
     testImplementation("junit:junit:4.13.2")
     implementation("com.typesafe.akka:akka-actor_2.13:2.8.5")
-    implementation("io.netty:netty-all:4.1.116.Final")
+    implementation("io.netty:netty-all:4.1.117.Final")
     implementation("com.google.protobuf:protobuf-java-util:4.29.3")
     implementation("com.google.protobuf:protobuf-kotlin:4.29.3")
     implementation("org.apache.logging.log4j:log4j-api:2.24.3")
