@@ -21,6 +21,7 @@ class QiHuoKeJu : TriggeredSkill {
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val event = g.findEvent<ReceiveCardEvent>(this) { event ->
             askWhom === event.inFrontOfWhom || return@findEvent false
+            askWhom.messageCards.isNotEmpty() || return@findEvent false
             event.messageCard.colors.size == 2
         } ?: return null
         return ResolveResult(ExecuteQiHuoKeJu(g.fsm!!, event), true)
