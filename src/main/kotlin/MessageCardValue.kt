@@ -713,7 +713,7 @@ fun Player.calSendMessageCard(
  */
 fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
     // 秦圆圆
-    if (roleFaceUp && skills.any { it is BiYiShuangFei }) {
+    if (this !== whoDie && roleFaceUp && skills.any { it is BiYiShuangFei }) {
         if (whoDie.roleFaceUp && whoDie.isMale && whoDie.identity == Black && whoDie.secretTask == Pioneer)
             return false // 先行者
         if (whoDie.messageCards.count(Red) <= 1 && whoDie.messageCards.count(Blue) <= 1 &&
