@@ -43,7 +43,7 @@ class RobotPlayer : Player() {
         }
         if (!Config.IsGmEnable && game!!.players.count { it is HumanPlayer } == 1) {
             val human = game!!.players.first { it is HumanPlayer }!!
-            if (!(cards.size == 1 && cards.first().type == Ping_Heng)) {
+            if (isEnemy(human) && !(cards.size == 1 && cards.first().type == Ping_Heng)) {
                 val info = Statistics.getPlayerInfo(human.playerName)
                 if (info != null) {
                     val score = info.score
@@ -211,13 +211,15 @@ class RobotPlayer : Player() {
         game!!.animationDelayMs = 0
         if (!Config.IsGmEnable && game!!.players.count { it is HumanPlayer } == 1) {
             val human = game!!.players.first { it is HumanPlayer }!!
-            val info = Statistics.getPlayerInfo(human.playerName)
-            if (info != null) {
-                val score = info.score
-                val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
-                if (!isPowerfulPlayer && score < 20) {
-                    GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500 + delay, TimeUnit.MILLISECONDS)
-                    return
+            if (isEnemy(human)) {
+                val info = Statistics.getPlayerInfo(human.playerName)
+                if (info != null) {
+                    val score = info.score
+                    val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
+                    if (!isPowerfulPlayer && score < 20) {
+                        GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500 + delay, TimeUnit.MILLISECONDS)
+                        return
+                    }
                 }
             }
         }
