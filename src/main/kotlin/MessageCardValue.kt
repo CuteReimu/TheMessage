@@ -724,7 +724,7 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
     if (whoDie.skills.any { it is RuGui } && whoDie.messageCards.isNotEmpty()) {
         // 如果老汉和当前回合角色是同一身份+老汉情报区有该颜色情报+当前回合角色听牌
         if (whoDie !== whoseTurn && whoDie.identity == whoseTurn.identity &&
-            !whoDie.messageCards.filter(whoDie.identity).isEmpty() &&
+            whoDie.messageCards.filter(whoDie.identity).isNotEmpty() &&
             whoseTurn.messageCards.count(whoseTurn.identity) == 2) {
             // 如果自己也是同一阵营，则不救
             if (isPartnerOrSelf(whoDie)) {
