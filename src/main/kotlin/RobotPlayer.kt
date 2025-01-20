@@ -16,7 +16,6 @@ import com.fengsheng.skill.*
 import com.fengsheng.skill.SkillId.*
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class RobotPlayer : Player() {
     override fun notifyAddHandCard(location: Int, unknownCount: Int, cards: List<Card>) {
@@ -44,12 +43,12 @@ class RobotPlayer : Player() {
         }
         if (!Config.IsGmEnable && game!!.players.count { it is HumanPlayer } == 1) {
             val human = game!!.players.first { it is HumanPlayer }!!
-            if (isEnemy(human) && !(cards.size == 1 && cards.first().type == Ping_Heng)) { // 对于低分的新人，敌方机器人可能不出牌
+            if (!(cards.size == 1 && cards.first().type == Ping_Heng)) {
                 val info = Statistics.getPlayerInfo(human.playerName)
                 if (info != null) {
                     val score = info.score
                     val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
-                    if (!isPowerfulPlayer && score < 60 && Random.nextInt(60) >= score) {
+                    if (!isPowerfulPlayer && score < 20) {
                         GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
                         return
                     }
@@ -212,15 +211,13 @@ class RobotPlayer : Player() {
         game!!.animationDelayMs = 0
         if (!Config.IsGmEnable && game!!.players.count { it is HumanPlayer } == 1) {
             val human = game!!.players.first { it is HumanPlayer }!!
-            if (isEnemy(human)) { // 对于低分的新人，敌方机器人可能不出牌
-                val info = Statistics.getPlayerInfo(human.playerName)
-                if (info != null) {
-                    val score = info.score
-                    val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
-                    if (!isPowerfulPlayer && score < 60 && Random.nextInt(60) >= score) {
-                        GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500 + delay, TimeUnit.MILLISECONDS)
-                        return
-                    }
+            val info = Statistics.getPlayerInfo(human.playerName)
+            if (info != null) {
+                val score = info.score
+                val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
+                if (!isPowerfulPlayer && score < 20) {
+                    GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500 + delay, TimeUnit.MILLISECONDS)
+                    return
                 }
             }
         }
