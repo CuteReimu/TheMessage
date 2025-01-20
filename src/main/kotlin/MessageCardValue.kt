@@ -440,7 +440,7 @@ fun Player.calculateMessageCardValue(
                             it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
                     }) return -600
             } else if (identity == Black) { // 秦圆圆的回合，神秘人没关系，反正没有队友
-                if (game!!.players.any {
+                if (!(this === inFrontOfWhom && willDie(colors)) && game!!.players.any {
                         it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return 600
                 val coefficient = if (coefficientA >= 1) coefficientA - 0.2 else coefficientA
@@ -712,6 +712,14 @@ fun Player.calSendMessageCard(
  * 是否要救人
  */
 fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
+    // 秦圆圆
+    if (roleFaceUp && skills.any { it is BiYiShuangFei }) {
+        if (whoDie.roleFaceUp && whoDie.isMale && whoDie.identity == Black && whoDie.secretTask == Pioneer)
+            return false // 先行者
+        if (whoDie.messageCards.count(Red) <= 1 && whoDie.messageCards.count(Blue) <= 1 &&
+            game!!.players.any { it!!.roleFaceUp && it.isMale && it.identity == Black && it.secretTask == Sweeper })
+            return false // 清道夫
+    }
     // 如果死亡的是老汉且有情报
     if (whoDie.skills.any { it is RuGui } && whoDie.messageCards.isNotEmpty()) {
         // 如果老汉和当前回合角色是同一身份+老汉情报区有该颜色情报+当前回合角色听牌
