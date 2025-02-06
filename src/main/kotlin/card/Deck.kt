@@ -10,6 +10,7 @@ class Deck(private val game: Game) {
     private var nextId = 0
     private var cards = ArrayList<Card>()
     private var discardPile = ArrayList<Card>()
+    var noCard = false
 
     /**
      * 洗牌
@@ -27,6 +28,7 @@ class Deck(private val game: Game) {
      */
     fun draw(n: Int): List<Card> {
         if (n > cards.size) shuffle()
+        if (n > cards.size) noCard = true
         val from = if (n > cards.size) 0 else cards.size - n
         val subList = cards.subList(from, cards.size)
         val result = subList.toList()
@@ -43,6 +45,7 @@ class Deck(private val game: Game) {
      */
     fun peek(n: Int): List<Card> {
         if (n > cards.size) shuffle()
+        if (n > cards.size) noCard = true
         val from = if (n > cards.size) 0 else cards.size - n
         return cards.subList(from, cards.size)
     }
@@ -146,9 +149,17 @@ class Deck(private val game: Game) {
         for (i in colorRates.indices) colorRates[i] /= cards.size.toDouble()
         nextId = DefaultDeck.last().id
         cards.shuffle()
+        noCard = false
     }
 
     val colorRates = DoubleArray(9)
+
+    fun checkNoCard() {
+        if (noCard) return
+        if (cards.size + discardPile.size > 10) return
+        if (cards.all { it is LiYou } && discardPile.all { it is LiYou })
+            noCard = true
+    }
 
     companion object {
         val DefaultDeck = listOf(

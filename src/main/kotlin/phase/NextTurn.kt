@@ -38,6 +38,7 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
                         !game.players.any { p -> p!!.alive && p !== it && p.cards.any { c -> c.id == cid } }
                     }
                 }
+                game.liYouCount = 0
                 InvalidSkill.reset(game)
                 OneTurnSkill.reset(game)
                 game.players.send { unknownWaitingToc { } }

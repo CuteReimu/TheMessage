@@ -82,6 +82,8 @@ class LiYou : Card {
                         logger.info("${deckCards.joinToString()}加入了${r}的手牌")
                         val ids = deckCards.map { it.id }
                         g.players.forEach { p -> p!!.canWeiBiCardIds.addAll(ids) }
+                        g.liYouCount++
+                        if (g.liYouCount >= 10) g.deck.checkNoCard()
                     } else {
                         target.messageCards.addAll(deckCards)
                         val m = target.messageCards

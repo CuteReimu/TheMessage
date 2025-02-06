@@ -51,6 +51,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     var playTime: Long = 0
     val isEarly: Boolean
         get() = turn <= players.size
+    var liYouCount = 0
 
     val waitSecond: Int
         get() {
@@ -347,6 +348,17 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             }
         }, (waitSecond * 3).toLong(), TimeUnit.SECONDS)
         while (true) {
+            if (deck.noCard) {
+                logger.info("牌堆没牌了，游戏结束")
+                players.send { unknownWaitingToc { } }
+                players.send { errorMessageToc { msg = "牌堆没牌了，游戏结束" } }
+                GameExecutor.post(this, {
+                    allPlayerSetRoleFaceUp()
+                    end(emptyList(), emptyList())
+                }, 1, TimeUnit.SECONDS)
+                fsm = null
+                break
+            }
             val result = fsm!!.resolve() ?: break
             fsm = result.next
             if (!result.continueResolve) break
