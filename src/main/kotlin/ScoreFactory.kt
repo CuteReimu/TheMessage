@@ -27,12 +27,12 @@ object ScoreFactory : Logging {
         score < 1000 -> "\uD83D\uDC8D" + rankString[4 - (score - 600) / 80]
         score < 1500 -> "\uD83D\uDCA0" + rankString[4 - (score - 1000) / 100]
         score < 2000 -> "\uD83D\uDC51" + rankString[4 - (score - 1500) / 100]
-        score < 2900 -> "\u2B50" + rankString[9 - (score - 2000) / 100]
-        else -> "\u2B50" + rankString[0]
+        score < 2900 -> "\u2600\uFE0F" + rankString[9 - (score - 2000) / 100]
+        else -> "\u2600\uFE0F" + rankString[0]
     }
 
     fun getSeasonTitleByScore(score: Int): String = when {
-        score >= 2900 -> "\u2B50"
+        score >= 2900 -> "\u2600\uFE0F"
         score >= 1900 -> "\uD83D\uDC51"
         score >= 1400 -> "\uD83D\uDCA0"
         score >= 920 -> "\uD83D\uDC8D"

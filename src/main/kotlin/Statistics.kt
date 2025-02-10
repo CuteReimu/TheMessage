@@ -298,7 +298,7 @@ object Statistics {
         get() = PlayerGameCount(totalWinCount.get(), totalGameCount.get())
 
     fun getTitleRank(title: String): Int = when (title) {
-        "\u2B50" -> 1 // score >= 2900
+        "\u2600\uFE0F" -> 1 // score >= 2900
         "\uD83D\uDC51" -> 2 // score >= 1900
         "\uD83D\uDCA0" -> 3 // score >= 1400
         "\uD83D\uDC8D" -> 4 // score >= 920
@@ -310,15 +310,8 @@ object Statistics {
         val titleList = mutableListOf<String>()
         var i = 0
         while (i < titles.length) {
-            if (titles[i] == '\u2B50') {
-                // 如果是单字符 emoji（⭐）
-                titleList.add(titles[i].toString())
-                i += 1
-            } else {
-                // 处理其他双字符 emoji
-                titleList.add(titles.substring(i, i + 2))
-                i += 2
-            }
+            titleList.add(titles.substring(i, i + 2))
+            i += 2
         }
         return titleList.sortedBy { getTitleRank(it) }.joinToString("")
     }
