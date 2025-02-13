@@ -633,47 +633,47 @@ fun Player.calSendMessageCard(
                     else -> false
                 }
         })
-        
-    for (card in availableCards.sortCards(identity, true)) { 
-        val removedCard = if (isYuQinGuZong) deleteMessageCard(card.id) else null 
-        
+
+    for (card in availableCards.sortCards(identity, true)) {
+        val removedCard = if (isYuQinGuZong) deleteMessageCard(card.id) else null
+
         val (partner, enemy) = game!!.players.filter { it !== this && it!!.alive }.partition { isPartner(it!!) }
-        
+
         // Find Zhang Yiting in partners
         val zhangYiting = partner.find { it.name == "Zhang Yiting" }
-        
-        val shouldPrioritizeZhangYiting = zhangYiting != null && 
-            zhangYiting.hasTwoTrueValues() && 
+
+        val shouldPrioritizeZhangYiting = zhangYiting != null &&
+            zhangYiting.hasTwoTrueValues() &&
             partner.all { it.hasTwoTrueValues() }
-        
+
         val targetOrder = if (shouldPrioritizeZhangYiting) {
             listOf(zhangYiting!!) + (partner - zhangYiting).shuffled() + enemy.shuffled()
         } else {
             partner.shuffled() + enemy.shuffled()
         }
 
-        if (!notUp && (card.direction == Up || skills.any { it is LianLuo })) { 
-            for (target in targetOrder) { 
-                val tmpValue = calAveValue(card, 0.0) { if (this === target) this@calSendMessageCard else target!! } 
-                if (tmpValue > value) { 
-                    value = tmpValue 
-                    result = SendMessageCardResult(card, target!!, Up, emptyList(), value) 
-                } 
-            } 
-        } else if (card.direction == Left || notUp && skills.any { it is LianLuo }) { 
-            val tmpValue = calAveValue(card, 0.7, Player::getNextLeftAlivePlayer) 
-            if (tmpValue > value) { 
-                value = tmpValue 
-                result = SendMessageCardResult(card, getNextLeftAlivePlayer(), Left, emptyList(), value) 
+        if (!notUp && (card.direction == Up || skills.any { it is LianLuo })) {
+            for (target in targetOrder) {
+                val tmpValue = calAveValue(card, 0.0) { if (this === target) this@calSendMessageCard else target!! }
+                if (tmpValue > value) {
+                    value = tmpValue
+                    result = SendMessageCardResult(card, target!!, Up, emptyList(), value)
+                }
             }
-        } else if (card.direction == Right || notUp && skills.any { it is LianLuo }) { 
-            val tmpValue = calAveValue(card, 0.7, Player::getNextRightAlivePlayer) 
-            if (tmpValue > value) { 
-                value = tmpValue 
-                result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyList(), value) 
-            } 
-        } 
-        removedCard?.let { messageCards.add(it) } 
+        } else if (card.direction == Left || notUp && skills.any { it is LianLuo }) {
+            val tmpValue = calAveValue(card, 0.7, Player::getNextLeftAlivePlayer)
+            if (tmpValue > value) {
+                value = tmpValue
+                result = SendMessageCardResult(card, getNextLeftAlivePlayer(), Left, emptyList(), value)
+            }
+        } else if (card.direction == Right || notUp && skills.any { it is LianLuo }) {
+            val tmpValue = calAveValue(card, 0.7, Player::getNextRightAlivePlayer)
+            if (tmpValue > value) {
+                value = tmpValue
+                result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyList(), value)
+            }
+        }
+        removedCard?.let { messageCards.add(it) }
     }
 
     if (result.card.canLock() || skills.any { it is MustLockOne || it is QiangYingXiaLing }) {
