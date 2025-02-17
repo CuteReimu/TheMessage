@@ -10,6 +10,7 @@ import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction.*
+import com.fengsheng.protos.Common.role.zhang_yi_ting
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.*
 import com.fengsheng.skill.LengXueXunLian.MustLockOne
@@ -637,22 +638,20 @@ fun Player.calSendMessageCard(
     for (card in availableCards.sortCards(identity, true)) {
         val removedCard = if (isYuQinGuZong) deleteMessageCard(card.id) else null
 
-        val (partner, enemy) = game!!.players.filter { it !== this && it!!.alive }.partition { isPartner(it!!) }
-
-        // Find Zhang Yiting in partners
-        val zhangYiting = partner.find { it.name == "Zhang Yiting" }
-
-        val shouldPrioritizeZhangYiting = zhangYiting != null &&
-            zhangYiting.hasTwoTrueValues() &&
-            partner.all { it.hasTwoTrueValues() }
-
-        val targetOrder = if (shouldPrioritizeZhangYiting) {
-            listOf(zhangYiting!!) + (partner - zhangYiting).shuffled() + enemy.shuffled()
-        } else {
-            partner.shuffled() + enemy.shuffled()
-        }
-
         if (!notUp && (card.direction == Up || skills.any { it is LianLuo })) {
+            val (partner, enemy) = game!!.players.filter { it !== this && it!!.alive }.partition { isPartner(it!!) }
+
+            // Find Zhang Yiting in partners
+            val zhangYiting = partner.find { it!!.role == zhang_yi_ting }
+
+            val shouldPrioritizeZhangYiting = zhangYiting != null &&
+                zhangYiting.messageCards.count(identity) == partner.maxOf { it!!.messageCards.count(identity) }
+
+            val targetOrder = if (shouldPrioritizeZhangYiting) {
+                listOf(zhangYiting!!) + (partner - zhangYiting).shuffled() + enemy.shuffled()
+            } else {
+                partner.shuffled() + enemy.shuffled()
+            }
             for (target in targetOrder) {
                 val tmpValue = calAveValue(card, 0.0) { if (this === target) this@calSendMessageCard else target!! }
                 if (tmpValue > value) {
