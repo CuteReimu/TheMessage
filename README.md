@@ -9,6 +9,8 @@
 
 **如果你非常想为本项目做贡献，但又不知道从哪里入手，可以尝试解决[这些问题](https://github.com/CuteReimu/TheMessage/contribute)**
 
+**你也可以[加入交流群](https://qm.qq.com/q/X7bBZ5qGiq)**
+
 ## 声明
 
 - **本项目采用`AGPLv3`协议开源，任何直接、间接接触本项目的软件也要求使用`AGPLv3`协议开源**
