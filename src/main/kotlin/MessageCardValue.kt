@@ -272,7 +272,7 @@ fun Player.calculateMessageCardValue(
                 }
             }
             v1 = merge(v1, valueMe)
-            logger.debug("这是[王魁]传出的情报，计算[以牙还牙]额外分数为$valueMe")
+            logger.debug("这是[王魁]接收的情报，计算[以牙还牙]额外分数为$valueMe")
             inFrontOfWhom.messageCards.removeLast()
         }
         if (Black !in colors && sender.skills.any { it is ChiZiZhiXin } && sender !== inFrontOfWhom) { // 青年小九
