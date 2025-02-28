@@ -5,7 +5,7 @@ plugins {
     application
     idea
     id("com.google.protobuf") version "0.9.4"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
 }
 
 group = "com.fengsheng"
