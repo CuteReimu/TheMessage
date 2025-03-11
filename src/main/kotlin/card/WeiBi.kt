@@ -14,6 +14,7 @@ import com.fengsheng.protos.weiBiGiveCardTos
 import com.fengsheng.protos.weiBiShowHandCardToc
 import com.fengsheng.protos.weiBiWaitForGiveCardToc
 import com.fengsheng.skill.*
+import com.fengsheng.skill.SkillId.HUO_XIN
 import com.fengsheng.skill.SkillId.SHOU_KOU_RU_PING
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
@@ -204,7 +205,7 @@ class WeiBi : Card {
         fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Wei_Bi) || return false
-            !player.game!!.isEarly || return false
+            !player.game!!.isEarly || player.getSkillUseCount(HUO_XIN) > 0 || return false
             val yaPao = player.game!!.players.find {
                 it!!.alive && it.findSkill(SHOU_KOU_RU_PING) != null
             }
