@@ -168,6 +168,7 @@ class RobotPlayer : Player() {
                             return@run !(isPartner(nextPlayer) && nextPlayer.role == zhang_yi_ting)
                         }
                     }
+                    if (isPartner(nextPlayer) && myNextValue > myValue) return@run false
                     val lockPlayer = fsm.lockedPlayers.ifEmpty { listOf(fsm.sender) }.first()
                     if (isPartner(lockPlayer)) { // 场上有被锁的队友
                         val lockValue = calculateMessageCardValue(
