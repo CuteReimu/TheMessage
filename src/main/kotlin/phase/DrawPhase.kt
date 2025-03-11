@@ -18,6 +18,7 @@ data class DrawPhase(override val whoseTurn: Player) : Fsm {
             whoseTurn.coefficientA = (whoseTurn.coefficientA + 1) / 2
             whoseTurn.coefficientB = (whoseTurn.coefficientB + 1) / 2
         }
+        whoseTurn.game!!.turn++
         whoseTurn.game!!.realTurn++
         logger.info("${whoseTurn}的回合开始了")
         for (p in whoseTurn.game!!.players) {
