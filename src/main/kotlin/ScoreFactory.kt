@@ -113,9 +113,9 @@ object ScoreFactory : Logging {
             }
             if (identity == Has_No_Identity) score /= winners.count { it.identity == Has_No_Identity }.coerceAtLeast(1)
             score *= 1 + delta / 100.0 / when {
-                originIdentity != Black -> 1
-                players.size <= 6 -> 2
-                else -> 3
+                originIdentity != Black -> 1.0
+                players.size <= 6 -> 2.0 / winners.size
+                else -> 3.0 / winners.size
             }
         } else {
             score = Score(if (players.size <= 6) -7.0 else -12.0)
