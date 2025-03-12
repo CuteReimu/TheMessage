@@ -78,7 +78,7 @@ object ScoreFactory : Logging {
             var negativeMultiple = 1.0
             operator fun timesAssign(multiple: Double) {
                 if (multiple >= 1.0) positiveMultiple += multiple - 1.0 // 加分加算
-                else negativeMultiple *= multiple.coerceAtLeast(0.1) // 减分乘算
+                else negativeMultiple *= multiple.coerceAtLeast(0.01) // 减分乘算
             }
 
             operator fun divAssign(v: Int) {
@@ -112,7 +112,11 @@ object ScoreFactory : Logging {
                 }
             }
             if (identity == Has_No_Identity) score /= winners.count { it.identity == Has_No_Identity }.coerceAtLeast(1)
-            score *= 1 + delta / 100.0
+            score *= 1 + delta / 100.0 / when {
+                originIdentity != Black -> 1
+                players.size <= 6 -> 2
+                else -> 3
+            }
         } else {
             score = Score(if (players.size <= 6) -7.0 else -12.0)
             if (originIdentity == Black) {
