@@ -34,6 +34,7 @@ object Statistics {
     private val totalGameCount = AtomicInteger()
     private val trialStartTime = ConcurrentHashMap<String, Long>()
     val rankList25 = AtomicReference<String>()
+    val rankList100 = AtomicReference<String>()
     val rankListImage = AtomicReference<BufferedImage>()
 
     init {
@@ -246,6 +247,7 @@ object Statistics {
 
         rankListImage.set(Image.genRankListImage(l1.take(50)))
         rankList25.set(makeRankList(25))
+        rankList100.set(makeRankList(100))
     }
 
     fun resetPassword(name: String): Boolean {
