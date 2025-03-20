@@ -1609,7 +1609,7 @@ message skill_xiang_jin_si_suo_a_toc {
   uint32 target_player_id = 3;
 }
 
-// 广播使用【详尽思索】B：若最后情报被该角色接收，你摸两张牌（摸牌走摸牌协议）
+// 广播使用【详尽思索】B：若本回合该角色接收了情报，且你本回合没有使用【截获】【误导】【调包】，你摸一张牌（摸牌走摸牌协议）
 message skill_xiang_jin_si_suo_b_toc {
   uint32 player_id = 1; // 孙守謨的ID
 }

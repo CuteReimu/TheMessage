@@ -28,6 +28,7 @@ data class OnSendCardSkill(
     val isMessageCardFaceUp: Boolean,
 ) : ProcessFsm() {
     override fun onSwitch() {
+        sender.isSender = true
         sender.game!!.addEvent(SendCardEvent(whoseTurn, sender, messageCard, targetPlayer, dir, lockedPlayers))
     }
 

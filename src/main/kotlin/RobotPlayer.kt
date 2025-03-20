@@ -323,7 +323,9 @@ class RobotPlayer : Player() {
             if (identity != Black)
                 target = game!!.players.find { it !== this && it!!.alive && it.identity == identity }
             if (target == null) // 如果没有人给，则从本回合没有出过牌的人（不包含该回合角色和情报传出者）中随机挑一个给
-                target = game!!.players.filter { it !== fsm.whoseTurn && it!!.alive && !it.useCardThisTurn }.randomOrNull()
+                target = game!!.players.filter {
+                    it !== fsm.whoseTurn && it!!.alive && !it.isSender && it.useCardThisTurn.isEmpty()
+                }.randomOrNull()
             if (target != null) {
                 val giveCards = cards.sortCards(identity, true).takeLast(3)
                 if (giveCards.isNotEmpty()) {

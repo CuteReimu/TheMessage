@@ -2,9 +2,8 @@ package com.fengsheng.skill
 
 import com.fengsheng.*
 import com.fengsheng.card.count
-import com.fengsheng.card.countTrueCard
 import com.fengsheng.phase.SendPhaseIdle
-import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Up
 import com.fengsheng.protos.Role.skill_workers_are_knowledgable_tos
@@ -16,16 +15,21 @@ import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
 
 /**
- * 火车司机技能【咱们工人有知识】：根据你有的情报数量，
- * * 摸牌阶段：每张红/蓝情报，多摸一张牌
- * * 你传出非直达情报时：每张黑情报，可以选择一名角色本轮不能选择接收情报
+ * 火车司机技能【咱们工人有知识】：
+ * * 摸牌阶段，若你有红色情报，额外摸一张牌，若你有蓝色情报，额外摸一张牌。
+ * * 你传出非直达情报时，每张黑情报，可以选择一名角色本轮不能选择接收情报。
  */
 class WorkersAreKnowledgable : ChangeDrawCardCountSkill, TriggeredSkill {
     override val skillId = SkillId.WORKERS_ARE_KNOWLEDGABLE
 
     override val isInitialSkill = true
 
-    override fun changeDrawCardCount(player: Player, oldCount: Int) = oldCount + player.messageCards.countTrueCard()
+    override fun changeDrawCardCount(player: Player, oldCount: Int): Int {
+        var additionalCount = 0
+        if (player.messageCards.any { Red in it.colors }) additionalCount++
+        if (player.messageCards.any { Blue in it.colors }) additionalCount++
+        return oldCount + additionalCount
+    }
 
     override fun execute(g: Game, askWhom: Player): ResolveResult? {
         val e = g.findEvent<SendCardEvent>(this) { event ->

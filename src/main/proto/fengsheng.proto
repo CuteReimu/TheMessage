@@ -1,6 +1,8 @@
 syntax = "proto3";
-option java_package = "com.fengsheng.protos";
+
 import "common.proto";
+
+option java_package = "com.fengsheng.protos";
 
 message reconnect_toc {
   bool is_end = 1; // false-开始，true-结束
@@ -86,6 +88,11 @@ message get_room_info_toc {
   uint32          room_id = 9; // 房间号
   uint32          in_game_count = 10; // 正在进行游戏的桌数
   repeated string title = 12; // 称号
+}
+
+// 通知房间倒计时
+message notify_room_start_timer_toc {
+  uint32 seconds = 1; // 倒计时的秒数，0表示停止倒计时
 }
 
 // 请求加一个机器人

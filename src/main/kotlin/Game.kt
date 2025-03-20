@@ -84,11 +84,13 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             else -> 10L
         }
         gameStartTimeout = GameExecutor.post(this, { start() }, delay, TimeUnit.SECONDS)
+        players.send { notifyRoomStartTimerToc { seconds = delay.toInt().coerceAtLeast(1) } }
     }
 
     fun cancelStartTimer() {
         gameStartTimeout?.cancel()
         gameStartTimeout = null
+        players.send { notifyRoomStartTimerToc { } }
     }
 
     /**

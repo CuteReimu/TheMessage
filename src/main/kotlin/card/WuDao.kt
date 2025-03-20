@@ -71,7 +71,7 @@ class WuDao : Card {
          * @return 返回[ResolveCard]，要自行调用[Game.resolve]
          */
         fun onUseCard(card: Card?, g: Game, r: Player, target: Player): ResolveCard {
-            r.useCardThisTurn = true
+            r.useCardThisTurn.add(Wu_Dao)
             val fsm = g.fsm as FightPhaseIdle
             card?.apply { r.deleteCard(id) }
             val resolveFunc = { valid: Boolean ->

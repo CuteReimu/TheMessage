@@ -44,8 +44,11 @@ abstract class Player protected constructor() {
     /** 威逼的明牌 */
     val canWeiBiCardIds = HashSet<Int>()
 
-    /** 本回合是否使用过牌 */
-    var useCardThisTurn = false
+    /** 本回合使用过的牌（目前只记了截获、误导、调包） */
+    val useCardThisTurn = HashSet<card_type>()
+
+    /** 是否为本回合的情报传出者 */
+    var isSender = false
 
     var roleSkillsData = RoleSkillsData()
         set(value) {

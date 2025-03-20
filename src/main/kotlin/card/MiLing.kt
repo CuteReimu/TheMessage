@@ -68,7 +68,6 @@ class MiLing : Card {
         val target = args[0] as Player
         val secret = args[1] as Int
         val color = this.secret[secret]
-        target.useCardThisTurn = true
         logger.info("${r}对${target}使用了$this，并宣言了$color")
         r.deleteCard(id)
         val hasColor = target.cards.any { color in it.colors }

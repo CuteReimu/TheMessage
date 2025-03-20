@@ -64,7 +64,7 @@ class JieHuo : Card {
          * @param card 使用的那张【截获】卡牌。可以为 `null` ，因为鄭文先技能【偷天】可以视为使用了【截获】。
          */
         fun execute(card: JieHuo?, g: Game, r: Player) {
-            r.useCardThisTurn = true
+            r.useCardThisTurn.add(Jie_Huo)
             val fsm = g.fsm as FightPhaseIdle
             val resolveFunc = { valid: Boolean ->
                 if (valid) {

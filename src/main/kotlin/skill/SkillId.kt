@@ -84,6 +84,7 @@ enum class SkillId(private val cName: String) {
     YOU_DI_SHEN_RU("诱敌深入"),
     JIAN_DI_FENG_XING("歼敌风行"),
     XIANG_JIN_SI_SUO("详尽思索"),
+    XIANG_JIN_SI_SUO2("详尽思索2"),
     QIANG_YING_XIA_LING("强硬下令"),
     JIE_CHE_YUN_HUO("借车运货"),
     WORKERS_ARE_KNOWLEDGABLE("咱们工人有知识"),

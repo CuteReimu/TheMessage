@@ -44,7 +44,7 @@ class DiaoBao : Card {
 
     override fun execute(g: Game, r: Player, vararg args: Any) {
         val fsm = g.fsm as FightPhaseIdle
-        r.useCardThisTurn = true
+        r.useCardThisTurn.add(Diao_Bao)
         logger.info("${r}使用了$this")
         r.deleteCard(id)
         val resolveFunc = { _: Boolean ->
