@@ -34,13 +34,13 @@ class AddRobotTos : AbstractProtoHandler<Fengsheng.add_robot_tos>() {
             }
             if (humanCount <= 1 && emptyPosition == 1) {
                 if (Statistics.getEnergy(r.playerName) <= 0) {
-                    r.sendErrorMessage("""你的精力不足，不能进行人机局。你可以在群里输入"精力系统"了解。""")
+                    r.sendErrorMessage("""你的精力不足，不能进行人机局，请签到。你可以在群里输入"精力系统"了解。""")
                     return
                 }
                 if (Game.gameCache.count { (_, v) -> // 未开始或有空位的房间（含本房间）大于1，则禁止开局
                         !v.isStarted || v.players.any { it !is HumanPlayer }
                     } > 2) {
-                    r.sendErrorMessage("""有其他玩家正在进行游戏，请等待他们一起吧！""")
+                    r.sendErrorMessage("""已有两个房间，不再允许开启纯人机房，请和其他玩家一起游戏！""")
                     return
                 }
             }

@@ -1,10 +1,12 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
+import com.fengsheng.card.count
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
+import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
 import com.fengsheng.protos.skillYouDiShenRuToc
@@ -100,6 +102,9 @@ class YouDiShenRu : ActiveSkill {
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
             val game = player.game!!
+            player.game!!.players.any {
+                it!!.alive && it.identity in listOf(Common.color.Red, Common.color.Blue) && it.messageCards.count(it.identity) == 2
+            } || return false
             val result = player.calSendMessageCard()
             GameExecutor.post(game, {
                 skill.executeProtocol(game, player, skillYouDiShenRuTos {
