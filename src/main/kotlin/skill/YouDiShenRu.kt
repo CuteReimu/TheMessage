@@ -6,8 +6,9 @@ import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
-import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.color.Black
+import com.fengsheng.protos.Common.color.Blue
+import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
 import com.fengsheng.protos.skillYouDiShenRuToc
 import com.fengsheng.protos.skillYouDiShenRuTos
@@ -103,7 +104,7 @@ class YouDiShenRu : ActiveSkill {
             val player = e.whoseTurn
             val game = player.game!!
             player.game!!.players.any {
-                it!!.alive && it.identity in listOf(Common.color.Red, Common.color.Blue) && it.messageCards.count(it.identity) == 2
+                it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
             } || return false
             val result = player.calSendMessageCard()
             GameExecutor.post(game, {
