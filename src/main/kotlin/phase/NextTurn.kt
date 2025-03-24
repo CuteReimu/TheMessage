@@ -50,9 +50,9 @@ data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
     }
 
     private fun checkDisturberWin(game: Game): Boolean { // 无需判断簒夺者，因为簒夺者、搅局者都要求是自己回合
-        val players = game.players.filterNotNull().filter { !it.lose }
+        if (whoseTurn.lose) return false // 失败了则不能赢
         if (whoseTurn.identity != Black || whoseTurn.secretTask != Disturber) return false // 不是搅局者
-        if (players.any { it !== whoseTurn && it.alive && it.messageCards.countTrueCard() < 2 }) return false
+        if (game.players.any { it !== whoseTurn && it!!.alive && it.messageCards.countTrueCard() < 2 }) return false
         val declaredWinner = arrayListOf(whoseTurn)
         val winner = arrayListOf(whoseTurn)
         game.changeGameResult(whoseTurn, declaredWinner, winner)
