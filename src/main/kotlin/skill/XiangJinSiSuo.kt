@@ -56,10 +56,6 @@ class XiangJinSiSuo : TriggeredSkill {
                         val whoseTurn = event.whoseTurn
                         val sender = event.sender
                         val target = event.targetPlayer
-                        if (sender.isEnemy(r) && sender.willWin(whoseTurn, sender, event.messageCard))
-                            return@skillXiangJinSiSuoATos
-                        if (target.isEnemy(r) && target.willWin(whoseTurn, target, event.messageCard))
-                            return@skillXiangJinSiSuoATos
                         val availablePlayers = arrayListOf(target)
                         if (event.dir == Up && !event.lockedPlayers.any { it === target }) {
                             val v1 = target.calculateMessageCardValue(whoseTurn, target, event.messageCard, sender = sender)
@@ -84,8 +80,6 @@ class XiangJinSiSuo : TriggeredSkill {
                                 bestTarget = t
                             }
                         }
-                        if (bestTarget !== sender && bestTarget !== target)
-                            return@skillXiangJinSiSuoATos
                         enable = true
                         targetPlayerId = r.getAlternativeLocation(bestTarget.location)
                     })
