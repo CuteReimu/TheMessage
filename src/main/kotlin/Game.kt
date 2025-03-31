@@ -174,7 +174,24 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         identities.shuffle()
         if (!Config.IsGmEnable && players.count { it is HumanPlayer } == 1) {
             val i = players.indexOfFirst { it is HumanPlayer }
-            if (Statistics.getScore(players[i]!!.playerName) == 0 && identities[i] == Black) { // 对于0分的新人，确保一定是阵营方
+            val score = Statistics.getScore(players[i]!!.playerName) ?: 0
+            if (score < 100) {
+                for (p in players) {
+                    if (p is RobotPlayer) {
+                        p.coefficientA =
+                            if (p.coefficientA < 1.0)
+                                (p.coefficientA * score + 0.8 * (100 - score)) / 100
+                            else
+                                (p.coefficientA * score + 1.2 * (100 - score)) / 100
+                        p.coefficientB =
+                            if (p.coefficientB < 0)
+                                (p.coefficientB * score - 15 * (100 - score)) / 100
+                            else
+                                (p.coefficientB * score + 15 * (100 - score)) / 100
+                    }
+                }
+            }
+            if (score == 0 && identities[i] == Black) { // 对于0分的新人，确保一定是阵营方
                 val j = identities.indexOfFirst { it != Black }
                 identities[i] = identities[j]
                 identities[j] = Black

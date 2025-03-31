@@ -41,20 +41,6 @@ class RobotPlayer : Player() {
             val ai = aiSkillMainPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as ActiveSkill)) return
         }
-        if (!Config.IsGmEnable && game!!.players.count { it is HumanPlayer } == 1) {
-            val human = game!!.players.first { it is HumanPlayer }!!
-            if (isEnemy(human) && !(cards.size == 1 && cards.first().type == Ping_Heng)) {
-                val info = Statistics.getPlayerInfo(human.playerName)
-                if (info != null) {
-                    val score = info.score
-                    val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
-                    if (!isPowerfulPlayer && score < 20) {
-                        GameExecutor.post(game!!, { game!!.resolve(SendPhaseStart(this)) }, 1, TimeUnit.SECONDS)
-                        return
-                    }
-                }
-            }
-        }
         if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null ||
             cards.size == 1 && cards.first().type in listOf(Ping_Heng, Feng_Yun_Bian_Huan)) {
             val cardTypes =
@@ -210,20 +196,6 @@ class RobotPlayer : Player() {
         this === fsm.whoseFightTurn || return
         val delay = game!!.animationDelayMs
         game!!.animationDelayMs = 0
-        if (!Config.IsGmEnable && game!!.players.count { it is HumanPlayer } == 1) {
-            val human = game!!.players.first { it is HumanPlayer }!!
-            if (isEnemy(human)) {
-                val info = Statistics.getPlayerInfo(human.playerName)
-                if (info != null) {
-                    val score = info.score
-                    val isPowerfulPlayer = info.winCount > 0 && info.winCount * 2 >= info.gameCount
-                    if (!isPowerfulPlayer && score < 20) {
-                        GameExecutor.post(game!!, { game!!.resolve(FightPhaseNext(fsm)) }, 500 + delay, TimeUnit.MILLISECONDS)
-                        return
-                    }
-                }
-            }
-        }
         for (skill in skills) {
             val ai = aiSkillFightPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as? ActiveSkill)) return
