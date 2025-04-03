@@ -11,6 +11,8 @@
 
 **你也可以[加入交流群](https://qm.qq.com/q/X7bBZ5qGiq)**
 
+**如果想要了解游戏规则，可以跳转到[CuteReimu/fengsheng-doc](https://cutereimu.github.io/fengsheng-doc/)**
+
 ## 声明
 
 - **本项目采用`AGPLv3`协议开源，任何直接、间接接触本项目的软件也要求使用`AGPLv3`协议开源**
