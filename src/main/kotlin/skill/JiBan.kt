@@ -4,7 +4,7 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.bestCard
 import com.fengsheng.card.filterByRole
 import com.fengsheng.phase.MainPhaseIdle
-import com.fengsheng.protos.Common.card_type.Ping_Heng
+import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Role.skill_ji_ban_a_tos
 import com.fengsheng.protos.Role.skill_ji_ban_b_tos
 import com.fengsheng.protos.skillJiBanAToc
@@ -140,12 +140,15 @@ class JiBan : MainPhaseSkill() {
             val availableTargets = r.game!!.players.filter { it!!.alive && it !== r } // 如果所有人都死了游戏就结束了，所以这里一定不为空
             val players =
                 if (seq != 0) availableTargets
-                // 机器人优先选队友
+                // 机器人优先选队友，首轮随机
+                else if (r.game!!.isEarly) availableTargets
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets }
             val player = players.random()!!
 
             val chosenCard =
                 if (seq != 0) listOf(r.cards.random())
+                else if (r.game!!.isEarly) // 首轮选价值最低的牌给出去
+                    listOf(r.cards.bestCard(r.identity, true))
                 else {
                     // 如果手里有平衡，同时选中了队友，那么把除平衡外所有牌都给出去
                     if (r.cards.any { card -> card.type == Ping_Heng } && r.isPartner(player)) {
@@ -182,6 +185,16 @@ class JiBan : MainPhaseSkill() {
 
     companion object {
         fun ai(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
+            val p = e.whoseTurn
+            p.getSkillUseCount(SkillId.JI_BAN) == 0 || return false
+            !p.cards.any { it.type == Li_You || it.type == Wei_Bi } || return false
+            GameExecutor.post(p.game!!, {
+                skill.executeProtocol(p.game!!, p, skillJiBanATos { })
+            }, 3, TimeUnit.SECONDS)
+            return true
+        }
+
+        fun ai2(e: MainPhaseIdle, skill: ActiveSkill): Boolean {
             if (e.whoseTurn.getSkillUseCount(SkillId.JI_BAN) > 0) return false
             GameExecutor.post(e.whoseTurn.game!!, {
                 skill.executeProtocol(e.whoseTurn.game!!, e.whoseTurn, skillJiBanATos { })

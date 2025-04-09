@@ -230,7 +230,10 @@ class WeiBi : Card {
                 it !== player && it!!.alive &&
                     (!it.roleFaceUp || !it.skills.any { s -> s is ChengFu || s is ShouKouRuPing || s is CunBuBuRang }) &&
                     it.isEnemy(player) &&
-                    it.cards.any { card -> card.id !in player.canWeiBiCardIds || card.type in availableCardType }
+                    it.cards.any { card ->
+                        if (player.game!!.isEarly) card.id in player.canWeiBiCardIds
+                        else card.id !in player.canWeiBiCardIds || card.type in availableCardType
+                    }
             }.run {
                 filter {
                     it!!.cards.any { card ->

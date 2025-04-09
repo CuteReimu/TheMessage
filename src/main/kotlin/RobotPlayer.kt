@@ -338,6 +338,7 @@ class RobotPlayer : Player() {
         )
         private val aiSkillMainPhase2 = hashMapOf(
             JIAO_JI to JiaoJi::ai,
+            JI_BAN to JiBan::ai2,
         )
         private val aiSkillSendPhaseStart = hashMapOf(
             LENG_XUE_XUN_LIAN to LengXueXunLian::ai,
