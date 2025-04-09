@@ -83,6 +83,13 @@ object GameExecutor {
             if (maxScore < 70)
                 return TimeWheel.newTimeout({ post(game, callback) }, (10 - maxScore / 10).toLong(), unit)
         }
+        if (delay == 1L && unit == TimeUnit.SECONDS) {
+            val maxScore = game.players.maxOf { if (it is HumanPlayer) Statistics.getScore(it.playerName) ?: 9999 else 0 }
+            if (maxScore < 35)
+                return TimeWheel.newTimeout({ post(game, callback) }, 3L, unit)
+            if (maxScore < 70)
+                return TimeWheel.newTimeout({ post(game, callback) }, 2L, unit)
+        }
         return TimeWheel.newTimeout({
             post(game) {
                 game.timeoutSecond = delay.toInt()
