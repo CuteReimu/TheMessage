@@ -440,13 +440,12 @@ fun Player.calculateMessageCardValue(
                             it.willWinInternal(whoseTurn, inFrontOfWhom, colors, false)
                     }) return -600
             } else if (identity == Black) { // 秦圆圆的回合，神秘人没关系，反正没有队友
+                val coefficient = if (coefficientA >= 1) 2.0 - coefficientA else coefficientA
                 if (!(this === inFrontOfWhom && willDie(colors)) && game!!.players.any {
                         it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return 600
-                val coefficient = if (coefficientA >= 1) coefficientA - 0.2 else coefficientA
                 if (game!!.players.any {
-                        it !== disturber && isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors,
-                            checkAllSecretTask = coefficientA >= 1) // 激进型需要判断所有神秘人任务
+                        it!!.identity != Black && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return if (Random.nextDouble() < coefficient) -600 else 0 // 根据打牌风格，有80%到100%几率管
             } else if (inFrontOfWhom.identity in colors && inFrontOfWhom.messageCards.count(inFrontOfWhom.identity) >= 2) {
                 return if (inFrontOfWhom === this || isPartner(inFrontOfWhom) &&
@@ -454,12 +453,25 @@ fun Player.calculateMessageCardValue(
                 ) 600 else -600
             }
         } else {
-            if (game!!.players.any {
-                    it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
-                }) return 600
-            if (game!!.players.any {
-                    it !== disturber && isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
-                }) return -600
+            val coefficient = if (coefficientA >= 1) 2.0 - coefficientA else coefficientA
+            if (identity == Black) {
+                if (game!!.players.any {
+                        it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                    }) return 600
+                if (game!!.players.any {
+                        it!!.identity != Black && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                    }) return if (Random.nextDouble() < coefficient) -600 else 0 // 根据打牌风格，有80%到100%几率管
+            } else {
+                if (game!!.players.any {
+                        it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                    }) return 600
+                if (game!!.players.any {
+                        it !== disturber && isEnemy(it!!) &&
+                            (it.identity != Black || Random.nextDouble() < coefficient) && // 有几率不管神秘人
+                            it.willWinInternal(whoseTurn, inFrontOfWhom, colors,
+                                checkAllSecretTask = coefficientA >= 1) // 激进型需要判断所有神秘人任务
+                    }) return -600
+            }
         }
     }
     if (disturber != null && disturber.willWinInternal(whoseTurn, inFrontOfWhom, colors))
