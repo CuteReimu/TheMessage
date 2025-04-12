@@ -62,7 +62,7 @@ object Statistics {
                     sb.append(r.role).append(',')
                     sb.append(r.isWinner).append(',')
                     sb.append(r.identity).append(',')
-                    sb.append(if (r.identity == color.Black) r.task.toString() else "").append(',')
+                    sb.append(if (r.identity == Black) r.task.toString() else "").append(',')
                     sb.append(r.totalPlayerCount).append(',')
                     sb.append(time).append('\n')
                 }

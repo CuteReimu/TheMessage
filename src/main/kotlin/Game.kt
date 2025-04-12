@@ -252,18 +252,20 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                     }
                 }
                 val playerGameResultList = ArrayList<PlayerGameResult>()
-                if (players.size == humanPlayers.size) {
+                if (humanPlayers.size > 1 || humanPlayers.any { (Statistics.getScore(it) ?: 0) >= 100 }) {
                     val records = ArrayList<Statistics.Record>(players.size)
                     for (p in players) {
-                        records.add(
-                            Statistics.Record(
-                                p!!.originRole,
-                                winners.any { it === p },
-                                p.originIdentity,
-                                p.originSecretTask,
-                                players.size
+                        if (p is HumanPlayer) {
+                            records.add(
+                                Statistics.Record(
+                                    p.originRole,
+                                    winners.any { it === p },
+                                    p.originIdentity,
+                                    p.originSecretTask,
+                                    players.size
+                                )
                             )
-                        )
+                        }
                     }
                     Statistics.add(records)
                 }
