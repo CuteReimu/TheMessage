@@ -56,6 +56,34 @@ object Image {
     private const val CELL_H = 18
     private val font = Font("宋体", 0, CELL_H - 3)
 
+    /**
+     * @return {"角色名": $[总场次, 胜场$]}
+     */
+    fun getWinRateJson(): Map<String, IntArray> {
+        val appearCount = HashMap<Common.role, Int>()
+        val winCount = HashMap<Common.role, Int>()
+        FileInputStream("stat.csv").use { `is` ->
+            BufferedReader(InputStreamReader(`is`)).use { reader ->
+                var line: String?
+                while (true) {
+                    line = reader.readLine()
+                    if (line == null) break
+                    val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }
+                    val role = Common.role.valueOf(a[0])
+                    appearCount[role] = (appearCount[role] ?: 0) + 1
+                    if (a[1].toBoolean())
+                        winCount[role] = (winCount[role] ?: 0) + 1
+                }
+            }
+        }
+        val result = HashMap<String, IntArray>()
+        for ((key, appear) in appearCount) {
+            val win = winCount[key] ?: 0
+            result[RoleCache.getRoleName(key) ?: ""] = intArrayOf(appear, win)
+        }
+        return result
+    }
+
     fun getWinRateImage(): BufferedImage {
         fun IntArray.inc(index: Int? = null) {
             this[0]++

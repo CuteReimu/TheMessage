@@ -127,6 +127,7 @@ push.push_qq_groups=12345678
 | /forbidplayer     | name=aaa&hour=72                 | 封号，其中name是用户名，hour是小时                                                                  |
 | /releaseplayer    | name=aaa                         | 解封，其中name是用户名                                                                          |
 | /winrate          | 无                                | 返回一张胜率统计的png图片                                                                         |
+| /winrate2         | 无                                | 返回json格式的胜率统计信息                                                                        |
 | /resetseason      | 无                                | 重置赛季，重置前请手动备份PlayerInfo.csv                                                            |
 | /addenergy        | name=aaa&energy=1                | 增加精力                                                                                   |
 | /getallgames      | 无                                | 获取所有房间的状态                                                                              |
