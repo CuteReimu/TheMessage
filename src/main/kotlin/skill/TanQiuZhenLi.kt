@@ -244,6 +244,11 @@ class TanQiuZhenLi : MainPhaseSkill() {
                                 target = PlayerAndCard(p, c)
                             }
                         }
+                    } else { // 对方不放
+                        if (v1 + v2 > value) {
+                            value = v1 + v2
+                            target = PlayerAndCard(p, c)
+                        }
                     }
                     player.messageCards.removeLast()
                     if (index >= 0) p.messageCards.add(index, c)
