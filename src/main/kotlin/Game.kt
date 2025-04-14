@@ -267,7 +267,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
                             )
                         }
                     }
-                    Statistics.add(records)
+                    if (records.isNotEmpty()) Statistics.add(records)
                 }
                 for (p in humanPlayers) {
                     if (humanPlayers.size <= 1) Statistics.addEnergy(p.playerName, -1)
