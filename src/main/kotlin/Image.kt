@@ -57,6 +57,32 @@ object Image {
     private val font = Font("宋体", 0, CELL_H - 3)
 
     /**
+     * @return $[{"date": 日期, "count": 场次, "pc": 人次}$]
+     */
+    fun getFrequency(): List<Map<String, Any>> {
+        val count = HashMap<String, HashSet<String>>()
+        val pc = HashMap<String, Int>()
+        FileInputStream("stat.csv").use { `is` ->
+            BufferedReader(InputStreamReader(`is`)).use { reader ->
+                var line: String?
+                while (true) {
+                    line = reader.readLine()
+                    if (line.isNullOrBlank()) break
+                    val a = line.split(",").dropLastWhile { it.isEmpty() }
+                    if (a.size < 6) continue
+                    val time = a[5]
+                    val date = time.split(" ")[0]
+                    count.getOrPut(date) { HashSet<String>() }.add(time)
+                    pc[date] = (pc[date] ?: 0) + 1
+                }
+            }
+        }
+        return count.map { (date, c) ->
+            mapOf("date" to date, "count" to c.size, "pc" to (pc[date] ?: 0))
+        }.sortedBy { it["date"] as String }.takeLast(30)
+    }
+
+    /**
      * @return {"角色名": $[总场次, 胜场$]}
      */
     fun getWinRateJson(): Map<String, IntArray> {
@@ -67,8 +93,8 @@ object Image {
                 var line: String?
                 while (true) {
                     line = reader.readLine()
-                    if (line == null) break
-                    val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }
+                    if (line.isNullOrBlank()) break
+                    val a = line.split(",").dropLastWhile { it.isEmpty() }
                     val role = Common.role.valueOf(a[0])
                     appearCount[role] = (appearCount[role] ?: 0) + 1
                     if (a[1].toBoolean())
@@ -112,8 +138,8 @@ object Image {
                 var line: String?
                 while (true) {
                     line = reader.readLine()
-                    if (line == null) break
-                    val a = line.split(Regex(",")).dropLastWhile { it.isEmpty() }
+                    if (line.isNullOrBlank()) break
+                    val a = line.split(",").dropLastWhile { it.isEmpty() }
                     val role = Common.role.valueOf(a[0])
                     val appear = appearCount.computeIfAbsent(role) { IntArray(10) }
                     val win = winCount.computeIfAbsent(role) { IntArray(10) }
