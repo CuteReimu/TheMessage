@@ -106,7 +106,7 @@ class ShiTan : Card {
 
         override fun resolve(): ResolveResult? {
             r.coefficientA = (r.coefficientA + 1) / 2
-            r.coefficientB = (r.coefficientB + 1) / 2
+            r.coefficientB /= 2
             r.game!!.players.send { p ->
                 showShiTanToc {
                     playerId = p.getAlternativeLocation(r.location)

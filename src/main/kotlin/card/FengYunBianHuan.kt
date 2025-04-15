@@ -155,7 +155,7 @@ class FengYunBianHuan : Card {
                 for (p in player.game!!.players) {
                     if (p!!.alive && p.isPartner(player)) {
                         p.coefficientA = (p.coefficientA + 1) / 2
-                        p.coefficientB = (p.coefficientB + 1) / 2
+                        p.coefficientB /= 2
                     }
                 }
             } else {

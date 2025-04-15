@@ -16,7 +16,7 @@ data class DrawPhase(override val whoseTurn: Player) : Fsm {
         }
         if (!whoseTurn.game!!.isEarly) {
             whoseTurn.coefficientA = (whoseTurn.coefficientA + 1) / 2
-            whoseTurn.coefficientB = (whoseTurn.coefficientB + 1) / 2
+            whoseTurn.coefficientB /= 2
         }
         whoseTurn.game!!.turn++
         whoseTurn.game!!.realTurn++
