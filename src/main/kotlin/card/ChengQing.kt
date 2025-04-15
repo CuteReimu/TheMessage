@@ -123,7 +123,7 @@ class ChengQing : Card {
             var value = 10
             var playerAndCard: PlayerAndCard? = null
             for (p in g.sortedFrom(g.players, player.location)) {
-                p.alive && (p === player || !g.isEarly) && p.isPartnerOrSelf(player) || continue
+                p.alive && (p === player || !g.isEarly) || continue
                 for (c in p.messageCards.toList()) {
                     c.isBlack() || continue
                     val v = player.calculateRemoveCardValue(player, p, c)
