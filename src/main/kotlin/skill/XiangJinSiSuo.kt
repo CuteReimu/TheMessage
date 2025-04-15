@@ -63,13 +63,6 @@ class XiangJinSiSuo : TriggeredSkill {
                             if (v1 < v2)
                                 availablePlayers[0] = sender
                         }
-                        if (!r.cannotPlayCard(Jie_Huo) && r.cards.any { r.canUseCardTypes(Jie_Huo, it).first }) {
-                            availablePlayers.add(r)
-                        }
-                        if (!r.cannotPlayCard(Wu_Dao) && r.cards.any { r.canUseCardTypes(Wu_Dao, it).first }) {
-                            availablePlayers.add(availablePlayers[0].getNextLeftAlivePlayer())
-                            availablePlayers.add(availablePlayers[0].getNextRightAlivePlayer())
-                        }
                         var v = Int.MIN_VALUE
                         var bestTarget = availablePlayers[0]
                         for ((i, t) in availablePlayers.withIndex()) {
