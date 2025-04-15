@@ -95,6 +95,8 @@ object Statistics {
                     val newBlacksGame = if (count.identity == Black)
                         v.blacksGameCount + (count.secret_task to ((v.blacksGameCount[count.secret_task] ?: 0) + 1))
                     else v.blacksGameCount
+                    win += addWin
+                    game++
                     v.copy(winCount = v.winCount + addWin,
                         gameCount = v.gameCount + 1, lastTime = now,
                         rbWinCount = v.rbWinCount + addRbWin,
