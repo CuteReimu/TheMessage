@@ -158,8 +158,11 @@ private fun Player.willWinInternal(
                 else -> false
             }
         }
-        if (checkAllSecretTask && game!!.possibleSecretTasks.isNotEmpty())
-            return game!!.possibleSecretTasks.any { checkSecretTask(it) }
+        if (checkAllSecretTask) {
+            val possibleSecretTasks = game!!.possibleSecretTasks - Disturber
+            if (possibleSecretTasks.isNotEmpty())
+                return possibleSecretTasks.any { checkSecretTask(it) }
+        }
         return checkSecretTask(secretTask)
     }
 }
