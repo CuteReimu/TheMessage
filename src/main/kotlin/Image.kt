@@ -79,7 +79,7 @@ object Image {
         }
         return count.map { (date, c) ->
             mapOf("date" to date, "count" to c.size, "pc" to (pc[date] ?: 0))
-        }.sortedBy { it["date"] as String }.takeLast(30)
+        }.sortedBy { it["date"] as String }.takeLast(31)
     }
 
     /**
