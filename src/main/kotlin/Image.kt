@@ -11,6 +11,8 @@ import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 object Image {
@@ -57,11 +59,13 @@ object Image {
     private val font = Font("宋体", 0, CELL_H - 3)
 
     /**
-     * @return $[{"date": 日期, "count": 场次, "pc": 人次}$]
+     * @return $[{"date": 日期, "count": 场次, "pc": 人次}$] 与 $[0点多少人，1点多少人，......，23点多少人$]
      */
-    fun getFrequency(): List<Map<String, Any>> {
+    fun getFrequency(): Pair<List<Map<String, Any>>, IntArray> {
         val count = HashMap<String, HashSet<String>>()
         val pc = HashMap<String, Int>()
+        val currentDate = LocalDate.now()
+        val hours = IntArray(24)
         FileInputStream("stat.csv").use { `is` ->
             BufferedReader(InputStreamReader(`is`)).use { reader ->
                 var line: String?
@@ -71,15 +75,19 @@ object Image {
                     val a = line.split(",").dropLastWhile { it.isEmpty() }
                     if (a.size < 6) continue
                     val time = a[5]
-                    val date = time.split(" ")[0]
+                    val arr = time.split(" ")
+                    val date = arr[0]
                     count.getOrPut(date) { HashSet<String>() }.add(time)
                     pc[date] = (pc[date] ?: 0) + 1
+                    if (ChronoUnit.DAYS.between(LocalDate.parse(date), currentDate) <= 30) {
+                        hours[arr[1].substring(0, 2).toInt()]++
+                    }
                 }
             }
         }
-        return count.map { (date, c) ->
+        return Pair(count.map { (date, c) ->
             mapOf("date" to date, "count" to c.size, "pc" to (pc[date] ?: 0))
-        }.sortedBy { it["date"] as String }.takeLast(31)
+        }.sortedBy { it["date"] as String }.takeLast(31), hours)
     }
 
     /**
