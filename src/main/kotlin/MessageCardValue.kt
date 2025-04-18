@@ -226,6 +226,7 @@ fun Player.calculateMessageCardValue(
     checkThreeSame: Boolean = false,
     sender: Player? = null
 ): Int {
+    if (!inFrontOfWhom.alive) return 0
     var v1 = calculateMessageCardValue(whoseTurn, inFrontOfWhom, colors, checkThreeSame)
     if (sender != null) {
         // TODO 临时这样写，后续应该改成调用Player.countMessageCard来计数
@@ -422,6 +423,7 @@ fun Player.calculateMessageCardValue(
     colors: List<color>,
     checkThreeSame: Boolean = false
 ): Int {
+    if (!inFrontOfWhom.alive) return 0
     val disturber = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Disturber }
     if (!checkThreeSame) {
         if (whoseTurn.identity == Black && whoseTurn.secretTask == Stealer) {
