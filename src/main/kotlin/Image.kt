@@ -2,7 +2,7 @@ package com.fengsheng
 
 import com.fengsheng.Statistics.PlayerGameCount
 import com.fengsheng.Statistics.PlayerInfo
-import com.fengsheng.protos.Common
+import com.fengsheng.protos.Common.*
 import com.fengsheng.skill.RoleCache
 import java.awt.Color
 import java.awt.Font
@@ -91,11 +91,13 @@ object Image {
     }
 
     /**
-     * @return {"角色名": $[总场次, 胜场$]}
+     * @return {"角色名": $[总场次, 胜场$]} 与 各神秘人身份的$[总场次, 胜场$]
      */
-    fun getWinRateJson(): Map<String, IntArray> {
-        val appearCount = HashMap<Common.role, Int>()
-        val winCount = HashMap<Common.role, Int>()
+    fun getWinRateJson(): Pair<Map<String, IntArray>, Map<String, IntArray>> {
+        val appearCount = HashMap<role, Int>()
+        val winCount = HashMap<role, Int>()
+        val secretRates = HashMap<String, IntArray>()
+        val secretNames = listOf("镇压者", "簒夺者", "双面间谍", "诱变者", "先行者", "搅局者", "清道夫")
         FileInputStream("stat.csv").use { `is` ->
             BufferedReader(InputStreamReader(`is`)).use { reader ->
                 var line: String?
@@ -103,10 +105,30 @@ object Image {
                     line = reader.readLine()
                     if (line.isNullOrBlank()) break
                     val a = line.split(",").dropLastWhile { it.isEmpty() }
-                    val role = Common.role.valueOf(a[0])
+                    val role = role.valueOf(a[0])
+                    val isWin = a[1].toBoolean()
+
+                    fun addRate(name: String, isWin: Boolean) {
+                        val rate = secretRates.getOrPut(name) { IntArray(2) }
+                        rate[0]++
+                        if (isWin) {
+                            rate[1]++
+                        }
+                    }
+
                     appearCount[role] = (appearCount[role] ?: 0) + 1
-                    if (a[1].toBoolean())
+                    if (isWin) {
                         winCount[role] = (winCount[role] ?: 0) + 1
+                    }
+                    val identity = color.valueOf(a[2])
+                    if (identity == color.Black) {
+                        val secretName = secretNames[secret_task.valueOf(a[3]).number]
+                        addRate(secretName, isWin)
+                        addRate("神秘人", isWin)
+                    } else {
+                        addRate("潜伏/军情", isWin)
+                    }
+                    addRate("总胜率", isWin)
                 }
             }
         }
@@ -115,7 +137,7 @@ object Image {
             val win = winCount[key] ?: 0
             result[RoleCache.getRoleName(key) ?: ""] = intArrayOf(appear, win)
         }
-        return result
+        return Pair(result, secretRates)
     }
 
     fun getWinRateImage(): BufferedImage {
@@ -139,8 +161,8 @@ object Image {
             "角色", "场次", "总胜率", "军潜", "神秘人",
             "镇压者", "簒夺者", "双面间谍", "诱变者", "先行者", "搅局者", "清道夫",
         )
-        val appearCount = HashMap<Common.role, IntArray>()
-        val winCount = HashMap<Common.role, IntArray>()
+        val appearCount = HashMap<role, IntArray>()
+        val winCount = HashMap<role, IntArray>()
         FileInputStream("stat.csv").use { `is` ->
             BufferedReader(InputStreamReader(`is`)).use { reader ->
                 var line: String?
@@ -148,11 +170,11 @@ object Image {
                     line = reader.readLine()
                     if (line.isNullOrBlank()) break
                     val a = line.split(",").dropLastWhile { it.isEmpty() }
-                    val role = Common.role.valueOf(a[0])
+                    val role = role.valueOf(a[0])
                     val appear = appearCount.computeIfAbsent(role) { IntArray(10) }
                     val win = winCount.computeIfAbsent(role) { IntArray(10) }
                     val index =
-                        if ("Black" == a[2]) Common.secret_task.valueOf(a[3]).number + 3
+                        if ("Black" == a[2]) secret_task.valueOf(a[3]).number + 3
                         else null
                     appear.inc(index)
                     if (a[1].toBoolean()) win.inc(index)
