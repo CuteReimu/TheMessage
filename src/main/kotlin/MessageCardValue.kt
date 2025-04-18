@@ -465,7 +465,7 @@ fun Player.calculateMessageCardValue(
                     }) return 600
                 if (game!!.players.any {
                         it!!.identity != Black && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
-                    }) return if (Random.nextDouble() < coefficient) -600 else 0 // 根据打牌风格，有80%到100%几率管
+                    }) return -600 // 神秘人不管神秘人，只管阵营方
             } else {
                 if (game!!.players.any {
                         it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
