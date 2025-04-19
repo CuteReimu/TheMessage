@@ -91,9 +91,9 @@ object Image {
     }
 
     /**
-     * @return {"角色名": $[总场次, 胜场$]} 与 各神秘人身份的$[总场次, 胜场$]
+     * @return {"角色名": $[总场次, 胜场$]} 与 各神秘人身份的$[身份, 总场次, 胜场$]
      */
-    fun getWinRateJson(): Pair<Map<String, IntArray>, Map<String, IntArray>> {
+    fun getWinRateJson(): Pair<Map<String, IntArray>, List<List<Any>>> {
         val appearCount = HashMap<role, Int>()
         val winCount = HashMap<role, Int>()
         val secretRates = HashMap<String, IntArray>()
@@ -137,7 +137,9 @@ object Image {
             val win = winCount[key] ?: 0
             result[RoleCache.getRoleName(key) ?: ""] = intArrayOf(appear, win)
         }
-        return Pair(result, secretRates)
+        return Pair(result, (listOf("总胜率", "潜伏/军情", "神秘人") + secretNames).map {
+            listOf(it, secretRates[it]?.get(0) ?: 0, secretRates[it]?.get(1) ?: 0)
+        })
     }
 
     fun getWinRateImage(): BufferedImage {
