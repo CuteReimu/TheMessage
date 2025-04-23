@@ -237,19 +237,19 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         val newScoreMap = HashMap<String, Int>()
         if (declaredWinners != null && winners != null) {
             if (players.size >= 5) {
-                if (winners.isNotEmpty() && winners.size < players.size) {
-                    val totalWinners = winners.sumOf { (Statistics.getScore(it) ?: 0).coerceIn(180..2000) }
-                    val totalPlayers = players.sumOf { (Statistics.getScore(it!!) ?: 0).coerceIn(180..2000) }
-                    val totalLoser = totalPlayers - totalWinners
-                    val delta = totalLoser / (players.size - winners.size) - totalWinners / winners.size
-                    for ((i, p) in players.withIndex()) {
-                        var score = p!!.calScore(players.filterNotNull(), winners, delta / 10)
-                        if (score > 0 && humanPlayers.size > 1) score += 2 * humanPlayers.size
-                        val (newScore, deltaScore) = Statistics.updateScore(p, score, i == humanPlayers.size - 1)
-                        logger.info("$p(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：$newScore")
-                        addScoreMap[p.playerName] = deltaScore
-                        newScoreMap[p.playerName] = newScore
-                    }
+                val totalWinners = winners.sumOf { (Statistics.getScore(it) ?: 0).coerceIn(180..2000) }
+                val totalPlayers = players.sumOf { (Statistics.getScore(it!!) ?: 0).coerceIn(180..2000) }
+                val totalLoser = totalPlayers - totalWinners
+                val delta =
+                    if (players.size == winners.size || winners.isEmpty()) 0
+                    else totalLoser / (players.size - winners.size) - totalWinners / winners.size
+                for ((i, p) in players.withIndex()) {
+                    var score = p!!.calScore(players.filterNotNull(), winners, delta / 10)
+                    if (score > 0 && humanPlayers.size > 1) score += 2 * humanPlayers.size
+                    val (newScore, deltaScore) = Statistics.updateScore(p, score, i == humanPlayers.size - 1)
+                    logger.info("$p(${p.originIdentity},${p.originSecretTask})得${score}分，新分数为：$newScore")
+                    addScoreMap[p.playerName] = deltaScore
+                    newScoreMap[p.playerName] = newScore
                 }
                 val playerGameResultList = ArrayList<PlayerGameResult>()
                 if (humanPlayers.size > 1 || humanPlayers.any { (Statistics.getScore(it) ?: 0) >= 100 }) {
