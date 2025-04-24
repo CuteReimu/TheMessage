@@ -85,7 +85,7 @@ class PingHeng : Card {
         fun ai(e: MainPhaseIdle, card: Card, convertCardSkill: ConvertCardSkill?): Boolean {
             val player = e.whoseTurn
             !player.cannotPlayCard(Ping_Heng) || return false
-            // 打出平衡的时机：1）手牌小于等于3张，2）手牌大于3张但没有截获、误导、调包
+            // 打出平衡的时机：1）手牌小于等于3张，2）手牌大于3张但没有截获、误导、调包、威逼、利诱
             player.cards.size <= 3 || !player.cards.any {
                 it.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao, Wei_Bi, Li_You)
             } || return false
