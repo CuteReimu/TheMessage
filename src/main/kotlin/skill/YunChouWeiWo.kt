@@ -3,6 +3,7 @@ package com.fengsheng.skill
 import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
+import com.fengsheng.card.LiYou
 import com.fengsheng.phase.FightPhaseIdle
 import com.fengsheng.phase.MainPhaseIdle
 import com.fengsheng.protos.Role.skill_yun_chou_wei_wo_a_tos
@@ -168,6 +169,8 @@ class YunChouWeiWo : ActiveSkill {
             !player.roleFaceUp || return false
             if (e is FightPhaseIdle) {
                 player.game!!.players.anyoneWillWinOrDie(e) || return false
+            } else {
+                !player.game!!.isEarly || player.cards.any { it is LiYou } || return false
             }
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillYunChouWeiWoATos { })
