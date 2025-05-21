@@ -74,7 +74,7 @@ class YunChouWeiWo : ActiveSkill {
         g.resolve(ExecuteYunChouWeiWo(fsm, r, cards))
     }
 
-    private data class ExecuteYunChouWeiWo(val fsm: Fsm, val r: Player, val cards: List<Card>) : WaitingFsm {
+    private class ExecuteYunChouWeiWo(val fsm: Fsm, val r: Player, val cards: List<Card>) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

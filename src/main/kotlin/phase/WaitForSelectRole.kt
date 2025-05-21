@@ -20,7 +20,7 @@ import kotlin.math.roundToInt
 /**
  * 等待玩家选择角色
  */
-data class WaitForSelectRole(val game: Game, val options: List<MutableList<RoleSkillsData>>) : WaitingFsm {
+class WaitForSelectRole(val game: Game, val options: List<MutableList<RoleSkillsData>>) : WaitingFsm {
     private val selected = MutableList<RoleSkillsData?>(game.players.size) { null }
     override val whoseTurn = game.players.random()!!
 

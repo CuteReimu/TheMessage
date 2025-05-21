@@ -6,4 +6,4 @@ package com.fengsheng
  * @param next            下一个状态机
  * @param continueResolve 是否直接继续处理下一个状态机
  */
-data class ResolveResult(val next: Fsm?, val continueResolve: Boolean)
+class ResolveResult(val next: Fsm?, val continueResolve: Boolean)

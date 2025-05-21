@@ -52,7 +52,7 @@ class WeiBi : Card {
         execute(this, g, r, target, wantType)
     }
 
-    private data class ExecuteWeiBi(
+    private class ExecuteWeiBi(
         val fsm: MainPhaseIdle,
         val r: Player,
         val target: Player,

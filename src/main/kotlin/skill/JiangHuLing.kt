@@ -27,7 +27,7 @@ class JiangHuLing : TriggeredSkill {
         return ResolveResult(ExecuteJiangHuLingA(g.fsm!!, askWhom), true)
     }
 
-    private data class ExecuteJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private class ExecuteJiangHuLingA(val fsm: Fsm, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 
@@ -125,7 +125,7 @@ class JiangHuLing : TriggeredSkill {
         }
     }
 
-    private data class ExecuteJiangHuLingB(val fsm: Fsm, val event: ReceiveCardEvent, val color: color) : WaitingFsm {
+    private class ExecuteJiangHuLingB(val fsm: Fsm, val event: ReceiveCardEvent, val color: color) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

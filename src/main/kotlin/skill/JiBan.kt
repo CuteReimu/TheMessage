@@ -45,7 +45,7 @@ class JiBan : MainPhaseSkill() {
         g.resolve(ExecuteJiBan(g.fsm!!, r))
     }
 
-    private data class ExecuteJiBan(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private class ExecuteJiBan(val fsm: Fsm, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

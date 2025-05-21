@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 /**
  * 游戏马上开始
  */
-data class StartGame(val game: Game, override val whoseTurn: Player) : Fsm {
+class StartGame(val game: Game, override val whoseTurn: Player) : Fsm {
     override fun resolve(): ResolveResult? {
         val whoseTurn = whoseTurn.location
         val players = game.players

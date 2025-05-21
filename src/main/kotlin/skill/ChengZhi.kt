@@ -35,7 +35,7 @@ class ChengZhi : TriggeredSkill {
         )
     }
 
-    private data class ExecuteChengZhi(
+    private class ExecuteChengZhi(
         val fsm: Fsm,
         val r: Player,
         val whoDie: Player,

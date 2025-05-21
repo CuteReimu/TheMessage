@@ -67,7 +67,7 @@ class HouLaiRen : ActiveSkill {
         g.resolve(ExecuteHouLaiRen(fsm, r, message.remainCardId, roles))
     }
 
-    private data class ExecuteHouLaiRen(
+    private class ExecuteHouLaiRen(
         val fsm: WaitForChengQing,
         val r: Player,
         val remainCardId: Int,

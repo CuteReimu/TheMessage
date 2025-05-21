@@ -86,7 +86,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
         g.resolve(ExecuteTanQiuZhenLi(g.fsm!!, r, target, waitingSecond))
     }
 
-    private data class ExecuteTanQiuZhenLi(
+    private class ExecuteTanQiuZhenLi(
         val fsm: Fsm,
         val r: Player,
         val target: Player,

@@ -27,7 +27,7 @@ class CongRongYingDui : TriggeredSkill {
         return ResolveResult(ExecuteCongRongYingDui(g.fsm!!, event, askWhom, target), true)
     }
 
-    private data class ExecuteCongRongYingDui(
+    private class ExecuteCongRongYingDui(
         val fsm: Fsm,
         val event: FinishResolveCardEvent,
         val r: Player,

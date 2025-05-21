@@ -66,7 +66,7 @@ class MiaoBiQiaoBian : ActiveSkill {
         g.resolve(ExecuteMiaoBiQiaoBian(fsm, r, target, card))
     }
 
-    private data class ExecuteMiaoBiQiaoBian(
+    private class ExecuteMiaoBiQiaoBian(
         val fsm: FightPhaseIdle,
         val r: Player,
         val target1: Player,

@@ -35,7 +35,7 @@ class QiangLing : TriggeredSkill {
         return null
     }
 
-    private data class ExecuteQiangLing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
+    private class ExecuteQiangLing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

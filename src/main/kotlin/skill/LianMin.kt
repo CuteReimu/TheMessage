@@ -28,7 +28,7 @@ class LianMin : TriggeredSkill {
         return ResolveResult(ExecuteLianMin(g.fsm!!, event), true)
     }
 
-    private data class ExecuteLianMin(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteLianMin(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

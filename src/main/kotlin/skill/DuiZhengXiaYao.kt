@@ -50,7 +50,7 @@ class DuiZhengXiaYao : ActiveSkill {
         g.resolve(ExecuteDuiZhengXiaYaoA(fsm, r))
     }
 
-    private data class ExecuteDuiZhengXiaYaoA(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
+    private class ExecuteDuiZhengXiaYaoA(val fsm: FightPhaseIdle, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 
@@ -170,7 +170,7 @@ class DuiZhengXiaYao : ActiveSkill {
         }
     }
 
-    private data class ExecuteDuiZhengXiaYaoB(
+    private class ExecuteDuiZhengXiaYaoB(
         val fsm: FightPhaseIdle,
         val r: Player,
         val cards: List<Card>,

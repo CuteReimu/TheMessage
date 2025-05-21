@@ -60,7 +60,7 @@ class JinBi : MainPhaseSkill() {
         g.resolve(ExecuteJinBi(g.fsm!!, r, target))
     }
 
-    private data class ExecuteJinBi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
+    private class ExecuteJinBi(val fsm: Fsm, val r: Player, val target: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

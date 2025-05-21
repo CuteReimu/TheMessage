@@ -7,7 +7,7 @@ import com.fengsheng.ResolveResult
 /**
  * 死亡给三张牌后，判断是否有下一个人需要结算死亡给三张牌
  */
-data class AfterDieGiveCard(val dieGiveCard: WaitForDieGiveCard) : Fsm {
+class AfterDieGiveCard(val dieGiveCard: WaitForDieGiveCard) : Fsm {
     override val whoseTurn
         get() = dieGiveCard.whoseTurn
 

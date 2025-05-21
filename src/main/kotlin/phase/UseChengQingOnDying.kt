@@ -9,7 +9,7 @@ import com.fengsheng.protos.Common.color.Black
 /**
  * 濒死求澄清时，使用了澄清
  */
-data class UseChengQingOnDying(val waitForChengQing: WaitForChengQing) : Fsm {
+class UseChengQingOnDying(val waitForChengQing: WaitForChengQing) : Fsm {
     override val whoseTurn: Player
         get() = waitForChengQing.whoseTurn
 

@@ -5,7 +5,7 @@ import com.fengsheng.*
 /**
  * 等待死亡角色给三张牌
  */
-data class WaitForDieGiveCard(
+class WaitForDieGiveCard(
     /**
      * 谁的回合
      */

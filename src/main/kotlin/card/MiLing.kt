@@ -95,7 +95,7 @@ class MiLing : Card {
         g.resolve(ResolveCard(r, r, target, getOriginCard(), Mi_Ling, resolveFunc, fsm))
     }
 
-    private data class MiLingChooseCard(
+    private class MiLingChooseCard(
         val card: MiLing,
         val player: Player,
         val target: Player,
@@ -167,7 +167,7 @@ class MiLing : Card {
         }
     }
 
-    data class ExecuteMiLing(
+    class ExecuteMiLing(
         val card: MiLing,
         val target: Player,
         val secret: Int,

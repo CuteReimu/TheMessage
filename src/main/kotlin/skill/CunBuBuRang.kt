@@ -29,7 +29,7 @@ class CunBuBuRang : TriggeredSkill {
         return null
     }
 
-    private data class ExecuteCunBuBuRang(
+    private class ExecuteCunBuBuRang(
         val fsm: Fsm,
         val r: Player,
         val target: Player

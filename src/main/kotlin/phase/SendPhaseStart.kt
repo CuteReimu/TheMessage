@@ -7,7 +7,7 @@ import org.apache.logging.log4j.kotlin.logger
 /**
  * 情报传递阶段开始时，选择传递一张情报
  */
-data class SendPhaseStart(override val whoseTurn: Player) : ProcessFsm() {
+class SendPhaseStart(override val whoseTurn: Player) : ProcessFsm() {
     override fun onSwitch() {
         val game = whoseTurn.game!!
         game.addEvent(SendPhaseStartEvent(whoseTurn))

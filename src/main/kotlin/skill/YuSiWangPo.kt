@@ -98,7 +98,7 @@ class YuSiWangPo : MainPhaseSkill() {
         }
     }
 
-    private data class ExecuteYuSiWangPo(
+    private class ExecuteYuSiWangPo(
         val fsm: Fsm,
         val r: Player,
         val target: Player,

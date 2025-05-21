@@ -43,7 +43,7 @@ class DuMing : TriggeredSkill {
         return null
     }
 
-    private data class WaitForDuMing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
+    private class WaitForDuMing(val fsm: Fsm, val event: Event, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 
@@ -168,7 +168,7 @@ class DuMing : TriggeredSkill {
         }
     }
 
-    private data class ExecuteDuMing(
+    private class ExecuteDuMing(
         val fsm: Fsm,
         val event: Event,
         val r: Player,

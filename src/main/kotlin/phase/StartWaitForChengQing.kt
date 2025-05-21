@@ -15,7 +15,7 @@ import java.util.*
  * @param diedQueue       接收第三张黑色情报的顺序，也就是后续结算濒死的顺序
  * @param afterDieResolve 濒死结算后的下一个动作
  */
-data class StartWaitForChengQing(
+class StartWaitForChengQing(
     override val whoseTurn: Player,
     val dyingQueue: Queue<Player>,
     val diedQueue: ArrayList<Player>,

@@ -89,7 +89,7 @@ class TaoQu : MainPhaseSkill() {
         g.resolve(ExecuteTaoQu(fsm, r, cards, colors))
     }
 
-    private data class ExecuteTaoQu(
+    private class ExecuteTaoQu(
         val fsm: MainPhaseIdle,
         val r: Player,
         val cards: List<Card>,

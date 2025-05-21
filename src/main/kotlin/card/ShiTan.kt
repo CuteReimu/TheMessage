@@ -95,7 +95,7 @@ class ShiTan : Card {
         }
     }
 
-    private data class ExecuteShiTan(
+    private class ExecuteShiTan(
         val fsm: MainPhaseIdle,
         val r: Player,
         val target: Player,

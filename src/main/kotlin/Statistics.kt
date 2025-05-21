@@ -3,7 +3,7 @@ package com.fengsheng
 import com.fengsheng.ScoreFactory.addScore
 import com.fengsheng.ScoreFactory.getSeasonTitleByScore
 import com.fengsheng.protos.Common.*
-import com.fengsheng.protos.Common.color.*
+import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.getRecordListToc
 import kotlinx.coroutines.*
@@ -480,7 +480,7 @@ object Statistics {
 
     class PlayerGameResult(val playerName: String, val isWin: Boolean, val identity: color, val secret_task: secret_task)
 
-    data class PlayerGameCount(val winCount: Int, val gameCount: Int) {
+    class PlayerGameCount(val winCount: Int, val gameCount: Int) {
         fun random(): PlayerGameCount {
             val i = Random.nextInt(20)
             return PlayerGameCount(winCount * i / 100, gameCount * i / 100)

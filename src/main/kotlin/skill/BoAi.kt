@@ -44,7 +44,7 @@ class BoAi : MainPhaseSkill() {
         g.resolve(ExecuteBoAi(g.fsm!!, r))
     }
 
-    private data class ExecuteBoAi(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private class ExecuteBoAi(val fsm: Fsm, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

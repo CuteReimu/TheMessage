@@ -16,7 +16,7 @@ import org.apache.logging.log4j.kotlin.logger
  * @param messageCard   情报牌
  * @param inFrontOfWhom 情报在谁面前
  */
-data class OnReceiveCard(
+class OnReceiveCard(
     override val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,

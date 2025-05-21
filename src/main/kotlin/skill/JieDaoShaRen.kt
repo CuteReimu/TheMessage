@@ -71,7 +71,7 @@ class JieDaoShaRen : ActiveSkill {
         g.resolve(ExecuteJieDaoShaRen(fsm, r, target, card))
     }
 
-    private data class ExecuteJieDaoShaRen(
+    private class ExecuteJieDaoShaRen(
         val fsm: FightPhaseIdle,
         val r: Player,
         val target: Player,

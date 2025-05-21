@@ -29,7 +29,7 @@ class LianXin : TriggeredSkill {
         return ResolveResult(ExecuteLianXinA(g.fsm!!, event) { card -> card.colors.any { it in color } }, true)
     }
 
-    private data class ExecuteLianXinA(
+    private class ExecuteLianXinA(
         val fsm: Fsm,
         val event: ReceiveCardEvent,
         val checkCard: (Card) -> Boolean
@@ -97,7 +97,7 @@ class LianXin : TriggeredSkill {
         }
     }
 
-    private data class ExecuteLianXinB(
+    private class ExecuteLianXinB(
         val fsm: Fsm,
         val event: ReceiveCardEvent,
         val checkCard: (Card) -> Boolean

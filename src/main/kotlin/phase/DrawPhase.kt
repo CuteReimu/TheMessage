@@ -9,7 +9,7 @@ import org.apache.logging.log4j.kotlin.logger
 /**
  * 摸牌阶段
  */
-data class DrawPhase(override val whoseTurn: Player) : Fsm {
+class DrawPhase(override val whoseTurn: Player) : Fsm {
     override fun resolve(): ResolveResult {
         if (!whoseTurn.alive) {
             return ResolveResult(NextTurn(whoseTurn), true)

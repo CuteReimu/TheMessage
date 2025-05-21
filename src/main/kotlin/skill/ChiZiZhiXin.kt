@@ -31,7 +31,7 @@ class ChiZiZhiXin : TriggeredSkill {
         return ResolveResult(ExecuteChiZiZhiXinA(g.fsm!!, event), true)
     }
 
-    private data class ExecuteChiZiZhiXinA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteChiZiZhiXinA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 
@@ -77,7 +77,7 @@ class ChiZiZhiXin : TriggeredSkill {
         }
     }
 
-    private data class ExecuteChiZiZhiXinB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteChiZiZhiXinB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

@@ -29,7 +29,7 @@ class BiFeng : TriggeredSkill {
         return ResolveResult(ExcuteBiFeng(g.fsm!!, event, askWhom), true)
     }
 
-    private data class ExcuteBiFeng(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
+    private class ExcuteBiFeng(val fsm: Fsm, val event: UseCardEvent, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

@@ -88,7 +88,7 @@ class YingBianZiRu : ActiveSkill {
         }
     }
 
-    private data class ExecuteYingBianZiRu(val fsm: FightPhaseIdle, val r: Player, val waitingSecond: Int) : WaitingFsm {
+    private class ExecuteYingBianZiRu(val fsm: FightPhaseIdle, val r: Player, val waitingSecond: Int) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

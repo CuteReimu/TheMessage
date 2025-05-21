@@ -85,7 +85,7 @@ class HuoXin : MainPhaseSkill() {
         g.resolve(ExecuteHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))
     }
 
-    private data class ExecuteHuoXin(
+    private class ExecuteHuoXin(
         val fsm: Fsm,
         val r: Player,
         val target: Player,

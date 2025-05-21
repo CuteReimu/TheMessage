@@ -28,7 +28,7 @@ class MianLiCangZhen : TriggeredSkill {
         return ResolveResult(ExecuteMianLiCangZhen(g.fsm!!, event), true)
     }
 
-    private data class ExecuteMianLiCangZhen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteMianLiCangZhen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  *
  * @param whoseTurn 当前回合的玩家（不是下回合的玩家）
  */
-data class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
+class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
     override fun onSwitch() {
         whoseTurn.game!!.addEvent(TurnEndEvent(whoseTurn))
     }

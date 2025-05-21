@@ -58,7 +58,7 @@ class LengXueXunLian : ActiveSkill {
         }
     }
 
-    private data class ExecuteLengXueXunLian(
+    private class ExecuteLengXueXunLian(
         override val whoseTurn: Player,
         val r: Player,
         val cards: List<Card>

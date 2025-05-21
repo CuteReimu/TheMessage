@@ -69,7 +69,7 @@ class TanXuBianShi : MainPhaseSkill() {
         g.resolve(ExecuteTanXuBianShi(g.fsm!!, r, target, card))
     }
 
-    private data class ExecuteTanXuBianShi(
+    private class ExecuteTanXuBianShi(
         val fsm: Fsm,
         val r: Player,
         val target: Player,

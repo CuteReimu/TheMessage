@@ -116,7 +116,7 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
         super.exceptionCaught(ctx, cause)
     }
 
-    private data class ProtoInfo(val name: String, val parser: Parser<*>, val handler: ProtoHandler)
+    private class ProtoInfo(val name: String, val parser: Parser<*>, val handler: ProtoHandler)
 
     companion object {
         private val printer = JsonFormat.printer().alwaysPrintFieldsWithNoPresence()

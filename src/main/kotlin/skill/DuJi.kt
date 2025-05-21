@@ -193,7 +193,7 @@ class DuJi : ActiveSkill {
         }
     }
 
-    private data class ExecuteDuJiB(val fsm: ExecuteDuJiA, val selection: TwoPlayersAndCard) : WaitingFsm {
+    private class ExecuteDuJiB(val fsm: ExecuteDuJiA, val selection: TwoPlayersAndCard) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 
@@ -271,7 +271,7 @@ class DuJi : ActiveSkill {
         }
     }
 
-    private data class TwoPlayersAndCard(val fromPlayer: Player, val waitingPlayer: Player, val card: Card)
+    private class TwoPlayersAndCard(val fromPlayer: Player, val waitingPlayer: Player, val card: Card)
 
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {

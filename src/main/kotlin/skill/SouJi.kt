@@ -61,7 +61,7 @@ class SouJi : ActiveSkill {
         g.resolve(ExecuteSouJi(fsm, r, target))
     }
 
-    private data class ExecuteSouJi(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
+    private class ExecuteSouJi(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

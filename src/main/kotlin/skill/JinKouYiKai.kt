@@ -54,7 +54,7 @@ class JinKouYiKai : ActiveSkill {
         g.resolve(ExecuteJinKouYiKai(fsm, r, cards))
     }
 
-    private data class ExecuteJinKouYiKai(val fsm: FightPhaseIdle, val r: Player, val cards: List<Card>) : WaitingFsm {
+    private class ExecuteJinKouYiKai(val fsm: FightPhaseIdle, val r: Player, val cards: List<Card>) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

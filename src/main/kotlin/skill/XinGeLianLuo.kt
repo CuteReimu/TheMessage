@@ -27,7 +27,7 @@ class XinGeLianLuo : TriggeredSkill {
         return ResolveResult(ExecuteXinGeLianLuo(g.fsm!!, e, askWhom), true)
     }
 
-    private data class ExecuteXinGeLianLuo(val fsm: Fsm, val e: SendCardEvent, val r: Player) : WaitingFsm {
+    private class ExecuteXinGeLianLuo(val fsm: Fsm, val e: SendCardEvent, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

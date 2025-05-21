@@ -20,7 +20,7 @@ import org.apache.logging.log4j.kotlin.logger
  * @param isMessageCardFaceUp 情报是否面朝上
  * @param needRemoveCardAndNotify 是否需要移除手牌并且广播[send_message_card_toc]
  */
-data class OnSendCard(
+class OnSendCard(
     override val whoseTurn: Player,
     val sender: Player,
     val messageCard: Card,

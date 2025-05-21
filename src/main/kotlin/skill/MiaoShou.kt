@@ -68,7 +68,7 @@ class MiaoShou : ActiveSkill {
         g.resolve(ExecuteMiaoShou(fsm, r, target))
     }
 
-    private data class ExecuteMiaoShou(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
+    private class ExecuteMiaoShou(val fsm: FightPhaseIdle, val r: Player, val target: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

@@ -28,7 +28,7 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
         return ResolveResult(ExecuteRuGui(g.fsm!!, event, askWhom), true)
     }
 
-    private data class ExecuteRuGui(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
+    private class ExecuteRuGui(val fsm: Fsm, val event: PlayerDieEvent, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

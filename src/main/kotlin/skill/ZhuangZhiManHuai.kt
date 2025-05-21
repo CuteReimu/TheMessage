@@ -30,7 +30,7 @@ class ZhuangZhiManHuai : TriggeredSkill {
         return ResolveResult(ExecuteZhuangZhiManHuai(g.fsm!!, event, askWhom), true)
     }
 
-    private data class ExecuteZhuangZhiManHuai(val fsm: Fsm, val event: ReceiveCardEvent, val r: Player) : WaitingFsm {
+    private class ExecuteZhuangZhiManHuai(val fsm: Fsm, val event: ReceiveCardEvent, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

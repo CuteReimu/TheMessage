@@ -27,7 +27,7 @@ class JinShen : TriggeredSkill {
         return ResolveResult(ExecuteJinShen(g.fsm!!, event), true)
     }
 
-    private data class ExecuteJinShen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteJinShen(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

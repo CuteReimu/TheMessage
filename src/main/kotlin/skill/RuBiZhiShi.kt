@@ -68,7 +68,7 @@ class RuBiZhiShi : ActiveSkill {
         g.resolve(ExecuteRuBiZhiShi(fsm as ProcessFsm, r, target))
     }
 
-    data class ExecuteRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
+    class ExecuteRuBiZhiShi(val fsm: ProcessFsm, val r: Player, val target: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

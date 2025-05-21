@@ -29,7 +29,7 @@ class JianDiFengXing : TriggeredSkill {
         return ResolveResult(ExecuteJianDiFengXingA(g.fsm!!, event), true)
     }
 
-    private data class ExecuteJianDiFengXingA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteJianDiFengXingA(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 
@@ -71,7 +71,7 @@ class JianDiFengXing : TriggeredSkill {
         }
     }
 
-    private data class ExecuteJianDiFengXingB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteJianDiFengXingB(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 
@@ -146,7 +146,7 @@ class JianDiFengXing : TriggeredSkill {
         }
     }
 
-    private data class ExecuteJianDiFengXingC(val fsm: Fsm, val event: ReceiveCardEvent, val card: Card) : WaitingFsm {
+    private class ExecuteJianDiFengXingC(val fsm: Fsm, val event: ReceiveCardEvent, val card: Card) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

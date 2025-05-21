@@ -29,7 +29,7 @@ class YiYaHuanYa : TriggeredSkill {
         return ResolveResult(ExecuteYiYaHuanYa(g.fsm!!, event), true)
     }
 
-    private data class ExecuteYiYaHuanYa(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteYiYaHuanYa(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

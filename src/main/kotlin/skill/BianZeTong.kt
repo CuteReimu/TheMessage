@@ -32,7 +32,7 @@ class BianZeTong : TriggeredSkill {
         return ResolveResult(ExecuteBianZeTong(g.fsm!!, askWhom), true)
     }
 
-    private data class ExecuteBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
+    private class ExecuteBianZeTong(val fsm: Fsm, val r: Player) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

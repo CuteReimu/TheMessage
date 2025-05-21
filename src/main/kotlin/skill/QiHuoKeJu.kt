@@ -27,7 +27,7 @@ class QiHuoKeJu : TriggeredSkill {
         return ResolveResult(ExecuteQiHuoKeJu(g.fsm!!, event), true)
     }
 
-    private data class ExecuteQiHuoKeJu(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
+    private class ExecuteQiHuoKeJu(val fsm: Fsm, val event: ReceiveCardEvent) : WaitingFsm {
         override val whoseTurn: Player
             get() = fsm.whoseTurn
 

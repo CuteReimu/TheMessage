@@ -36,7 +36,7 @@ class AnCangShaJi : TriggeredSkill {
         return ResolveResult(ExecuteAnCangShaJi(g.fsm!!, event, askWhom, target), true)
     }
 
-    private data class ExecuteAnCangShaJi(
+    private class ExecuteAnCangShaJi(
         val fsm: Fsm,
         val event: ReceiveCardEvent,
         val r: Player,

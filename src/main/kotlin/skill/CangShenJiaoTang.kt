@@ -50,7 +50,7 @@ class CangShenJiaoTang : TriggeredSkill {
         return null
     }
 
-    private data class ExecuteCangShenJiaoTangB(
+    private class ExecuteCangShenJiaoTangB(
         val fsm: Fsm,
         val event: ReceiveCardEvent,
         val timeoutSecond: Int
@@ -106,7 +106,7 @@ class CangShenJiaoTang : TriggeredSkill {
         }
     }
 
-    private data class ExecuteCangShenJiaoTangC(
+    private class ExecuteCangShenJiaoTangC(
         val fsm: Fsm,
         val event: ReceiveCardEvent,
         val timeoutSecond: Int
