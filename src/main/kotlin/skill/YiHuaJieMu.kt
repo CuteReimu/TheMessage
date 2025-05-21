@@ -1,10 +1,8 @@
 package com.fengsheng.skill
 
 import com.fengsheng.*
-import com.fengsheng.card.PlayerAndCard
+import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
-import com.fengsheng.protos.Common.color.Blue
-import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Role.skill_yi_hua_jie_mu_b_tos
 import com.fengsheng.protos.skillYiHuaJieMuAToc
 import com.fengsheng.protos.skillYiHuaJieMuATos
@@ -86,41 +84,33 @@ class YiHuaJieMu : ActiveSkill {
                 GameExecutor.post(r.game!!, {
                     fsm.inFrontOfWhom.messageCards.add(fsm.messageCard)
                     var value = Int.MIN_VALUE
-                    var value1 = Int.MIN_VALUE
-                    val players = r.game!!.players.filter { it!!.alive }.shuffled()
-                    var toplayer: Player? = null
-                    val candidates = mutableListOf<PlayerAndCard>() // 用于存储价值相同的卡牌
-                    for (p in players) {
-                        for (moveCard in p!!.messageCards.toList()) {
+                    val players = r.game!!.players.filter { it!!.alive }.filterNotNull().shuffled()
+                    val candidates = mutableListOf<TwoPlayersAndCard>() // 用于存储价值相同的卡牌
+                    for (from in players) {
+                        for (moveCard in from.messageCards.toList()) {
                             moveCard !== fsm.messageCard || continue
-                            val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, moveCard)
-                            if (v > value) {
-                                value = v
-                                candidates.clear()
-                                candidates.add(PlayerAndCard(p, moveCard))
-                            } else if (v == value) {
-                                candidates.add(PlayerAndCard(p, moveCard))
+                            for (to in players) {
+                                to !== from || continue
+                                val v1 = r.calculateRemoveCardValue(fsm.whoseTurn, from, moveCard)
+                                val v2 =
+                                    if (to.checkThreeSameMessageCard(moveCard)) 10
+                                    else r.calculateMessageCardValue(fsm.whoseTurn, to, moveCard)
+                                if (v1 + v2 > value) {
+                                    value = v1 + v2
+                                    candidates.clear()
+                                    candidates.add(TwoPlayersAndCard(from, to, moveCard))
+                                } else if (v1 + v2 == value) {
+                                    candidates.add(TwoPlayersAndCard(from, to, moveCard))
+                                }
                             }
                         }
                     }
-                    // 当情报价值为最高值600时，检测一下是否有双真情报，有就选择双真情报，否则随机一张获得
-                    val fromPlayerAndCard = if (value >= 600) {
-                        candidates.find { Red in it.card.colors && Blue in it.card.colors } ?: candidates.random()
-                    } else candidates.random()
-                    // 用来判断该情报谁获得的收益最高。
-                    for (p in players) {
-                        p != fromPlayerAndCard.player || continue
-                        val v1 = r.calculateMessageCardValue(fsm.whoseTurn, p!!, fromPlayerAndCard.card, true)
-                        if (v1 > value1) {
-                            value1 = v1
-                            toplayer = p
-                        }
-                    }
+                    val result = candidates.random()
                     fsm.inFrontOfWhom.messageCards.removeLast()
                     r.game!!.tryContinueResolveProtocol(r, skillYiHuaJieMuBTos {
-                        fromPlayerId = r.getAlternativeLocation(fromPlayerAndCard.player.location)
-                        cardId = fromPlayerAndCard.card.id
-                        toPlayerId = r.getAlternativeLocation(toplayer!!.location)
+                        fromPlayerId = r.getAlternativeLocation(result.fromPlayer.location)
+                        cardId = result.card.id
+                        toPlayerId = r.getAlternativeLocation(result.toPlayer.location)
                     })
                 }, 3, TimeUnit.SECONDS)
             }
@@ -200,6 +190,8 @@ class YiHuaJieMu : ActiveSkill {
             return ResolveResult(fsm.copy(whoseFightTurn = fsm.inFrontOfWhom), true)
         }
     }
+
+    private class TwoPlayersAndCard(val fromPlayer: Player, val toPlayer: Player, val card: Card)
 
     companion object {
         fun ai(e: FightPhaseIdle, skill: ActiveSkill): Boolean {
