@@ -99,7 +99,7 @@ class JoinRoomTos : ProtoHandler {
             oldPlayer2?.apply { // 顶号
                 logger.info("${playerName}离开了房间")
                 newGame.players = newGame.players.toMutableList().apply { set(location, null) }
-                newGame.cancelStartTimer()
+                newGame.cancelStartTimer(false)
                 this.game = null
                 send(notifyKickedToc { })
                 val reply = leaveRoomToc { position = location }
@@ -107,7 +107,10 @@ class JoinRoomTos : ProtoHandler {
             }
             if (!Config.IsGmEnable) {
                 val humanCount = newGame.players.count { it is HumanPlayer }
-                if (humanCount >= 1) newGame.removeAllRobot()
+                if (humanCount >= 1) {
+                    newGame.removeAllRobot()
+                    newGame.cancelStartTimer(false)
+                }
             }
             player.playerName = playerName
             player.playerTitle = playerInfo.title

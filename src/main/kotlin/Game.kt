@@ -87,10 +87,12 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         players.send { notifyRoomStartTimerToc { seconds = delay.toInt().coerceAtLeast(1) } }
     }
 
-    fun cancelStartTimer() {
-        gameStartTimeout?.cancel()
-        gameStartTimeout = null
-        players.send { notifyRoomStartTimerToc { } }
+    fun cancelStartTimer(needNotify: Boolean = true) {
+        gameStartTimeout?.run {
+            cancel()
+            gameStartTimeout = null
+            if (needNotify) players.send { notifyRoomStartTimerToc { } }
+        }
     }
 
     /**
@@ -103,7 +105,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             players = players + null
             players.send { addOnePositionToc { } }
             index = players.size - 1
-            cancelStartTimer()
+            cancelStartTimer(false)
         }
         players = players.toMutableList().apply { set(index, player) }
         player.location = index
