@@ -78,11 +78,24 @@ class HuoXin : MainPhaseSkill() {
             }
         }
         if (target.cards.isEmpty()) {
-            g.continueResolve()
+            g.resolve(WaitForHuoXin(g.fsm!!))
             return
         }
         target.cards.forEach { r.canWeiBiCardIds.add(it.id) }
         g.resolve(ExecuteHuoXin(g.fsm!!, r, target, showCards[0], waitingSecond))
+    }
+
+    private class WaitForHuoXin(val fsm: Fsm) : Fsm {
+        override val whoseTurn: Player
+            get() = fsm.whoseTurn
+
+        override fun resolve(): ResolveResult? {
+            val g = whoseTurn.game!!
+            GameExecutor.post(g, {
+                g.resolve(fsm)
+            }, 1, TimeUnit.SECONDS)
+            return null
+        }
     }
 
     private class ExecuteHuoXin(
