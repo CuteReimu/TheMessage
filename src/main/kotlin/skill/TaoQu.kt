@@ -180,7 +180,11 @@ class TaoQu : MainPhaseSkill() {
                                 val maxRedCards = redWinTargets.maxOf { it.player.messageCards.count(Red) }
                                 val maxBlueCards = blueWinTargets.maxOf { it.player.messageCards.count(Blue) }
                                 moveplayerAndcards.addAll(
-                                    if (maxRedCards >= maxBlueCards) redWinTargets else blueWinTargets
+                                    when {
+                                        maxRedCards > maxBlueCards -> redWinTargets
+                                        maxBlueCards > maxRedCards -> blueWinTargets
+                                        else -> if (listOf(true, false).random()) redWinTargets else blueWinTargets
+                                    }
                                 )
                             }
                             redWinTargets.isNotEmpty() -> moveplayerAndcards.addAll(redWinTargets)
@@ -354,14 +358,32 @@ class TaoQu : MainPhaseSkill() {
                             // 双方都有人快赢，选择拥有更多情报的一方对应的颜色
                             val maxRedCards = redPlayersCloseToWin.maxOf { it!!.messageCards.count(Red) }
                             val maxBlueCards = bluePlayersCloseToWin.maxOf { it!!.messageCards.count(Blue) }
-                            choosecolor = if (maxRedCards >= maxBlueCards && Red in color) Red
-                            else if (Blue in color) Blue
-                            else color.first()
+                            choosecolor = when {
+                                maxRedCards > maxBlueCards && Red in color -> Red
+                                maxBlueCards > maxRedCards && Blue in color -> Blue
+                                maxRedCards == maxBlueCards -> {
+                                    // 相等时随机选择
+                                    val availableColors = listOfNotNull(
+                                        if (Red in color) Red else null,
+                                        if (Blue in color) Blue else null
+                                    )
+                                    if (availableColors.isNotEmpty()) availableColors.random() else color.first()
+                                }
+                                else -> color.first()
+                            }
                         }
                         redPlayersCloseToWin.isNotEmpty() && Red in color -> choosecolor = Red
                         bluePlayersCloseToWin.isNotEmpty() && Blue in color -> choosecolor = Blue
                         redStrength > blueStrength && Red in color -> choosecolor = Red
                         blueStrength > redStrength && Blue in color -> choosecolor = Blue
+                        redStrength == blueStrength -> {
+                            // 实力相等时随机选择
+                            val availableColors = listOfNotNull(
+                                if (Red in color) Red else null,
+                                if (Blue in color) Blue else null
+                            )
+                            choosecolor = if (availableColors.isNotEmpty()) availableColors.random() else color.first()
+                        }
                         else -> choosecolor = color.first()
                     }
                     value = 10 // 设置一个正值以触发技能使用
