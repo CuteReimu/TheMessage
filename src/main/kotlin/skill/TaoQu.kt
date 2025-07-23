@@ -18,6 +18,7 @@ import com.fengsheng.protos.skillTaoQuBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * SP白菲菲技能【套取】：出牌阶段限一次，你可以展示两张含含相同颜色的牌，将一名其他角色情报区的一张同色情报加入手牌。
@@ -183,7 +184,7 @@ class TaoQu : MainPhaseSkill() {
                                     when {
                                         maxRedCards > maxBlueCards -> redWinTargets
                                         maxBlueCards > maxRedCards -> blueWinTargets
-                                        else -> if (listOf(true, false).random()) redWinTargets else blueWinTargets
+                                        else -> if (Random.nextBoolean()) redWinTargets else blueWinTargets
                                     }
                                 )
                             }
@@ -361,7 +362,7 @@ class TaoQu : MainPhaseSkill() {
                             choosecolor = when {
                                 maxRedCards > maxBlueCards && Red in color -> Red
                                 maxBlueCards > maxRedCards && Blue in color -> Blue
-                                maxRedCards == maxBlueCards -> {
+                                else -> {
                                     // 相等时随机选择
                                     val availableColors = listOfNotNull(
                                         if (Red in color) Red else null,
@@ -369,7 +370,6 @@ class TaoQu : MainPhaseSkill() {
                                     )
                                     if (availableColors.isNotEmpty()) availableColors.random() else color.first()
                                 }
-                                else -> color.first()
                             }
                         }
                         redPlayersCloseToWin.isNotEmpty() && Red in color -> choosecolor = Red
@@ -384,7 +384,14 @@ class TaoQu : MainPhaseSkill() {
                             )
                             choosecolor = if (availableColors.isNotEmpty()) availableColors.random() else color.first()
                         }
-                        else -> choosecolor = color.first()
+                        redStrength > blueStrength -> {
+                            // 红方更强但红色不可用，选择可用颜色
+                            choosecolor = if (Blue in color) Blue else color.first()
+                        }
+                        blueStrength > redStrength -> {
+                            // 蓝方更强但蓝色不可用，选择可用颜色
+                            choosecolor = if (Red in color) Red else color.first()
+                        }
                     }
                     value = 10 // 设置一个正值以触发技能使用
                 } else {
