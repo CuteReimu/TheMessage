@@ -384,14 +384,7 @@ class TaoQu : MainPhaseSkill() {
                             )
                             choosecolor = if (availableColors.isNotEmpty()) availableColors.random() else color.first()
                         }
-                        redStrength > blueStrength -> {
-                            // 红方更强但红色不可用，选择可用颜色
-                            choosecolor = if (Blue in color) Blue else color.first()
-                        }
-                        blueStrength > redStrength -> {
-                            // 蓝方更强但蓝色不可用，选择可用颜色
-                            choosecolor = if (Red in color) Red else color.first()
-                        }
+                        else -> choosecolor = color.first()
                     }
                     value = 10 // 设置一个正值以触发技能使用
                 } else {
