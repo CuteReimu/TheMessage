@@ -18,6 +18,7 @@ import com.fengsheng.protos.skillTaoQuBTos
 import com.google.protobuf.GeneratedMessage
 import org.apache.logging.log4j.kotlin.logger
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * SP白菲菲技能【套取】：出牌阶段限一次，你可以展示两张含含相同颜色的牌，将一名其他角色情报区的一张同色情报加入手牌。
@@ -137,19 +138,103 @@ class TaoQu : MainPhaseSkill() {
                         g.players.filter { it!!.alive && it !== r && it.messageCards.isNotEmpty() } // 过滤出除了自己且存活有情报的玩家
                     val moveplayerAndcards = ArrayList<PlayerAndCard>() // 存储可能指定的玩家以及情报牌的集合
                     var value = Int.MIN_VALUE
-                    for (p in players) {
-                        for (movecard in p!!.messageCards.filter { c -> c.colors.any { it in color } }) {
-                            // 遍历到没有任意两张手牌含有相同的颜色跳过
-                            val v = r.calculateRemoveCardValue(r, p, movecard)
-                            if (v > value) {
-                                value = v
-                                moveplayerAndcards.clear()
-                                moveplayerAndcards.add(PlayerAndCard(p, movecard))
-                            } else if (v == value) {
-                                moveplayerAndcards.add(PlayerAndCard(p, movecard))
+
+                    // 通用的卡牌价值计算逻辑
+                    fun calculatePlayerCardValues() {
+                        for (p in players) {
+                            for (movecard in p!!.messageCards.filter { c -> c.colors.any { it in color } }) {
+                                val v = r.calculateRemoveCardValue(r, p, movecard)
+                                if (v > value) {
+                                    value = v
+                                    moveplayerAndcards.clear()
+                                    moveplayerAndcards.add(PlayerAndCard(p, movecard))
+                                } else if (v == value) {
+                                    moveplayerAndcards.add(PlayerAndCard(p, movecard))
+                                }
                             }
                         }
                     }
+
+                    // 特殊处理神秘人的情况，优先平衡场上局势
+                    if (r.identity == Black) {
+                        // 找出所有可能的目标玩家和卡牌
+                        val allPossibleTargets = ArrayList<PlayerAndCard>()
+                        for (p in players) {
+                            for (movecard in p!!.messageCards.filter { c -> c.colors.any { it in color } }) {
+                                allPossibleTargets.add(PlayerAndCard(p, movecard))
+                            }
+                        }
+
+                        // 优先级1: 阻止即将获胜的玩家（拥有2张同色真实情报的玩家）
+                        val redWinTargets = allPossibleTargets.filter { playerAndCard ->
+                            playerAndCard.player.identity == Red && Red in playerAndCard.card.colors &&
+                                playerAndCard.player.messageCards.count(Red) >= 2
+                        }
+                        val blueWinTargets = allPossibleTargets.filter { playerAndCard ->
+                            playerAndCard.player.identity == Blue && Blue in playerAndCard.card.colors &&
+                                playerAndCard.player.messageCards.count(Blue) >= 2
+                        }
+
+                        when {
+                            redWinTargets.isNotEmpty() && blueWinTargets.isNotEmpty() -> {
+                                // 如果红蓝双方都有人快要赢了，优先阻止拥有更多同色情报的一方
+                                val maxRedCards = redWinTargets.maxOf { it.player.messageCards.count(Red) }
+                                val maxBlueCards = blueWinTargets.maxOf { it.player.messageCards.count(Blue) }
+                                moveplayerAndcards.addAll(
+                                    when {
+                                        maxRedCards > maxBlueCards -> redWinTargets
+                                        maxBlueCards > maxRedCards -> blueWinTargets
+                                        else -> if (Random.nextBoolean()) redWinTargets else blueWinTargets
+                                    }
+                                )
+                            }
+                            redWinTargets.isNotEmpty() -> moveplayerAndcards.addAll(redWinTargets)
+                            blueWinTargets.isNotEmpty() -> moveplayerAndcards.addAll(blueWinTargets)
+                            else -> {
+                                // 优先级2: 平衡红蓝双方，优先移除强势一方的情报
+                                val redPlayers = g.players.filter { it!!.alive && it.identity == Red }
+                                val bluePlayers = g.players.filter { it!!.alive && it.identity == Blue }
+
+                                // 计算红蓝双方的总体实力（拥有的同色情报数量）
+                                val redStrength = redPlayers.sumOf { it!!.messageCards.count(Red) }
+                                val blueStrength = bluePlayers.sumOf { it!!.messageCards.count(Blue) }
+
+                                // 优先移除强势一方的情报来平衡局势
+                                val targetFaction = if (redStrength > blueStrength) {
+                                    Red
+                                } else if (blueStrength > redStrength) {
+                                    Blue
+                                } else {
+                                    null
+                                }
+
+                                val balanceTargets = if (targetFaction != null) {
+                                    allPossibleTargets.filter { playerAndCard ->
+                                        playerAndCard.player.identity == targetFaction &&
+                                            targetFaction in playerAndCard.card.colors
+                                    }
+                                } else {
+                                    // 如果双方平衡，则选择拥有更多同色情报的玩家
+                                    allPossibleTargets.filter { playerAndCard ->
+                                        val playerIdentity = playerAndCard.player.identity
+                                        playerIdentity != Black && playerIdentity in playerAndCard.card.colors &&
+                                            playerAndCard.player.messageCards.count(playerIdentity) >= 1
+                                    }
+                                }
+
+                                if (balanceTargets.isNotEmpty()) {
+                                    moveplayerAndcards.addAll(balanceTargets)
+                                } else {
+                                    // 优先级3: 如果没有明显的平衡目标，使用原始逻辑
+                                    calculatePlayerCardValues()
+                                }
+                            }
+                        }
+                    } else {
+                        // 非神秘人使用原始逻辑
+                        calculatePlayerCardValues()
+                    }
+
                     val bestcard = moveplayerAndcards.map { it.card }.bestCard(r.identity)
                     val playerAndCard = moveplayerAndcards.first { it.card === bestcard } // 目标玩家和情报牌
                     g.tryContinueResolveProtocol(r, skillTaoQuBTos {
@@ -233,17 +318,84 @@ class TaoQu : MainPhaseSkill() {
             color.isNotEmpty() || return false
             var value = -9
             var choosecolor = Black
-            for (p in players) {
-                val messagecards = p!!.messageCards.toList()
-                for (card in messagecards) {
-                    val c = card.colors.shuffled().find { it in color } ?: continue
-                    val v = player.calculateRemoveCardValue(player, p, card)
-                    if (v > value) {
-                        value = v
-                        choosecolor = c
+
+            // 通用的价值计算逻辑
+            fun calculateBestColor() {
+                for (p in players) {
+                    val messagecards = p!!.messageCards.toList()
+                    for (card in messagecards) {
+                        val c = card.colors.shuffled().find { it in color } ?: continue
+                        val v = player.calculateRemoveCardValue(player, p, card)
+                        if (v > value) {
+                            value = v
+                            choosecolor = c
+                        }
                     }
                 }
             }
+
+            // 神秘人特殊处理：检查是否有需要平衡的情况
+            if (player.identity == Black) {
+                // 检查是否有玩家即将获胜（拥有2张同色真实情报）
+                val redPlayersCloseToWin = players.filter { p ->
+                    p!!.identity == Red && p.messageCards.count(Red) >= 2
+                }
+                val bluePlayersCloseToWin = players.filter { p ->
+                    p!!.identity == Blue && p.messageCards.count(Blue) >= 2
+                }
+
+                // 检查红蓝双方是否失衡
+                val redPlayers = player.game!!.players.filter { it!!.alive && it.identity == Red }
+                val bluePlayers = player.game!!.players.filter { it!!.alive && it.identity == Blue }
+                val redStrength = redPlayers.sumOf { it!!.messageCards.count(Red) }
+                val blueStrength = bluePlayers.sumOf { it!!.messageCards.count(Blue) }
+                val isImbalanced = kotlin.math.abs(redStrength - blueStrength) >= 2
+
+                // 如果有玩家即将获胜或场上失衡，则积极使用技能
+                if (redPlayersCloseToWin.isNotEmpty() || bluePlayersCloseToWin.isNotEmpty() || isImbalanced) {
+                    // 根据策略选择颜色：优先选择能阻止获胜或平衡局势的颜色
+                    when {
+                        redPlayersCloseToWin.isNotEmpty() && bluePlayersCloseToWin.isNotEmpty() -> {
+                            // 双方都有人快赢，选择拥有更多情报的一方对应的颜色
+                            val maxRedCards = redPlayersCloseToWin.maxOf { it!!.messageCards.count(Red) }
+                            val maxBlueCards = bluePlayersCloseToWin.maxOf { it!!.messageCards.count(Blue) }
+                            choosecolor = when {
+                                maxRedCards > maxBlueCards && Red in color -> Red
+                                maxBlueCards > maxRedCards && Blue in color -> Blue
+                                else -> {
+                                    // 相等时随机选择
+                                    val availableColors = listOfNotNull(
+                                        if (Red in color) Red else null,
+                                        if (Blue in color) Blue else null
+                                    )
+                                    if (availableColors.isNotEmpty()) availableColors.random() else color.first()
+                                }
+                            }
+                        }
+                        redPlayersCloseToWin.isNotEmpty() && Red in color -> choosecolor = Red
+                        bluePlayersCloseToWin.isNotEmpty() && Blue in color -> choosecolor = Blue
+                        redStrength > blueStrength && Red in color -> choosecolor = Red
+                        blueStrength > redStrength && Blue in color -> choosecolor = Blue
+                        redStrength == blueStrength -> {
+                            // 实力相等时随机选择
+                            val availableColors = listOfNotNull(
+                                if (Red in color) Red else null,
+                                if (Blue in color) Blue else null
+                            )
+                            choosecolor = if (availableColors.isNotEmpty()) availableColors.random() else color.first()
+                        }
+                        else -> choosecolor = color.first()
+                    }
+                    value = 10 // 设置一个正值以触发技能使用
+                } else {
+                    // 否则使用原始逻辑
+                    calculateBestColor()
+                }
+            } else {
+                // 非神秘人使用原始逻辑
+                calculateBestColor()
+            }
+
             value > -9 || return false // 如果没有找到合适的情报，则不发动
             val cardIds = player.cards.filter(choosecolor).shuffled().take(2).map { it.id }
             GameExecutor.post(player.game!!, {
