@@ -7,8 +7,8 @@ import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Common.color.Blue
-import com.fengsheng.protos.Common.color.Red
+import com.fengsheng.protos.Common.direction.Left
+import com.fengsheng.protos.Common.direction.Right
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
 import com.fengsheng.protos.skillYouDiShenRuToc
 import com.fengsheng.protos.skillYouDiShenRuTos
@@ -103,19 +103,106 @@ class YouDiShenRu : ActiveSkill {
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
             val game = player.game!!
-            player.game!!.players.any {
-                it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
-            } || return false
-            val result = player.calSendMessageCard()
-            GameExecutor.post(game, {
-                skill.executeProtocol(game, player, skillYouDiShenRuTos {
-                    cardId = result.card.id
-                    targetPlayerId = player.getAlternativeLocation(result.target.location)
-                    cardDir = result.dir
-                    result.lockedPlayers.forEach { lockPlayerId.add(player.getAlternativeLocation(it.location)) }
-                })
-            }, 1, TimeUnit.SECONDS)
-            return true
+
+            // 计算正常（暗面）传递的价值
+            val normalResult = player.calSendMessageCard()
+
+            // 通过模拟诱敌深入效果计算明面传递的价值
+            val faceUpValue = calculateFaceUpSendingValue(player, normalResult, game)
+
+            // 只有明面传递明显更好时才使用诱敌深入
+            // 使用较高阈值来考虑此技能一局限一次的特性
+            val threshold = 30 // 提高阈值以更保守地使用一局限一次的技能
+            if (faceUpValue > normalResult.value + threshold) {
+                GameExecutor.post(game, {
+                    skill.executeProtocol(game, player, skillYouDiShenRuTos {
+                        cardId = normalResult.card.id
+                        targetPlayerId = player.getAlternativeLocation(normalResult.target.location)
+                        cardDir = normalResult.dir
+                        normalResult.lockedPlayers.forEach { lockPlayerId.add(player.getAlternativeLocation(it.location)) }
+                    })
+                }, 1, TimeUnit.SECONDS)
+                return true
+            }
+
+            return false
+        }
+
+        private fun calculateFaceUpSendingValue(player: Player, result: SendMessageCardResult, game: Game): Double {
+            // 对于使用诱敌深入的明面传递，我们需要考虑强制/禁止接收的规则
+            val card = result.card
+            val target = result.target
+            val dir = result.dir
+
+            // 模拟明面传递时谁会实际接收卡牌
+            var currentPlayer = target
+            var totalValue = 0.0
+            var attempts = 0
+            val maxAttempts = game.players.count { it!!.alive }
+
+            while (attempts < maxAttempts) {
+                attempts++
+
+                if (!currentPlayer.alive) {
+                    // 移动到下一个玩家
+                    currentPlayer = when (dir) {
+                        Left -> currentPlayer.getNextLeftAlivePlayer()
+                        Right -> currentPlayer.getNextRightAlivePlayer()
+                        else -> player // 对于向上方向，返回发送者
+                    }
+                    continue
+                }
+
+                // 检查诱敌深入的强制/禁止规则
+                val identity = currentPlayer.identity
+                val mustReceive = identity != Black && identity in card.colors
+                val cannotReceive = identity != Black && identity !in card.colors
+
+                if (mustReceive || result.lockedPlayers.contains(currentPlayer) || currentPlayer === player) {
+                    // 此玩家必须接收卡牌
+                    totalValue = player.calculateMessageCardValue(player, currentPlayer, card, sender = player).toDouble()
+                    break
+                } else if (cannotReceive) {
+                    // 此玩家不能接收，移动到下一个
+                    currentPlayer = when (dir) {
+                        Left -> currentPlayer.getNextLeftAlivePlayer()
+                        Right -> currentPlayer.getNextRightAlivePlayer()
+                        else -> player // 对于向上方向，返回发送者
+                    }
+                    continue
+                } else {
+                    // 对于黑色身份玩家，使用正常接收逻辑并考虑明面卡牌
+                    // 由于卡牌是明面的，他们在决策时会使用修改后的系数
+                    val oldA = currentPlayer.coefficientA
+                    val oldB = currentPlayer.coefficientB
+                    currentPlayer.coefficientA = 1.0
+                    currentPlayer.coefficientB = 0
+
+                    val myValue = currentPlayer.calculateMessageCardValue(player, currentPlayer, card, sender = player)
+                    val nextPlayer = when (dir) {
+                        Left -> currentPlayer.getNextLeftAlivePlayer()
+                        Right -> currentPlayer.getNextRightAlivePlayer()
+                        else -> player
+                    }
+                    val nextValue = currentPlayer.calculateMessageCardValue(player, nextPlayer, card, sender = player)
+
+                    // 恢复系数
+                    currentPlayer.coefficientA = oldA
+                    currentPlayer.coefficientB = oldB
+
+                    if (myValue > nextValue) {
+                        // 此玩家会选择接收
+                        totalValue = player.calculateMessageCardValue(player, currentPlayer, card, sender = player).toDouble()
+                        break
+                    } else {
+                        // 此玩家不会接收，移动到下一个
+                        currentPlayer = nextPlayer
+                        continue
+                    }
+                }
+            }
+
+            return totalValue
         }
     }
 }
