@@ -116,7 +116,7 @@ class JiSong : ActiveSkill {
             var value = oldValue
             var target = e.inFrontOfWhom
 
-            // Find the best target to move the message card to
+            // 寻找移动情报的最佳目标
             for (p in player.game!!.sortedFrom(player.game!!.players, player.location)) {
                 p.alive || continue
                 val v = player.calculateMessageCardValue(e.whoseTurn, p, e.messageCard, sender = e.sender)
@@ -127,7 +127,7 @@ class JiSong : ActiveSkill {
             }
             target !== e.inFrontOfWhom || return false
 
-            // Check if we have a non-black intelligence card to discard
+            // 检查是否有非黑色情报可以弃置
             var valueRemove = -value
             var messageCard: Card? = null
             for (card in player.messageCards.toList()) {
@@ -139,39 +139,39 @@ class JiSong : ActiveSkill {
                 }
             }
 
-            // Determine the cost and benefit of using the skill
+            // 确定使用技能的成本和收益
             val hasGoodMessageCard = messageCard != null
             val hasTwoHandCards = player.cards.size >= 2
             val hasHighValueCards = player.cards.any { it.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) }
 
-            // If we have high-value cards, be more selective about using the skill
+            // 如果我们有高价值卡牌，使用技能时要更加谨慎
             val valueThreshold = if (hasHighValueCards) {
-                if (hasGoodMessageCard) 35 else 50 // Higher threshold when we have good cards
+                if (hasGoodMessageCard) 35 else 50 // 有好卡时使用更高阈值
             } else {
-                if (hasGoodMessageCard) 20 else 30 // Lower threshold when we don't have good cards
+                if (hasGoodMessageCard) 20 else 30 // 没有好卡时使用更低阈值
             }
 
-            // Calculate the net benefit
+            // 计算净收益
             val netBenefit = if (hasGoodMessageCard) {
                 value + valueRemove - oldValue
             } else {
                 value - oldValue
             }
 
-            // Only use the skill if the benefit is significant enough
+            // 只有在收益足够显著时才使用技能
             if (netBenefit < valueThreshold) return false
 
-            // Prefer using message card over hand cards if the benefit is similar
+            // 在收益相近时优先使用情报而非手牌
             if (hasGoodMessageCard && hasTwoHandCards) {
                 if (value + valueRemove < value - 25) {
-                    messageCard = null // Use hand cards instead
+                    messageCard = null // 改用手牌
                 }
             }
 
             var cards = emptyList<Card>()
             if (messageCard == null) {
                 if (!hasTwoHandCards) return false
-                // Choose the least valuable cards to discard
+                // 选择价值最低的卡牌弃置
                 cards = player.cards.sortCards(player.identity, true).take(2)
             }
 

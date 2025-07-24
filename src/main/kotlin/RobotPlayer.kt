@@ -41,7 +41,7 @@ class RobotPlayer : Player() {
             val ai = aiSkillMainPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as ActiveSkill)) return
         }
-        // For JiSong skill, be more conservative with hand cards since the skill requires discarding 2 cards
+        // 急送技能需要弃置2张手牌，因此对手牌要更加保守
         val hasJiSongSkill = findSkill(JI_SONG) != null
         val minHandCards = if (hasJiSongSkill && messageCards.none { !it.isBlack() }) 2 else 1
 
@@ -205,16 +205,16 @@ class RobotPlayer : Player() {
             if (ai(fsm, skill as? ActiveSkill)) return
         }
 
-        // Check if we should prioritize JiSong skill over high-value cards
+        // 检查是否应该优先使用急送技能而非高价值卡牌
         val jiSongSkill = findSkill(JI_SONG)
         var shouldUseJiSong = false
         if (jiSongSkill != null) {
             val jiSongAi = aiSkillFightPhase2[JI_SONG]
             if (jiSongAi != null) {
-                // Calculate potential value of using JiSong without actually executing it
+                // 计算使用急送技能的潜在价值而不实际执行
                 val hasHighValueCards = cards.any { it.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) }
                 if (hasHighValueCards && getSkillUseCount(JI_SONG) == 0) {
-                    // Simulate JiSong evaluation
+                    // 模拟急送技能评估
                     val currentValue =
                         calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, sender = fsm.sender)
                     var bestTargetValue = currentValue
@@ -226,7 +226,7 @@ class RobotPlayer : Player() {
                             }
                         }
                     }
-                    // If JiSong would provide significant value and we have cards to discard
+                    // 如果急送技能能提供显著价值且我们有卡牌可弃置
                     if (bestTargetValue - currentValue > 30 &&
                         (cards.size >= 2 || messageCards.any { !it.isBlack() })) {
                         shouldUseJiSong = true
@@ -240,7 +240,7 @@ class RobotPlayer : Player() {
             isPartnerOrSelf(fsm.inFrontOfWhom) &&
             fsm.inFrontOfWhom.willDie(fsm.messageCard) ||
             calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, sender = fsm.sender) <= -135) {
-            // If JiSong should be prioritized, try it first
+            // 如果应该优先使用急送技能，则先尝试使用
             if (shouldUseJiSong && jiSongSkill != null) {
                 val ai = aiSkillFightPhase2[JI_SONG]
                 if (ai != null && ai(fsm, jiSongSkill as ActiveSkill)) return
