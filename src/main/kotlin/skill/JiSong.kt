@@ -4,6 +4,9 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.Common.card_type.Diao_Bao
+import com.fengsheng.protos.Common.card_type.Jie_Huo
+import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_ji_song_tos
 import com.fengsheng.protos.skillJiSongToc
@@ -107,10 +110,13 @@ class JiSong : ActiveSkill {
             val player = e.whoseFightTurn
             player.getSkillUseCount(SkillId.JI_SONG) == 0 || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
+
             val oldValue =
                 player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard, sender = e.sender)
             var value = oldValue
             var target = e.inFrontOfWhom
+
+            // 寻找移动情报的最佳目标
             for (p in player.game!!.sortedFrom(player.game!!.players, player.location)) {
                 p.alive || continue
                 val v = player.calculateMessageCardValue(e.whoseTurn, p, e.messageCard, sender = e.sender)
@@ -120,6 +126,8 @@ class JiSong : ActiveSkill {
                 }
             }
             target !== e.inFrontOfWhom || return false
+
+            // 检查是否有非黑色情报可以弃置
             var valueRemove = -value
             var messageCard: Card? = null
             for (card in player.messageCards.toList()) {
@@ -130,14 +138,43 @@ class JiSong : ActiveSkill {
                     messageCard = card
                 }
             }
-            value + valueRemove > oldValue || value - 20 > oldValue || return false
-            if (messageCard != null && value + valueRemove < value - 20)
-                messageCard = null
+
+            // 确定使用技能的成本和收益
+            val hasGoodMessageCard = messageCard != null
+            val hasTwoHandCards = player.cards.size >= 2
+            val hasHighValueCards = player.cards.any { it.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) }
+
+            // 如果我们有高价值卡牌，使用技能时要更加谨慎
+            val valueThreshold = if (hasHighValueCards) {
+                if (hasGoodMessageCard) 35 else 50 // 有好卡时使用更高阈值
+            } else {
+                if (hasGoodMessageCard) 20 else 30 // 没有好卡时使用更低阈值
+            }
+
+            // 计算净收益
+            val netBenefit = if (hasGoodMessageCard) {
+                value + valueRemove - oldValue
+            } else {
+                value - oldValue
+            }
+
+            // 只有在收益足够显著时才使用技能
+            if (netBenefit < valueThreshold) return false
+
+            // 在收益相近时优先使用情报而非手牌
+            if (hasGoodMessageCard && hasTwoHandCards) {
+                if (value + valueRemove < value - 25) {
+                    messageCard = null // 改用手牌
+                }
+            }
+
             var cards = emptyList<Card>()
             if (messageCard == null) {
+                if (!hasTwoHandCards) return false
+                // 选择价值最低的卡牌弃置
                 cards = player.cards.sortCards(player.identity, true).take(2)
-                cards.size == 2 || return false
             }
+
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillJiSongTos {
                     cards.forEach { cardIds.add(it.id) }

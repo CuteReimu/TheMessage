@@ -1,5 +1,6 @@
 package com.fengsheng
 
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.*
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.card_type.*
@@ -41,10 +42,16 @@ class RobotPlayer : Player() {
             val ai = aiSkillMainPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as ActiveSkill)) return
         }
-        if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null ||
+        // 急送技能需要弃置2张手牌，加上传递阶段要传出1张手牌，因此对手牌要更加保守
+        val hasJiSongSkill = findSkill(JI_SONG) != null
+        val hasNonBlackIntelCard = messageCards.any { !it.isBlack() }
+        // 计算最小手牌数：如果有急送技能且无非黑情报，需要保留3张（2张用于技能+1张用于传递）
+        val minHandCards = if (hasJiSongSkill && !hasNonBlackIntelCard) 3 else 1
+
+        if (cards.size > minHandCards || findSkill(LENG_XUE_XUN_LIAN) != null ||
             cards.size == 1 && cards.first().type in listOf(Ping_Heng, Feng_Yun_Bian_Huan)) {
             val cardTypes =
-                if (findSkill(JI_SONG) == null && (findSkill(GUANG_FA_BAO) == null || roleFaceUp))
+                if (!hasJiSongSkill && (findSkill(GUANG_FA_BAO) == null || roleFaceUp))
                     cardOrder.keys.sortedBy { cardOrder[it] }
                 else listOf(Wei_Bi)
             for (cardType in cardTypes) {
@@ -200,13 +207,50 @@ class RobotPlayer : Player() {
             val ai = aiSkillFightPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as? ActiveSkill)) return
         }
+
+        // 检查是否应该优先使用急送技能而非高价值卡牌
+        val jiSongSkill = findSkill(JI_SONG)
+        var shouldUseJiSong = false
+        if (jiSongSkill != null) {
+            val jiSongAi = aiSkillFightPhase2[JI_SONG]
+            if (jiSongAi != null) {
+                // 计算使用急送技能的潜在价值而不实际执行
+                val hasHighValueCards = cards.any { it.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) }
+                if (hasHighValueCards && getSkillUseCount(JI_SONG) == 0) {
+                    // 模拟急送技能评估
+                    val currentValue =
+                        calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, sender = fsm.sender)
+                    var bestTargetValue = currentValue
+                    for (p in game!!.sortedFrom(game!!.players, location)) {
+                        if (p.alive) {
+                            val v = calculateMessageCardValue(fsm.whoseTurn, p, fsm.messageCard, sender = fsm.sender)
+                            if (v > bestTargetValue) {
+                                bestTargetValue = v
+                            }
+                        }
+                    }
+                    // 如果急送技能能提供显著价值且我们有卡牌可弃置
+                    if (bestTargetValue - currentValue > 30 &&
+                        (cards.size >= 2 || messageCards.any { !it.isBlack() })) {
+                        shouldUseJiSong = true
+                    }
+                }
+            }
+        }
+
         if (!game!!.isEarly ||
             this === fsm.whoseTurn ||
             isPartnerOrSelf(fsm.inFrontOfWhom) &&
             fsm.inFrontOfWhom.willDie(fsm.messageCard) ||
             calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, sender = fsm.sender) <= -135) {
+            // 如果应该优先使用急送技能，则先尝试使用
+            if (shouldUseJiSong && jiSongSkill != null) {
+                val ai = aiSkillFightPhase2[JI_SONG]
+                if (ai != null && ai(fsm, jiSongSkill as ActiveSkill)) return
+            }
+
             val result = calFightPhase(fsm)
-            if (result != null && result.deltaValue > 11) {
+            if (result != null && result.deltaValue > 11 && !shouldUseJiSong) {
                 var actualDelay = 3L
                 var timeUnit = TimeUnit.SECONDS
                 if (delay > 0) {
@@ -222,7 +266,10 @@ class RobotPlayer : Player() {
                 }, actualDelay, timeUnit)
                 return
             }
+
             for (skill in skills) {
+                // Skip JiSong if we already tried it above
+                if (skill.skillId == JI_SONG && shouldUseJiSong) continue
                 val ai = aiSkillFightPhase2[skill.skillId] ?: continue
                 if (ai(fsm, skill as ActiveSkill)) return
             }
