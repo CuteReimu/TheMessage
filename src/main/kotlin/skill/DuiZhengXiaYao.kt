@@ -76,7 +76,6 @@ class DuiZhengXiaYao : ActiveSkill {
             }
             if (r is RobotPlayer) {
                 GameExecutor.post(g, {
-                    val messageCards = fsm.inFrontOfWhom.messageCards.toList()
                     fsm.inFrontOfWhom.messageCards.add(fsm.messageCard) // 先假设这个人已经获得了这张情报
                     val coefficientA = r.coefficientA
                     val coefficientB = r.coefficientB
@@ -86,12 +85,17 @@ class DuiZhengXiaYao : ActiveSkill {
                     var value = -1
                     for (c in listOf(Red, Blue, Black)) { // 对红、蓝、黑三种颜色进行判断
                         r.cards.count(c) >= 2 || continue // 如果这个颜色不够2张，则跳过
-                        for (card in messageCards) { // 遍历目标角色面前的所有情报
-                            c in card.colors || continue // 如果这张情报不含有这个颜色，则跳过
-                            val v = r.calculateRemoveCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, card) // 计算弃掉这张情报的价值
-                            if (v > value) { // 如果这张情报的价值更高，则选这张
-                                value = v
-                                chooseColor = c
+                        // 遍历所有玩家面前的所有情报，寻找最有价值的移除目标
+                        for (p in g.players) {
+                            p!!.alive || continue
+                            for (card in p.messageCards.sortedBy { it.isBlack() }) {
+                                card !== fsm.messageCard || continue // 跳过刚才假设获得的那张情报
+                                c in card.colors || continue // 如果这张情报不含有这个颜色，则跳过
+                                val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
+                                if (v > value) { // 如果这张情报的价值更高，则选这张
+                                    value = v
+                                    chooseColor = c
+                                }
                             }
                         }
                     }
@@ -218,14 +222,26 @@ class DuiZhengXiaYao : ActiveSkill {
                     var value = Int.MIN_VALUE
                     for (p in g.players) {
                         p!!.alive || continue
-                        for (card in p.messageCards.sortedBy { it.isBlack() }) { // 遍历所有玩家面前的所有情报
-                            // 先遍历不带黑颜色的情报，这样就不会出现优先弃掉对方的真黑双色情报的问题了
+                        // 对于队友，优先选择双色卡（特别是包含黑色的），因为能同时移除有害的黑色情报
+                        val cardsSorted = if (r.isPartnerOrSelf(p)) {
+                            // 队友的牌：优先选择包含黑色的双色牌，再选择纯色牌
+                            p.messageCards.sortedWith(
+                                compareByDescending<Card> { it.isBlack() }.thenByDescending { it.colors.size }
+                            )
+                        } else {
+                            // 敌人的牌：优先选择不包含黑色的牌，避免帮助敌人移除黑色
+                            p.messageCards.sortedBy { it.isBlack() }
+                        }
+
+                        for (card in cardsSorted) { // 遍历所有玩家面前的所有情报
                             card !== fsm.messageCard || continue // 如果遍历到了前面假设获得的那张情报，则跳过
                             card.colors.any { it in colors } || continue // 如果这张情报不含有这个颜色，则跳过
                             val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
+                            logger.debug("DuiZhengXiaYao: 考虑移除${p}的$card(${card.colors.joinToString()})，价值为$v")
                             if (v > value) { // 如果这张情报的价值更高，则选这张
                                 value = v
                                 playerAndCard = PlayerAndCard(p, card)
+                                logger.debug("DuiZhengXiaYao: 选择移除${p}的$card，价值为$v")
                             }
                         }
                     }
