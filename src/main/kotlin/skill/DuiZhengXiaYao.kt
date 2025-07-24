@@ -91,11 +91,7 @@ class DuiZhengXiaYao : ActiveSkill {
                             for (card in p.messageCards.sortedBy { it.isBlack() }) {
                                 card !== fsm.messageCard || continue // 跳过刚才假设获得的那张情报
                                 c in card.colors || continue // 如果这张情报不含有这个颜色，则跳过
-                                var v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
-                                // 如果是队友的牌，降低移除价值，避免伤害队友
-                                if (r.isPartnerOrSelf(p)) {
-                                    v -= 200 // 对队友的牌施加重大惩罚
-                                }
+                                val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
                                 if (v > value) { // 如果这张情报的价值更高，则选这张
                                     value = v
                                     chooseColor = c
@@ -230,11 +226,7 @@ class DuiZhengXiaYao : ActiveSkill {
                             // 先遍历不带黑颜色的情报，这样就不会出现优先弃掉对方的真黑双色情报的问题了
                             card !== fsm.messageCard || continue // 如果遍历到了前面假设获得的那张情报，则跳过
                             card.colors.any { it in colors } || continue // 如果这张情报不含有这个颜色，则跳过
-                            var v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
-                            // 如果是队友的牌，降低移除价值，避免伤害队友
-                            if (r.isPartnerOrSelf(p)) {
-                                v -= 200 // 对队友的牌施加重大惩罚
-                            }
+                            val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
                             if (v > value) { // 如果这张情报的价值更高，则选这张
                                 value = v
                                 playerAndCard = PlayerAndCard(p, card)
