@@ -1,8 +1,8 @@
 package com.fengsheng
 
+import com.fengsheng.skill.YouDiShenRu
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import com.fengsheng.skill.YouDiShenRu
 
 class Test {
     @Test
@@ -10,7 +10,7 @@ class Test {
         val s = Statistics.sortTitles("💠👑🏅👑🏅💍💠🏅💠")
         assertEquals("👑👑💠💠💠💍🏅🏅🏅", s)
     }
-    
+
     @Test
     fun youDiShenRuAIBasicTest() {
         // Basic test to ensure the AI function exists and doesn't crash
