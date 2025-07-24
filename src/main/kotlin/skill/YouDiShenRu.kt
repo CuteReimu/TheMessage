@@ -9,6 +9,8 @@ import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.color.Blue
 import com.fengsheng.protos.Common.color.Red
+import com.fengsheng.protos.Common.direction.Left
+import com.fengsheng.protos.Common.direction.Right
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
 import com.fengsheng.protos.skillYouDiShenRuToc
 import com.fengsheng.protos.skillYouDiShenRuTos
@@ -103,19 +105,111 @@ class YouDiShenRu : ActiveSkill {
         fun ai(e: SendPhaseStart, skill: ActiveSkill): Boolean {
             val player = e.whoseTurn
             val game = player.game!!
+
+            // Only consider using the skill if someone is close to winning
             player.game!!.players.any {
                 it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
             } || return false
-            val result = player.calSendMessageCard()
-            GameExecutor.post(game, {
-                skill.executeProtocol(game, player, skillYouDiShenRuTos {
-                    cardId = result.card.id
-                    targetPlayerId = player.getAlternativeLocation(result.target.location)
-                    cardDir = result.dir
-                    result.lockedPlayers.forEach { lockPlayerId.add(player.getAlternativeLocation(it.location)) }
-                })
-            }, 1, TimeUnit.SECONDS)
-            return true
+
+            // Calculate normal (face-down) sending value
+            val normalResult = player.calSendMessageCard()
+
+            // Calculate face-up sending value by simulating YouDiShenRu effect
+            val faceUpValue = calculateFaceUpSendingValue(player, normalResult, game)
+
+            // Only use YouDiShenRu if face-up sending is significantly better
+            // Use a threshold to account for the once-per-game nature of this skill
+            val threshold = 20 // Adjust this value based on testing
+            if (faceUpValue > normalResult.value + threshold) {
+                GameExecutor.post(game, {
+                    skill.executeProtocol(game, player, skillYouDiShenRuTos {
+                        cardId = normalResult.card.id
+                        targetPlayerId = player.getAlternativeLocation(normalResult.target.location)
+                        cardDir = normalResult.dir
+                        normalResult.lockedPlayers.forEach { lockPlayerId.add(player.getAlternativeLocation(it.location)) }
+                    })
+                }, 1, TimeUnit.SECONDS)
+                return true
+            }
+
+            return false
+        }
+
+        private fun calculateFaceUpSendingValue(player: Player, result: SendMessageCardResult, game: Game): Double {
+            // For face-up sending with YouDiShenRu, we need to account for forced/prohibited receiving
+            val card = result.card
+            val target = result.target
+            val dir = result.dir
+
+            // Simulate who would actually receive the card when sent face-up
+            var currentPlayer = target
+            var totalValue = 0.0
+            var attempts = 0
+            val maxAttempts = game.players.count { it!!.alive }
+
+            while (attempts < maxAttempts) {
+                attempts++
+
+                if (!currentPlayer.alive) {
+                    // Move to next player
+                    currentPlayer = when (dir) {
+                        Left -> currentPlayer.getNextLeftAlivePlayer()
+                        Right -> currentPlayer.getNextRightAlivePlayer()
+                        else -> player // For Up direction, return to sender
+                    }
+                    continue
+                }
+
+                // Check YouDiShenRu forcing/prohibiting rules
+                val identity = currentPlayer.identity
+                val mustReceive = identity != Black && identity in card.colors
+                val cannotReceive = identity != Black && identity !in card.colors
+
+                if (mustReceive || result.lockedPlayers.contains(currentPlayer) || currentPlayer === player) {
+                    // This player must receive the card
+                    totalValue = player.calculateMessageCardValue(player, currentPlayer, card, sender = player).toDouble()
+                    break
+                } else if (cannotReceive) {
+                    // This player cannot receive, move to next
+                    currentPlayer = when (dir) {
+                        Left -> currentPlayer.getNextLeftAlivePlayer()
+                        Right -> currentPlayer.getNextRightAlivePlayer()
+                        else -> player // For Up direction, return to sender
+                    }
+                    continue
+                } else {
+                    // For Black identity players, use normal receiving logic with face-up consideration
+                    // Since the card is face-up, they will use modified coefficients in their decision
+                    val oldA = currentPlayer.coefficientA
+                    val oldB = currentPlayer.coefficientB
+                    currentPlayer.coefficientA = 1.0
+                    currentPlayer.coefficientB = 0
+
+                    val myValue = currentPlayer.calculateMessageCardValue(player, currentPlayer, card, sender = player)
+                    val nextPlayer = when (dir) {
+                        Left -> currentPlayer.getNextLeftAlivePlayer()
+                        Right -> currentPlayer.getNextRightAlivePlayer()
+                        else -> player
+                    }
+                    val nextValue = currentPlayer.calculateMessageCardValue(player, nextPlayer, card, sender = player)
+
+                    // Restore coefficients
+                    currentPlayer.coefficientA = oldA
+                    currentPlayer.coefficientB = oldB
+
+                    if (myValue > nextValue) {
+                        // This player would choose to receive
+                        totalValue = player.calculateMessageCardValue(player, currentPlayer, card, sender = player).toDouble()
+                        break
+                    } else {
+                        // This player would not receive, move to next
+                        currentPlayer = nextPlayer
+                        continue
+                    }
+                }
+            }
+
+            return totalValue
         }
     }
 }
