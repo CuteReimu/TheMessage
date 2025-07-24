@@ -363,7 +363,8 @@ fun Player.calculateMessageCardValue(
                 addScore(inFrontOfWhom, 80)
             }
             // 防御玛利亚【藏身教堂】：公开角色的黑色情报可能被偷走
-            if (inFrontOfWhom.isPublicRole && inFrontOfWhom.messageCards.count(Black) > 0) {
+            if (inFrontOfWhom.isPublicRole && (inFrontOfWhom.messageCards.count(Black) > 0 || Black in colors)) {
+                inFrontOfWhom.messageCards.add(TmpCard(colors))
                 var maxLossValue = 0
                 for (messageCard in inFrontOfWhom.messageCards.filter { it.isBlack() }) {
                     val removeValue = calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
@@ -373,7 +374,8 @@ fun Player.calculateMessageCardValue(
                         maxLossValue = totalLoss
                     }
                 }
-                v1 = merge(v1, -maxLossValue)
+                addScore(inFrontOfWhom, -maxLossValue)
+                inFrontOfWhom.messageCards.removeLast()
             }
         }
         if (!inFrontOfWhom.roleFaceUp && (inFrontOfWhom.hasEverFaceUp || inFrontOfWhom === this) &&
