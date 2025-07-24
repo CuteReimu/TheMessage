@@ -41,10 +41,14 @@ class RobotPlayer : Player() {
             val ai = aiSkillMainPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as ActiveSkill)) return
         }
-        if (cards.size > 1 || findSkill(LENG_XUE_XUN_LIAN) != null ||
+        // For JiSong skill, be more conservative with hand cards since the skill requires discarding 2 cards
+        val hasJiSongSkill = findSkill(JI_SONG) != null
+        val minHandCards = if (hasJiSongSkill && messageCards.none { !it.isBlack() }) 2 else 1
+
+        if (cards.size > minHandCards || findSkill(LENG_XUE_XUN_LIAN) != null ||
             cards.size == 1 && cards.first().type in listOf(Ping_Heng, Feng_Yun_Bian_Huan)) {
             val cardTypes =
-                if (findSkill(JI_SONG) == null && (findSkill(GUANG_FA_BAO) == null || roleFaceUp))
+                if (!hasJiSongSkill && (findSkill(GUANG_FA_BAO) == null || roleFaceUp))
                     cardOrder.keys.sortedBy { cardOrder[it] }
                 else listOf(Wei_Bi)
             for (cardType in cardTypes) {
@@ -200,13 +204,50 @@ class RobotPlayer : Player() {
             val ai = aiSkillFightPhase1[skill.skillId] ?: continue
             if (ai(fsm, skill as? ActiveSkill)) return
         }
+
+        // Check if we should prioritize JiSong skill over high-value cards
+        val jiSongSkill = findSkill(JI_SONG)
+        var shouldUseJiSong = false
+        if (jiSongSkill != null) {
+            val jiSongAi = aiSkillFightPhase2[JI_SONG]
+            if (jiSongAi != null) {
+                // Calculate potential value of using JiSong without actually executing it
+                val hasHighValueCards = cards.any { it.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) }
+                if (hasHighValueCards && getSkillUseCount(JI_SONG) == 0) {
+                    // Simulate JiSong evaluation
+                    val currentValue =
+                        calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, sender = fsm.sender)
+                    var bestTargetValue = currentValue
+                    for (p in game!!.sortedFrom(game!!.players, location)) {
+                        if (p.alive) {
+                            val v = calculateMessageCardValue(fsm.whoseTurn, p, fsm.messageCard, sender = fsm.sender)
+                            if (v > bestTargetValue) {
+                                bestTargetValue = v
+                            }
+                        }
+                    }
+                    // If JiSong would provide significant value and we have cards to discard
+                    if (bestTargetValue - currentValue > 30 &&
+                        (cards.size >= 2 || messageCards.any { !it.isBlack() })) {
+                        shouldUseJiSong = true
+                    }
+                }
+            }
+        }
+
         if (!game!!.isEarly ||
             this === fsm.whoseTurn ||
             isPartnerOrSelf(fsm.inFrontOfWhom) &&
             fsm.inFrontOfWhom.willDie(fsm.messageCard) ||
             calculateMessageCardValue(fsm.whoseTurn, fsm.inFrontOfWhom, fsm.messageCard, sender = fsm.sender) <= -135) {
+            // If JiSong should be prioritized, try it first
+            if (shouldUseJiSong && jiSongSkill != null) {
+                val ai = aiSkillFightPhase2[JI_SONG]
+                if (ai != null && ai(fsm, jiSongSkill as ActiveSkill)) return
+            }
+
             val result = calFightPhase(fsm)
-            if (result != null && result.deltaValue > 11) {
+            if (result != null && result.deltaValue > 11 && !shouldUseJiSong) {
                 var actualDelay = 3L
                 var timeUnit = TimeUnit.SECONDS
                 if (delay > 0) {
@@ -222,7 +263,10 @@ class RobotPlayer : Player() {
                 }, actualDelay, timeUnit)
                 return
             }
+
             for (skill in skills) {
+                // Skip JiSong if we already tried it above
+                if (skill.skillId == JI_SONG && shouldUseJiSong) continue
                 val ai = aiSkillFightPhase2[skill.skillId] ?: continue
                 if (ai(fsm, skill as ActiveSkill)) return
             }

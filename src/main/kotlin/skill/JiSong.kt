@@ -4,6 +4,9 @@ import com.fengsheng.*
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.Card
 import com.fengsheng.phase.FightPhaseIdle
+import com.fengsheng.protos.Common.card_type.Diao_Bao
+import com.fengsheng.protos.Common.card_type.Jie_Huo
+import com.fengsheng.protos.Common.card_type.Wu_Dao
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Role.skill_ji_song_tos
 import com.fengsheng.protos.skillJiSongToc
@@ -107,10 +110,13 @@ class JiSong : ActiveSkill {
             val player = e.whoseFightTurn
             player.getSkillUseCount(SkillId.JI_SONG) == 0 || return false
             player.game!!.players.anyoneWillWinOrDie(e) || return false
+
             val oldValue =
                 player.calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard, sender = e.sender)
             var value = oldValue
             var target = e.inFrontOfWhom
+
+            // Find the best target to move the message card to
             for (p in player.game!!.sortedFrom(player.game!!.players, player.location)) {
                 p.alive || continue
                 val v = player.calculateMessageCardValue(e.whoseTurn, p, e.messageCard, sender = e.sender)
@@ -120,6 +126,8 @@ class JiSong : ActiveSkill {
                 }
             }
             target !== e.inFrontOfWhom || return false
+
+            // Check if we have a non-black intelligence card to discard
             var valueRemove = -value
             var messageCard: Card? = null
             for (card in player.messageCards.toList()) {
@@ -130,14 +138,43 @@ class JiSong : ActiveSkill {
                     messageCard = card
                 }
             }
-            value + valueRemove > oldValue || value - 20 > oldValue || return false
-            if (messageCard != null && value + valueRemove < value - 20)
-                messageCard = null
+
+            // Determine the cost and benefit of using the skill
+            val hasGoodMessageCard = messageCard != null
+            val hasTwoHandCards = player.cards.size >= 2
+            val hasHighValueCards = player.cards.any { it.type in listOf(Jie_Huo, Wu_Dao, Diao_Bao) }
+
+            // If we have high-value cards, be more selective about using the skill
+            val valueThreshold = if (hasHighValueCards) {
+                if (hasGoodMessageCard) 35 else 50 // Higher threshold when we have good cards
+            } else {
+                if (hasGoodMessageCard) 20 else 30 // Lower threshold when we don't have good cards
+            }
+
+            // Calculate the net benefit
+            val netBenefit = if (hasGoodMessageCard) {
+                value + valueRemove - oldValue
+            } else {
+                value - oldValue
+            }
+
+            // Only use the skill if the benefit is significant enough
+            if (netBenefit < valueThreshold) return false
+
+            // Prefer using message card over hand cards if the benefit is similar
+            if (hasGoodMessageCard && hasTwoHandCards) {
+                if (value + valueRemove < value - 25) {
+                    messageCard = null // Use hand cards instead
+                }
+            }
+
             var cards = emptyList<Card>()
             if (messageCard == null) {
+                if (!hasTwoHandCards) return false
+                // Choose the least valuable cards to discard
                 cards = player.cards.sortCards(player.identity, true).take(2)
-                cards.size == 2 || return false
             }
+
             GameExecutor.post(player.game!!, {
                 skill.executeProtocol(player.game!!, player, skillJiSongTos {
                     cards.forEach { cardIds.add(it.id) }
