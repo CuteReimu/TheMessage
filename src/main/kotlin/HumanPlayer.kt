@@ -33,6 +33,11 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
      * 把跟玩家有关的计时器绑定在玩家身上，例如操作超时等待。这样在玩家操作后就可以清掉这个计时器，以节约资源
      */
     var timeout: Timeout? = null
+
+    /**
+     * 当前超时的时间戳（毫秒），用于准确计算取消托管后的剩余时间
+     */
+    private var timeoutTimeStamp = 0L
     private var timeoutCount = 0
     private var recorder = Recorder()
     private var autoPlay = false
@@ -50,6 +55,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
         seq = 0
         timeout?.cancel()
         timeout = null
+        timeoutTimeStamp = 0L
         timeoutCount = 0
         recorder = Recorder()
         autoPlay = false
@@ -136,13 +142,23 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
             }
         } else {
             if (timeout != null && timeout!!.cancel()) {
-                var delay = game!!.waitSecond + 1
-                if (game!!.fsm is MainPhaseIdle || game!!.fsm is WaitForDieGiveCard)
-                    delay = game!!.waitSecond * 4 / 3 + 1
-                else if (game!!.fsm is WaitForSelectRole)
-                    delay = game!!.waitSecond * 2 + 1
+                // 使用记录的超时时间戳来准确计算剩余时间
+                val remainingSeconds = if (timeoutTimeStamp > 0) {
+                    val remainingMs = timeoutTimeStamp - System.currentTimeMillis()
+                    (remainingMs / 1000).coerceAtLeast(1) // 至少保留1秒
+                } else {
+                    // 如果没有记录时间戳，使用原来的估算逻辑作为后备
+                    var delay = game!!.waitSecond + 1
+                    if (game!!.fsm is MainPhaseIdle || game!!.fsm is WaitForDieGiveCard)
+                        delay = game!!.waitSecond * 4 / 3 + 1
+                    else if (game!!.fsm is WaitForSelectRole)
+                        delay = game!!.waitSecond * 2 + 1
+                    delay.toLong()
+                }
                 timeout =
-                    GameExecutor.TimeWheel.newTimeout(timeout!!.task(), delay.toLong(), TimeUnit.SECONDS)
+                    GameExecutor.TimeWheel.newTimeout(timeout!!.task(), remainingSeconds, TimeUnit.SECONDS)
+                // 更新时间戳为新的超时时间
+                timeoutTimeStamp = System.currentTimeMillis() + remainingSeconds * 1000
             }
         }
         send("auto_play_toc", autoPlayToc { enable = autoPlay }.toByteArray(), true)
@@ -199,7 +215,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
                 mainPhaseStartTime = System.currentTimeMillis()
                 val seq2 = this@HumanPlayer.seq
                 seq = seq2
-                timeout = GameExecutor.post(game!!, {
+                timeout = setTimeoutWithTimestamp({
                     if (checkSeq(seq2)) {
                         incrSeq()
                         game!!.resolve(SendPhaseStart(player))
@@ -222,7 +238,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
                 if (this@HumanPlayer === player && waitSecond > 0) {
                     val seq2 = this@HumanPlayer.seq
                     seq = seq2
-                    timeout = GameExecutor.post(game!!, {
+                    timeout = setTimeoutWithTimestamp({
                         if (checkSeq(seq2)) {
                             incrSeq()
                             autoSendMessageCard(this@HumanPlayer)
@@ -233,7 +249,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
         })
         if (this === player && player.cards.isEmpty() && waitSecond > 0) {
             val seq2 = seq
-            timeout = GameExecutor.post(game!!, {
+            timeout = setTimeoutWithTimestamp({
                 if (checkSeq(seq2)) {
                     val skill = player.findSkill(LENG_XUE_XUN_LIAN) as ActiveSkill
                     skill.executeProtocol(game!!, player, skillLengXueXunLianATos { seq = seq2 })
@@ -278,7 +294,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
     override fun startSendPhaseTimer(waitSecond: Int) {
         val fsm = game!!.fsm as SendPhaseIdle
         val seq = seq
-        timeout = GameExecutor.post(game!!, {
+        timeout = setTimeoutWithTimestamp({
             if (checkSeq(seq)) {
                 incrSeq()
                 if (fsm.mustReceiveMessage()) game!!.resolve( // 如果必须接收，则接收。否则一定不接收
@@ -314,7 +330,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
             if (this@HumanPlayer === fsm.whoseFightTurn) {
                 val seq2 = this@HumanPlayer.seq
                 seq = seq2
-                timeout = GameExecutor.post(game!!, {
+                timeout = setTimeoutWithTimestamp({
                     if (checkSeq(seq2)) {
                         incrSeq()
                         if (skip) send(errorMessageToc { msg = "无牌可出，已经帮您自动跳过" })
@@ -353,7 +369,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
             if (this@HumanPlayer === waitingPlayer) {
                 val seq2 = this@HumanPlayer.seq
                 seq = seq2
-                timeout = GameExecutor.post(game!!, {
+                timeout = setTimeoutWithTimestamp({
                     if (checkSeq(seq2))
                         game!!.tryContinueResolveProtocol(this@HumanPlayer, endReceivePhaseTos { seq = seq2 })
                 }, getWaitSeconds(waitSecond + 2).toLong(), TimeUnit.SECONDS)
@@ -404,7 +420,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
             if (askWhom === this@HumanPlayer) {
                 val seq2 = this@HumanPlayer.seq
                 seq = seq2
-                timeout = GameExecutor.post(game!!, {
+                timeout = setTimeoutWithTimestamp({
                     if (checkSeq(seq2)) {
                         incrSeq()
                         game!!.resolve(WaitNextForChengQing(game!!.fsm as WaitForChengQing))
@@ -421,7 +437,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
             if (whoDie === this@HumanPlayer) {
                 val seq2 = this@HumanPlayer.seq
                 seq = seq2
-                timeout = GameExecutor.post(game!!, {
+                timeout = setTimeoutWithTimestamp({
                     if (checkSeq(seq2)) {
                         incrSeq()
                         game!!.resolve(AfterDieGiveCard(game!!.fsm as WaitForDieGiveCard))
@@ -471,6 +487,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
             }
         }
         timeout = null
+        timeoutTimeStamp = 0L
     }
 
     fun clearTimeoutCount() {
@@ -481,6 +498,14 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
         !isActive -> 5
         autoPlay -> 1
         else -> seconds
+    }
+
+    /**
+     * 设置超时任务并记录超时时间戳
+     */
+    private fun setTimeoutWithTimestamp(task: () -> Unit, delay: Long, unit: TimeUnit): Timeout {
+        timeoutTimeStamp = System.currentTimeMillis() + unit.toMillis(delay)
+        return GameExecutor.post(game!!, task, delay, unit)
     }
 
     companion object {
