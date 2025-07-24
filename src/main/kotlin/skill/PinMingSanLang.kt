@@ -111,22 +111,7 @@ class PinMingSanLang : MainPhaseSkill() {
                     }
                     // 阵营角色不能自杀
                     else {
-                        p.cards.filter { it.isPureBlack() }.ifEmpty { return false }
-                            .run {
-                                if (this.size == 1 && this[0].type == Cheng_Qing) {
-                                    if (p.cards.filter { it.type == Cheng_Qing }.size == 1) {
-                                        return false
-                                    } else {
-                                        this[0]
-                                    }
-                                } else {
-                                    if (p.cards.filter { it.type == Cheng_Qing }.isEmpty()) {
-                                        return false
-                                    } else {
-                                        this.bestCard(p.identity, true)
-                                    }
-                                }
-                            }
+                        return false
                     }
                 }
                 // 还没到2黑，可以随便选纯黑色牌
