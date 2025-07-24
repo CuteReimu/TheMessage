@@ -362,6 +362,19 @@ fun Player.calculateMessageCardValue(
             if (sender.isPartnerOrSelf(inFrontOfWhom) && !inFrontOfWhom.isPublicRole && inFrontOfWhom.roleFaceUp) {
                 addScore(inFrontOfWhom, 80)
             }
+            // 防御玛利亚【藏身教堂】：公开角色的黑色情报可能被偷走
+            if (inFrontOfWhom.isPublicRole && inFrontOfWhom.messageCards.count(Black) > 0) {
+                var maxLossValue = 0
+                for (messageCard in inFrontOfWhom.messageCards.filter { it.isBlack() }) {
+                    val removeValue = calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
+                    val senderGainValue = sender.calculateMessageCardValue(whoseTurn, sender, messageCard)
+                    val totalLoss = removeValue + senderGainValue
+                    if (totalLoss > maxLossValue) {
+                        maxLossValue = totalLoss
+                    }
+                }
+                v1 = merge(v1, -maxLossValue)
+            }
         }
         if (!inFrontOfWhom.roleFaceUp && (inFrontOfWhom.hasEverFaceUp || inFrontOfWhom === this) &&
             inFrontOfWhom !== sender && inFrontOfWhom.skills.any { it is LianXin }) {
