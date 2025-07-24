@@ -400,6 +400,24 @@ fun Player.calculateMessageCardValue(
             }
             v1 = merge(v1, myValue)
         }
+        // 防御王富贵【江湖令】：当王富贵宣言了颜色，情报可能被弃置
+        if (sender.skills.any { it is JiangHuLing } && sender.skills.any { it is OneTurnSkill } && sender !== inFrontOfWhom) {
+            // 王富贵已经发动了江湖令，保守估计可能弃置任何颜色的情报
+            inFrontOfWhom.messageCards.add(TmpCard(colors))
+            var maxLossValue = 0
+            for (messageCard in inFrontOfWhom.messageCards) {
+                val removeValue = calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
+                // 如果弃置的是黑色情报，王富贵会摸一张牌，增加损失价值
+                val jiangHuLingBenefit = if (messageCard.isBlack()) 10 else 0
+                val totalLoss = removeValue + jiangHuLingBenefit
+                if (totalLoss > maxLossValue) {
+                    maxLossValue = totalLoss
+                }
+            }
+            // 保守估计，减少一定的损失价值（因为不是所有情报都会被弃置）
+            addScore(inFrontOfWhom, -maxLossValue / 3)
+            inFrontOfWhom.messageCards.removeLast()
+        }
         if (Black in colors && inFrontOfWhom.skills.any { it is RuGui } && inFrontOfWhom.messageCards.count(Black) == 2) {
             // 老汉【如归】
             if (whoseTurn !== inFrontOfWhom && whoseTurn.alive) {
