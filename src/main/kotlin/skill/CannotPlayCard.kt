@@ -26,9 +26,9 @@ fun Player.cannotPlayCard(cardType: card_type) = skills.any { it is CannotPlayCa
 
 fun Player.hasNoSkillForFightPhase(fightPhase: FightPhaseIdle) =
     !skills.any { it.isInitialSkill || it is ActiveSkill } || // 没有初始技能，说明被禁技能了（考虑到可能新获得主动技能，需要排除一下主动技能）
-        !skills.any {
+        (hasEverFaceUp || skills.any { it is CannotPlayCard && it.forbidAllCard }) && !skills.any {
             it is ActiveSkill && it.canUse(fightPhase, this)
-        } // 没有争夺阶段可以用的主动技能
+        } // 曾经面朝上过或被禁止出牌，并且没有争夺阶段可以用的主动技能
 
 fun Player.cannotPlayCardAndSkillForFightPhase(fightPhase: FightPhaseIdle) =
     (skills.any { it is CannotPlayCard && it.forbidAllCard } || cards.isEmpty()) && // 不能出牌或者没有手牌
