@@ -365,16 +365,31 @@ fun Player.calculateMessageCardValue(
             // 防御玛利亚【藏身教堂】：公开角色的黑色情报可能被偷走
             if (inFrontOfWhom.isPublicRole && (inFrontOfWhom.messageCards.count(Black) > 0 || Black in colors)) {
                 inFrontOfWhom.messageCards.add(TmpCard(colors))
-                var maxLossValue = 0
+                var maLiYaMaxValue = 0
+                var myMaxValue = 0
+                var asMessage = false
                 for (messageCard in inFrontOfWhom.messageCards.filter { it.isBlack() }) {
-                    val removeValue = calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
-                    val senderGainValue = sender.calculateMessageCardValue(whoseTurn, sender, messageCard)
-                    val totalLoss = removeValue + senderGainValue
-                    if (totalLoss > maxLossValue) {
-                        maxLossValue = totalLoss
+                    val removeValue = sender.calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
+                    if (removeValue + 10 >= maLiYaMaxValue) {
+                        maLiYaMaxValue = removeValue + 10
+                        asMessage = false
+                        myMaxValue = calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
+                    }
+                    if (sender !== inFrontOfWhom) {
+                        val senderGainValue = sender.calculateMessageCardValue(whoseTurn, sender, messageCard)
+                        val totalLoss = removeValue + senderGainValue
+                        if (totalLoss > maLiYaMaxValue) {
+                            maLiYaMaxValue = totalLoss
+                            asMessage = true
+                            myMaxValue = calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard) +
+                                calculateMessageCardValue(whoseTurn, sender, messageCard)
+                        }
                     }
                 }
-                addScore(inFrontOfWhom, -maxLossValue)
+                v1 = merge(v1, myMaxValue)
+                if (!asMessage) {
+                    addScore(sender, 10)
+                }
                 inFrontOfWhom.messageCards.removeLast()
             }
         }
@@ -404,27 +419,23 @@ fun Player.calculateMessageCardValue(
         if (sender.skills.any { it is JiangHuLing } && sender.skills.any { it is OneTurnSkill } && sender !== inFrontOfWhom) {
             // 王富贵已经发动了江湖令，模拟他的决策过程
             inFrontOfWhom.messageCards.add(TmpCard(colors))
-            var maxWangFuguiValue = 0
-            var wouldUseSkill = false
+            var wangFuGuiMaxValue = 0
+            var myMaxValue = 0
+            var isBlack = false
             for (messageCard in inFrontOfWhom.messageCards) {
                 // 从王富贵的角度计算移除这张牌的价值
-                var wangFuguiValue = sender.calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
-                // 如果弃置的是黑色情报，王富贵会摸一张牌
+                var wangFuGuiValue = sender.calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
                 if (messageCard.isBlack()) {
-                    // 如果王富贵与接收者是队友，摸牌对接收者也有益，减少损失
-                    val drawCardValue = if (sender.isPartnerOrSelf(inFrontOfWhom)) -10 else 10
-                    wangFuguiValue += drawCardValue
+                    wangFuGuiValue += 10
                 }
-                if (wangFuguiValue > maxWangFuguiValue) {
-                    maxWangFuguiValue = wangFuguiValue
-                    wouldUseSkill = wangFuguiValue > 0
+                if (wangFuGuiValue > wangFuGuiMaxValue) {
+                    wangFuGuiMaxValue = wangFuGuiValue
+                    myMaxValue = calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
+                    isBlack = messageCard.isBlack()
                 }
             }
-            // 只有当王富贵想要使用技能时才施加惩罚
-            if (wouldUseSkill) {
-                val actualLoss = calculateRemoveCardValue(whoseTurn, inFrontOfWhom, inFrontOfWhom.messageCards.last())
-                addScore(inFrontOfWhom, -actualLoss)
-            }
+            v1 = merge(v1, myMaxValue)
+            if (isBlack) addScore(sender, 10)
             inFrontOfWhom.messageCards.removeLast()
         }
         if (Black in colors && inFrontOfWhom.skills.any { it is RuGui } && inFrontOfWhom.messageCards.count(Black) == 2) {
@@ -707,7 +718,7 @@ fun Player.calSendMessageCard(
                 zhangYiting.messageCards.count(identity) == partner.maxOf { it!!.messageCards.count(identity) }
 
             val targetOrder = if (shouldPrioritizeZhangYiting) {
-                listOf(zhangYiting!!) + (partner - zhangYiting).shuffled() + enemy.shuffled()
+                listOf(zhangYiting) + (partner - zhangYiting).shuffled() + enemy.shuffled()
             } else {
                 partner.shuffled() + enemy.shuffled()
             }
