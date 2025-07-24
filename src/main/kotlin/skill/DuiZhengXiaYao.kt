@@ -227,9 +227,11 @@ class DuiZhengXiaYao : ActiveSkill {
                             card !== fsm.messageCard || continue // 如果遍历到了前面假设获得的那张情报，则跳过
                             card.colors.any { it in colors } || continue // 如果这张情报不含有这个颜色，则跳过
                             val v = r.calculateRemoveCardValue(fsm.whoseTurn, p, card) // 计算弃掉这张情报的价值
+                            logger.debug("DuiZhengXiaYao: 考虑移除${p}的${card}(${card.colors.joinToString()})，价值为$v")
                             if (v > value) { // 如果这张情报的价值更高，则选这张
                                 value = v
                                 playerAndCard = PlayerAndCard(p, card)
+                                logger.debug("DuiZhengXiaYao: 选择移除${p}的${card}，价值为$v")
                             }
                         }
                     }
