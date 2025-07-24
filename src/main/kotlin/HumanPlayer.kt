@@ -10,7 +10,6 @@ import com.fengsheng.protos.Common.role.unknown
 import com.fengsheng.protos.Errcode.error_message_toc
 import com.fengsheng.protos.Fengsheng.notify_player_update_toc
 import com.fengsheng.skill.ActiveSkill
-import com.fengsheng.skill.CannotPlayCard
 import com.fengsheng.skill.SkillId.*
 import com.fengsheng.skill.cannotPlayCardAndSkillForFightPhase
 import com.fengsheng.skill.hasNothingToDoForFightPhase
@@ -302,8 +301,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
     override fun notifyFightPhase(waitSecond: Int) {
         val fsm = game!!.fsm as FightPhaseIdle
         val (skip, skipTime) =
-            if (skills.any { it is CannotPlayCard && it.forbidAllCard }) true to 1 // 被禁止出牌，立即跳过
-            else if (cannotPlayCardAndSkillForFightPhase(fsm)) true to 1
+            if (cannotPlayCardAndSkillForFightPhase(fsm)) true to 1
             else if (hasNothingToDoForFightPhase(fsm)) true to 3 + Random.nextInt(5)
             else false to waitSecond + 2
         send(notifyPhaseToc {
