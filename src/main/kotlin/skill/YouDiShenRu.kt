@@ -7,8 +7,6 @@ import com.fengsheng.phase.OnSendCard
 import com.fengsheng.phase.SendPhaseIdle
 import com.fengsheng.phase.SendPhaseStart
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Common.color.Blue
-import com.fengsheng.protos.Common.color.Red
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Right
 import com.fengsheng.protos.Role.skill_you_di_shen_ru_tos
@@ -106,11 +104,6 @@ class YouDiShenRu : ActiveSkill {
             val player = e.whoseTurn
             val game = player.game!!
 
-            // 只有当有人接近获胜时才考虑使用技能
-            player.game!!.players.any {
-                it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
-            } || return false
-
             // 计算正常（暗面）传递的价值
             val normalResult = player.calSendMessageCard()
 
@@ -118,8 +111,8 @@ class YouDiShenRu : ActiveSkill {
             val faceUpValue = calculateFaceUpSendingValue(player, normalResult, game)
 
             // 只有明面传递明显更好时才使用诱敌深入
-            // 使用阈值来考虑此技能一局限一次的特性
-            val threshold = 20 // 根据测试调整此值
+            // 使用较高阈值来考虑此技能一局限一次的特性
+            val threshold = 30 // 提高阈值以更保守地使用一局限一次的技能
             if (faceUpValue > normalResult.value + threshold) {
                 GameExecutor.post(game, {
                     skill.executeProtocol(game, player, skillYouDiShenRuTos {
