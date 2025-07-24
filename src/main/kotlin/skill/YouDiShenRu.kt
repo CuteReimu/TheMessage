@@ -106,20 +106,20 @@ class YouDiShenRu : ActiveSkill {
             val player = e.whoseTurn
             val game = player.game!!
 
-            // Only consider using the skill if someone is close to winning
+            // 只有当有人接近获胜时才考虑使用技能
             player.game!!.players.any {
                 it!!.alive && it.identity in listOf(Red, Blue) && it.messageCards.count(it.identity) == 2
             } || return false
 
-            // Calculate normal (face-down) sending value
+            // 计算正常（暗面）传递的价值
             val normalResult = player.calSendMessageCard()
 
-            // Calculate face-up sending value by simulating YouDiShenRu effect
+            // 通过模拟诱敌深入效果计算明面传递的价值
             val faceUpValue = calculateFaceUpSendingValue(player, normalResult, game)
 
-            // Only use YouDiShenRu if face-up sending is significantly better
-            // Use a threshold to account for the once-per-game nature of this skill
-            val threshold = 20 // Adjust this value based on testing
+            // 只有明面传递明显更好时才使用诱敌深入
+            // 使用阈值来考虑此技能一局限一次的特性
+            val threshold = 20 // 根据测试调整此值
             if (faceUpValue > normalResult.value + threshold) {
                 GameExecutor.post(game, {
                     skill.executeProtocol(game, player, skillYouDiShenRuTos {
@@ -136,12 +136,12 @@ class YouDiShenRu : ActiveSkill {
         }
 
         private fun calculateFaceUpSendingValue(player: Player, result: SendMessageCardResult, game: Game): Double {
-            // For face-up sending with YouDiShenRu, we need to account for forced/prohibited receiving
+            // 对于使用诱敌深入的明面传递，我们需要考虑强制/禁止接收的规则
             val card = result.card
             val target = result.target
             val dir = result.dir
 
-            // Simulate who would actually receive the card when sent face-up
+            // 模拟明面传递时谁会实际接收卡牌
             var currentPlayer = target
             var totalValue = 0.0
             var attempts = 0
@@ -151,35 +151,35 @@ class YouDiShenRu : ActiveSkill {
                 attempts++
 
                 if (!currentPlayer.alive) {
-                    // Move to next player
+                    // 移动到下一个玩家
                     currentPlayer = when (dir) {
                         Left -> currentPlayer.getNextLeftAlivePlayer()
                         Right -> currentPlayer.getNextRightAlivePlayer()
-                        else -> player // For Up direction, return to sender
+                        else -> player // 对于向上方向，返回发送者
                     }
                     continue
                 }
 
-                // Check YouDiShenRu forcing/prohibiting rules
+                // 检查诱敌深入的强制/禁止规则
                 val identity = currentPlayer.identity
                 val mustReceive = identity != Black && identity in card.colors
                 val cannotReceive = identity != Black && identity !in card.colors
 
                 if (mustReceive || result.lockedPlayers.contains(currentPlayer) || currentPlayer === player) {
-                    // This player must receive the card
+                    // 此玩家必须接收卡牌
                     totalValue = player.calculateMessageCardValue(player, currentPlayer, card, sender = player).toDouble()
                     break
                 } else if (cannotReceive) {
-                    // This player cannot receive, move to next
+                    // 此玩家不能接收，移动到下一个
                     currentPlayer = when (dir) {
                         Left -> currentPlayer.getNextLeftAlivePlayer()
                         Right -> currentPlayer.getNextRightAlivePlayer()
-                        else -> player // For Up direction, return to sender
+                        else -> player // 对于向上方向，返回发送者
                     }
                     continue
                 } else {
-                    // For Black identity players, use normal receiving logic with face-up consideration
-                    // Since the card is face-up, they will use modified coefficients in their decision
+                    // 对于黑色身份玩家，使用正常接收逻辑并考虑明面卡牌
+                    // 由于卡牌是明面的，他们在决策时会使用修改后的系数
                     val oldA = currentPlayer.coefficientA
                     val oldB = currentPlayer.coefficientB
                     currentPlayer.coefficientA = 1.0
@@ -193,16 +193,16 @@ class YouDiShenRu : ActiveSkill {
                     }
                     val nextValue = currentPlayer.calculateMessageCardValue(player, nextPlayer, card, sender = player)
 
-                    // Restore coefficients
+                    // 恢复系数
                     currentPlayer.coefficientA = oldA
                     currentPlayer.coefficientB = oldB
 
                     if (myValue > nextValue) {
-                        // This player would choose to receive
+                        // 此玩家会选择接收
                         totalValue = player.calculateMessageCardValue(player, currentPlayer, card, sender = player).toDouble()
                         break
                     } else {
-                        // This player would not receive, move to next
+                        // 此玩家不会接收，移动到下一个
                         currentPlayer = nextPlayer
                         continue
                     }
