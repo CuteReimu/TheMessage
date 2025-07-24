@@ -1,5 +1,6 @@
 package com.fengsheng
 
+import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.*
 import com.fengsheng.phase.*
 import com.fengsheng.protos.Common.card_type.*
@@ -8,7 +9,6 @@ import com.fengsheng.protos.Common.color.Black
 import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Right
-import com.fengsheng.protos.Common.role.gui_jiao
 import com.fengsheng.protos.Common.role.zhang_yi_ting
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.endReceivePhaseTos
@@ -45,8 +45,8 @@ class RobotPlayer : Player() {
         // 急送技能需要弃置2张手牌，加上传递阶段要传出1张手牌，因此对手牌要更加保守
         val hasJiSongSkill = findSkill(JI_SONG) != null
         val hasNonBlackIntelCard = messageCards.any { !it.isBlack() }
-        // 计算最小手牌数：如果是鬼脚角色且有急送技能且无非黑情报，需要保留3张（2张用于技能+1张用于传递）
-        val minHandCards = if (role == gui_jiao && hasJiSongSkill && !hasNonBlackIntelCard) 3 else 1
+        // 计算最小手牌数：如果有急送技能且无非黑情报，需要保留3张（2张用于技能+1张用于传递）
+        val minHandCards = if (hasJiSongSkill && !hasNonBlackIntelCard) 3 else 1
 
         if (cards.size > minHandCards || findSkill(LENG_XUE_XUN_LIAN) != null ||
             cards.size == 1 && cards.first().type in listOf(Ping_Heng, Feng_Yun_Bian_Huan)) {
