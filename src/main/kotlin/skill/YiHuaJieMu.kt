@@ -67,7 +67,7 @@ class YiHuaJieMu : ActiveSkill {
                     if (p === r) {
                         val seq = p.seq
                         this.seq = seq
-                        p.timeout = GameExecutor.post(p.game!!, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq)) {
                                 r.game!!.tryContinueResolveProtocol(p, skillYiHuaJieMuBTos {
                                     fromPlayerId = p.getAlternativeLocation(fromPlayer.location)

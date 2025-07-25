@@ -40,7 +40,7 @@ class YiXin : TriggeredSkill, BeforeDieSkill {
                     if (player == r) {
                         val seq2 = player.seq
                         seq = seq2
-                        player.timeout = GameExecutor.post(r.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             r.game!!.tryContinueResolveProtocol(r, skillYiXinTos { seq = seq2 })
                         }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }

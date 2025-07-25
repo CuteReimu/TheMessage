@@ -40,7 +40,7 @@ class WaitForSelectRole(val game: Game, val options: List<MutableList<RoleSkills
                     player.send(gameStartToc { })
                 else
                     notifySelectRole(player)
-                player.timeout = GameExecutor.post(game, {
+                player.timeout = player.setTimeoutWithTimestamp({
                     game.tryContinueResolveProtocol(player, selectRoleTos {
                         role = options[player.location].firstOrNull()?.role ?: unknown
                     })

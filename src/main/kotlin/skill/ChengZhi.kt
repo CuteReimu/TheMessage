@@ -66,7 +66,7 @@ class ChengZhi : TriggeredSkill {
                         secretTask = whoDie.secretTask
                         val seq2 = player.seq
                         seq = seq2
-                        player.timeout = GameExecutor.post(r.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (r.checkSeq(seq2)) {
                                 r.game!!.tryContinueResolveProtocol(r, skillChengZhiTos {
                                     enable = false

@@ -56,7 +56,7 @@ class DuMing : TriggeredSkill {
                     if (p === r) {
                         val seq = p.seq
                         this.seq = seq
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq))
                                 g.tryContinueResolveProtocol(p, skillDuMingATos { this.seq = seq })
                         }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
@@ -194,7 +194,7 @@ class DuMing : TriggeredSkill {
                         if (p === r) {
                             val seq = p.seq
                             this.seq = seq
-                            p.timeout = GameExecutor.post(g, {
+                            p.timeout = p.setTimeoutWithTimestamp({
                                 if (p.checkSeq(seq)) {
                                     g.tryContinueResolveProtocol(p, skillDuMingBTos {
                                         cardId = p.cards.filter { it.isPureBlack() }.random().id

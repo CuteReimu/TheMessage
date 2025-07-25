@@ -88,7 +88,7 @@ class JiaoJi : MainPhaseSkill() {
                 if (p === r) {
                     val seq = p.seq
                     this.seq = seq
-                    p.timeout = GameExecutor.post(g, {
+                    p.timeout = p.setTimeoutWithTimestamp({
                         if (p.checkSeq(seq)) {
                             g.tryContinueResolveProtocol(r, skillJiaoJiBTos {
                                 r.cards.take(needReturnCount.first).forEach { cardIds.add(it.id) }

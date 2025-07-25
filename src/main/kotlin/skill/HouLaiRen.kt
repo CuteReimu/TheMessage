@@ -87,7 +87,7 @@ class HouLaiRen : ActiveSkill {
                         this@ExecuteHouLaiRen.roles.forEach { roles.add(it.role) }
                         val seq2 = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2)) {
                                 g.tryContinueResolveProtocol(r, skillHouLaiRenBTos {
                                     role = this@ExecuteHouLaiRen.roles.first().role

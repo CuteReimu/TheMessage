@@ -62,7 +62,7 @@ class CangShenJiaoTang : TriggeredSkill {
             val r = event.sender
             if (r is HumanPlayer) {
                 val seq2 = r.seq
-                r.timeout = GameExecutor.post(r.game!!, {
+                r.timeout = r.setTimeoutWithTimestamp({
                     if (r.checkSeq(seq2))
                         r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangBTos { seq = seq2 })
                 }, r.getWaitSeconds(timeoutSecond + 2).toLong(), TimeUnit.SECONDS)
@@ -118,7 +118,7 @@ class CangShenJiaoTang : TriggeredSkill {
             val r = event.sender
             if (r is HumanPlayer) {
                 val seq2 = r.seq
-                r.timeout = GameExecutor.post(r.game!!, {
+                r.timeout = r.setTimeoutWithTimestamp({
                     if (r.checkSeq(seq2)) {
                         r.game!!.tryContinueResolveProtocol(r, skillCangShenJiaoTangCTos {
                             enable = false

@@ -91,7 +91,7 @@ class ChiZiZhiXin : TriggeredSkill {
                     if (p === r) {
                         val seq = r.seq
                         this.seq = seq
-                        p.timeout = GameExecutor.post(r.game!!, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq)) {
                                 p.game!!.tryContinueResolveProtocol(p, skillChiZiZhiXinBTos {
                                     drawCard = true

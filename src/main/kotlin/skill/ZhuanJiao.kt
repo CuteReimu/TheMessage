@@ -42,7 +42,7 @@ class ZhuanJiao : TriggeredSkill {
                     if (player === r) {
                         val seq2 = player.seq
                         seq = seq2
-                        player.timeout = GameExecutor.post(r.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (r.checkSeq(seq2))
                                 r.game!!.tryContinueResolveProtocol(r, skillZhuanJiaoTos { seq = seq2 })
                         }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)

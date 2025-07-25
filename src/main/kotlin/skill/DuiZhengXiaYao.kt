@@ -63,7 +63,7 @@ class DuiZhengXiaYao : ActiveSkill {
                     if (p === r) {
                         val seq2 = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2)) {
                                 g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoBTos {
                                     enable = false
@@ -199,7 +199,7 @@ class DuiZhengXiaYao : ActiveSkill {
                     if (p === r) {
                         val seq2 = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2)) {
                                 g.tryContinueResolveProtocol(r, skillDuiZhengXiaYaoCTos {
                                     targetPlayerId = r.getAlternativeLocation(defaultSelection.player.location)

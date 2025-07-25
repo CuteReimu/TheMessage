@@ -39,7 +39,7 @@ class JiangHuLing : TriggeredSkill {
                     if (player === r) {
                         val seq = player.seq
                         this.seq = seq
-                        player.timeout = GameExecutor.post(player.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (player.checkSeq(seq)) {
                                 player.game!!.tryContinueResolveProtocol(player, skillJiangHuLingATos {
                                     enable = false
@@ -138,7 +138,7 @@ class JiangHuLing : TriggeredSkill {
                     if (p === event.sender) {
                         val seq = p.seq
                         this.seq = seq
-                        p.timeout = GameExecutor.post(p.game!!, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq))
                                 p.game!!.tryContinueResolveProtocol(p, endReceivePhaseTos { this.seq = seq })
                         }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)

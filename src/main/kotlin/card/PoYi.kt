@@ -74,7 +74,7 @@ class PoYi : Card {
                         val waitingSecond =
                             if (this.waitingSecond == 0) 0
                             else player.getWaitSeconds(this.waitingSecond + 2)
-                        player.timeout = GameExecutor.post(r.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (player.checkSeq(seq2))
                                 r.game!!.tryContinueResolveProtocol(r, poYiShowTos { })
                         }, waitingSecond.toLong(), TimeUnit.SECONDS)

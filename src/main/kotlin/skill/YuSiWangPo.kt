@@ -112,7 +112,7 @@ class YuSiWangPo : MainPhaseSkill() {
             val g = r.game!!
             if (target is HumanPlayer) {
                 val seq = target.seq
-                target.timeout = GameExecutor.post(g, {
+                target.timeout = target.setTimeoutWithTimestamp({
                     if (target.checkSeq(seq)) {
                         g.tryContinueResolveProtocol(target, skillYuSiWangPoBTos {
                             cardIds.addAll(target.cards.shuffled().take(cardCount).map { it.id })

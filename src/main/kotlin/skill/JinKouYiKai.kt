@@ -69,7 +69,7 @@ class JinKouYiKai : ActiveSkill {
                         card = cards.first().toPbCard()
                         val seq2: Int = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2))
                                 g.tryContinueResolveProtocol(r, skillJinKouYiKaiBTos { seq = seq2 })
                         }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)

@@ -116,7 +116,7 @@ class ShiTan : Card {
                         val seq2 = p.seq
                         seq = seq2
                         card = this@ExecuteShiTan.card.toPbCard()
-                        p.timeout = GameExecutor.post(r.game!!, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2)) {
                                 autoSelect()
                             }

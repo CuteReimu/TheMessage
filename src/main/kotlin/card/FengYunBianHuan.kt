@@ -107,7 +107,7 @@ class FengYunBianHuan : Card {
                     if (player === r) {
                         val seq2 = player.seq
                         seq = seq2
-                        player.timeout = GameExecutor.post(r.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (player.checkSeq(seq2)) {
                                 player.incrSeq()
                                 autoChooseCard()

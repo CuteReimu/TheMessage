@@ -110,7 +110,7 @@ class MiLing : Card {
             val r = player
             if (r is HumanPlayer) {
                 val seq2 = r.seq
-                r.timeout = GameExecutor.post(r.game!!, {
+                r.timeout = r.setTimeoutWithTimestamp({
                     if (r.checkSeq(seq2)) {
                         r.game!!.tryContinueResolveProtocol(r, miLingChooseCardTos {
                             cardId = target.cards.random().id
@@ -181,7 +181,7 @@ class MiLing : Card {
         override fun resolve(): ResolveResult? {
             if (target is HumanPlayer) {
                 val seq2 = target.seq
-                target.timeout = GameExecutor.post(target.game!!, {
+                target.timeout = target.setTimeoutWithTimestamp({
                     if (target.checkSeq(seq2)) {
                         val card = messageCard ?: target.cards.find { this.card.secret[secret] in it.colors }!!
                         val messageTarget = when (card.direction) {

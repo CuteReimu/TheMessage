@@ -40,7 +40,7 @@ class RuGui : TriggeredSkill, BeforeDieSkill {
                     if (player === r) {
                         val seq = player.seq
                         this.seq = seq
-                        player.timeout = GameExecutor.post(r.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (r.checkSeq(seq))
                                 r.game!!.tryContinueResolveProtocol(r, skillRuGuiTos { this.seq = seq })
                         }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)

@@ -50,7 +50,7 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                     waitingSecond = g.waitSecond
                     val seq = p.seq
                     this.seq = seq
-                    p.timeout = GameExecutor.post(g, {
+                    p.timeout = p.setTimeoutWithTimestamp({
                         if (p.checkSeq(seq))
                             g.tryContinueResolveProtocol(p, skillXianFaZhiRenATos { this.seq = seq })
                     }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
@@ -203,7 +203,7 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
         override fun resolve(): ResolveResult? {
             if (r is HumanPlayer) {
                 val seq = r.seq
-                r.timeout = GameExecutor.post(r.game!!, {
+                r.timeout = r.setTimeoutWithTimestamp({
                     if (r.checkSeq(seq)) {
                         r.game!!.tryContinueResolveProtocol(r, skillXianFaZhiRenBTos {
                             targetPlayerId = r.getAlternativeLocation(defaultTarget.location)

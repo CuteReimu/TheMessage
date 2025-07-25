@@ -95,7 +95,7 @@ class YingBianZiRu : ActiveSkill {
         override fun resolve(): ResolveResult? {
             if (r is HumanPlayer) {
                 val seq = r.seq
-                r.timeout = GameExecutor.post(r.game!!, {
+                r.timeout = r.setTimeoutWithTimestamp({
                     if (r.checkSeq(seq)) {
                         val target = listOf(
                             fsm.inFrontOfWhom.getNextLeftAlivePlayer(),

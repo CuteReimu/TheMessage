@@ -112,7 +112,7 @@ class HuoXin : MainPhaseSkill() {
             if (r is HumanPlayer) {
                 val card = target.cards.run { find { it.hasSameColor(showCard) } ?: first() }
                 val seq = r.seq
-                r.timeout = GameExecutor.post(r.game!!, {
+                r.timeout = r.setTimeoutWithTimestamp({
                     if (r.checkSeq(seq)) {
                         r.game!!.tryContinueResolveProtocol(r, skillHuoXinBTos {
                             discardCardId = card.id
