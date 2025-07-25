@@ -503,7 +503,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
     /**
      * 设置超时任务并记录超时时间戳
      */
-    private fun setTimeoutWithTimestamp(task: () -> Unit, delay: Long, unit: TimeUnit): Timeout {
+    fun setTimeoutWithTimestamp(task: () -> Unit, delay: Long, unit: TimeUnit): Timeout {
         timeoutTimeStamp = System.currentTimeMillis() + unit.toMillis(delay)
         return GameExecutor.post(game!!, task, delay, unit)
     }
