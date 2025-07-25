@@ -58,18 +58,18 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                 else unknownWaitingToc { waitingSecond = g.waitSecond }
             }
             if (r is RobotPlayer) {
-                GameExecutor.post(g, {
-                    var targetAndCard: PlayerAndCard? = null
-                    var value = 100
-                    for (p in g.players.filter { it!!.alive }.shuffled()) {
-                        for (card in p!!.messageCards.toList()) {
-                            val v = r.calculateRemoveCardValue(event.whoseTurn, p, card)
-                            if (v > value) {
-                                value = v
-                                targetAndCard = PlayerAndCard(p, card)
-                            }
+                var targetAndCard: PlayerAndCard? = null
+                var value = 100
+                for (p in g.players.filter { it!!.alive }.shuffled()) {
+                    for (card in p!!.messageCards.toList()) {
+                        val v = r.calculateRemoveCardValue(event.whoseTurn, p, card)
+                        if (v > value) {
+                            value = v
+                            targetAndCard = PlayerAndCard(p, card)
                         }
                     }
+                }
+                GameExecutor.post(g, {
                     g.tryContinueResolveProtocol(r, skillXianFaZhiRenATos {
                         if (targetAndCard != null) {
                             enable = true
@@ -77,7 +77,7 @@ class XianFaZhiRen : ActiveSkill, TriggeredSkill {
                             cardId = targetAndCard.card.id
                         }
                     })
-                }, 100, TimeUnit.MILLISECONDS)
+                }, if (targetAndCard != null) 2000 else 100, TimeUnit.MILLISECONDS)
             }
             return null
         }
