@@ -251,20 +251,25 @@ class RobotPlayer : Player() {
 
             val result = calFightPhase(fsm)
             if (result != null && result.deltaValue > 11 && !shouldUseJiSong) {
-                var actualDelay = 3L
-                var timeUnit = TimeUnit.SECONDS
-                if (delay > 0) {
-                    actualDelay = 3000L + delay
-                    timeUnit = TimeUnit.MILLISECONDS
+                // 检查是否应该避免与队友竞争
+                if (shouldAvoidTeammateCompetition(fsm, result)) {
+                    // 跳过本次出牌，避免队友间无意义竞争
+                } else {
+                    var actualDelay = 3L
+                    var timeUnit = TimeUnit.SECONDS
+                    if (delay > 0) {
+                        actualDelay = 3000L + delay
+                        timeUnit = TimeUnit.MILLISECONDS
+                    }
+                    GameExecutor.post(game!!, {
+                        result.convertCardSkill?.onConvert(this)
+                        if (result.cardType == Wu_Dao)
+                            result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
+                        else
+                            result.card.asCard(result.cardType).execute(game!!, this)
+                    }, actualDelay, timeUnit)
+                    return
                 }
-                GameExecutor.post(game!!, {
-                    result.convertCardSkill?.onConvert(this)
-                    if (result.cardType == Wu_Dao)
-                        result.card.asCard(result.cardType).execute(game!!, this, result.wuDaoTarget!!)
-                    else
-                        result.card.asCard(result.cardType).execute(game!!, this)
-                }, actualDelay, timeUnit)
-                return
             }
 
             for (skill in skills) {
@@ -364,6 +369,52 @@ class RobotPlayer : Player() {
             }
             game!!.resolve(AfterDieGiveCard(fsm))
         }, 3, TimeUnit.SECONDS)
+    }
+
+    /**
+     * 检查是否应该避免与队友竞争情报
+     * @param fsm 当前战斗阶段状态
+     * @param result 计算得出的战斗结果
+     * @return 如果应该避免竞争则返回true
+     */
+    private fun shouldAvoidTeammateCompetition(fsm: FightPhaseIdle, result: FightPhaseResult): Boolean {
+        // 只在收益较小时进行队友协调判断
+        if (result.deltaValue > 50) return false
+        
+        // 检查是否有队友可能也对这张情报感兴趣
+        val teammates = game!!.players.filter { 
+            it != null && it != this && it.alive && isPartnerOrSelf(it) 
+        }
+        
+        for (teammate in teammates) {
+            // 计算队友获得这张情报的价值（不使用队友的个性系数来避免竞争）
+            val teammateBaseValue = teammate!!.calculateMessageCardValue(
+                fsm.whoseTurn, 
+                teammate, 
+                fsm.messageCard, 
+                sender = fsm.sender
+            )
+            val currentTargetValue = teammate.calculateMessageCardValue(
+                fsm.whoseTurn,
+                fsm.inFrontOfWhom, 
+                fsm.messageCard,
+                sender = fsm.sender
+            )
+            
+            // 如果队友能从中获得更多收益，让队友优先
+            val teammateDelta = teammateBaseValue - currentTargetValue
+            if (teammateDelta > result.deltaValue + 20) {  // 给队友20分的优先权
+                return true
+            }
+            
+            // 如果双方收益都很接近且都为正，避免内耗
+            if (result.deltaValue < 40 && teammateDelta > 10 && 
+                teammate.calFightPhase(fsm)?.deltaValue ?: 0 > 10) {
+                return true
+            }
+        }
+        
+        return false
     }
 
     companion object {
