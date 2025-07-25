@@ -86,7 +86,7 @@ class JianDiFengXing : TriggeredSkill {
                         if (p === r) {
                             val seq = p.seq
                             this.seq = seq
-                            p.timeout = GameExecutor.post(p.game!!, {
+                            p.timeout = p.setTimeoutWithTimestamp({
                                 if (p.checkSeq(seq)) {
                                     p.game!!.tryContinueResolveProtocol(p, skillJianDiFengXingBTos {
                                         cardId = p.cards.first { it.isPureBlack() }.id
@@ -163,7 +163,7 @@ class JianDiFengXing : TriggeredSkill {
                         if (p === r) {
                             val seq = p.seq
                             this.seq = seq
-                            p.timeout = GameExecutor.post(p.game!!, {
+                            p.timeout = p.setTimeoutWithTimestamp({
                                 if (p.checkSeq(seq)) {
                                     p.game!!.tryContinueResolveProtocol(p, skillJianDiFengXingCTos {
                                         enable = false

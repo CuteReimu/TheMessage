@@ -45,7 +45,7 @@ class CongRongYingDui : TriggeredSkill {
                     if (player === r) {
                         val seq = player.seq
                         this.seq = seq
-                        player.timeout = GameExecutor.post(r.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (player.checkSeq(seq)) {
                                 r.game!!.tryContinueResolveProtocol(player, skillCongRongYingDuiTos {
                                     enable = false

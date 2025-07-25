@@ -79,7 +79,7 @@ class SouJi : ActiveSkill {
                         messageCard = fsm.messageCard.toPbCard()
                         val seq2 = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2)) {
                                 g.tryContinueResolveProtocol(r, skillSouJiBTos {
                                     cardIds.addAll(target.cards.filter(Black).map { it.id })

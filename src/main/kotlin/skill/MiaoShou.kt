@@ -85,7 +85,7 @@ class MiaoShou : ActiveSkill {
                         target.cards.forEach { cards.add(it.toPbCard()) }
                         val seq2 = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2)) {
                                 g.tryContinueResolveProtocol(r, skillMiaoShouBTos {
                                     cardId = target.cards.firstOrNull()?.id ?: 0

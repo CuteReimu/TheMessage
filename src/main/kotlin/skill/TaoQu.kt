@@ -110,7 +110,7 @@ class TaoQu : MainPhaseSkill() {
                     if (p === r) {
                         val seq = p.seq
                         this.seq = seq
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq)) {
                                 val playerAndCard = g.players.flatMap {
                                     if (it === p || !it!!.alive) emptyList()

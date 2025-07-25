@@ -98,7 +98,7 @@ class TanQiuZhenLi : MainPhaseSkill() {
         override fun resolve(): ResolveResult? {
             if (target is HumanPlayer) {
                 val seq = target.seq
-                target.timeout = GameExecutor.post(target.game!!, {
+                target.timeout = target.setTimeoutWithTimestamp({
                     if (target.checkSeq(seq))
                         target.game!!.tryContinueResolveProtocol(target, skillTanQiuZhenLiBTos { this.seq = seq })
                 }, target.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)

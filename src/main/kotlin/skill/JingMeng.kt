@@ -106,7 +106,7 @@ class JingMeng : TriggeredSkill {
                         target.cards.forEach { cards.add(it.toPbCard()) }
                         val seq2 = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2)) {
                                 p.game!!.tryContinueResolveProtocol(p, skillJingMengBTos {
                                     cardId = target.cards.first().id

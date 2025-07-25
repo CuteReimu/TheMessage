@@ -83,7 +83,7 @@ class RuBiZhiShi : ActiveSkill {
                         target.cards.forEach { cards.add(it.toPbCard()) }
                         val seq = p.seq
                         this.seq = seq
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq)) {
                                 g.tryContinueResolveProtocol(p, skillRuBiZhiShiBTos {
                                     enable = true

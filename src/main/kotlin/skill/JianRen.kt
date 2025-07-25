@@ -101,7 +101,7 @@ class JianRen : TriggeredSkill {
                         if (p === r) {
                             val seq2 = p.seq
                             seq = seq2
-                            p.timeout = GameExecutor.post(g, {
+                            p.timeout = p.setTimeoutWithTimestamp({
                                 if (p.checkSeq(seq2))
                                     p.game!!.tryContinueResolveProtocol(p, skillJianRenBTos {
                                         targetPlayerId = p.getAlternativeLocation(autoChoose.player.location)

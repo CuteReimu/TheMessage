@@ -77,7 +77,7 @@ class JinBi : MainPhaseSkill() {
                     if (p === target) {
                         val seq = p.seq
                         this.seq = seq
-                        p.timeout = GameExecutor.post(p.game!!, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq))
                                 p.game!!.tryContinueResolveProtocol(p, skillJinBiBTos { this.seq = seq })
                         }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)

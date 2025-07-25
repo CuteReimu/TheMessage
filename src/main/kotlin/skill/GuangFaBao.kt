@@ -62,7 +62,7 @@ class GuangFaBao : ActiveSkill {
                     if (p === r) {
                         val seq2 = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2))
                                 g.tryContinueResolveProtocol(r, skillGuangFaBaoBTos { seq = seq2 })
                         }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)

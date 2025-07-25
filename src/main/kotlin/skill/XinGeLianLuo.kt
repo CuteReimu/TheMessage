@@ -39,7 +39,7 @@ class XinGeLianLuo : TriggeredSkill {
                     if (player === r) {
                         val seq = player.seq
                         this.seq = seq
-                        player.timeout = GameExecutor.post(player.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (player.checkSeq(seq)) {
                                 player.game!!.tryContinueResolveProtocol(player, skillXinGeLianLuoTos {
                                     enable = false

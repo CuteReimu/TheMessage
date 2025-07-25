@@ -42,7 +42,7 @@ class BiFeng : TriggeredSkill {
                     if (p === r) {
                         val seq = p.seq
                         this.seq = seq
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq)) {
                                 g.tryContinueResolveProtocol(p, skillBiFengTos {
                                     enable = false

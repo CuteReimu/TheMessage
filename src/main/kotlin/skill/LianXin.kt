@@ -110,7 +110,7 @@ class LianXin : TriggeredSkill {
             if (r is HumanPlayer) {
                 val card = r.cards.filter(checkCard).random()
                 val seq = r.seq
-                r.timeout = GameExecutor.post(r.game!!, {
+                r.timeout = r.setTimeoutWithTimestamp({
                     if (r.checkSeq(seq)) {
                         r.game!!.tryContinueResolveProtocol(r, skillLianXinBTos {
                             cardId = card.id

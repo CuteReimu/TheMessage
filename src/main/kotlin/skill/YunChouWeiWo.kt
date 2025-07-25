@@ -89,14 +89,14 @@ class YunChouWeiWo : ActiveSkill {
                         this@ExecuteYunChouWeiWo.cards.forEach { cards.add(it.toPbCard()) }
                         val seq2 = p.seq
                         seq = seq2
-                        p.timeout = GameExecutor.post(g, {
+                        p.timeout = p.setTimeoutWithTimestamp({
                             if (p.checkSeq(seq2)) {
                                 g.tryContinueResolveProtocol(r, skillYunChouWeiWoBTos {
                                     deckCardIds.add(this@ExecuteYunChouWeiWo.cards[1].id)
                                     deckCardIds.add(this@ExecuteYunChouWeiWo.cards[0].id)
                                     seq = seq2
                                 })
-                                return@post
+                                return@setTimeoutWithTimestamp
                             }
                         }, p.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
                     }

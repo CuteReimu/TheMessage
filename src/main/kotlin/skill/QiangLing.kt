@@ -47,7 +47,7 @@ class QiangLing : TriggeredSkill {
                     if (player === r) {
                         val seq2 = player.seq
                         seq = seq2
-                        player.timeout = GameExecutor.post(player.game!!, {
+                        player.timeout = player.setTimeoutWithTimestamp({
                             if (player.checkSeq(seq2))
                                 player.game!!.tryContinueResolveProtocol(player, skillQiangLingTos { seq = seq2 })
                         }, player.getWaitSeconds(waitingSecond + 2).toLong(), TimeUnit.SECONDS)
