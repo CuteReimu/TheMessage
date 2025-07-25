@@ -723,20 +723,64 @@ fun Player.calSendMessageCard(
                 partner.shuffled() + enemy.shuffled()
             }
             for (target in targetOrder) {
-                val tmpValue = calAveValue(card, 0.0) { if (this === target) this@calSendMessageCard else target!! }
+                var tmpValue = calAveValue(card, 0.0) { if (this === target) this@calSendMessageCard else target!! }
+
+                // Apply Jin Zilai (DuMing skill) routing adjustment
+                val jinZilaiPlayers = game!!.players.filter { it!!.alive && it.skills.any { skill -> skill is DuMing } }
+                for (jinZilai in jinZilaiPlayers) {
+                    // Check if intelligence would pass through Jin Zilai when sent to target
+                    val wouldPassThroughJinZilai = target === jinZilai
+                    if (wouldPassThroughJinZilai) {
+                        val adjustmentCoefficient = if (isPartnerOrSelf(jinZilai!!)) 15.0 else -15.0
+                        tmpValue += adjustmentCoefficient
+                    }
+                }
+
                 if (tmpValue > value) {
                     value = tmpValue
                     result = SendMessageCardResult(card, target!!, Up, emptyList(), value)
                 }
             }
         } else if (card.direction == Left || notUp && skills.any { it is LianLuo }) {
-            val tmpValue = calAveValue(card, 0.7, Player::getNextLeftAlivePlayer)
+            var tmpValue = calAveValue(card, 0.7, Player::getNextLeftAlivePlayer)
+
+            // Apply Jin Zilai (DuMing skill) routing adjustment for left direction
+            val jinZilaiPlayers = game!!.players.filter { it!!.alive && it.skills.any { skill -> skill is DuMing } }
+            for (jinZilai in jinZilaiPlayers) {
+                // Check if intelligence would pass through Jin Zilai when sent left
+                var currentPlayer = getNextLeftAlivePlayer()
+                while (currentPlayer !== this) {
+                    if (currentPlayer === jinZilai) {
+                        val adjustmentCoefficient = if (isPartnerOrSelf(jinZilai!!)) 15.0 else -15.0
+                        tmpValue += adjustmentCoefficient
+                        break
+                    }
+                    currentPlayer = currentPlayer.getNextLeftAlivePlayer()
+                }
+            }
+
             if (tmpValue > value) {
                 value = tmpValue
                 result = SendMessageCardResult(card, getNextLeftAlivePlayer(), Left, emptyList(), value)
             }
         } else if (card.direction == Right || notUp && skills.any { it is LianLuo }) {
-            val tmpValue = calAveValue(card, 0.7, Player::getNextRightAlivePlayer)
+            var tmpValue = calAveValue(card, 0.7, Player::getNextRightAlivePlayer)
+
+            // Apply Jin Zilai (DuMing skill) routing adjustment for right direction
+            val jinZilaiPlayers = game!!.players.filter { it!!.alive && it.skills.any { skill -> skill is DuMing } }
+            for (jinZilai in jinZilaiPlayers) {
+                // Check if intelligence would pass through Jin Zilai when sent right
+                var currentPlayer = getNextRightAlivePlayer()
+                while (currentPlayer !== this) {
+                    if (currentPlayer === jinZilai) {
+                        val adjustmentCoefficient = if (isPartnerOrSelf(jinZilai!!)) 15.0 else -15.0
+                        tmpValue += adjustmentCoefficient
+                        break
+                    }
+                    currentPlayer = currentPlayer.getNextRightAlivePlayer()
+                }
+            }
+
             if (tmpValue > value) {
                 value = tmpValue
                 result = SendMessageCardResult(card, getNextRightAlivePlayer(), Right, emptyList(), value)
@@ -921,7 +965,16 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
                 }
 
                 Diao_Bao -> {
-                    val newValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card, sender = e.sender)
+                    var newValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, card, sender = e.sender)
+
+                    // Apply Jin Zilai (DuMing skill) fight phase adjustment for Diao_Bao
+                    val jinZilaiPlayers = game!!.players.filter { it!!.alive && it.skills.any { skill -> skill is DuMing } }
+                    for (jinZilai in jinZilaiPlayers) {
+                        // Diao_Bao action can trigger Jin Zilai's skill, so adjust value accordingly
+                        val adjustmentCoefficient = if (isPartnerOrSelf(jinZilai!!)) 20 else -20
+                        newValue += adjustmentCoefficient
+                    }
+
                     if (newValue > value) {
                         result = FightPhaseResult(
                             cardType,
