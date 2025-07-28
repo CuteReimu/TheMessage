@@ -107,17 +107,24 @@ class IdentityInference {
         
         if (Red in cardColors) {
             // 传递红色情报，增加红队概率
-            adjustProbability(probs, Red, 0.1)
+            adjustProbability(probs, Red, 0.15)
         }
         
         if (Blue in cardColors) {
             // 传递蓝色情报，增加蓝队概率
-            adjustProbability(probs, Blue, 0.1)
+            adjustProbability(probs, Blue, 0.15)
         }
         
         if (Black in cardColors && cardColors.size == 1) {
             // 只传递黑色情报，增加神秘人概率
-            adjustProbability(probs, Black, 0.05)
+            adjustProbability(probs, Black, 0.08)
+        }
+        
+        // 如果传递混合颜色，降低对应身份的确定性
+        if (cardColors.size > 1 && Red in cardColors && Blue in cardColors) {
+            adjustProbability(probs, Red, -0.02)
+            adjustProbability(probs, Blue, -0.02)
+            adjustProbability(probs, Black, 0.04)
         }
     }
     
@@ -181,6 +188,47 @@ class IdentityInference {
     fun updateBasedOnGameEnd(playerLocation: Int, actualIdentity: color, actualTask: secret_task) {
         // 这个方法可以用于后续的学习和模式识别
         // 目前先留空，未来可以实现基于历史数据的学习
+    }
+    
+    /**
+     * 基于卡牌使用模式更新身份推测
+     * 不同身份的玩家倾向于使用不同类型的卡牌
+     */
+    fun updateBasedOnCardUsage(playerLocation: Int, cardType: String, targetLocation: Int?, isHostile: Boolean) {
+        val probs = identityProbabilities[playerLocation] ?: return
+        
+        when (cardType) {
+            "威逼", "误导", "调包" -> {
+                // 攻击性卡牌使用
+                if (isHostile) {
+                    // 使用攻击性卡牌，slightly increase chance of being mysterious person
+                    adjustProbability(probs, Black, 0.03)
+                }
+            }
+            "澄清", "平衡" -> {
+                // 保护性卡牌使用
+                if (!isHostile && targetLocation != null) {
+                    // 使用保护性卡牌，increase team identity probability
+                    for (identity in listOf(Red, Blue)) {
+                        val currentProb = probs[identity] ?: 0.0
+                        if (currentProb > 0.3) {
+                            adjustProbability(probs, identity, 0.05)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * 基于技能使用更新身份推测
+     * 某些技能的使用可以暗示身份信息
+     */
+    fun updateBasedOnSkillUsage(playerLocation: Int, skillName: String, targetLocation: Int?) {
+        val probs = identityProbabilities[playerLocation] ?: return
+        
+        // 不同技能的使用模式可以暗示身份倾向
+        // 这里可以根据具体技能的特性来调整概率
     }
     
     /**
