@@ -659,18 +659,66 @@ fun canSeeMessageCardColors(messageCard: Card, isMessageCardFaceUp: Boolean, sen
         return messageCard.colors
     }
 
-    // TODO: 检查观察者是否使用了"破译"卡牌或其他能看到颜色的技能
-    // 这里需要根据游戏状态来判断，暂时简化处理
-
-    // 检查特殊技能是否能看到情报颜色
-    // 例如"金自来"的"赌命"技能：在特定条件下可以检视情报
-    // 但这些技能通常有特定的触发条件和时机限制
-    // 为了保持AI的真实性，这里不实现这些复杂的逻辑
-
-    // TODO: 未来可以添加以下支持：
-    // 1. 追踪"破译"卡牌的使用状态
-    // 2. 追踪"调包"后只有使用者知道新颜色
-    // 3. 追踪各种技能的触发状态（如"赌命"、"妙手"等）
+    // 检查观察者是否通过各种方式能够看到情报牌的颜色
+    
+    // 1. 破译(PoYi)卡牌使用：破译可以翻开黑色情报，翻开后所有人都能看到
+    // 注意：破译只能翻开黑色情报，且翻开后情报变为面朝上状态
+    // 实现：这种情况已由isMessageCardFaceUp=true覆盖，无需额外处理
+    
+    // 2. 赌命(DuMing)技能：金自来可以检视面朝下的情报
+    // 触发条件：情报传递到面前时，或调包结算后，若情报面朝下
+    // 效果：声明颜色，检视待收情报并面朝下放回
+    // 实现：由于赌命技能的检视是即时的，且游戏状态跟踪复杂，
+    // 这里暂时简化处理，未来可通过专门的状态跟踪系统实现
+    
+    // 3. 妙手(MiaoShou)技能：阿芙罗拉可以查看角色手牌和情报区
+    // 触发条件：争夺阶段，翻开角色牌
+    // 效果：查看一名角色的手牌和情报区，选择一张作为面朝上情报
+    // 实现：技能使用者能看到选中的卡牌颜色，通过canWeiBiCardIds跟踪
+    if (observer.findSkill(SkillId.MIAO_SHOU) != null && 
+        observer.getSkillUseCount(SkillId.MIAO_SHOU) > 0 && 
+        observer.canWeiBiCardIds.contains(messageCard.id)) {
+        return messageCard.colors
+    }
+    
+    // 4. 观海(GuanHai)技能：池镜海使用截获或误导时查看待收情报
+    // 触发条件：使用截获或误导卡牌时
+    // 效果：在结算前先查看待收情报
+    // 实现：观海技能会将情报加入canWeiBiCardIds，用于跟踪可见的牌
+    if (observer.findSkill(SkillId.GUAN_HAI) != null && 
+        observer.canWeiBiCardIds.contains(messageCard.id)) {
+        return messageCard.colors
+    }
+    
+    // 5. 借刀杀人(JieDaoShaRen)技能：商玉抽取手牌并展示
+    // 触发条件：争夺阶段，翻开角色牌
+    // 效果：抽取一名角色手牌并展示，若为黑色可置入情报区
+    // 实现：被展示的牌会加入所有玩家的canWeiBiCardIds
+    if (observer.canWeiBiCardIds.contains(messageCard.id)) {
+        return messageCard.colors
+    }
+    
+    // 6. 调包(DiaoBao)卡牌使用：替换当前情报
+    // 触发条件：争夺阶段使用调包卡牌  
+    // 效果：弃置原情报，用调包卡牌作为新的面朝下情报
+    // 实现：调包使用者知道新情报的颜色，但由于技术限制暂时简化处理
+    // 未来可通过专门的调包使用记录来实现精确跟踪
+    
+    // 7. 其他技能的综合处理
+    // 大多数技能如果能看到卡牌，都会将其加入canWeiBiCardIds进行跟踪
+    // 这包括：惊梦、定论、对症下药、广发报、共焚等技能
+    // 因此上面的canWeiBiCardIds检查已经覆盖了大部分情况
+    
+    // TODO: 高级实现可以考虑的其他情况：
+    // - 专门的游戏状态追踪系统，记录每个技能的具体使用情况
+    // - 调包卡牌的精确使用者追踪
+    // - 赌命技能的检视记录追踪  
+    // - 多轮游戏中的信息累积和角色技能交互
+    // - 角色死亡前的信息泄露处理
+    // 
+    // 注意：为了保持AI的真实性和游戏平衡，某些复杂的信息推理
+    // （如基于概率的猜测、多回合信息累积等）需要谨慎实现，
+    // 避免给AI过多的"透视"能力
 
     // 默认情况下，面朝下的情报其他人看不到颜色
     return null
