@@ -6,6 +6,7 @@ import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.secret_task
 import com.fengsheng.protos.Common.secret_task.*
+import com.fengsheng.skill.SkillId
 import kotlin.math.max
 import kotlin.math.min
 
@@ -32,10 +33,16 @@ class IdentityInference {
     private val secretTaskProbabilities = mutableMapOf<Int, MutableMap<secret_task, Double>>()
 
     /**
+     * 游戏引用，用于访问游戏状态
+     */
+    private lateinit var game: Game
+
+    /**
      * 初始化玩家身份推测
      * 根据实际游戏配置设置初始概率分布
      */
     fun initializePlayers(playerCount: Int, myLocation: Int, myIdentity: color, game: Game) {
+        this.game = game
         for (i in 0 until playerCount) {
             if (i == myLocation) continue // 不需要推测自己的身份
 
@@ -389,108 +396,77 @@ class IdentityInference {
      * 某些技能的使用可以暗示身份信息
      * 这是游戏的核心内容，不同角色的技能使用模式能够暗示其身份倾向
      */
-    fun updateBasedOnSkillUsage(playerLocation: Int, skillName: String, targetLocation: Int?) {
+    fun updateBasedOnSkillUsage(playerLocation: Int, skillId: SkillId, targetLocation: Int?) {
         val probs = identityProbabilities[playerLocation] ?: return
 
-        when (skillName) {
-            // 红方倾向技能
-            "火力支援", "急行军", "奇袭" -> {
-                // 这些技能通常红方角色更倾向使用
-                adjustProbability(probs, Red, 0.08)
+        when (skillId) {
+            // 红方角色倾向技能
+            SkillId.LIAN_LUO -> {
+                // 联络：老鳖技能，红方情报员技能，明显红方倾向
+                adjustProbability(probs, Red, 0.15)
+            }
+            SkillId.MING_ER -> {
+                // 明饵：老鳖技能，红方角色技能，用于诱导对手
+                adjustProbability(probs, Red, 0.15)
+            }
+            SkillId.GUI_ZHA -> {
+                // 诡诈：肥原龙川技能，红方间谍特色
+                adjustProbability(probs, Red, 0.2)
+            }
+            SkillId.TOU_TIAN -> {
+                // 偷天：鄭文先技能，红方特色
+                adjustProbability(probs, Red, 0.15)
+            }
+            SkillId.HUAN_RI -> {
+                // 换日：鄭文先技能，与偷天配合，红方倾向
+                adjustProbability(probs, Red, 0.15)
+            }
+            SkillId.QI_HUO_KE_JU -> {
+                // 奇货可居：毛不拔技能，商人角色，略偏红方
+                adjustProbability(probs, Red, 0.1)
             }
 
-            // 蓝方倾向技能
-            "密电破译", "情报分析", "反间计" -> {
-                // 这些技能通常蓝方角色更倾向使用
-                adjustProbability(probs, Blue, 0.08)
+            // 蓝方角色倾向技能
+            SkillId.JIN_SHEN -> {
+                // 谨慎：金生火技能，蓝方倾向
+                adjustProbability(probs, Blue, 0.15)
+            }
+            SkillId.YI_HUA_JIE_MU -> {
+                // 移花接木：韩梅技能，蓝方特色
+                adjustProbability(probs, Blue, 0.15)
+            }
+            SkillId.MIAN_LI_CANG_ZHEN -> {
+                // 绵里藏针：邵秀技能，蓝方倾向
+                adjustProbability(probs, Blue, 0.15)
+            }
+            SkillId.JI_ZHI -> {
+                // 集智：顾小梦技能，蓝方知识分子特色
+                adjustProbability(probs, Blue, 0.15)
+            }
+            SkillId.CHENG_ZHI -> {
+                // 承志：顾小梦技能，配合集智，蓝方倾向
+                adjustProbability(probs, Blue, 0.1)
+            }
+            SkillId.WEI_SHENG -> {
+                // 尾声：顾小梦技能，蓝方胜利相关
+                adjustProbability(probs, Blue, 0.15)
+            }
+            SkillId.JIU_JI -> {
+                // 就计：李宁玉技能，蓝方特色
+                adjustProbability(probs, Blue, 0.15)
+            }
+            SkillId.CHENG_FU -> {
+                // 城府：李宁玉技能，蓝方倾向
+                adjustProbability(probs, Blue, 0.1)
+            }
+            SkillId.YI_XIN -> {
+                // 遗信：李宁玉技能，蓝方胜利条件相关
+                adjustProbability(probs, Blue, 0.15)
             }
 
-            // 神秘人倾向技能
-            "潜伏", "暗杀", "破坏" -> {
-                // 这些技能通常神秘人更倾向使用
-                adjustProbability(probs, Black, 0.08)
-            }
-
-            // 保护性技能
-            "庇护", "掩护", "救援" -> {
-                if (targetLocation != null) {
-                    // 保护性技能的使用暗示队友关系
-                    val targetInferredIdentity = getInferredIdentity(targetLocation)
-
-                    // 增加使用者与目标同一阵营的概率
-                    for (identity in listOf(Red, Blue)) {
-                        val userIdentityProb = probs[identity] ?: 0.0
-                        val targetIdentityProb = getIdentityProbability(targetLocation, identity)
-
-                        if (targetIdentityProb > 0.3) {
-                            adjustProbability(probs, identity, 0.06)
-                        }
-                    }
-                }
-            }
-
-            // 攻击性技能
-            "狙击", "轰炸", "突袭" -> {
-                if (targetLocation != null) {
-                    // 攻击性技能的使用暗示敌对关系
-                    updateBasedOnTargetAttitude(playerLocation, targetLocation, true)
-
-                    // 根据目标的推测身份调整使用者的身份概率
-                    val targetInferredIdentity = getInferredIdentity(targetLocation)
-
-                    when (targetInferredIdentity) {
-                        Red -> {
-                            // 攻击红方，更可能是蓝方或神秘人
-                            adjustProbability(probs, Blue, 0.05)
-                            adjustProbability(probs, Black, 0.03)
-                            adjustProbability(probs, Red, -0.08)
-                        }
-                        Blue -> {
-                            // 攻击蓝方，更可能是红方或神秘人
-                            adjustProbability(probs, Red, 0.05)
-                            adjustProbability(probs, Black, 0.03)
-                            adjustProbability(probs, Blue, -0.08)
-                        }
-                        Black -> {
-                            // 攻击神秘人，红蓝双方都可能
-                            adjustProbability(probs, Red, 0.04)
-                            adjustProbability(probs, Blue, 0.04)
-                            adjustProbability(probs, Black, -0.08)
-                        }
-                        else -> {
-                            // 未知身份，不做调整
-                        }
-                    }
-                }
-            }
-
-            // 情报相关技能
-            "传递情报", "截获情报", "分析情报" -> {
-                // 这些技能的使用可以结合情报颜色来判断
-                // 如果配合红色情报使用，增加红方概率
-                // 如果配合蓝色情报使用，增加蓝方概率
-                // 暂时做轻微调整，具体需要结合情报颜色信息
-                adjustProbability(probs, Red, 0.02)
-                adjustProbability(probs, Blue, 0.02)
-                adjustProbability(probs, Black, -0.04)
-            }
-
-            // 特殊身份技能
-            "卧底行动" -> {
-                // 卧底相关技能暗示可能是神秘人
-                adjustProbability(probs, Black, 0.10)
-            }
-
-            "团队协作" -> {
-                // 团队协作技能暗示红蓝阵营
-                adjustProbability(probs, Red, 0.05)
-                adjustProbability(probs, Blue, 0.05)
-                adjustProbability(probs, Black, -0.10)
-            }
-
-            // 角色特有技能分析
-            "守口如瓶" -> {
-                // 哑炮的技能，确定身份
+            // 神秘人倾向技能 (确定神秘人身份的技能)
+            SkillId.SHOU_KOU_RU_PING -> {
+                // 守口如瓶：哑炮技能，确定神秘人身份
                 probs[Red] = 0.0
                 probs[Blue] = 0.0
                 probs[Black] = 1.0
@@ -498,31 +474,300 @@ class IdentityInference {
                 val taskProbs = secretTaskProbabilities[playerLocation]
                 if (taskProbs != null) {
                     taskProbs.clear()
-                    taskProbs[Disturber] = 1.0 // 哑炮是干扰者
+                    if (game.possibleSecretTasks.contains(Disturber)) {
+                        taskProbs[Disturber] = 1.0 // 哑炮是干扰者
+                    }
+                }
+            }
+            SkillId.HAN_HOU_LAO_SHI -> {
+                // 憨厚老实：哑炮技能，确定神秘人身份
+                probs[Red] = 0.0
+                probs[Blue] = 0.0
+                probs[Black] = 1.0
+                val taskProbs = secretTaskProbabilities[playerLocation]
+                if (taskProbs != null) {
+                    taskProbs.clear()
+                    if (game.possibleSecretTasks.contains(Disturber)) {
+                        taskProbs[Disturber] = 1.0
+                    }
                 }
             }
 
-            "天网" -> {
-                // 特定角色技能，可以确定或强烈暗示身份
-                // 根据具体角色调整概率
-                adjustProbability(probs, Black, 0.15)
+            // 其他神秘人倾向技能
+            SkillId.SHEN_CANG -> {
+                // 深藏：盛老板技能，神秘人特色
+                adjustProbability(probs, Black, 0.1)
+            }
+            SkillId.YUN_CHOU_WEI_WO -> {
+                // 运筹帷幄：老虎技能，神秘人特色
+                adjustProbability(probs, Black, 0.1)
             }
 
-            // 资源管理技能
-            "节约", "囤积", "交易" -> {
-                // 这些技能神秘人可能更常使用
-                adjustProbability(probs, Black, 0.03)
+            // 保护性技能分析
+            SkillId.LIAN_MIN -> {
+                // 怜悯：白菲菲技能，保护性质
+                analyzeProtectiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+            SkillId.SHI_SI -> {
+                // 视死：老汉技能，保护性质
+                analyzeProtectiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+            SkillId.RU_GUI -> {
+                // 如归：老汉技能，保护性质
+                analyzeProtectiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+            SkillId.BO_AI -> {
+                // 博爱：白沧浪技能，保护所有人，中性倾向
+                adjustProbability(probs, Black, 0.05) // 神秘人可能更常使用全局保护
+            }
+
+            // 攻击性技能分析
+            SkillId.YI_YA_HUAN_YA -> {
+                // 以牙还牙：王魁技能，报复性质
+                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+            SkillId.JIE_DAO_SHA_REN -> {
+                // 借刀杀人：商玉技能，攻击性质
+                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.15)
+            }
+            SkillId.QIANG_LING -> {
+                // 强令：张一挺技能，强制性攻击
+                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+            SkillId.JIN_BI -> {
+                // 禁闭：王田香技能，控制类技能
+                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+            SkillId.JIN_KOU_YI_KAI -> {
+                // 金口一开：玄青子技能，强制类技能
+                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+
+            // 信息类技能分析
+            SkillId.ZHI_YIN -> {
+                // 知音：程小蝶技能，信息获取
+                analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.05)
+            }
+            SkillId.JING_MENG -> {
+                // 惊梦：程小蝶技能，信息干扰
+                analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.05)
+            }
+            SkillId.MIAO_SHOU -> {
+                // 妙手：阿芙罗拉技能，信息窃取
+                analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+            SkillId.SOU_JI -> {
+                // 搜缉：李醒技能，信息搜集
+                analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+
+            // 特殊功能技能
+            SkillId.JIAO_JI -> {
+                // 交际：裴玲技能，社交类技能
+                analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.05)
+            }
+            SkillId.JI_SONG -> {
+                // 急送：鬼脚技能，传递类技能
+                analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.05)
+            }
+            SkillId.ZHUAN_JIAO -> {
+                // 转交：白小年技能，传递类技能
+                analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.05)
+            }
+            SkillId.MIAO_BI_QIAO_BIAN -> {
+                // 妙笔巧辩：连鸢技能，修改情报
+                analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.1)
+            }
+
+            // 胜利条件相关技能
+            SkillId.GUANG_FA_BAO -> {
+                // 广发报：小九技能，胜利条件
+                analyzeWinConditionSkillUsage(playerLocation, probs, 0.15)
+            }
+            SkillId.JIANG_HU_LING -> {
+                // 江湖令：王富贵技能，胜利条件
+                analyzeWinConditionSkillUsage(playerLocation, probs, 0.15)
+            }
+
+            // 混合效果技能
+            SkillId.FU_HEI -> {
+                // 腹黑：白菲菲技能，可攻可守
+                if (targetLocation != null) {
+                    val targetInferredIdentity = getInferredIdentity(targetLocation)
+                    val userInferredIdentity = getInferredIdentity(playerLocation)
+                    if (targetInferredIdentity == userInferredIdentity) {
+                        // 对队友使用，可能是保护
+                        adjustProbability(probs, targetInferredIdentity, 0.05)
+                    } else {
+                        // 对敌人使用，可能是攻击
+                        when (targetInferredIdentity) {
+                            Red -> adjustProbability(probs, Blue, 0.05)
+                            Blue -> adjustProbability(probs, Red, 0.05)
+                            else -> { /* 对神秘人使用，不明确 */ }
+                        }
+                    }
+                }
             }
 
             else -> {
-                // 未知技能或通用技能，不做调整
-                // 但记录下来用于后续分析
+                // 对于未明确分类的技能，根据目标关系进行基础分析
+                if (targetLocation != null) {
+                    analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.03)
+                }
             }
         }
 
-        // 技能使用频率也可以暗示身份
-        // 经常使用技能的玩家可能更有经验，或者有特定的身份倾向
-        // 这里可以添加基于技能使用频率的分析逻辑
+        // Probabilities are already normalized by adjustProbability calls
+    }
+
+    /**
+     * 分析保护性技能的使用模式
+     */
+    private fun analyzeProtectiveSkillUsage(userLocation: Int, targetLocation: Int?, probs: MutableMap<color, Double>, weight: Double) {
+        if (targetLocation == null) return
+        
+        val userInferredIdentity = getInferredIdentity(userLocation)
+        val targetInferredIdentity = getInferredIdentity(targetLocation)
+        
+        // 如果对推测的队友使用保护技能，增强相同身份的概率
+        if (userInferredIdentity == targetInferredIdentity) {
+            adjustProbability(probs, userInferredIdentity, weight)
+        }
+        // 如果对推测的敌人使用保护技能，可能是伪装或误判
+        else {
+            adjustProbability(probs, targetInferredIdentity, weight * 0.3)
+        }
+    }
+
+    /**
+     * 分析攻击性技能的使用模式
+     */
+    private fun analyzeAggressiveSkillUsage(userLocation: Int, targetLocation: Int?, probs: MutableMap<color, Double>, weight: Double) {
+        if (targetLocation == null) return
+        
+        val userInferredIdentity = getInferredIdentity(userLocation)
+        val targetInferredIdentity = getInferredIdentity(targetLocation)
+        
+        // 如果对推测的敌人使用攻击技能，增强相反身份的概率
+        if (userInferredIdentity != targetInferredIdentity) {
+            when (targetInferredIdentity) {
+                Red -> adjustProbability(probs, Blue, weight)
+                Blue -> adjustProbability(probs, Red, weight)
+                Black -> {
+                    // 攻击神秘人，红蓝都可能
+                    adjustProbability(probs, Red, weight * 0.5)
+                    adjustProbability(probs, Blue, weight * 0.5)
+                }
+                else -> { /* 未知身份 */ }
+            }
+        }
+        // 如果对推测的队友使用攻击技能，可能是误判或伪装
+        else {
+            adjustProbability(probs, getOppositeIdentity(userInferredIdentity), weight * 0.2)
+        }
+    }
+
+    /**
+     * 分析信息类技能的使用模式
+     */
+    private fun analyzeInformationSkillUsage(userLocation: Int, targetLocation: Int?, probs: MutableMap<color, Double>, weight: Double) {
+        if (targetLocation == null) return
+        
+        // 信息技能通常用于获取或干扰情报，使用模式相对中性
+        // 但频繁对某些玩家使用可能暗示关系
+        val targetInferredIdentity = getInferredIdentity(targetLocation)
+        
+        // 信息技能的使用更多反映策略而非直接的身份暗示
+        analyzeContextualSkillUsage(userLocation, targetLocation, probs, weight * 0.5)
+    }
+
+    /**
+     * 分析上下文相关的技能使用
+     */
+    private fun analyzeContextualSkillUsage(userLocation: Int, targetLocation: Int?, probs: MutableMap<color, Double>, weight: Double) {
+        if (targetLocation == null) return
+        
+        // 基于当前推测的身份关系来分析技能使用的合理性
+        val userInferredIdentity = getInferredIdentity(userLocation)
+        val targetInferredIdentity = getInferredIdentity(targetLocation)
+        
+        // 如果技能使用符合预期的队友关系，略微增强概率
+        if (userInferredIdentity == targetInferredIdentity) {
+            adjustProbability(probs, userInferredIdentity, weight * 0.5)
+        }
+    }
+
+    /**
+     * 分析胜利条件相关技能的使用
+     */
+    private fun analyzeWinConditionSkillUsage(userLocation: Int, probs: MutableMap<color, Double>, weight: Double) {
+        // 使用胜利条件技能通常表示玩家认为自己接近胜利
+        // 这可以提供关于其身份的重要线索
+        
+        // 检查当前局面哪个阵营更有优势
+        val redAdvantage = calculateRedAdvantage()
+        val blueAdvantage = calculateBlueAdvantage()
+        
+        if (redAdvantage > blueAdvantage) {
+            adjustProbability(probs, Red, weight)
+        } else if (blueAdvantage > redAdvantage) {
+            adjustProbability(probs, Blue, weight)
+        }
+        // 如果形势不明朗，可能是神秘人
+        else {
+            adjustProbability(probs, Black, weight * 0.3)
+        }
+    }
+
+    /**
+     * 计算红方优势程度
+     */
+    private fun calculateRedAdvantage(): Double {
+        // 简化的优势计算，基于场上情报分布
+        var redCount = 0.0
+        var totalCount = 0.0
+        
+        game.players.filterNotNull().filter { it.alive }.forEach { player ->
+            player.messageCards.forEach { card ->
+                totalCount++
+                if (card.colors.contains(Red)) {
+                    redCount++
+                }
+            }
+        }
+        
+        return if (totalCount > 0) redCount / totalCount else 0.5
+    }
+
+    /**
+     * 计算蓝方优势程度
+     */
+    private fun calculateBlueAdvantage(): Double {
+        // 简化的优势计算，基于场上情报分布
+        var blueCount = 0.0
+        var totalCount = 0.0
+        
+        game.players.filterNotNull().filter { it.alive }.forEach { player ->
+            player.messageCards.forEach { card ->
+                totalCount++
+                if (card.colors.contains(Blue)) {
+                    blueCount++
+                }
+            }
+        }
+        
+        return if (totalCount > 0) blueCount / totalCount else 0.5
+    }
+
+    /**
+     * 获取相反的身份
+     */
+    private fun getOppositeIdentity(identity: color): color {
+        return when (identity) {
+            Red -> Blue
+            Blue -> Red
+            else -> identity // 神秘人没有直接相反的身份
+        }
     }
 
     /**
