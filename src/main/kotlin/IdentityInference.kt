@@ -400,77 +400,12 @@ class IdentityInference {
         val probs = identityProbabilities[playerLocation] ?: return
 
         when (skillId) {
-            // 红方角色倾向技能
-            SkillId.LIAN_LUO -> {
-                // 联络：老鳖技能，红方情报员技能，明显红方倾向
-                adjustProbability(probs, Red, 0.15)
-            }
-            SkillId.MING_ER -> {
-                // 明饵：老鳖技能，红方角色技能，用于诱导对手
-                adjustProbability(probs, Red, 0.15)
-            }
-            SkillId.GUI_ZHA -> {
-                // 诡诈：肥原龙川技能，红方间谍特色
-                adjustProbability(probs, Red, 0.2)
-            }
-            SkillId.TOU_TIAN -> {
-                // 偷天：鄭文先技能，红方特色
-                adjustProbability(probs, Red, 0.15)
-            }
-            SkillId.HUAN_RI -> {
-                // 换日：鄭文先技能，与偷天配合，红方倾向
-                adjustProbability(probs, Red, 0.15)
-            }
-            SkillId.QI_HUO_KE_JU -> {
-                // 奇货可居：毛不拔技能，商人角色，略偏红方
-                adjustProbability(probs, Red, 0.1)
-            }
-
-            // 蓝方角色倾向技能
-            SkillId.JIN_SHEN -> {
-                // 谨慎：金生火技能，蓝方倾向
-                adjustProbability(probs, Blue, 0.15)
-            }
-            SkillId.YI_HUA_JIE_MU -> {
-                // 移花接木：韩梅技能，蓝方特色
-                adjustProbability(probs, Blue, 0.15)
-            }
-            SkillId.MIAN_LI_CANG_ZHEN -> {
-                // 绵里藏针：邵秀技能，蓝方倾向
-                adjustProbability(probs, Blue, 0.15)
-            }
-            SkillId.JI_ZHI -> {
-                // 集智：顾小梦技能，蓝方知识分子特色
-                adjustProbability(probs, Blue, 0.15)
-            }
-            SkillId.CHENG_ZHI -> {
-                // 承志：顾小梦技能，配合集智，蓝方倾向
-                adjustProbability(probs, Blue, 0.1)
-            }
-            SkillId.WEI_SHENG -> {
-                // 尾声：顾小梦技能，蓝方胜利相关
-                adjustProbability(probs, Blue, 0.15)
-            }
-            SkillId.JIU_JI -> {
-                // 就计：李宁玉技能，蓝方特色
-                adjustProbability(probs, Blue, 0.15)
-            }
-            SkillId.CHENG_FU -> {
-                // 城府：李宁玉技能，蓝方倾向
-                adjustProbability(probs, Blue, 0.1)
-            }
-            SkillId.YI_XIN -> {
-                // 遗信：李宁玉技能，蓝方胜利条件相关
-                adjustProbability(probs, Blue, 0.15)
-            }
-
-            // 神秘人倾向技能 (确定神秘人身份的技能)
+            // 确定身份的技能（基于角色唯一技能）
             SkillId.SHOU_KOU_RU_PING -> {
-                // 守口如瓶：哑炮技能，确定神秘人身份
+                // 守口如瓶：哑炮独有技能，确定神秘人身份
                 probs[Red] = 0.0
                 probs[Blue] = 0.0
                 probs[Black] = 1.0
-                // 同时更新任务概率
                 val taskProbs = secretTaskProbabilities[playerLocation]
                 if (taskProbs != null) {
                     taskProbs.clear()
@@ -480,7 +415,7 @@ class IdentityInference {
                 }
             }
             SkillId.HAN_HOU_LAO_SHI -> {
-                // 憨厚老实：哑炮技能，确定神秘人身份
+                // 憨厚老实：哑炮独有技能，确定神秘人身份
                 probs[Red] = 0.0
                 probs[Blue] = 0.0
                 probs[Black] = 1.0
@@ -493,131 +428,159 @@ class IdentityInference {
                 }
             }
 
-            // 其他神秘人倾向技能
-            SkillId.SHEN_CANG -> {
-                // 深藏：盛老板技能，神秘人特色
-                adjustProbability(probs, Black, 0.1)
-            }
-            SkillId.YUN_CHOU_WEI_WO -> {
-                // 运筹帷幄：老虎技能，神秘人特色
-                adjustProbability(probs, Black, 0.1)
-            }
-
-            // 保护性技能分析
-            SkillId.LIAN_MIN -> {
-                // 怜悯：白菲菲技能，保护性质
-                analyzeProtectiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-            SkillId.SHI_SI -> {
-                // 视死：老汉技能，保护性质
-                analyzeProtectiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-            SkillId.RU_GUI -> {
-                // 如归：老汉技能，保护性质
-                analyzeProtectiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
+            // 基于行为的身份推断技能
             SkillId.BO_AI -> {
-                // 博爱：白沧浪技能，保护所有人，中性倾向
-                adjustProbability(probs, Black, 0.05) // 神秘人可能更常使用全局保护
-            }
-
-            // 攻击性技能分析
-            SkillId.YI_YA_HUAN_YA -> {
-                // 以牙还牙：王魁技能，报复性质
-                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-            SkillId.JIE_DAO_SHA_REN -> {
-                // 借刀杀人：商玉技能，攻击性质
-                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.15)
-            }
-            SkillId.QIANG_LING -> {
-                // 强令：张一挺技能，强制性攻击
-                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-            SkillId.JIN_BI -> {
-                // 禁闭：王田香技能，控制类技能
-                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-            SkillId.JIN_KOU_YI_KAI -> {
-                // 金口一开：玄青子技能，强制类技能
-                analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-
-            // 信息类技能分析
-            SkillId.ZHI_YIN -> {
-                // 知音：程小蝶技能，信息获取
-                analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.05)
-            }
-            SkillId.JING_MENG -> {
-                // 惊梦：程小蝶技能，信息干扰
-                analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.05)
-            }
-            SkillId.MIAO_SHOU -> {
-                // 妙手：阿芙罗拉技能，信息窃取
-                analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-            SkillId.SOU_JI -> {
-                // 搜缉：李醒技能，信息搜集
-                analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-
-            // 特殊功能技能
-            SkillId.JIAO_JI -> {
-                // 交际：裴玲技能，社交类技能
-                analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.05)
-            }
-            SkillId.JI_SONG -> {
-                // 急送：鬼脚技能，传递类技能
-                analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.05)
-            }
-            SkillId.ZHUAN_JIAO -> {
-                // 转交：白小年技能，传递类技能
-                analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.05)
-            }
-            SkillId.MIAO_BI_QIAO_BIAN -> {
-                // 妙笔巧辩：连鸢技能，修改情报
-                analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.1)
-            }
-
-            // 胜利条件相关技能
-            SkillId.GUANG_FA_BAO -> {
-                // 广发报：小九技能，胜利条件
-                analyzeWinConditionSkillUsage(playerLocation, probs, 0.15)
-            }
-            SkillId.JIANG_HU_LING -> {
-                // 江湖令：王富贵技能，胜利条件
-                analyzeWinConditionSkillUsage(playerLocation, probs, 0.15)
-            }
-
-            // 混合效果技能
-            SkillId.FU_HEI -> {
-                // 腹黑：白菲菲技能，可攻可守
+                // 博爱：白沧浪技能 - 摸牌然后可以给其他角色一张手牌
+                // 如果给了手牌，增加两人是队友的概率
                 if (targetLocation != null) {
-                    val targetInferredIdentity = getInferredIdentity(targetLocation)
-                    val userInferredIdentity = getInferredIdentity(playerLocation)
-                    if (targetInferredIdentity == userInferredIdentity) {
-                        // 对队友使用，可能是保护
-                        adjustProbability(probs, targetInferredIdentity, 0.05)
-                    } else {
-                        // 对敌人使用，可能是攻击
-                        when (targetInferredIdentity) {
-                            Red -> adjustProbability(probs, Blue, 0.05)
-                            Blue -> adjustProbability(probs, Red, 0.05)
-                            else -> { /* 对神秘人使用，不明确 */ }
-                        }
-                    }
+                    analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.1)
+                }
+            }
+            
+            SkillId.JIU_JI -> {
+                // 就计：李宁玉技能 - 被试探/威逼/利诱后可以摸两张牌并收回那张牌
+                // 纯粹的自我保护和资源获取技能，无明确阵营倾向
+                // 不做身份推断调整
+            }
+            
+            SkillId.YI_HUA_JIE_MU -> {
+                // 移花接木：韩梅技能 - 移动场上情报
+                // 阵营倾向取决于移动了什么情报、从哪移到哪
+                if (targetLocation != null) {
+                    // 需要额外的情报移动信息才能准确判断
+                    // 暂时基于目标关系做轻微调整
+                    analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.05)
+                }
+            }
+
+            SkillId.LIAN_LUO -> {
+                // 联络：老鳖技能 - 传递情报时可以改变箭头方向
+                // 不涉及目标选择，无法从技能使用推断身份关系
+            }
+            
+            SkillId.GUI_ZHA -> {
+                // 诡诈：肥原龙川技能 - 视为对指定角色使用威逼或利诱
+                // 攻击性技能，暗示与目标敌对关系
+                if (targetLocation != null) {
+                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+                }
+            }
+            
+            SkillId.JIN_SHEN -> {
+                // 谨慎：金生火技能 - 接收双色情报后可以用手牌交换
+                // 自我保护技能，无明确阵营倾向
+            }
+            
+            SkillId.LIAN_MIN -> {
+                // 怜悯：白菲菲技能 - 保护性质
+                if (targetLocation != null) {
+                    analyzeProtectiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+                }
+            }
+            
+            SkillId.YI_YA_HUAN_YA -> {
+                // 以牙还牙：王魁技能 - 报复性质
+                if (targetLocation != null) {
+                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+                }
+            }
+            
+            SkillId.JIE_DAO_SHA_REN -> {
+                // 借刀杀人：商玉技能 - 强制他人对第三方使用牌
+                if (targetLocation != null) {
+                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+                }
+            }
+            
+            SkillId.JIAO_JI -> {
+                // 交际：裴玲技能 - 社交类技能，根据情报颜色可能暗示关系
+                if (targetLocation != null) {
+                    analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.05)
+                }
+            }
+            
+            SkillId.JI_SONG -> {
+                // 急送：鬼脚技能 - 传递情报相关
+                if (targetLocation != null) {
+                    analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.05)
+                }
+            }
+            
+            SkillId.ZHUAN_JIAO -> {
+                // 转交：白小年技能 - 传递手牌
+                if (targetLocation != null) {
+                    analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.05)
+                }
+            }
+            
+            SkillId.QIANG_LING -> {
+                // 强令：张一挺技能 - 强制性效果
+                if (targetLocation != null) {
+                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+                }
+            }
+            
+            SkillId.JIN_BI -> {
+                // 禁闭：王田香技能 - 控制类技能
+                if (targetLocation != null) {
+                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+                }
+            }
+            
+            SkillId.ZHI_YIN -> {
+                // 知音：程小蝶技能 - 查看手牌
+                if (targetLocation != null) {
+                    analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.05)
+                }
+            }
+            
+            SkillId.MIAO_SHOU -> {
+                // 妙手：阿芙罗拉技能 - 偷取手牌
+                if (targetLocation != null) {
+                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
+                }
+            }
+            
+            SkillId.SOU_JI -> {
+                // 搜缉：李醒技能 - 搜查手牌
+                if (targetLocation != null) {
+                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }
 
             else -> {
-                // 对于未明确分类的技能，根据目标关系进行基础分析
+                // 对于其他技能，如果有目标则根据上下文分析
                 if (targetLocation != null) {
-                    analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.03)
+                    analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.02)
                 }
             }
         }
 
         // Probabilities are already normalized by adjustProbability calls
+    }
+
+    /**
+     * 分析合作性技能使用（如博爱、交际等）
+     */
+    private fun analyzeCooperativeSkillUsage(
+        userLocation: Int, 
+        targetLocation: Int, 
+        probs: MutableMap<color, Double>, 
+        weight: Double
+    ) {
+        val targetInferredIdentity = getInferredIdentity(targetLocation)
+        // 合作性技能使用暗示使用者和目标可能是队友
+        when (targetInferredIdentity) {
+            Red -> adjustProbability(probs, Red, weight)
+            Blue -> adjustProbability(probs, Blue, weight)
+            Black -> {
+                // 对神秘人使用合作技能，可能使用者也是神秘人
+                adjustProbability(probs, Black, weight * 0.5)
+            }
+            else -> {
+                // 对失去身份或未知身份的玩家，无法做有效推断
+            }
+        }
     }
 
     /**
@@ -807,6 +770,8 @@ class IdentityInference {
         if (myLocation == otherLocation) return true
         return isInferredPartner(myIdentity, otherLocation)
     }
+
+
 
     /**
      * 检查是否是推测的敌人
