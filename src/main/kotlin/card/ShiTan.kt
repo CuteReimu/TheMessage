@@ -178,8 +178,14 @@ class ShiTan : Card {
                 target.draw(1)
                 // 更新AI的身份推断：试探结果显示目标摸牌
                 r.game!!.players.filterIsInstance<RobotPlayer>().forEach { robot ->
-                    if (robot !== target && robot.identityInference != null) {
-                        robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, card.whoDrawCard, true)
+                    if (robot.identityInference != null) {
+                        if (robot === r) {
+                            // 只有试探使用者知道详细的试探结果含义
+                            robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, card.whoDrawCard, true)
+                        } else if (robot !== target) {
+                            // 其他玩家只能观察到目标摸牌，推测关系
+                            robot.identityInference!!.updateBasedOnObservedProbeResult(r.location, target.location, true)
+                        }
                     }
                 }
             } else {
@@ -191,8 +197,14 @@ class ShiTan : Card {
                 }
                 // 更新AI的身份推断：试探结果显示目标弃牌
                 r.game!!.players.filterIsInstance<RobotPlayer>().forEach { robot ->
-                    if (robot !== target && robot.identityInference != null) {
-                        robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, card.whoDrawCard, false)
+                    if (robot.identityInference != null) {
+                        if (robot === r) {
+                            // 只有试探使用者知道详细的试探结果含义
+                            robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, card.whoDrawCard, false)
+                        } else if (robot !== target) {
+                            // 其他玩家只能观察到目标弃牌，推测关系
+                            robot.identityInference!!.updateBasedOnObservedProbeResult(r.location, target.location, false)
+                        }
                     }
                 }
             }

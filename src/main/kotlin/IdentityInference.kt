@@ -179,7 +179,7 @@ class IdentityInference {
     }
     
     /**
-     * 基于试探卡牌结果更新身份推测
+     * 基于试探卡牌结果更新身份推测（仅对试探使用者）
      * @param proberLocation 使用试探卡的玩家位置
      * @param targetLocation 试探目标位置
      * @param whoDrawCard 试探卡的whoDrawCard字段，表示哪些身份会摸牌
@@ -189,28 +189,46 @@ class IdentityInference {
         val targetProbs = identityProbabilities[targetLocation] ?: return
         
         if (didDrawCard) {
-            // 目标摸了牌，说明目标身份在whoDrawCard中
+            // 目标摸了牌，说明目标身份一定在whoDrawCard中
             for (identity in listOf(Red, Blue, Black)) {
                 if (identity in whoDrawCard) {
-                    // 这个身份在摸牌列表中，增加概率
-                    adjustProbability(targetProbs, identity, 0.3)
+                    // 这个身份在摸牌列表中，确定可能是这个身份
+                    // 在whoDrawCard中的所有身份平分概率
+                    targetProbs[identity] = 1.0 / whoDrawCard.size
                 } else {
-                    // 这个身份不在摸牌列表中，大幅降低概率
-                    adjustProbability(targetProbs, identity, -0.4)
+                    // 这个身份不在摸牌列表中，概率为0
+                    targetProbs[identity] = 0.0
                 }
             }
         } else {
-            // 目标弃了牌，说明目标身份不在whoDrawCard中
+            // 目标弃了牌，说明目标身份一定不在whoDrawCard中
+            val excludedIdentities = whoDrawCard.toSet()
+            val possibleIdentities = listOf(Red, Blue, Black).filter { it !in excludedIdentities }
+            
             for (identity in listOf(Red, Blue, Black)) {
-                if (identity in whoDrawCard) {
-                    // 这个身份在摸牌列表中但目标弃牌了，大幅降低概率
-                    adjustProbability(targetProbs, identity, -0.4)
+                if (identity in excludedIdentities) {
+                    // 这个身份在摸牌列表中但目标弃牌了，概率为0
+                    targetProbs[identity] = 0.0
                 } else {
-                    // 这个身份不在摸牌列表中且目标弃牌了，增加概率
-                    adjustProbability(targetProbs, identity, 0.3)
+                    // 这个身份不在摸牌列表中且目标弃牌了，在剩余身份中平分概率
+                    targetProbs[identity] = if (possibleIdentities.isNotEmpty()) 1.0 / possibleIdentities.size else 0.0
                 }
             }
         }
+    }
+    
+    /**
+     * 基于观察到的试探结果更新关系推测（对观察者）
+     * 其他玩家只能看到目标摸牌或弃牌，可以推测使用者和目标的关系
+     * @param proberLocation 使用试探卡的玩家位置
+     * @param targetLocation 试探目标位置
+     * @param didDrawCard 目标是否摸了牌
+     */
+    fun updateBasedOnObservedProbeResult(proberLocation: Int, targetLocation: Int, didDrawCard: Boolean) {
+        // 观察到试探结果可以推测使用者和目标的关系
+        // 如果目标摸牌，说明试探结果对目标有利，使用者和目标可能是队友
+        // 如果目标弃牌，说明试探结果对目标不利，使用者和目标可能是敌人
+        updateBasedOnTargetAttitude(proberLocation, targetLocation, !didDrawCard)
     }
     
     /**
@@ -287,13 +305,78 @@ class IdentityInference {
                 // 不做特殊的身份倾向调整
             }
             Li_You -> {
-                // 利诱：通常是为了获得特定卡牌，各阵营都可能使用
-                // 略微增加神秘人可能性（因为他们更需要灵活获取资源）
-                adjustProbability(probs, Black, 0.01)
+                // 利诱：翻开牌堆顶的第一张牌，将其置入目标角色的情报区
+                // 如果因此导致了目标角色拥有三张或更多相同颜色的情报，则改为将其加入使用者的手牌
+                if (targetLocation != null) {
+                    // 需要分析目标玩家的情报情况来判断使用者的身份倾向
+                    // 这里需要获取目标玩家的情报状态，暂时简化处理
+                    
+                    // 1. 如果目标情报为1蓝2黑、1蓝1黑、1蓝0黑等情况，使用利诱倾向于给蓝牌
+                    //    这增加了蓝方获胜进度，说明使用者可能是蓝方
+                    
+                    // 2. 如果目标情报为2蓝2红0黑，给黑色会置入情报区，其他颜色会被拿走
+                    //    这是明显的攻击性行为
+                    
+                    // 3. 对于有特殊技能的角色（如裴玲、鬼脚、王响、白小年），
+                    //    使用利诱更可能是帮助他们，暗示队友关系
+                    
+                    // 暂时根据目标推测身份和使用者推测身份的关系来调整
+                    val targetInferredIdentity = getInferredIdentity(targetLocation)
+                    
+                    // 如果对同色身份使用利诱，增加该身份的概率
+                    for (identity in listOf(Red, Blue)) {
+                        val userIdentityProb = probs[identity] ?: 0.0
+                        val targetIdentityProb = getIdentityProbability(targetLocation, identity)
+                        
+                        if (userIdentityProb > 0.3 && targetIdentityProb > 0.3) {
+                            // 推测是队友关系，使用利诱可能是为了帮助队友
+                            adjustProbability(probs, identity, 0.05)
+                        }
+                    }
+                    
+                    // 利诱的使用也暗示对神秘人身份的可能性（需要灵活获取资源）
+                    adjustProbability(probs, Black, 0.02)
+                } else {
+                    // 没有指定目标的利诱使用，略微增加神秘人可能性
+                    adjustProbability(probs, Black, 0.01)
+                }
             }
-            Po_Yi, Mi_Ling, Diao_Hu_Li_Shan, Yu_Qin_Gu_Zong, Feng_Yun_Bian_Huan -> {
-                // 破译、密令、调虎离山、欲擒故纵、风云变幻：高级战术卡牌
-                // 需要根据具体使用情况判断，暂时不做调整
+            Po_Yi -> {
+                // 破译：各阵营都可能使用，不做特殊调整
+            }
+            Mi_Ling -> {
+                // 密令：会浪费目标角色一张手牌，有一定攻击性
+                if (targetLocation != null) {
+                    adjustProbability(probs, Black, 0.02)
+                    
+                    // 如果对推测的敌人使用，符合攻击性特征
+                    val targetInferredIdentity = getInferredIdentity(targetLocation)
+                    for (identity in listOf(Red, Blue)) {
+                        val userIdentityProb = probs[identity] ?: 0.0
+                        val targetIdentityProb = getIdentityProbability(targetLocation, identity)
+                        
+                        if (userIdentityProb > 0.3 && targetIdentityProb < 0.3) {
+                            // 对不同阵营使用密令，增加该身份概率
+                            adjustProbability(probs, identity, 0.03)
+                        }
+                    }
+                }
+            }
+            Diao_Hu_Li_Shan -> {
+                // 调虎离山：禁用一名角色出牌或使用技能，明显攻击性
+                if (targetLocation != null) {
+                    adjustProbability(probs, Black, 0.03)
+                    
+                    // 攻击性卡牌的使用暗示敌对关系
+                    updateBasedOnTargetAttitude(playerLocation, targetLocation, true)
+                }
+            }
+            Yu_Qin_Gu_Zong -> {
+                // 欲擒故纵：战术卡牌，各阵营都可能使用
+            }
+            Feng_Yun_Bian_Huan -> {
+                // 风云变幻：对神秘人而言使用会略亏，略微降低神秘人概率
+                adjustProbability(probs, Black, -0.02)
             }
             else -> {
                 // 其他卡牌类型或未识别类型，不做调整
@@ -304,12 +387,142 @@ class IdentityInference {
     /**
      * 基于技能使用更新身份推测
      * 某些技能的使用可以暗示身份信息
+     * 这是游戏的核心内容，不同角色的技能使用模式能够暗示其身份倾向
      */
     fun updateBasedOnSkillUsage(playerLocation: Int, skillName: String, targetLocation: Int?) {
         val probs = identityProbabilities[playerLocation] ?: return
         
-        // 不同技能的使用模式可以暗示身份倾向
-        // 这里可以根据具体技能的特性来调整概率
+        when (skillName) {
+            // 红方倾向技能
+            "火力支援", "急行军", "奇袭" -> {
+                // 这些技能通常红方角色更倾向使用
+                adjustProbability(probs, Red, 0.08)
+            }
+            
+            // 蓝方倾向技能  
+            "密电破译", "情报分析", "反间计" -> {
+                // 这些技能通常蓝方角色更倾向使用
+                adjustProbability(probs, Blue, 0.08)
+            }
+            
+            // 神秘人倾向技能
+            "潜伏", "暗杀", "破坏" -> {
+                // 这些技能通常神秘人更倾向使用
+                adjustProbability(probs, Black, 0.08)
+            }
+            
+            // 保护性技能
+            "庇护", "掩护", "救援" -> {
+                if (targetLocation != null) {
+                    // 保护性技能的使用暗示队友关系
+                    val targetInferredIdentity = getInferredIdentity(targetLocation)
+                    
+                    // 增加使用者与目标同一阵营的概率
+                    for (identity in listOf(Red, Blue)) {
+                        val userIdentityProb = probs[identity] ?: 0.0
+                        val targetIdentityProb = getIdentityProbability(targetLocation, identity)
+                        
+                        if (targetIdentityProb > 0.3) {
+                            adjustProbability(probs, identity, 0.06)
+                        }
+                    }
+                }
+            }
+            
+            // 攻击性技能
+            "狙击", "轰炸", "突袭" -> {
+                if (targetLocation != null) {
+                    // 攻击性技能的使用暗示敌对关系
+                    updateBasedOnTargetAttitude(playerLocation, targetLocation, true)
+                    
+                    // 根据目标的推测身份调整使用者的身份概率
+                    val targetInferredIdentity = getInferredIdentity(targetLocation)
+                    
+                    when (targetInferredIdentity) {
+                        Red -> {
+                            // 攻击红方，更可能是蓝方或神秘人
+                            adjustProbability(probs, Blue, 0.05)
+                            adjustProbability(probs, Black, 0.03)
+                            adjustProbability(probs, Red, -0.08)
+                        }
+                        Blue -> {
+                            // 攻击蓝方，更可能是红方或神秘人
+                            adjustProbability(probs, Red, 0.05)
+                            adjustProbability(probs, Black, 0.03)
+                            adjustProbability(probs, Blue, -0.08)
+                        }
+                        Black -> {
+                            // 攻击神秘人，红蓝双方都可能
+                            adjustProbability(probs, Red, 0.04)
+                            adjustProbability(probs, Blue, 0.04)
+                            adjustProbability(probs, Black, -0.08)
+                        }
+                        else -> {
+                            // 未知身份，不做调整
+                        }
+                    }
+                }
+            }
+            
+            // 情报相关技能
+            "传递情报", "截获情报", "分析情报" -> {
+                // 这些技能的使用可以结合情报颜色来判断
+                // 如果配合红色情报使用，增加红方概率
+                // 如果配合蓝色情报使用，增加蓝方概率
+                // 暂时做轻微调整，具体需要结合情报颜色信息
+                adjustProbability(probs, Red, 0.02)
+                adjustProbability(probs, Blue, 0.02)
+                adjustProbability(probs, Black, -0.04)
+            }
+            
+            // 特殊身份技能
+            "卧底行动" -> {
+                // 卧底相关技能暗示可能是神秘人
+                adjustProbability(probs, Black, 0.10)
+            }
+            
+            "团队协作" -> {
+                // 团队协作技能暗示红蓝阵营
+                adjustProbability(probs, Red, 0.05)
+                adjustProbability(probs, Blue, 0.05)
+                adjustProbability(probs, Black, -0.10)
+            }
+            
+            // 角色特有技能分析
+            "守口如瓶" -> {
+                // 哑炮的技能，确定身份
+                probs[Red] = 0.0
+                probs[Blue] = 0.0
+                probs[Black] = 1.0
+                // 同时更新任务概率
+                val taskProbs = secretTaskProbabilities[playerLocation]
+                if (taskProbs != null) {
+                    taskProbs.clear()
+                    taskProbs[Disturber] = 1.0 // 哑炮是干扰者
+                }
+            }
+            
+            "天网" -> {
+                // 特定角色技能，可以确定或强烈暗示身份
+                // 根据具体角色调整概率
+                adjustProbability(probs, Black, 0.15)
+            }
+            
+            // 资源管理技能
+            "节约", "囤积", "交易" -> {
+                // 这些技能神秘人可能更常使用
+                adjustProbability(probs, Black, 0.03)
+            }
+            
+            else -> {
+                // 未知技能或通用技能，不做调整
+                // 但记录下来用于后续分析
+            }
+        }
+        
+        // 技能使用频率也可以暗示身份
+        // 经常使用技能的玩家可能更有经验，或者有特定的身份倾向
+        // 这里可以添加基于技能使用频率的分析逻辑
     }
     
     /**
