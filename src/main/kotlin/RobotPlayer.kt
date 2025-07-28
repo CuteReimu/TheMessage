@@ -110,7 +110,15 @@ class RobotPlayer : Player() {
         messageCard: Card,
         dir: direction
     ) {
-        // Do nothing
+        // 更新身份推断：基于情报传递的颜色
+        identityInference?.updateBasedOnIntelTransmission(sender.location, messageCard.colors)
+        
+        // 分析传递行为模式
+        if (sender !== this) {
+            // 分析目标选择是否暗示身份关系
+            val isAttack = calculateMessageCardValue(whoseTurn, targetPlayer, messageCard, sender = sender) < 0
+            identityInference?.updateBasedOnTargetAttitude(sender.location, targetPlayer.location, isAttack)
+        }
     }
 
     override fun notifySendPhase(waitSecond: Int) {

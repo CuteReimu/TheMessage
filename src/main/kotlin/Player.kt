@@ -4,6 +4,7 @@ import com.fengsheng.card.Card
 import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.color.*
 import com.fengsheng.protos.Common.role.unknown
+import com.fengsheng.protos.Common.secret_task
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.protos.Errcode.error_message_toc
 import com.fengsheng.skill.RoleCache
@@ -25,6 +26,9 @@ abstract class Player protected constructor() {
     @Volatile
     var playerTitle = ""
     var location = 0
+    
+    /** AI身份推断系统（仅AI玩家使用） */
+    var identityInference: IdentityInference? = null
     val cards = ArrayList<Card>()
     val messageCards = ArrayList<Card>()
     var identity = Black
@@ -66,6 +70,7 @@ abstract class Player protected constructor() {
         dieJustNow = false
         hasEverFaceUp = false
         skillUseCount.clear()
+        identityInference = null
     }
 
     /**
@@ -128,6 +133,12 @@ abstract class Player protected constructor() {
 
     open fun init() {
         logger.info("${this}的身份是${identityColorToString(identity, secretTask)}")
+        
+        // 为AI玩家初始化身份推断系统
+        if (this is RobotPlayer) {
+            identityInference = IdentityInference()
+            identityInference!!.initializePlayers(game!!.players.size, location, identity)
+        }
     }
 
     open fun incrSeq() {}
@@ -282,6 +293,55 @@ abstract class Player protected constructor() {
 
     /** @return 如果other是敌人，则返回true。否则返回false */
     fun isEnemy(other: Player) = !isPartnerOrSelf(other)
+    
+    /** @return 如果other是推测的队友（不含自己），则返回true。AI使用推测身份，人类玩家使用真实身份 */
+    fun isInferredPartner(other: Player): Boolean {
+        if (this === other || identity == Black) return false
+        
+        return if (this is RobotPlayer && identityInference != null) {
+            identityInference!!.isInferredPartner(identity, other.location)
+        } else {
+            identity == other.identity
+        }
+    }
+
+    /** @return 如果other是推测的队友或自己，则返回true。AI使用推测身份，人类玩家使用真实身份 */
+    fun isInferredPartnerOrSelf(other: Player): Boolean {
+        if (this === other) return true
+        
+        return if (this is RobotPlayer && identityInference != null) {
+            identityInference!!.isInferredPartnerOrSelf(location, identity, other.location)
+        } else {
+            identity != Black && identity == other.identity
+        }
+    }
+
+    /** @return 如果other是推测的敌人，则返回true。AI使用推测身份，人类玩家使用真实身份 */
+    fun isInferredEnemy(other: Player): Boolean {
+        return if (this is RobotPlayer && identityInference != null) {
+            identityInference!!.isInferredEnemy(location, identity, other.location)
+        } else {
+            !isPartnerOrSelf(other)
+        }
+    }
+    
+    /** @return 获取推测的身份。AI使用推测身份，人类玩家使用真实身份 */
+    fun getInferredIdentity(other: Player): color {
+        return if (this is RobotPlayer && identityInference != null) {
+            identityInference!!.getInferredIdentity(other.location)
+        } else {
+            other.identity
+        }
+    }
+    
+    /** @return 获取推测的神秘人任务。AI使用推测任务，人类玩家使用真实任务 */
+    fun getInferredSecretTask(other: Player): secret_task {
+        return if (this is RobotPlayer && identityInference != null) {
+            identityInference!!.getInferredSecretTask(other.location)
+        } else {
+            other.secretTask
+        }
+    }
 
     override fun toString(): String {
         val hide = if (roleFaceUp) "" else "(隐)"
