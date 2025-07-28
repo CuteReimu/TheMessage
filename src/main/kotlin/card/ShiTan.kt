@@ -176,13 +176,10 @@ class ShiTan : Card {
                 logger.info("${target}选择了[摸一张牌]")
                 card.notifyResult(target, true)
                 target.draw(1)
-                // 更新AI的身份推断：试探结果显示目标是红队
+                // 更新AI的身份推断：试探结果显示目标摸牌
                 r.game!!.players.filterIsInstance<RobotPlayer>().forEach { robot ->
                     if (robot !== target && robot.identityInference != null) {
-                        // 如果试探结果是摸牌，说明目标身份在whoDrawCard中
-                        if (Red in card.whoDrawCard) {
-                            robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, true)
-                        }
+                        robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, card.whoDrawCard, true)
                     }
                 }
             } else {
@@ -192,12 +189,10 @@ class ShiTan : Card {
                     target.game!!.playerDiscardCard(target, discardCard)
                     target.game!!.addEvent(DiscardCardEvent(r, target))
                 }
-                // 更新AI的身份推断：试探结果显示目标不在whoDrawCard中
+                // 更新AI的身份推断：试探结果显示目标弃牌
                 r.game!!.players.filterIsInstance<RobotPlayer>().forEach { robot ->
                     if (robot !== target && robot.identityInference != null) {
-                        if (Red in card.whoDrawCard) {
-                            robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, false)
-                        }
+                        robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, card.whoDrawCard, false)
                     }
                 }
             }

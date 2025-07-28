@@ -27,18 +27,19 @@
  * ```kotlin
  * // 初始化4人游戏，AI是0号位红队
  * val inference = IdentityInference()
- * inference.initializePlayers(4, 0, Red)
+ * // 需要传入Game实例进行初始化
+ * inference.initializePlayers(4, 0, Red, game)
  * 
- * // 初始状态：每个身份概率约33%
+ * // 初始状态：身份概率基于实际配置
  * println("玩家1红队概率: ${inference.getIdentityProbability(1, Red)}")
  * 
  * // 观察玩家1传递红色情报
  * inference.updateBasedOnIntelTransmission(1, listOf(Red))
  * // 现在玩家1红队概率增加
  * 
- * // 使用试探卡确认玩家2是蓝队
- * inference.updateBasedOnProbeResult(0, 2, false)
- * // 现在玩家2蓝队概率变为90%
+ * // 使用试探卡确认玩家2身份
+ * inference.updateBasedOnProbeResult(0, 2, listOf(Red), false)
+ * // 现在玩家2身份概率根据试探结果调整
  * 
  * // 推断关系
  * val isPartner = inference.isInferredPartner(Red, 1)

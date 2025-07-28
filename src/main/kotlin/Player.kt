@@ -137,7 +137,7 @@ abstract class Player protected constructor() {
         // 为AI玩家初始化身份推断系统
         if (this is RobotPlayer) {
             identityInference = IdentityInference()
-            identityInference!!.initializePlayers(game!!.players.size, location, identity)
+            identityInference!!.initializePlayers(game!!.players.size, location, identity, game!!)
         }
     }
 
