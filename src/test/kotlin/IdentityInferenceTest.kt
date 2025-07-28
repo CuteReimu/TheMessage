@@ -49,7 +49,7 @@ class IdentityInferenceTest {
     @Test
     fun testSkillUsageInference() {
         val inference = IdentityInference()
-        
+
         // Test that skill usage methods don't crash
         // These methods require initialization, so we test their existence
         try {
