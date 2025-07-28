@@ -183,6 +183,10 @@ class DuMing : TriggeredSkill {
             r.addSkillUseCount(SkillId.DU_MING)
             logger.info("${r}发动了赌命，声明了$c")
             r.draw(1)
+            
+            // 赌命使用者检视了情报，将其加入可见性跟踪
+            r.messageCardVisibility.add(card.id)
+            
             val needPutBlack = c !in card.colors && r.cards.any { it.isPureBlack() }
             g.players.send { p ->
                 skillDuMingAToc {

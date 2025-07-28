@@ -130,6 +130,9 @@ class PoYi : Card {
                 r.game!!.players.forEach {
                     it?.messageCardVisibility?.add(sendPhase.messageCard.id)
                 }
+            } else {
+                // 破译使用者检视了情报但没有翻开，只有使用者知道颜色
+                r.messageCardVisibility.add(sendPhase.messageCard.id)
             }
             r.game!!.players.send {
                 poYiShowToc {

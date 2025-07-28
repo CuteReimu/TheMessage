@@ -646,73 +646,27 @@ fun Player.calculateMessageCardValue(
  * @param isMessageCardFaceUp 情报是否面朝上
  * @param sender 情报传出者
  * @param observer 观察者（要判断能否看到的玩家）
- * @return 如果能看到返回实际颜色，否则返回null
+ * @return 如果能看到返回true，否则返回false
  */
-fun canSeeMessageCardColors(messageCard: Card, isMessageCardFaceUp: Boolean, sender: Player, observer: Player): List<color>? {
+fun canSeeMessageCardColors(messageCard: Card, isMessageCardFaceUp: Boolean, sender: Player, observer: Player): Boolean {
     // 如果情报面朝上，所有人都能看到
     if (isMessageCardFaceUp) {
-        return messageCard.colors
+        return true
     }
 
     // 情报传出者总是知道颜色
     if (observer === sender) {
-        return messageCard.colors
+        return true
     }
 
     // 检查观察者是否通过各种方式能够看到情报牌的颜色
-
-    // 1. 破译(PoYi)卡牌使用：破译可以翻开黑色情报，翻开后所有人都能看到
-    // 注意：破译只能翻开黑色情报，且翻开后情报变为面朝上状态
-    // 实现：这种情况已由isMessageCardFaceUp=true覆盖，无需额外处理
-
-    // 2. 赌命(DuMing)技能：金自来可以检视面朝下的情报
-    // 触发条件：情报传递到面前时，或调包结算后，若情报面朝下
-    // 效果：声明颜色，检视待收情报并面朝下放回
-    // 实现：使用messageCardVisibility追踪赌命技能检视过的卡牌
-    if (observer.findSkill(SkillId.DU_MING) != null &&
-        observer.messageCardVisibility.contains(messageCard.id)) {
-        return messageCard.colors
-    }
-
-    // 3. 妙手(MiaoShou)技能：阿芙罗拉可以查看角色手牌和情报区
-    // 触发条件：争夺阶段，翻开角色牌
-    // 效果：查看一名角色的手牌和情报区，选择一张作为面朝上情报
-    // 实现：技能使用者能看到选中的卡牌颜色，通过canWeiBiCardIds或messageCardVisibility跟踪
-    if (observer.findSkill(SkillId.MIAO_SHOU) != null &&
-        observer.getSkillUseCount(SkillId.MIAO_SHOU) > 0 &&
-        (observer.canWeiBiCardIds.contains(messageCard.id) ||
-            observer.messageCardVisibility.contains(messageCard.id))) {
-        return messageCard.colors
-    }
-
-    // 4. 调包(DiaoBao)卡牌使用：替换当前情报
-    // 触发条件：争夺阶段使用调包卡牌
-    // 效果：弃置原情报，用调包卡牌作为新的面朝下情报
-    // 实现：调包使用者知道新情报的颜色，通过messageCardVisibility跟踪
+    // 通过messageCardVisibility追踪特定卡牌的可见性
     if (observer.messageCardVisibility.contains(messageCard.id)) {
-        return messageCard.colors
+        return true
     }
-
-    // 5. 其他角色技能的综合处理
-    // 包括：惊梦、定论、对症下药、广发报、共焚、才思、卧底、苦肉、天赋等技能
-    // 大多数技能如果能看到卡牌，都会将其加入canWeiBiCardIds进行跟踪
-    // 特殊技能检视的卡牌会加入messageCardVisibility进行专门跟踪
-    if (observer.canWeiBiCardIds.contains(messageCard.id)) {
-        return messageCard.colors
-    }
-    // 包括：惊梦、定论、对症下药、广发报、共焚、才思、卧底、苦肉、天赋等技能
-    // 大多数技能如果能看到卡牌，都会将其加入canWeiBiCardIds进行跟踪
-    // 特殊技能检视的卡牌会加入messageCardVisibility进行专门跟踪
-
-    // 6. 高级情况的处理：
-    // - 专门的游戏状态追踪系统，记录每个技能的具体使用情况
-    // - 调包卡牌的精确使用者追踪已通过messageCardVisibility实现
-    // - 赌命技能的检视记录追踪已通过messageCardVisibility实现
-    // - 多轮游戏中的信息累积和角色技能交互可通过扩展当前系统实现
-    // - 角色死亡前的信息泄露处理需要在角色死亡事件中处理
 
     // 默认情况下，面朝下的情报其他人看不到颜色
-    return null
+    return false
 }
 
 /**
@@ -1066,11 +1020,11 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
         }
     }
 
-    // 获取当前玩家能看到的情报牌颜色
-    val visibleColors = canSeeMessageCardColors(e.messageCard, e.isMessageCardFaceUp, e.sender, this)
+    // 检查当前玩家是否能看到情报牌的颜色
+    val canSeeColors = canSeeMessageCardColors(e.messageCard, e.isMessageCardFaceUp, e.sender, this)
 
-    val oldValue = if (visibleColors != null) {
-        calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, visibleColors, sender = e.sender)
+    val oldValue = if (canSeeColors) {
+        calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard.colors, sender = e.sender)
     } else {
         // 如果看不到颜色，根据猜测的对方身份推测什么颜色的情报
         val guessedColors = guessMessageCardColors(this, e.sender, e.inFrontOfWhom)
@@ -1090,8 +1044,8 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
-                    val newValue = if (visibleColors != null) {
-                        calculateMessageCardValue(e.whoseTurn, whoUse, visibleColors, sender = e.sender)
+                    val newValue = if (canSeeColors) {
+                        calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard.colors, sender = e.sender)
                     } else {
                         // 如果看不到颜色，根据猜测的对方身份推测什么颜色的情报
                         val guessedColors = guessMessageCardColors(this, e.sender, whoUse)
@@ -1133,8 +1087,8 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
                 else -> { // Wu_Dao
                     val calLeft = {
                         val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
-                        val newValueLeft = if (visibleColors != null) {
-                            calculateMessageCardValue(e.whoseTurn, left, visibleColors, sender = e.sender)
+                        val newValueLeft = if (canSeeColors) {
+                            calculateMessageCardValue(e.whoseTurn, left, e.messageCard.colors, sender = e.sender)
                         } else {
                             // 如果看不到颜色，根据猜测的对方身份推测什么颜色的情报
                             val guessedColors = guessMessageCardColors(this, e.sender, left)
@@ -1158,8 +1112,8 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
                     }
                     val calRight = {
                         val right = e.inFrontOfWhom.getNextRightAlivePlayer()
-                        val newValueRight = if (visibleColors != null) {
-                            calculateMessageCardValue(e.whoseTurn, right, visibleColors, sender = e.sender)
+                        val newValueRight = if (canSeeColors) {
+                            calculateMessageCardValue(e.whoseTurn, right, e.messageCard.colors, sender = e.sender)
                         } else {
                             // 如果看不到颜色，根据猜测的对方身份推测什么颜色的情报
                             val guessedColors = guessMessageCardColors(this, e.sender, right)
