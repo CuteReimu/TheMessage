@@ -1,10 +1,8 @@
 package com.fengsheng
 
-import com.fengsheng.protos.Common.card_type
+import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.*
-import com.fengsheng.protos.Common.secret_task
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.SkillId
 import kotlin.math.max
@@ -410,17 +408,8 @@ class IdentityInference {
                 }
             }
             SkillId.HAN_HOU_LAO_SHI -> {
-                // 憨厚老实：哑炮独有技能，确定神秘人身份
-                probs[Red] = 0.0
-                probs[Blue] = 0.0
-                probs[Black] = 1.0
-                val taskProbs = secretTaskProbabilities[playerLocation]
-                if (taskProbs != null) {
-                    taskProbs.clear()
-                    if (game.possibleSecretTasks.contains(Disturber)) {
-                        taskProbs[Disturber] = 1.0
-                    }
-                }
+                // 憨厚老实：哑炮技能 - 被动触发，无法控制，因此不能说明身份
+                // 该技能是被动触发的，玩家无法控制，无法用于身份推断
             }
 
             // 基于行为的身份推断技能
@@ -431,13 +420,13 @@ class IdentityInference {
                     analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }
-            
+
             SkillId.JIU_JI -> {
                 // 就计：李宁玉技能 - 被试探/威逼/利诱后可以摸两张牌并收回那张牌
                 // 纯粹的自我保护和资源获取技能，无明确阵营倾向
                 // 不做身份推断调整
             }
-            
+
             SkillId.YI_HUA_JIE_MU -> {
                 // 移花接木：韩梅技能 - 移动场上情报
                 // 阵营倾向取决于移动了什么情报、从哪移到哪
@@ -452,7 +441,7 @@ class IdentityInference {
                 // 联络：老鳖技能 - 传递情报时可以改变箭头方向
                 // 不涉及目标选择，无法从技能使用推断身份关系
             }
-            
+
             SkillId.GUI_ZHA -> {
                 // 诡诈：肥原龙川技能 - 视为对指定角色使用威逼或利诱
                 // 根据使用的卡牌类型（威逼或利诱）来判断敌我关系
@@ -460,40 +449,40 @@ class IdentityInference {
                 // 这里暂时作为中性技能处理，具体判断需要结合卡牌使用分析
                 // TODO: 需要在具体使用时调用updateBasedOnCardUsage来分析威逼或利诱的效果
             }
-            
+
             SkillId.JIN_SHEN -> {
                 // 谨慎：金生火技能 - 接收双色情报后可以用手牌交换
                 // 自我保护技能，无明确阵营倾向
             }
-            
+
             SkillId.LIAN_MIN -> {
                 // 怜悯：白菲菲技能 - 保护性质
                 if (targetLocation != null) {
                     analyzeProtectiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }
-            
+
             SkillId.YI_YA_HUAN_YA -> {
                 // 以牙还牙：王魁技能 - 报复性质
                 if (targetLocation != null) {
                     analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }
-            
+
             SkillId.JIE_DAO_SHA_REN -> {
                 // 借刀杀人：商玉技能 - 强制他人对第三方使用牌
                 if (targetLocation != null) {
                     analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }
-            
+
             SkillId.JIAO_JI -> {
                 // 交际：裴玲技能 - 抢夺别人手牌的攻击性技能
                 if (targetLocation != null) {
                     analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.12)
                 }
             }
-            
+
             SkillId.JI_SONG -> {
                 // 急送：鬼脚技能 - 移动场上的情报牌
                 // 需要根据情报颜色和移动目标来判断身份倾向
@@ -504,38 +493,38 @@ class IdentityInference {
                     // TODO: 需要额外的情报颜色和原位置参数来准确分析
                 }
             }
-            
+
             SkillId.ZHUAN_JIAO -> {
                 // 转交：白小年技能 - 传递手牌
                 if (targetLocation != null) {
                     analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.05)
                 }
             }
-            
+
             SkillId.QIANG_LING -> {
                 // 强令：张一挺技能 - 对所有人的效果，无法用来判定身份
                 // 该技能影响所有角色，不能从中推断身份倾向
             }
-            
+
             SkillId.JIN_BI -> {
                 // 禁闭：王田香技能 - 控制类技能
                 if (targetLocation != null) {
                     analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }
-            
+
             SkillId.ZHI_YIN -> {
                 // 知音：程小蝶技能 - 被动触发，无法控制，因此不能说明身份
                 // 该技能是被动触发的，玩家无法控制，无法用于身份推断
             }
-            
+
             SkillId.MIAO_SHOU -> {
                 // 妙手：阿芙罗拉技能 - 偷取手牌
                 if (targetLocation != null) {
                     analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }
-            
+
             SkillId.SOU_JI -> {
                 // 搜缉：李醒技能 - 搜查手牌
                 if (targetLocation != null) {
@@ -558,9 +547,9 @@ class IdentityInference {
      * 分析合作性技能使用（如博爱、交际等）
      */
     private fun analyzeCooperativeSkillUsage(
-        userLocation: Int, 
-        targetLocation: Int, 
-        probs: MutableMap<color, Double>, 
+        userLocation: Int,
+        targetLocation: Int,
+        probs: MutableMap<color, Double>,
         weight: Double
     ) {
         val targetInferredIdentity = getInferredIdentity(targetLocation)
@@ -581,12 +570,17 @@ class IdentityInference {
     /**
      * 分析保护性技能的使用模式
      */
-    private fun analyzeProtectiveSkillUsage(userLocation: Int, targetLocation: Int?, probs: MutableMap<color, Double>, weight: Double) {
+    private fun analyzeProtectiveSkillUsage(
+        userLocation: Int,
+        targetLocation: Int?,
+        probs: MutableMap<color, Double>,
+        weight: Double
+    ) {
         if (targetLocation == null) return
-        
+
         val userInferredIdentity = getInferredIdentity(userLocation)
         val targetInferredIdentity = getInferredIdentity(targetLocation)
-        
+
         // 如果对推测的队友使用保护技能，增强相同身份的概率
         if (userInferredIdentity == targetInferredIdentity) {
             adjustProbability(probs, userInferredIdentity, weight)
@@ -600,12 +594,17 @@ class IdentityInference {
     /**
      * 分析攻击性技能的使用模式
      */
-    private fun analyzeAggressiveSkillUsage(userLocation: Int, targetLocation: Int?, probs: MutableMap<color, Double>, weight: Double) {
+    private fun analyzeAggressiveSkillUsage(
+        userLocation: Int,
+        targetLocation: Int?,
+        probs: MutableMap<color, Double>,
+        weight: Double
+    ) {
         if (targetLocation == null) return
-        
+
         val userInferredIdentity = getInferredIdentity(userLocation)
         val targetInferredIdentity = getInferredIdentity(targetLocation)
-        
+
         // 如果对推测的敌人使用攻击技能，增强相反身份的概率
         if (userInferredIdentity != targetInferredIdentity) {
             when (targetInferredIdentity) {
@@ -628,13 +627,18 @@ class IdentityInference {
     /**
      * 分析信息类技能的使用模式
      */
-    private fun analyzeInformationSkillUsage(userLocation: Int, targetLocation: Int?, probs: MutableMap<color, Double>, weight: Double) {
+    private fun analyzeInformationSkillUsage(
+        userLocation: Int,
+        targetLocation: Int?,
+        probs: MutableMap<color, Double>,
+        weight: Double
+    ) {
         if (targetLocation == null) return
-        
+
         // 信息技能通常用于获取或干扰情报，使用模式相对中性
         // 但频繁对某些玩家使用可能暗示关系
         val targetInferredIdentity = getInferredIdentity(targetLocation)
-        
+
         // 信息技能的使用更多反映策略而非直接的身份暗示
         analyzeContextualSkillUsage(userLocation, targetLocation, probs, weight * 0.5)
     }
@@ -642,13 +646,18 @@ class IdentityInference {
     /**
      * 分析上下文相关的技能使用
      */
-    private fun analyzeContextualSkillUsage(userLocation: Int, targetLocation: Int?, probs: MutableMap<color, Double>, weight: Double) {
+    private fun analyzeContextualSkillUsage(
+        userLocation: Int,
+        targetLocation: Int?,
+        probs: MutableMap<color, Double>,
+        weight: Double
+    ) {
         if (targetLocation == null) return
-        
+
         // 基于当前推测的身份关系来分析技能使用的合理性
         val userInferredIdentity = getInferredIdentity(userLocation)
         val targetInferredIdentity = getInferredIdentity(targetLocation)
-        
+
         // 如果技能使用符合预期的队友关系，略微增强概率
         if (userInferredIdentity == targetInferredIdentity) {
             adjustProbability(probs, userInferredIdentity, weight * 0.5)
@@ -661,11 +670,11 @@ class IdentityInference {
     private fun analyzeWinConditionSkillUsage(userLocation: Int, probs: MutableMap<color, Double>, weight: Double) {
         // 使用胜利条件技能通常表示玩家认为自己接近胜利
         // 这可以提供关于其身份的重要线索
-        
+
         // 检查当前局面哪个阵营更有优势
         val redAdvantage = calculateRedAdvantage()
         val blueAdvantage = calculateBlueAdvantage()
-        
+
         if (redAdvantage > blueAdvantage) {
             adjustProbability(probs, Red, weight)
         } else if (blueAdvantage > redAdvantage) {
@@ -684,7 +693,7 @@ class IdentityInference {
         // 简化的优势计算，基于场上情报分布
         var redCount = 0.0
         var totalCount = 0.0
-        
+
         game.players.filterNotNull().filter { it.alive }.forEach { player ->
             player.messageCards.forEach { card ->
                 totalCount++
@@ -693,7 +702,7 @@ class IdentityInference {
                 }
             }
         }
-        
+
         return if (totalCount > 0) redCount / totalCount else 0.5
     }
 
@@ -704,7 +713,7 @@ class IdentityInference {
         // 简化的优势计算，基于场上情报分布
         var blueCount = 0.0
         var totalCount = 0.0
-        
+
         game.players.filterNotNull().filter { it.alive }.forEach { player ->
             player.messageCards.forEach { card ->
                 totalCount++
@@ -713,7 +722,7 @@ class IdentityInference {
                 }
             }
         }
-        
+
         return if (totalCount > 0) blueCount / totalCount else 0.5
     }
 
@@ -765,8 +774,6 @@ class IdentityInference {
         if (myLocation == otherLocation) return true
         return isInferredPartner(myIdentity, otherLocation)
     }
-
-
 
     /**
      * 检查是否是推测的敌人
