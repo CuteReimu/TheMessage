@@ -640,6 +640,40 @@ fun Player.calculateMessageCardValue(
 }
 
 /**
+ * 判断玩家是否能看到情报牌的颜色
+ *
+ * @param messageCard 情报牌
+ * @param isMessageCardFaceUp 情报是否面朝上
+ * @param sender 情报传出者
+ * @param observer 观察者（要判断能否看到的玩家）
+ * @return 如果能看到返回实际颜色，否则返回null
+ */
+fun canSeeMessageCardColors(messageCard: Card, isMessageCardFaceUp: Boolean, sender: Player, observer: Player): List<color>? {
+    // 如果情报面朝上，所有人都能看到
+    if (isMessageCardFaceUp) {
+        return messageCard.colors
+    }
+
+    // 情报传出者总是知道颜色
+    if (observer === sender) {
+        return messageCard.colors
+    }
+
+    // TODO: 检查观察者是否使用了"破译"卡牌或其他能看到颜色的技能
+    // 这里需要根据游戏状态来判断，暂时简化处理
+
+    // 检查观察者是否有能看到情报颜色的技能
+    // 例如"金自来"的"赌命"技能等
+    if (observer.skills.any { it is DuMing }) {
+        // 如果金自来使用了赌命技能，可以看到颜色
+        // 这里需要更精确的逻辑，暂时简化
+    }
+
+    // 默认情况下，面朝下的情报其他人看不到颜色
+    return null
+}
+
+/**
  * 计算应该选择哪张情报传出的结果
  *
  * @param card 传出的牌
@@ -907,7 +941,16 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
             order[2] = Diao_Bao
         }
     }
-    val oldValue = calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, e.messageCard, sender = e.sender)
+
+    // 获取当前玩家能看到的情报牌颜色
+    val visibleColors = canSeeMessageCardColors(e.messageCard, e.isMessageCardFaceUp, e.sender, this)
+
+    val oldValue = if (visibleColors != null) {
+        calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, visibleColors, sender = e.sender)
+    } else {
+        // 如果看不到颜色，使用随机颜色的平均价值
+        calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom).roundToInt()
+    }
     var value = oldValue
     var result: FightPhaseResult? = null
     val cards = availableCards.sortCards(identity)
@@ -918,7 +961,12 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
-                    val newValue = calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard, sender = e.sender)
+                    val newValue = if (visibleColors != null) {
+                        calculateMessageCardValue(e.whoseTurn, whoUse, visibleColors, sender = e.sender)
+                    } else {
+                        // 如果看不到颜色，使用随机颜色的平均价值
+                        calculateMessageCardValue(e.whoseTurn, whoUse).roundToInt()
+                    }
                     if (newValue > value) {
                         result = FightPhaseResult(
                             cardType,
@@ -951,8 +999,12 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
                 else -> { // Wu_Dao
                     val calLeft = {
                         val left = e.inFrontOfWhom.getNextLeftAlivePlayer()
-                        val newValueLeft =
-                            calculateMessageCardValue(e.whoseTurn, left, e.messageCard, sender = e.sender)
+                        val newValueLeft = if (visibleColors != null) {
+                            calculateMessageCardValue(e.whoseTurn, left, visibleColors, sender = e.sender)
+                        } else {
+                            // 如果看不到颜色，使用随机颜色的平均价值
+                            calculateMessageCardValue(e.whoseTurn, left).roundToInt()
+                        }
                         if (newValueLeft > value) {
                             result = FightPhaseResult(
                                 cardType,
@@ -967,8 +1019,12 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
                     }
                     val calRight = {
                         val right = e.inFrontOfWhom.getNextRightAlivePlayer()
-                        val newValueRight =
-                            calculateMessageCardValue(e.whoseTurn, right, e.messageCard, sender = e.sender)
+                        val newValueRight = if (visibleColors != null) {
+                            calculateMessageCardValue(e.whoseTurn, right, visibleColors, sender = e.sender)
+                        } else {
+                            // 如果看不到颜色，使用随机颜色的平均价值
+                            calculateMessageCardValue(e.whoseTurn, right).roundToInt()
+                        }
                         if (newValueRight > value) {
                             result = FightPhaseResult(
                                 cardType,
