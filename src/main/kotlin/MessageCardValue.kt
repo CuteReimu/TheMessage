@@ -600,10 +600,10 @@ fun Player.calculateMessageCardValue(
     } else {
         val myColor = identity
         val enemyColor = (listOf(Red, Blue) - myColor).first()
-        
+
         // 使用推测的身份，而不是真实身份
         val inferredIdentity = getInferredIdentity(inFrontOfWhom)
-        
+
         if (inferredIdentity == myColor) { // 推测的队友
             if (myColor in colors) {
                 value += when (inFrontOfWhom.messageCards.count(myColor)) {
@@ -835,8 +835,8 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
         if (whoDie.game!!.players.any {
                 val itInferredIdentity = getInferredIdentity(it!!)
                 val whoDieInferredIdentity = getInferredIdentity(whoDie)
-                it.alive && it !== whoDie && itInferredIdentity == whoDieInferredIdentity && 
-                it.messageCards.count(itInferredIdentity) == 2
+                it.alive && it !== whoDie && itInferredIdentity == whoDieInferredIdentity &&
+                    it.messageCards.count(itInferredIdentity) == 2
             }) {
             // 如果自己也是同一阵营，则不救
             if (isInferredPartnerOrSelf(whoDie)) {

@@ -112,7 +112,7 @@ class RobotPlayer : Player() {
     ) {
         // 更新身份推断：基于情报传递的颜色
         identityInference?.updateBasedOnIntelTransmission(sender.location, messageCard.colors)
-        
+
         // 分析传递行为模式
         if (sender !== this) {
             // 分析目标选择是否暗示身份关系

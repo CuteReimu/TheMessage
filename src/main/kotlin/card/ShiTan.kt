@@ -181,7 +181,12 @@ class ShiTan : Card {
                     if (robot.identityInference != null) {
                         if (robot === r) {
                             // 只有试探使用者知道详细的试探结果含义
-                            robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, card.whoDrawCard, true)
+                            robot.identityInference!!.updateBasedOnProbeResult(
+                                r.location,
+                                target.location,
+                                card.whoDrawCard,
+                                true
+                            )
                         } else if (robot !== target) {
                             // 其他玩家只能观察到目标摸牌，推测关系
                             robot.identityInference!!.updateBasedOnObservedProbeResult(r.location, target.location, true)
@@ -200,7 +205,12 @@ class ShiTan : Card {
                     if (robot.identityInference != null) {
                         if (robot === r) {
                             // 只有试探使用者知道详细的试探结果含义
-                            robot.identityInference!!.updateBasedOnProbeResult(r.location, target.location, card.whoDrawCard, false)
+                            robot.identityInference!!.updateBasedOnProbeResult(
+                                r.location,
+                                target.location,
+                                card.whoDrawCard,
+                                false
+                            )
                         } else if (robot !== target) {
                             // 其他玩家只能观察到目标弃牌，推测关系
                             robot.identityInference!!.updateBasedOnObservedProbeResult(r.location, target.location, false)
@@ -285,7 +295,8 @@ class ShiTan : Card {
                 jianXianSheng != null && player.isInferredPartner(jianXianSheng) ->
                     listOf(jianXianSheng)
 
-                yaPao != null && player.isInferredPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0 ->
+                yaPao != null && player.isInferredPartner(yaPao) &&
+                    yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0 ->
                     listOf(yaPao)
 
                 else -> {
@@ -295,7 +306,8 @@ class ShiTan : Card {
                     }.run {
                         filter {
                             it!!.isInferredPartner(player) &&
-                                (it.findSkill(SHOU_KOU_RU_PING) != null || player.getInferredIdentity(it) in (card as ShiTan).whoDrawCard)
+                                (it.findSkill(SHOU_KOU_RU_PING) != null ||
+                                    player.getInferredIdentity(it) in (card as ShiTan).whoDrawCard)
                         }.ifEmpty {
                             filter {
                                 it!!.isInferredEnemy(player) && it.findSkill(SHOU_KOU_RU_PING) == null &&
