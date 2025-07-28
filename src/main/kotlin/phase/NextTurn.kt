@@ -37,6 +37,7 @@ class NextTurn(override val whoseTurn: Player) : ProcessFsm() {
                     it.canWeiBiCardIds.removeIf { cid ->
                         !game.players.any { p -> p!!.alive && p !== it && p.cards.any { c -> c.id == cid } }
                     }
+                    it.messageCardVisibility.clear()
                     it.isSender = false
                 }
                 game.liYouCount = 0

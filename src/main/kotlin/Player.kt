@@ -54,6 +54,9 @@ abstract class Player protected constructor() {
     /** 是否为本回合的情报传出者 */
     var isSender = false
 
+    /** 记录玩家能看到的情报牌ID（用于技能相关的可见性追踪） */
+    val messageCardVisibility = HashSet<Int>()
+
     var roleSkillsData = RoleSkillsData()
         set(value) {
             field = value.copy()
@@ -69,6 +72,9 @@ abstract class Player protected constructor() {
         lose = false
         dieJustNow = false
         hasEverFaceUp = false
+        canWeiBiCardIds.clear()
+        useCardThisTurn.clear()
+        messageCardVisibility.clear()
         skillUseCount.clear()
         identityInference = null
     }

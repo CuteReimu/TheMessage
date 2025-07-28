@@ -668,25 +668,30 @@ fun canSeeMessageCardColors(messageCard: Card, isMessageCardFaceUp: Boolean, sen
     // 2. 赌命(DuMing)技能：金自来可以检视面朝下的情报
     // 触发条件：情报传递到面前时，或调包结算后，若情报面朝下
     // 效果：声明颜色，检视待收情报并面朝下放回
-    // 实现：由于赌命技能的检视是即时的，且游戏状态跟踪复杂，
-    // 这里暂时简化处理，未来可通过专门的状态跟踪系统实现
+    // 实现：使用messageCardVisibility追踪赌命技能检视过的卡牌
+    if (observer.findSkill(SkillId.DU_MING) != null && 
+        observer.messageCardVisibility.contains(messageCard.id)) {
+        return messageCard.colors
+    }
     
     // 3. 妙手(MiaoShou)技能：阿芙罗拉可以查看角色手牌和情报区
     // 触发条件：争夺阶段，翻开角色牌
     // 效果：查看一名角色的手牌和情报区，选择一张作为面朝上情报
-    // 实现：技能使用者能看到选中的卡牌颜色，通过canWeiBiCardIds跟踪
+    // 实现：技能使用者能看到选中的卡牌颜色，通过canWeiBiCardIds或messageCardVisibility跟踪
     if (observer.findSkill(SkillId.MIAO_SHOU) != null && 
         observer.getSkillUseCount(SkillId.MIAO_SHOU) > 0 && 
-        observer.canWeiBiCardIds.contains(messageCard.id)) {
+        (observer.canWeiBiCardIds.contains(messageCard.id) || 
+         observer.messageCardVisibility.contains(messageCard.id))) {
         return messageCard.colors
     }
     
     // 4. 观海(GuanHai)技能：池镜海使用截获或误导时查看待收情报
     // 触发条件：使用截获或误导卡牌时
     // 效果：在结算前先查看待收情报
-    // 实现：观海技能会将情报加入canWeiBiCardIds，用于跟踪可见的牌
+    // 实现：观海技能会将情报加入canWeiBiCardIds或messageCardVisibility，用于跟踪可见的牌
     if (observer.findSkill(SkillId.GUAN_HAI) != null && 
-        observer.canWeiBiCardIds.contains(messageCard.id)) {
+        (observer.canWeiBiCardIds.contains(messageCard.id) ||
+         observer.messageCardVisibility.contains(messageCard.id))) {
         return messageCard.colors
     }
     
@@ -701,27 +706,112 @@ fun canSeeMessageCardColors(messageCard: Card, isMessageCardFaceUp: Boolean, sen
     // 6. 调包(DiaoBao)卡牌使用：替换当前情报
     // 触发条件：争夺阶段使用调包卡牌  
     // 效果：弃置原情报，用调包卡牌作为新的面朝下情报
-    // 实现：调包使用者知道新情报的颜色，但由于技术限制暂时简化处理
-    // 未来可通过专门的调包使用记录来实现精确跟踪
+    // 实现：调包使用者知道新情报的颜色，通过messageCardVisibility跟踪
+    if (observer.messageCardVisibility.contains(messageCard.id)) {
+        return messageCard.colors
+    }
     
-    // 7. 其他技能的综合处理
+    // 7. 其他角色技能的综合处理
+    // 包括：惊梦、定论、对症下药、广发报、共焚、才思、卧底、苦肉、天赋等技能
     // 大多数技能如果能看到卡牌，都会将其加入canWeiBiCardIds进行跟踪
-    // 这包括：惊梦、定论、对症下药、广发报、共焚等技能
-    // 因此上面的canWeiBiCardIds检查已经覆盖了大部分情况
+    // 特殊技能检视的卡牌会加入messageCardVisibility进行专门跟踪
     
-    // TODO: 高级实现可以考虑的其他情况：
+    // 8. 高级情况的处理：
     // - 专门的游戏状态追踪系统，记录每个技能的具体使用情况
-    // - 调包卡牌的精确使用者追踪
-    // - 赌命技能的检视记录追踪  
-    // - 多轮游戏中的信息累积和角色技能交互
-    // - 角色死亡前的信息泄露处理
-    // 
-    // 注意：为了保持AI的真实性和游戏平衡，某些复杂的信息推理
-    // （如基于概率的猜测、多回合信息累积等）需要谨慎实现，
-    // 避免给AI过多的"透视"能力
+    // - 调包卡牌的精确使用者追踪已通过messageCardVisibility实现
+    // - 赌命技能的检视记录追踪已通过messageCardVisibility实现
+    // - 多轮游戏中的信息累积和角色技能交互可通过扩展当前系统实现
+    // - 角色死亡前的信息泄露处理需要在角色死亡事件中处理
 
     // 默认情况下，面朝下的情报其他人看不到颜色
     return null
+}
+
+/**
+ * 基于身份推测智能猜测情报牌颜色
+ * 根据传送者的推测身份、目标玩家的情报区情况等进行推理
+ * 
+ * @param observer 观察者（AI玩家）
+ * @param sender 情报传送者
+ * @param target 情报接收者
+ * @param context 上下文（如调包等特殊情况）
+ * @return 猜测的颜色列表，如果无法猜测则返回null
+ */
+fun guessMessageCardColors(
+    observer: Player, 
+    sender: Player, 
+    target: Player, 
+    context: String = "normal"
+): List<color>? {
+    val inference = observer.identityInference ?: return null
+    val senderIdentity = inference.getInferredIdentity(sender.location)
+    
+    // 统计目标玩家的情报区颜色分布
+    val targetRedCount = target.messageCards.count { Red in it.colors }
+    val targetBlueCount = target.messageCards.count { Blue in it.colors }
+    val targetBlackCount = target.messageCards.count { Black in it.colors }
+    
+    return when (context) {
+        "diao_bao" -> {
+            // 调包情况：如果疑似蓝队调包红色情报，新情报不太可能是红色
+            // 如果疑似红队调包蓝色情报，新情报不太可能是蓝色
+            when (senderIdentity) {
+                Red -> {
+                    // 红队调包，倾向于换成红色或黑色，避免蓝色
+                    if (targetBlueCount >= 2) listOf(Black) // 目标已有很多蓝色，可能换黑色害他
+                    else listOf(Red) // 否则可能换红色帮助自己人
+                }
+                Blue -> {
+                    // 蓝队调包，倾向于换成蓝色或黑色，避免红色
+                    if (targetRedCount >= 2) listOf(Black) // 目标已有很多红色，可能换黑色害他
+                    else listOf(Blue) // 否则可能换蓝色帮助自己人
+                }
+                Black -> {
+                    // 神秘人调包，主要目标是破坏，倾向于黑色
+                    listOf(Black)
+                }
+                else -> null
+            }
+        }
+        else -> {
+            // 正常情报传递情况
+            when (senderIdentity) {
+                Red -> {
+                    when {
+                        // 红队给有很多红色情报的人（疑似队友）传递红色
+                        targetRedCount >= 2 -> listOf(Red)
+                        // 红队给有很多蓝色情报的人（疑似敌人）传递黑色
+                        targetBlueCount >= 2 -> listOf(Black)
+                        // 其他情况，可能传红色（帮队友）或黑色（害敌人）
+                        inference.isInferredPartner(Red, target.location) -> listOf(Red)
+                        else -> listOf(Black)
+                    }
+                }
+                Blue -> {
+                    when {
+                        // 蓝队给有很多蓝色情报的人（疑似队友）传递蓝色
+                        targetBlueCount >= 2 -> listOf(Blue)
+                        // 蓝队给有很多红色情报的人（疑似敌人）传递黑色
+                        targetRedCount >= 2 -> listOf(Black)
+                        // 其他情况，可能传蓝色（帮队友）或黑色（害敌人）
+                        inference.isInferredPartner(Blue, target.location) -> listOf(Blue)
+                        else -> listOf(Black)
+                    }
+                }
+                Black -> {
+                    // 神秘人的策略比较复杂，可能故意制造混乱
+                    // 根据目标情况判断最有破坏性的颜色
+                    when {
+                        targetRedCount >= 2 && targetBlueCount >= 1 -> listOf(Black) // 已经接近死亡，补刀
+                        targetBlueCount >= 2 && targetRedCount >= 1 -> listOf(Black) // 已经接近死亡，补刀
+                        targetRedCount == 0 && targetBlueCount == 0 -> listOf(Black) // 新手，给黑色比较安全
+                        else -> listOf(Black) // 默认黑色
+                    }
+                }
+                else -> null
+            }
+        }
+    }
 }
 
 /**
@@ -999,8 +1089,13 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
     val oldValue = if (visibleColors != null) {
         calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, visibleColors, sender = e.sender)
     } else {
-        // 如果看不到颜色，使用随机颜色的平均价值
-        calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom).roundToInt()
+        // 如果看不到颜色，根据猜测的对方身份推测什么颜色的情报
+        val guessedColors = guessMessageCardColors(this, e.sender, e.inFrontOfWhom)
+        if (guessedColors != null) {
+            calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom, guessedColors, sender = e.sender)
+        } else {
+            calculateMessageCardValue(e.whoseTurn, e.inFrontOfWhom).roundToInt()
+        }
     }
     var value = oldValue
     var result: FightPhaseResult? = null
@@ -1015,8 +1110,13 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
                     val newValue = if (visibleColors != null) {
                         calculateMessageCardValue(e.whoseTurn, whoUse, visibleColors, sender = e.sender)
                     } else {
-                        // 如果看不到颜色，使用随机颜色的平均价值
-                        calculateMessageCardValue(e.whoseTurn, whoUse).roundToInt()
+                        // 如果看不到颜色，根据猜测的对方身份推测什么颜色的情报
+                        val guessedColors = guessMessageCardColors(this, e.sender, whoUse)
+                        if (guessedColors != null) {
+                            calculateMessageCardValue(e.whoseTurn, whoUse, guessedColors, sender = e.sender)
+                        } else {
+                            calculateMessageCardValue(e.whoseTurn, whoUse).roundToInt()
+                        }
                     }
                     if (newValue > value) {
                         result = FightPhaseResult(
@@ -1053,8 +1153,13 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
                         val newValueLeft = if (visibleColors != null) {
                             calculateMessageCardValue(e.whoseTurn, left, visibleColors, sender = e.sender)
                         } else {
-                            // 如果看不到颜色，使用随机颜色的平均价值
-                            calculateMessageCardValue(e.whoseTurn, left).roundToInt()
+                            // 如果看不到颜色，根据猜测的对方身份推测什么颜色的情报
+                            val guessedColors = guessMessageCardColors(this, e.sender, left)
+                            if (guessedColors != null) {
+                                calculateMessageCardValue(e.whoseTurn, left, guessedColors, sender = e.sender)
+                            } else {
+                                calculateMessageCardValue(e.whoseTurn, left).roundToInt()
+                            }
                         }
                         if (newValueLeft > value) {
                             result = FightPhaseResult(
@@ -1073,8 +1178,13 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
                         val newValueRight = if (visibleColors != null) {
                             calculateMessageCardValue(e.whoseTurn, right, visibleColors, sender = e.sender)
                         } else {
-                            // 如果看不到颜色，使用随机颜色的平均价值
-                            calculateMessageCardValue(e.whoseTurn, right).roundToInt()
+                            // 如果看不到颜色，根据猜测的对方身份推测什么颜色的情报
+                            val guessedColors = guessMessageCardColors(this, e.sender, right)
+                            if (guessedColors != null) {
+                                calculateMessageCardValue(e.whoseTurn, right, guessedColors, sender = e.sender)
+                            } else {
+                                calculateMessageCardValue(e.whoseTurn, right).roundToInt()
+                            }
                         }
                         if (newValueRight > value) {
                             result = FightPhaseResult(
