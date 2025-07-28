@@ -50,6 +50,11 @@ class DiaoBao : Card {
         val resolveFunc = { _: Boolean ->
             val oldCard = fsm.messageCard
             g.deck.discard(oldCard)
+
+            // 调包使用者先清除原情报的可见性，然后添加新情报的可见性
+            r.messageCardVisibility.remove(oldCard.id)
+            r.messageCardVisibility.add(getOriginCard().id)
+
             g.players.send {
                 useDiaoBaoToc {
                     oldMessageCard = oldCard.toPbCard()

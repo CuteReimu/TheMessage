@@ -37,6 +37,10 @@ class OnSendCard(
         logger.info(s)
         if (needRemoveCard)
             sender.deleteCard(messageCard.id)
+
+        // 情报传出者总是知道自己传出的情报颜色
+        sender.messageCardVisibility.add(messageCard.id)
+
         if (needNotify) {
             for (p in whoseTurn.game!!.players)
                 p!!.notifySendMessageCard(whoseTurn, sender, targetPlayer, lockedPlayers, messageCard, dir)

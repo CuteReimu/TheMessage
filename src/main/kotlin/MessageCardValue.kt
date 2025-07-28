@@ -685,25 +685,7 @@ fun canSeeMessageCardColors(messageCard: Card, isMessageCardFaceUp: Boolean, sen
         return messageCard.colors
     }
 
-    // 4. 观海(GuanHai)技能：池镜海使用截获或误导时查看待收情报
-    // 触发条件：使用截获或误导卡牌时
-    // 效果：在结算前先查看待收情报
-    // 实现：观海技能会将情报加入canWeiBiCardIds或messageCardVisibility，用于跟踪可见的牌
-    if (observer.findSkill(SkillId.GUAN_HAI) != null &&
-        (observer.canWeiBiCardIds.contains(messageCard.id) ||
-            observer.messageCardVisibility.contains(messageCard.id))) {
-        return messageCard.colors
-    }
-
-    // 5. 借刀杀人(JieDaoShaRen)技能：商玉抽取手牌并展示
-    // 触发条件：争夺阶段，翻开角色牌
-    // 效果：抽取一名角色手牌并展示，若为黑色可置入情报区
-    // 实现：被展示的牌会加入所有玩家的canWeiBiCardIds
-    if (observer.canWeiBiCardIds.contains(messageCard.id)) {
-        return messageCard.colors
-    }
-
-    // 6. 调包(DiaoBao)卡牌使用：替换当前情报
+    // 4. 调包(DiaoBao)卡牌使用：替换当前情报
     // 触发条件：争夺阶段使用调包卡牌
     // 效果：弃置原情报，用调包卡牌作为新的面朝下情报
     // 实现：调包使用者知道新情报的颜色，通过messageCardVisibility跟踪
@@ -711,12 +693,18 @@ fun canSeeMessageCardColors(messageCard: Card, isMessageCardFaceUp: Boolean, sen
         return messageCard.colors
     }
 
-    // 7. 其他角色技能的综合处理
+    // 5. 其他角色技能的综合处理
+    // 包括：惊梦、定论、对症下药、广发报、共焚、才思、卧底、苦肉、天赋等技能
+    // 大多数技能如果能看到卡牌，都会将其加入canWeiBiCardIds进行跟踪
+    // 特殊技能检视的卡牌会加入messageCardVisibility进行专门跟踪
+    if (observer.canWeiBiCardIds.contains(messageCard.id)) {
+        return messageCard.colors
+    }
     // 包括：惊梦、定论、对症下药、广发报、共焚、才思、卧底、苦肉、天赋等技能
     // 大多数技能如果能看到卡牌，都会将其加入canWeiBiCardIds进行跟踪
     // 特殊技能检视的卡牌会加入messageCardVisibility进行专门跟踪
 
-    // 8. 高级情况的处理：
+    // 6. 高级情况的处理：
     // - 专门的游戏状态追踪系统，记录每个技能的具体使用情况
     // - 调包卡牌的精确使用者追踪已通过messageCardVisibility实现
     // - 赌命技能的检视记录追踪已通过messageCardVisibility实现

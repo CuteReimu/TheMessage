@@ -126,6 +126,10 @@ class PoYi : Card {
             if (show) {
                 logger.info("${sendPhase.messageCard}被翻开了")
                 r.draw(1)
+                // 破译翻开黑色情报后，所有玩家都能看到这张牌的颜色
+                r.game!!.players.forEach {
+                    it?.messageCardVisibility?.add(sendPhase.messageCard.id)
+                }
             }
             r.game!!.players.send {
                 poYiShowToc {

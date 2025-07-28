@@ -87,10 +87,14 @@ class MiLing : Card {
                         seq = p.seq
                 }
             }
-            if (hasColor)
+            if (hasColor) {
+                // 密令成功时，使用者直接知道目标会传出的情报颜色
+                val messageCardToSend = target.cards.find { color in it.colors }!!
+                r.messageCardVisibility.add(messageCardToSend.id)
                 ExecuteMiLing(this@MiLing, target, secret, null, fsm, timeout)
-            else
+            } else {
                 MiLingChooseCard(this@MiLing, r, target, secret, fsm, timeout)
+            }
         }
         g.resolve(ResolveCard(r, r, target, getOriginCard(), Mi_Ling, resolveFunc, fsm))
     }
@@ -163,6 +167,10 @@ class MiLing : Card {
                     if (p === target) seq = p.seq
                 }
             }
+
+            // 密令使用者选择卡牌后，能够看到这张卡牌的颜色
+            player.messageCardVisibility.add(card.id)
+
             return ResolveResult(ExecuteMiLing(this.card, target, secret, card, sendPhase, timeout), true)
         }
     }
