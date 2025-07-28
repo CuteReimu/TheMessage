@@ -402,16 +402,11 @@ class IdentityInference {
         when (skillId) {
             // 确定身份的技能（基于角色唯一技能）
             SkillId.SHOU_KOU_RU_PING -> {
-                // 守口如瓶：哑炮独有技能，确定神秘人身份
-                probs[Red] = 0.0
-                probs[Blue] = 0.0
-                probs[Black] = 1.0
-                val taskProbs = secretTaskProbabilities[playerLocation]
-                if (taskProbs != null) {
-                    taskProbs.clear()
-                    if (game.possibleSecretTasks.contains(Disturber)) {
-                        taskProbs[Disturber] = 1.0 // 哑炮是干扰者
-                    }
+                // 守口如瓶：哑炮独有技能，该技能触发时双方各摸一张牌
+                // 暗示友好关系，增加两人是队友的概率
+                if (targetLocation != null) {
+                    // 守口如瓶触发时双方各摸牌，这是友好信号，增加同队概率
+                    analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.15)
                 }
             }
             SkillId.HAN_HOU_LAO_SHI -> {
@@ -460,10 +455,10 @@ class IdentityInference {
             
             SkillId.GUI_ZHA -> {
                 // 诡诈：肥原龙川技能 - 视为对指定角色使用威逼或利诱
-                // 攻击性技能，暗示与目标敌对关系
-                if (targetLocation != null) {
-                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-                }
+                // 根据使用的卡牌类型（威逼或利诱）来判断敌我关系
+                // 具体分析应该基于实际使用的是威逼还是利诱，以及目标状态
+                // 这里暂时作为中性技能处理，具体判断需要结合卡牌使用分析
+                // TODO: 需要在具体使用时调用updateBasedOnCardUsage来分析威逼或利诱的效果
             }
             
             SkillId.JIN_SHEN -> {
@@ -493,16 +488,20 @@ class IdentityInference {
             }
             
             SkillId.JIAO_JI -> {
-                // 交际：裴玲技能 - 社交类技能，根据情报颜色可能暗示关系
+                // 交际：裴玲技能 - 抢夺别人手牌的攻击性技能
                 if (targetLocation != null) {
-                    analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.05)
+                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.12)
                 }
             }
             
             SkillId.JI_SONG -> {
-                // 急送：鬼脚技能 - 传递情报相关
+                // 急送：鬼脚技能 - 移动场上的情报牌
+                // 需要根据情报颜色和移动目标来判断身份倾向
+                // 例如：将黑色情报从A移到B，暗示A是队友，B是敌人
                 if (targetLocation != null) {
-                    analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.05)
+                    // 这里需要情报颜色和原位置信息来准确判断
+                    // 暂时作为中性处理，具体判断需要结合情报移动的上下文
+                    // TODO: 需要额外的情报颜色和原位置参数来准确分析
                 }
             }
             
@@ -514,10 +513,8 @@ class IdentityInference {
             }
             
             SkillId.QIANG_LING -> {
-                // 强令：张一挺技能 - 强制性效果
-                if (targetLocation != null) {
-                    analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
-                }
+                // 强令：张一挺技能 - 对所有人的效果，无法用来判定身份
+                // 该技能影响所有角色，不能从中推断身份倾向
             }
             
             SkillId.JIN_BI -> {
@@ -528,10 +525,8 @@ class IdentityInference {
             }
             
             SkillId.ZHI_YIN -> {
-                // 知音：程小蝶技能 - 查看手牌
-                if (targetLocation != null) {
-                    analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.05)
-                }
+                // 知音：程小蝶技能 - 被动触发，无法控制，因此不能说明身份
+                // 该技能是被动触发的，玩家无法控制，无法用于身份推断
             }
             
             SkillId.MIAO_SHOU -> {
