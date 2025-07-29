@@ -3,11 +3,9 @@ package com.fengsheng
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.*
 import com.fengsheng.phase.*
-import com.fengsheng.protos.Common
+import com.fengsheng.protos.Common.*
 import com.fengsheng.protos.Common.card_type.*
-import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Black
-import com.fengsheng.protos.Common.direction
 import com.fengsheng.protos.Common.direction.Left
 import com.fengsheng.protos.Common.direction.Right
 import com.fengsheng.protos.Common.role.zhang_yi_ting
@@ -471,7 +469,7 @@ class RobotPlayer : Player() {
             Po_Yi to PoYi::ai,
         )
 
-        val cardOrder: Map<Common.card_type, Int> = mapOf(
+        val cardOrder: Map<card_type, Int> = mapOf(
             Jie_Huo to 1,
             Wu_Dao to 2,
             Diao_Bao to 3,
@@ -485,7 +483,6 @@ class RobotPlayer : Player() {
             Yu_Qin_Gu_Zong to 11,
             Ping_Heng to 12,
             Po_Yi to 13,
-            Common.card_type.UNRECOGNIZED to 99, // 用于临时卡牌，优先级最低
         )
 
         fun Card.betterThan(card: Card) = cardOrder[type]!! < cardOrder[card.type]!!

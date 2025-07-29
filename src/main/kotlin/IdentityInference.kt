@@ -532,8 +532,6 @@ class IdentityInference {
             SkillId.QIANG_LING -> {
                 // 强令：张一挺技能 - 对所有人的效果，无法用来判定身份
                 // 该技能影响所有角色，不能从中推断身份倾向
-                // 但使用强令可能表明用户认为当前局面对自己有利
-                analyzeWinConditionSkillUsage(playerLocation, probs, 0.05)
             }
 
             SkillId.JIN_BI -> {
@@ -558,7 +556,6 @@ class IdentityInference {
             SkillId.SOU_JI -> {
                 // 搜缉：李醒技能 - 搜查手牌
                 if (targetLocation != null) {
-                    analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.08)
                     analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }
