@@ -423,7 +423,7 @@ fun Player.calculateMessageCardValue(
             var wangFuGuiMaxValue = 0
             var myMaxValue = 0
             var isBlack = false
-            for (messageCard in inFrontOfWhom.messageCards) {
+            for (messageCard in inFrontOfWhom.messageCards.toList()) {
                 // 从王富贵的角度计算移除这张牌的价值
                 var wangFuGuiValue = sender.calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
                 if (messageCard.isBlack()) {
