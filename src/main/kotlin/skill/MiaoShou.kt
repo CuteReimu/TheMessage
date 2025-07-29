@@ -189,10 +189,10 @@ class MiaoShou : ActiveSkill {
             }
             r.incrSeq()
             logger.info("${r}将${card}作为情报，面朝上移至${target2}的面前")
-            
+
             // 妙手使用者选择了一张卡牌作为新的情报，记录可见性
             r.messageCardVisibility.add(card.id)
-            
+
             g.players.send { p ->
                 skillMiaoShouBToc {
                     playerId = p.getAlternativeLocation(r.location)
