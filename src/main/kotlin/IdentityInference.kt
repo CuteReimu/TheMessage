@@ -446,8 +446,23 @@ class IdentityInference {
                 // 诡诈：肥原龙川技能 - 视为对指定角色使用威逼或利诱
                 // 根据使用的卡牌类型（威逼或利诱）来判断敌我关系
                 // 具体分析应该基于实际使用的是威逼还是利诱，以及目标状态
-                // 这里暂时作为中性技能处理，具体判断需要结合卡牌使用分析
-                // TODO: 需要在具体使用时调用updateBasedOnCardUsage来分析威逼或利诱的效果
+                if (targetLocation != null) {
+                    // 诡诈技能会使用威逼或利诱，我们可以根据目标关系推断使用的卡牌类型
+                    val mostLikelyIdentity = probs.keys.maxByOrNull { probs[it] ?: 0.0 } ?: Black
+                    val isLikelyWeiBi = !isInferredPartnerOrSelf(playerLocation, mostLikelyIdentity, targetLocation)
+                    val isLikelyLiYou = !isLikelyWeiBi
+
+                    if (isLikelyWeiBi) {
+                        // 推测使用的是威逼，调用威逼的分析逻辑
+                        updateBasedOnCardUsage(playerLocation, Wei_Bi, targetLocation, true)
+                    } else {
+                        // 推测使用的是利诱，调用利诱的分析逻辑
+                        updateBasedOnCardUsage(playerLocation, Li_You, targetLocation, false)
+                    }
+
+                    // 诡诈技能本身也暗示一定的身份倾向
+                    analyzeContextualSkillUsage(playerLocation, targetLocation, probs, 0.03)
+                }
             }
 
             SkillId.JIN_SHEN -> {
@@ -488,9 +503,22 @@ class IdentityInference {
                 // 需要根据情报颜色和移动目标来判断身份倾向
                 // 例如：将黑色情报从A移到B，暗示A是队友，B是敌人
                 if (targetLocation != null) {
-                    // 这里需要情报颜色和原位置信息来准确判断
-                    // 暂时作为中性处理，具体判断需要结合情报移动的上下文
-                    // TODO: 需要额外的情报颜色和原位置参数来准确分析
+                    // 由于急送技能涉及情报移动，我们需要基于推测的关系来分析意图
+                    // 如果没有具体的情报颜色和原位置，我们根据目标关系做推断
+
+                    val userInferredIdentity = getInferredIdentity(playerLocation)
+                    val targetInferredIdentity = getInferredIdentity(targetLocation)
+
+                    // 如果对推测的队友使用急送，可能是在帮助队友
+                    if (userInferredIdentity == targetInferredIdentity) {
+                        analyzeCooperativeSkillUsage(playerLocation, targetLocation, probs, 0.08)
+                    } else {
+                        // 如果对推测的敌人使用急送，可能是在攻击
+                        analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.08)
+                    }
+
+                    // 急送技能的使用也表明了一定的策略考虑
+                    analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.05)
                 }
             }
 
@@ -504,6 +532,8 @@ class IdentityInference {
             SkillId.QIANG_LING -> {
                 // 强令：张一挺技能 - 对所有人的效果，无法用来判定身份
                 // 该技能影响所有角色，不能从中推断身份倾向
+                // 但使用强令可能表明用户认为当前局面对自己有利
+                analyzeWinConditionSkillUsage(playerLocation, probs, 0.05)
             }
 
             SkillId.JIN_BI -> {
@@ -528,6 +558,7 @@ class IdentityInference {
             SkillId.SOU_JI -> {
                 // 搜缉：李醒技能 - 搜查手牌
                 if (targetLocation != null) {
+                    analyzeInformationSkillUsage(playerLocation, targetLocation, probs, 0.08)
                     analyzeAggressiveSkillUsage(playerLocation, targetLocation, probs, 0.1)
                 }
             }

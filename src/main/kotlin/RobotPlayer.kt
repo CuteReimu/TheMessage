@@ -3,6 +3,7 @@ package com.fengsheng
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.*
 import com.fengsheng.phase.*
+import com.fengsheng.protos.Common
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Black
@@ -312,7 +313,18 @@ class RobotPlayer : Player() {
         addScoreMap: HashMap<String, Int>,
         newScoreMap: HashMap<String, Int>
     ) {
-        // Do nothing
+        // 在游戏结束时更新身份推断系统，用于学习
+        if (identityInference != null) {
+            game!!.players.forEach { player ->
+                if (player != null && player.location != this.location) {
+                    identityInference!!.updateBasedOnGameEnd(
+                        playerLocation = player.location,
+                        actualIdentity = player.identity,
+                        actualTask = player.secretTask
+                    )
+                }
+            }
+        }
     }
 
     override fun notifyAskForChengQing(whoseTurn: Player, whoDie: Player, askWhom: Player, waitSecond: Int) {
@@ -459,7 +471,7 @@ class RobotPlayer : Player() {
             Po_Yi to PoYi::ai,
         )
 
-        val cardOrder = mapOf(
+        val cardOrder: Map<Common.card_type, Int> = mapOf(
             Jie_Huo to 1,
             Wu_Dao to 2,
             Diao_Bao to 3,
@@ -473,6 +485,7 @@ class RobotPlayer : Player() {
             Yu_Qin_Gu_Zong to 11,
             Ping_Heng to 12,
             Po_Yi to 13,
+            Common.card_type.UNRECOGNIZED to 99, // 用于临时卡牌，优先级最低
         )
 
         fun Card.betterThan(card: Card) = cardOrder[type]!! < cardOrder[card.type]!!
