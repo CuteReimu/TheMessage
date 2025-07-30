@@ -311,10 +311,9 @@ fun Player.calculateMessageCardValue(
             inFrontOfWhom.messageCards.removeLast()
         }
         fun addScore(p: Player, score: Int) {
-            val pInferredIdentity = getInferredIdentity(p)
-            if (pInferredIdentity != Black) { // 军潜：己方加分，敌方减分，神秘人不管
-                if (identity == pInferredIdentity) v1 = merge(v1, score)
-                if (identity != pInferredIdentity && identity != Black) v1 = merge(v1, -score)
+            if (p.identity != Black) { // 军潜：己方加分，敌方减分，神秘人不管
+                if (identity == p.identity) v1 = merge(v1, score)
+                if (identity != p.identity && identity != Black) v1 = merge(v1, -score)
             } else if (p === this) { // 神秘人：自己加分，其他人不管
                 v1 = merge(v1, score)
             }
@@ -501,35 +500,32 @@ fun Player.calculateMessageCardValue(
             } else if (identity == Black) { // 秦圆圆的回合，神秘人没关系，反正没有队友
                 val coefficient = if (coefficientA >= 1) 2.0 - coefficientA else coefficientA
                 if (!(this === inFrontOfWhom && willDie(colors)) && game!!.players.any {
-                        it !== disturber && !isInferredEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                        it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return 600
                 if (game!!.players.any {
                         it!!.identity != Black && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return if (Random.nextDouble() < coefficient) -600 else 0 // 根据打牌风格，有80%到100%几率管
-            } else {
-                val inferredIdentity = getInferredIdentity(inFrontOfWhom)
-                if (inferredIdentity in colors && inFrontOfWhom.messageCards.count(inferredIdentity) >= 2) {
-                    return if (inFrontOfWhom === this || isInferredPartner(inFrontOfWhom) &&
-                        (!inFrontOfWhom.isMale || isInferredPartnerOrSelf(whoseTurn))
-                    ) 600 else -600
-                }
+            } else if (inFrontOfWhom.identity in colors && inFrontOfWhom.messageCards.count(inFrontOfWhom.identity) >= 2) {
+                return if (inFrontOfWhom === this || isPartner(inFrontOfWhom) &&
+                    (!inFrontOfWhom.isMale || isPartnerOrSelf(whoseTurn))
+                ) 600 else -600
             }
         } else {
             val coefficient = if (coefficientA >= 1) 2.0 - coefficientA else coefficientA
             if (identity == Black) {
                 if (game!!.players.any {
-                        it !== disturber && !isInferredEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                        it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return 600
                 if (game!!.players.any {
                         it!!.identity != Black && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return -600 // 神秘人不管神秘人，只管阵营方
             } else {
                 if (game!!.players.any {
-                        it !== disturber && !isInferredEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
+                        it !== disturber && !isEnemy(it!!) && it.willWinInternal(whoseTurn, inFrontOfWhom, colors)
                     }) return 600
                 if (game!!.players.any {
-                        it !== disturber && isInferredEnemy(it!!) &&
-                            (getInferredIdentity(it) != Black || Random.nextDouble() < coefficient) && // 有几率不管神秘人
+                        it !== disturber && isEnemy(it!!) &&
+                            (it.identity != Black || Random.nextDouble() < coefficient) && // 有几率不管神秘人
                             it.willWinInternal(whoseTurn, inFrontOfWhom, colors,
                                 checkAllSecretTask = coefficientA >= 1) // 激进型需要判断所有神秘人任务
                     }) return -600
@@ -600,11 +596,7 @@ fun Player.calculateMessageCardValue(
     } else {
         val myColor = identity
         val enemyColor = (listOf(Red, Blue) - myColor).first()
-
-        // 使用推测的身份，而不是真实身份
-        val inferredIdentity = getInferredIdentity(inFrontOfWhom)
-
-        if (inferredIdentity == myColor) { // 推测的队友
+        if (inFrontOfWhom.identity == myColor) { // 队友
             if (myColor in colors) {
                 value += when (inFrontOfWhom.messageCards.count(myColor)) {
                     0 -> 10
@@ -619,7 +611,7 @@ fun Player.calculateMessageCardValue(
                     else -> if (checkThreeSame) return 10 else 112
                 }
             }
-        } else if (inferredIdentity == enemyColor) { // 推测的敌人
+        } else if (inFrontOfWhom.identity == enemyColor) { // 敌人
             if (enemyColor in colors) {
                 value -= when (inFrontOfWhom.messageCards.count(enemyColor)) {
                     0 -> 10
@@ -694,7 +686,7 @@ fun Player.calSendMessageCard(
         while (true) {
             var m = currentPercent
             if (canLock) m *= m
-            else if (isInferredPartnerOrSelf(currentPlayer)) m *= 1.2
+            else if (isPartnerOrSelf(currentPlayer)) m *= 1.2
             sum += calculateMessageCardValue(whoseTurn, currentPlayer, card) * m
             n += m
             if (currentPlayer === this) break
@@ -717,7 +709,7 @@ fun Player.calSendMessageCard(
         val removedCard = if (isYuQinGuZong) deleteMessageCard(card.id) else null
 
         if (!notUp && (card.direction == Up || skills.any { it is LianLuo })) {
-            val (partner, enemy) = game!!.players.filter { it !== this && it!!.alive }.partition { isInferredPartner(it!!) }
+            val (partner, enemy) = game!!.players.filter { it !== this && it!!.alive }.partition { isPartner(it!!) }
 
             // Find Zhang Yiting in partners
             val zhangYiting = partner.find { it!!.role == zhang_yi_ting }
@@ -792,7 +784,7 @@ fun Player.calSendMessageCard(
         }
         lockTarget?.let {
             // 如果刚开局，就不锁自己。如果是左右情报，就不锁自己。如果传递目标不是队友，就不锁自己
-            if (!game!!.isEarly && result.dir == Up && isInferredPartner(result.target) || it !== this)
+            if (!game!!.isEarly && result.dir == Up && isPartner(result.target) || it !== this)
                 result.lockedPlayers = listOf(it)
         }
         removedCard?.let { messageCards.add(it) }
@@ -816,13 +808,11 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
     // 如果死亡的是老汉且有情报
     if (whoDie.skills.any { it is RuGui } && whoDie.messageCards.isNotEmpty()) {
         // 如果老汉和当前回合角色是同一身份+老汉情报区有该颜色情报+当前回合角色听牌
-        val whoDieInferredIdentity = getInferredIdentity(whoDie)
-        val whoseTurnInferredIdentity = getInferredIdentity(whoseTurn)
-        if (whoDie !== whoseTurn && whoDieInferredIdentity == whoseTurnInferredIdentity &&
-            whoDie.messageCards.any { whoDieInferredIdentity in it.colors } &&
-            whoseTurn.messageCards.count(whoseTurnInferredIdentity) == 2) {
+        if (whoDie !== whoseTurn && whoDie.identity == whoseTurn.identity &&
+            whoDie.messageCards.any { whoDie.identity in it.colors } &&
+            whoseTurn.messageCards.count(whoseTurn.identity) == 2) {
             // 如果自己也是同一阵营，则不救
-            if (isInferredPartnerOrSelf(whoDie)) {
+            if (isPartnerOrSelf(whoDie)) {
                 return false
             }
             // 如果自己不是同一阵营，则救（防止发动技能后敌方胜利）
@@ -833,13 +823,10 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
     if (whoDie.roleFaceUp && whoDie.skills.any { it is YiXin } && whoDie.cards.isNotEmpty()) {
         // 如果李宁玉的队友听牌
         if (whoDie.game!!.players.any {
-                val itInferredIdentity = getInferredIdentity(it!!)
-                val whoDieInferredIdentity = getInferredIdentity(whoDie)
-                it.alive && it !== whoDie && itInferredIdentity == whoDieInferredIdentity &&
-                    it.messageCards.count(itInferredIdentity) == 2
+                it!!.alive && it !== whoDie && it.identity == whoDie.identity && it.messageCards.count(whoDie.identity) == 2
             }) {
             // 如果自己也是同一阵营，则不救
-            if (isInferredPartnerOrSelf(whoDie)) {
+            if (isPartnerOrSelf(whoDie)) {
                 val stealer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Stealer }
                 // 特殊情况：当前回合是篡夺者，则救
                 return whoseTurn === stealer
@@ -848,7 +835,7 @@ fun Player.wantToSave(whoseTurn: Player, whoDie: Player): Boolean {
             return true
         }
     }
-    var save = isInferredPartnerOrSelf(whoDie)
+    var save = isPartnerOrSelf(whoDie)
     var notSave = false
     val killer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Killer }
     val pioneer = game!!.players.find { it!!.alive && it.identity == Black && it.secretTask == Pioneer }

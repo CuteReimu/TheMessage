@@ -176,46 +176,12 @@ class ShiTan : Card {
                 logger.info("${target}选择了[摸一张牌]")
                 card.notifyResult(target, true)
                 target.draw(1)
-                // 更新AI的身份推断：试探结果显示目标摸牌
-                r.game!!.players.filterIsInstance<RobotPlayer>().forEach { robot ->
-                    if (robot.identityInference != null) {
-                        if (robot === r) {
-                            // 只有试探使用者知道详细的试探结果含义
-                            robot.identityInference!!.updateBasedOnProbeResult(
-                                r.location,
-                                target.location,
-                                card.whoDrawCard,
-                                true
-                            )
-                        } else if (robot !== target) {
-                            // 其他玩家只能观察到目标摸牌，推测关系
-                            robot.identityInference!!.updateBasedOnObservedProbeResult(r.location, target.location, true)
-                        }
-                    }
-                }
             } else {
                 logger.info("${target}选择了[弃一张牌]")
                 card.notifyResult(target, false)
                 if (discardCard != null) {
                     target.game!!.playerDiscardCard(target, discardCard)
                     target.game!!.addEvent(DiscardCardEvent(r, target))
-                }
-                // 更新AI的身份推断：试探结果显示目标弃牌
-                r.game!!.players.filterIsInstance<RobotPlayer>().forEach { robot ->
-                    if (robot.identityInference != null) {
-                        if (robot === r) {
-                            // 只有试探使用者知道详细的试探结果含义
-                            robot.identityInference!!.updateBasedOnProbeResult(
-                                r.location,
-                                target.location,
-                                card.whoDrawCard,
-                                false
-                            )
-                        } else if (robot !== target) {
-                            // 其他玩家只能观察到目标弃牌，推测关系
-                            robot.identityInference!!.updateBasedOnObservedProbeResult(r.location, target.location, false)
-                        }
-                    }
                 }
             }
             return ResolveResult(
@@ -280,7 +246,7 @@ class ShiTan : Card {
 
                 yaPao === player || jianXianSheng === player ->
                     player.game!!.players.run {
-                        filter { it!!.alive && it.isInferredPartner(player) }.run {
+                        filter { it!!.alive && it.isPartner(player) }.run {
                             filter { it === jianXianSheng || it === yaPao }.ifEmpty { this }
                         }.ifEmpty {
                             filter { it !== player && it!!.alive }.run {
@@ -292,11 +258,10 @@ class ShiTan : Card {
                 player.identity == Black ->
                     return false
 
-                jianXianSheng != null && player.isInferredPartner(jianXianSheng) ->
+                jianXianSheng != null && player.isPartner(jianXianSheng) ->
                     listOf(jianXianSheng)
 
-                yaPao != null && player.isInferredPartner(yaPao) &&
-                    yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0 ->
+                yaPao != null && player.isPartner(yaPao) && yaPao.getSkillUseCount(SHOU_KOU_RU_PING) == 0 ->
                     listOf(yaPao)
 
                 else -> {
@@ -305,13 +270,12 @@ class ShiTan : Card {
                             (it.findSkill(CHENG_FU) == null && it.findSkill(CONG_RONG_YING_DUI) == null))
                     }.run {
                         filter {
-                            it!!.isInferredPartner(player) &&
-                                (it.findSkill(SHOU_KOU_RU_PING) != null ||
-                                    player.getInferredIdentity(it) in (card as ShiTan).whoDrawCard)
+                            it!!.isPartner(player) &&
+                                (it.findSkill(SHOU_KOU_RU_PING) != null || it.identity in (card as ShiTan).whoDrawCard)
                         }.ifEmpty {
                             filter {
-                                it!!.isInferredEnemy(player) && it.findSkill(SHOU_KOU_RU_PING) == null &&
-                                    player.getInferredIdentity(it) !in (card as ShiTan).whoDrawCard && it.cards.isNotEmpty()
+                                it!!.isEnemy(player) && it.findSkill(SHOU_KOU_RU_PING) == null &&
+                                    it.identity !in (card as ShiTan).whoDrawCard && it.cards.isNotEmpty()
                             }
                         }
                     }
