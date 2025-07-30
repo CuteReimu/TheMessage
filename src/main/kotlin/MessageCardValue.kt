@@ -228,7 +228,7 @@ fun Player.calculateMessageCardValue(
 ): Int {
     if (!inFrontOfWhom.alive) return 0
     var v1 = calculateMessageCardValue(whoseTurn, inFrontOfWhom, colors, checkThreeSame)
-    
+
     // 白小年【转交】：计算接收情报后可以转移给队友的最大价值
     if (Black !in colors && inFrontOfWhom.skills.any { it is ZhuanJiao }) {
         var maxTeammateValue = 0
@@ -242,7 +242,7 @@ fun Player.calculateMessageCardValue(
         // 使用队友接收的最大价值作为基础，再加上技能奖励
         v1 = maxTeammateValue + 11
     }
-    
+
     if (sender != null) {
         // TODO 临时这样写，后续应该改成调用Player.countMessageCard来计数
         class TmpCard(colors: List<color>) : Card(999, colors, Up, false) {
