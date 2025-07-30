@@ -355,7 +355,27 @@ fun Player.calculateMessageCardValue(
         }
         if (Black !in colors && inFrontOfWhom.skills.any { it is ZhuanJiao || it is JiSong }) {
             // 白小年【转交】、鬼脚【急送】
-            addScore(inFrontOfWhom, 11)
+            if (inFrontOfWhom.skills.any { it is ZhuanJiao }) {
+                // 白小年【转交】：计算队友接收这张情报的最大收益，以此作为接收收益
+                var maxTeammateValue = 0
+                val teammates = game!!.players.filterNotNull().filter {
+                    it.alive && inFrontOfWhom.isPartner(it)
+                }
+                val tmpCard = TmpCard(colors)
+                for (teammate in teammates) {
+                    if (!teammate.checkThreeSameMessageCard(tmpCard)) {
+                        val teammateValue = inFrontOfWhom.calculateMessageCardValue(whoseTurn, teammate, colors, checkThreeSame)
+                        if (teammateValue > maxTeammateValue) {
+                            maxTeammateValue = teammateValue
+                        }
+                    }
+                }
+                // 使用队友的最大收益作为基础，再加上技能固定收益
+                addScore(inFrontOfWhom, maxOf(maxTeammateValue, 0) + 11)
+            } else {
+                // 鬼脚【急送】保持原逻辑
+                addScore(inFrontOfWhom, 11)
+            }
         }
         if (sender.skills.any { it is CangShenJiaoTang }) {
             // 玛利亚【藏身教堂】
