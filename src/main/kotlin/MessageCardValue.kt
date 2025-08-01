@@ -229,18 +229,35 @@ fun Player.calculateMessageCardValue(
     if (!inFrontOfWhom.alive) return 0
     var v1 = calculateMessageCardValue(whoseTurn, inFrontOfWhom, colors, checkThreeSame)
 
+    fun merge(a: Int, b: Int): Int {
+        return if (a == 600 || b == 600) 600 // 其中一个已经赢了，就是赢了，以防共赢的情况下还非要出牌拦敌方
+        else a + b
+    }
+    fun addScore(p: Player, score: Int) {
+        if (p.identity != Black) { // 军潜：己方加分，敌方减分，神秘人不管
+            if (identity == p.identity) v1 = merge(v1, score)
+            if (identity != p.identity && identity != Black) v1 = merge(v1, -score)
+        } else if (p === this) { // 神秘人：自己加分，其他人不管
+            v1 = merge(v1, score)
+        }
+    }
+
     // 白小年【转交】：计算接收情报后可以转移给队友的最大价值
     if (Black !in colors && inFrontOfWhom.skills.any { it is ZhuanJiao }) {
         var maxTeammateValue = 0
+        var myMaxTeammateValue = 0
         for (teammate in game!!.players.filterNotNull()) {
-            if (!teammate.alive || !isPartnerOrSelf(teammate)) continue
-            val teammateValue = calculateMessageCardValue(whoseTurn, teammate, colors, checkThreeSame)
+            teammate.alive && inFrontOfWhom.isPartnerOrSelf(teammate) || continue
+            val teammateValue = inFrontOfWhom.calculateMessageCardValue(whoseTurn, teammate, colors, true)
+            val myTeammateValue = calculateMessageCardValue(whoseTurn, teammate, colors, true)
             if (teammateValue > maxTeammateValue) {
                 maxTeammateValue = teammateValue
+                myMaxTeammateValue = myTeammateValue
             }
         }
-        // 使用队友接收的最大价值作为基础，再加上技能奖励
-        v1 = maxTeammateValue + 11
+        // 使用白小年队友接收的最大价值作为基础，再加上技能奖励
+        v1 = myMaxTeammateValue
+        addScore(inFrontOfWhom, 11)
     }
 
     if (sender != null) {
@@ -250,8 +267,6 @@ fun Player.calculateMessageCardValue(
             override fun canUse(g: Game, r: Player, vararg args: Any) = false
             override fun execute(g: Game, r: Player, vararg args: Any) = Unit
         }
-        fun merge(a: Int, b: Int): Int = if (a == 600 || b == 600) 600 // 其中一个已经赢了，就是赢了，以防共赢的情况下还非要出牌拦敌方
-        else a + b
         if (colors.size == 2 && inFrontOfWhom.skills.any { it is JinShen }) { // 金生火
             var valueInFrontOfWhom = 0
             for (c in inFrontOfWhom.cards.toList()) {
@@ -324,14 +339,6 @@ fun Player.calculateMessageCardValue(
                 v1 = merge(v1, valueMe)
             }
             inFrontOfWhom.messageCards.removeLast()
-        }
-        fun addScore(p: Player, score: Int) {
-            if (p.identity != Black) { // 军潜：己方加分，敌方减分，神秘人不管
-                if (identity == p.identity) v1 = merge(v1, score)
-                if (identity != p.identity && identity != Black) v1 = merge(v1, -score)
-            } else if (p === this) { // 神秘人：自己加分，其他人不管
-                v1 = merge(v1, score)
-            }
         }
         if (Black in colors && inFrontOfWhom.skills.any { it is ShiSi }) { // 老汉【视死】
             addScore(inFrontOfWhom, 20)
