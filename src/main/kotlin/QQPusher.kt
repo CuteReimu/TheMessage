@@ -1,7 +1,6 @@
 package com.fengsheng
 
 import com.fengsheng.skill.RoleCache
-import com.fengsheng.util.FileUtil
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -15,8 +14,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.apache.logging.log4j.kotlin.logger
-import java.io.File
-import java.io.FileNotFoundException
+import java.io.*
+import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 
@@ -123,20 +122,55 @@ object QQPusher {
         }
     }
 
+    /**
+     * 读文本文件
+     *
+     * @param fileName 文件路径
+     * @return 每一行一个String构成的List
+     */
+    @Throws(IOException::class)
+    fun readLines(fileName: String, charset: Charset): MutableList<String> {
+        val list = mutableListOf<String>()
+        BufferedReader(InputStreamReader(FileInputStream(fileName), charset)).use { `is` ->
+            while (true) {
+                val line = `is`.readLine() ?: break
+                list.add(line)
+            }
+        }
+        return list
+    }
+
+    /**
+     * 写文本文件
+     *
+     * @param strList 待写入的内容，List的每一个元素为一行
+     * @param fileName 文件名
+     * @param charset 写入的编码格式
+     */
+    @Throws(IOException::class)
+    fun writeLines(strList: MutableList<String>, fileName: String, charset: Charset) {
+        BufferedWriter(OutputStreamWriter(FileOutputStream(fileName), charset)).use { os ->
+            for (str in strList) {
+                os.write(str)
+                os.newLine()
+            }
+        }
+    }
+
     private fun addHistory(name: String, s: String) {
         var list = try {
-            FileUtil.readLines("history/$name.csv", Charsets.UTF_8)
+            readLines("history/$name.csv", Charsets.UTF_8)
         } catch (e: FileNotFoundException) {
-            ArrayList<String>()
+            ArrayList()
         }
         list.add(s)
         if (list.size > 10)
             list = list.subList(list.size - 10, list.size)
-        FileUtil.writeLines(list, "history/$name.csv", Charsets.UTF_8)
+        writeLines(list, "history/$name.csv", Charsets.UTF_8)
     }
 
     fun getHistory(name: String): List<String> = try {
-        FileUtil.readLines("history/$name.csv", Charsets.UTF_8)
+        readLines("history/$name.csv", Charsets.UTF_8)
     } catch (e: Throwable) {
         if (e !is FileNotFoundException)
             logger.error("catch throwable", e)
