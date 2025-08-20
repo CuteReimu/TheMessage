@@ -3,6 +3,7 @@ package com.fengsheng
 import com.fengsheng.RobotPlayer.Companion.sortCards
 import com.fengsheng.card.*
 import com.fengsheng.phase.*
+import com.fengsheng.protos.Common.card_type
 import com.fengsheng.protos.Common.card_type.*
 import com.fengsheng.protos.Common.color
 import com.fengsheng.protos.Common.color.Black
@@ -75,29 +76,57 @@ class RobotPlayer : Player() {
         if (waitSecond == 0) return
         val fsm = game!!.fsm as SendPhaseStart
         if (this !== fsm.whoseTurn) return
+
+        logger.debug("RobotPlayer $this starting send phase evaluation")
+
         for (skill in skills) {
             val ai = aiSkillSendPhaseStart[skill.skillId] ?: continue
             if (ai(fsm, skill as ActiveSkill)) return
         }
+
         var value = Double.NEGATIVE_INFINITY
         var cb: (() -> Unit)? = null
         var cardType = Cheng_Qing // 随便写一个
+        var bestCardType: card_type? = null
+
+        logger.debug("RobotPlayer $this evaluating card usage options")
+
         for (card in cards.sortCards(identity)) {
             cardType != card.type || continue
             cardType = card.type
             val ai = aiSendPhaseStart[card.type] ?: continue
             val result = ai(fsm, card) ?: continue
+
+            logger.debug("RobotPlayer $this: cardType=$cardType, AI returned value=${result.first}")
+
             if (result.first > value) {
                 value = result.first
                 cb = result.second
+                bestCardType = cardType
+                logger.debug("RobotPlayer $this: New best card usage - cardType=$cardType, value=$value")
             }
         }
+
+        logger.debug("RobotPlayer $this: Final card usage evaluation - " +
+            "bestCardType=$bestCardType, value=$value, callback=${cb != null}")
+
         val result = calSendMessageCard()
+        logger.debug("RobotPlayer $this: Hand card sending evaluation - " +
+            "value=${result.value}, target=${result.target}, direction=${result.dir}")
+
+        logger.debug("RobotPlayer $this: Decision comparison - " +
+            "cardUsageValue=$value, handCardValue=${result.value}")
+        logger.debug("RobotPlayer $this: Decision condition - " +
+            "cb=${cb != null}, result.value > value = ${result.value > value}")
+
         if (cb == null || result.value > value) {
+            logger.debug("RobotPlayer $this: CHOOSING TO SEND HAND CARD")
             GameExecutor.post(game!!, {
                 game!!.resolve(OnSendCard(this, this, result.card, result.dir, result.target, result.lockedPlayers))
             }, 1, TimeUnit.SECONDS)
         } else {
+            logger.debug("RobotPlayer $this: CHOOSING TO USE CARD - " +
+                "cardType=$bestCardType, value=$value")
             cb()
         }
     }

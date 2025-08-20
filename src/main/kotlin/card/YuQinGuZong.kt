@@ -81,18 +81,36 @@ class YuQinGuZong : Card {
             val game = player.game!!
             !player.cannotPlayCard(Yu_Qin_Gu_Zong) || return null
             val availableCards = player.messageCards.filter { !it.isPureBlack() }.ifEmpty { return null }
+
+            logger.debug("YuQinGuZong AI: $player evaluating ${availableCards.size} available message cards")
+
             var value = Double.NEGATIVE_INFINITY
             var result: SendMessageCardResult? = null
+
             for (messageCard in availableCards) {
                 val v = player.calculateRemoveCardValue(player, player, messageCard)
                 val rlt = player.calSendMessageCard(player, listOf(messageCard), true)
+
+                logger.debug("YuQinGuZong AI: messageCard=$messageCard, " +
+                    "removeValue=$v, sendValue=${rlt.value}, total=${v + rlt.value}")
+
                 if (v + rlt.value > value) {
                     value = v + rlt.value
                     result = rlt
+                    logger.debug("YuQinGuZong AI: New best value=$value, " +
+                        "target=${result.target}, direction=${result.dir}")
                 }
             }
+
             result ?: return null
+
+            logger.debug("YuQinGuZong AI: Final decision - " +
+                "value=$value, target=${result.target}, direction=${result.dir}")
+            logger.debug("YuQinGuZong AI: Returning value=${value + 20.0} " +
+                "(base=$value + bonus=20.0)")
+
             return (value + 20.0) to {
+                logger.debug("YuQinGuZong AI: Executing callback for $player")
                 GameExecutor.post(game, {
                     card.asCard(Yu_Qin_Gu_Zong)
                         .execute(game, player, result.card, result.dir, result.target, result.lockedPlayers.toList())
