@@ -928,6 +928,8 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
+                    // 如果情报已经在自己面前，使用截获没有任何效果，直接跳过
+                    if (whoUse === e.inFrontOfWhom) break@loop
                     val newValue = calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard, sender = e.sender)
                     if (newValue > value) {
                         result = FightPhaseResult(
