@@ -928,7 +928,11 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
-                    val newValue = calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard, sender = e.sender)
+                    val newValue = if (whoUse === e.inFrontOfWhom) {
+                        oldValue // 如果情报已经在使用者面前，价值应该等于oldValue，无需重新计算
+                    } else {
+                        calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard, sender = e.sender)
+                    }
                     if (newValue > value) {
                         result = FightPhaseResult(
                             cardType,
