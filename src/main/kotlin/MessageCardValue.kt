@@ -928,13 +928,8 @@ fun Player.calFightPhase(e: FightPhaseIdle, whoUse: Player = this, availableCard
             ok || continue
             when (cardType) {
                 Jie_Huo -> {
-                    // 截获的效果是将情报转移到使用者面前
-                    // 如果情报已经在使用者面前（whoUse === e.inFrontOfWhom），则截获不会改变任何状态
-                    // 因此价值应该等于oldValue，无需重新计算
-                    // 注意：不能重新调用calculateMessageCardValue，因为该函数可能有副作用或不确定性
-                    // （例如临时修改messageCards、使用Random等），导致相同参数返回不同值
                     val newValue = if (whoUse === e.inFrontOfWhom) {
-                        oldValue // 情报不移动，价值不变
+                        oldValue // 如果情报已经在使用者面前，价值应该等于oldValue，无需重新计算
                     } else {
                         calculateMessageCardValue(e.whoseTurn, whoUse, e.messageCard, sender = e.sender)
                     }
