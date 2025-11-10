@@ -114,6 +114,10 @@ object QQPusher {
             try {
                 if (Config.EnablePush && pushToQQ)
                     Config.PushQQGroups.forEach { sendGroupMessage(it, text, false, *at) }
+            } catch (e: Throwable) {
+                logger.error("catch throwable", e)
+            }
+            try {
                 File("history").mkdirs()
                 map.forEach(::addHistory)
             } catch (e: Throwable) {
