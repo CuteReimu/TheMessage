@@ -302,12 +302,13 @@ object Statistics {
         get() = PlayerGameCount(totalWinCount.get(), totalGameCount.get())
 
     fun getTitleRank(title: String): Int = when (title) {
-        "\u2600\uFE0F" -> 1 // score >= 2900
-        "\uD83D\uDC51" -> 2 // score >= 1900
-        "\uD83D\uDCA0" -> 3 // score >= 1400
-        "\uD83D\uDC8D" -> 4 // score >= 920
-        "\uD83E\uDD47" -> 5 // score >= 520
-        else -> 6 // Lower than 520
+        "\u2600\uFE0F" -> 7 // score >= 4800
+        "\uD83D\uDD25" -> 6 // score >= 2900
+        "\uD83D\uDC51" -> 5 // score >= 1900
+        "\uD83D\uDCA0" -> 4 // score >= 1400
+        "\uD83D\uDC8D" -> 3 // score >= 920
+        "\uD83E\uDD47" -> 2 // score >= 520
+        else -> 1 // Lower than 520
     }
 
     fun sortTitles(titles: String): String {
@@ -317,7 +318,7 @@ object Statistics {
             titleList.add(titles.substring(i, i + 2))
             i += 2
         }
-        return titleList.sortedBy { getTitleRank(it) }.joinToString("")
+        return titleList.sortedByDescending { getTitleRank(it) }.joinToString("")
     }
 
     private fun savePlayerInfo() {

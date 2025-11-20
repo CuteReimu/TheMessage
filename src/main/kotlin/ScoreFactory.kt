@@ -28,10 +28,12 @@ object ScoreFactory : Logging {
         score < 1500 -> "\uD83D\uDCA0" + rankString[4 - (score - 1000) / 100]
         score < 2000 -> "\uD83D\uDC51" + rankString[4 - (score - 1500) / 100]
         score < 2900 -> "\u2600\uFE0F" + rankString[9 - (score - 2000) / 100]
-        else -> "\u2600\uFE0F" + rankString[0]
+        score < 4800 -> "\uD83D\uDD25" + rankString[9 - (score - 3000) / 200]
+        else -> "\uD83D\uDD25" + rankString[0]
     }
 
     fun getSeasonTitleByScore(score: Int): String = when {
+        score >= 4800 -> "\uD83D\uDD25"
         score >= 2900 -> "\u2600\uFE0F"
         score >= 1900 -> "\uD83D\uDC51"
         score >= 1400 -> "\uD83D\uDCA0"
@@ -50,7 +52,8 @@ object ScoreFactory : Logging {
             score < 1500 -> "钻石" + rankString[4 - (score - 1000) / 100]
             score < 2000 -> "大师" + rankString[4 - (score - 1500) / 100]
             score < 2800 -> "至尊" + rankString[9 - (score - 2000) / 100]
-            else -> "至尊" + rankString[0]
+            score < 4800 -> "神仙" + rankString[9 - (score - 3000) / 200]
+            else -> "神仙" + rankString[0]
         }
     }
 
