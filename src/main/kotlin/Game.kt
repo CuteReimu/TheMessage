@@ -239,8 +239,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         val newScoreMap = HashMap<String, Int>()
         if (declaredWinners != null && winners != null) {
             if (players.size >= 5) {
-                val totalWinners = winners.sumOf { (Statistics.getScore(it) ?: 0) }
-                val totalPlayers = players.sumOf { (Statistics.getScore(it!!) ?: 0) }
+                val totalWinners = winners.sumOf { Statistics.getScore(it) ?: 0 }
+                val totalPlayers = players.sumOf { Statistics.getScore(it!!) ?: 0 }
                 val totalLoser = totalPlayers - totalWinners
                 val delta =
                     if (players.size == winners.size || winners.isEmpty()) 0
