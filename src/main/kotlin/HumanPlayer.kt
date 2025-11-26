@@ -175,10 +175,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
             do {
                 val player = game!!.players[l]!!
                 roles.add(if (player.roleFaceUp || l == location) player.role else unknown)
-                val name =
-                    if (player.playerTitle.isEmpty()) player.playerName
-                    else "${player.playerName}·${player.playerTitle}"
-                names.add(name)
+                names.add(player.playerName)
                 l = (l + 1) % game!!.players.size
             } while (l != location)
             possibleSecretTask.addAll(game!!.possibleSecretTasks)

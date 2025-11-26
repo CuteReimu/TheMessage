@@ -87,7 +87,6 @@ message get_room_info_toc {
   string          notice = 8; // 房间公告
   uint32          room_id = 9; // 房间号
   uint32          in_game_count = 10; // 正在进行游戏的桌数
-  repeated string title = 12; // 称号
 }
 
 // 通知房间倒计时
@@ -111,7 +110,6 @@ message join_room_toc {
   uint32 game_count = 4;
   string rank = 5;
   int32  score = 6;
-  string title = 7; // 称号
 }
 
 // 通知谁离开的房间

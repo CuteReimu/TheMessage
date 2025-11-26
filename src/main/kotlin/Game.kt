@@ -119,7 +119,6 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             gameCount = count.gameCount
             score = Statistics.getScore(name) ?: 0
             rank = if (player is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
-            title = player.playerTitle
         }
         players.forEach { if (it !== player && it is HumanPlayer) it.send(msg) }
         if (unready == 0) {
