@@ -18,7 +18,7 @@ class Getscore : Function<Map<String, String>, Any> {
                 val rbWinRateSum = "%.2f%%".format(ScoreFactory.getRBWinRate())
                 val blackWinRateSum = "%.2f%%".format(ScoreFactory.getBlackWinRate())
                 val score = playerInfo.scoreWithDecay
-                val rank = ScoreFactory.getRankNameByScore(score)
+                val rank = ScoreFactory.getRankStringNameByScore(score)
                 val total = playerInfo.gameCount
                 val winRate =
                     if (playerInfo.gameCount == 0) "0.00%"

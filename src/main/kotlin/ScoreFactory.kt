@@ -15,21 +15,22 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
 import kotlin.math.round
+import kotlin.math.roundToInt
 
 object ScoreFactory : Logging {
-    private val rankString = listOf("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X")
+    private val rankString = listOf("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII")
+    private val rankString2 = listOf("初期", "中期", "后期", "圆满")
 
     fun getRankNameByScore(score: Int): String = when {
-        score < 60 -> "\uD83E\uDD49" + rankString[2 - score / 20]
-        score < 240 -> "\uD83E\uDD48" + rankString[2 - (score - 60) / 60]
-        score < 360 -> "\uD83E\uDD47" + rankString[4 - (score - 240) / 60]
-        score < 600 -> "\uD83E\uDD47" + rankString[2 - (score - 360) / 80]
-        score < 1000 -> "\uD83D\uDC8D" + rankString[4 - (score - 600) / 80]
-        score < 1500 -> "\uD83D\uDCA0" + rankString[4 - (score - 1000) / 100]
-        score < 2000 -> "\uD83D\uDC51" + rankString[4 - (score - 1500) / 100]
-        score < 2900 -> "\u2600\uFE0F" + rankString[9 - (score - 2000) / 100]
-        score < 4800 -> "\uD83D\uDD25" + rankString[9 - (score - 3000) / 200]
-        else -> "\uD83D\uDD25" + rankString[0]
+        score < 60 -> "\uD83E\uDD49" + rankString[(score * 13 / 60.0).roundToInt()]
+        score < 240 -> "\uD83E\uDD48" + rankString2[(score - 60) / 45]
+        score < 600 -> "\uD83E\uDD47" + rankString2[(score - 240) / 90]
+        score < 1000 -> "\uD83D\uDC8D" + rankString2[(score - 600) / 100]
+        score < 1500 -> "\uD83D\uDCA0" + rankString2[(score - 1000) / 125]
+        score < 2000 -> "\uD83D\uDC51" + rankString2[(score - 1500) / 125]
+        score < 2900 -> "\u2600\uFE0F" + rankString2[(score - 2000) / 250]
+        score < 4800 -> "\uD83D\uDD25" + rankString2[(score - 3000) / 500]
+        else -> "\uD83D\uDD25" + rankString2.last()
     }
 
     fun getSeasonTitleByScore(score: Int): String = when {
@@ -44,16 +45,15 @@ object ScoreFactory : Logging {
 
     fun getRankStringNameByScore(score: Int): String {
         return when {
-            score < 60 -> "青铜" + rankString[2 - score / 20]
-            score < 240 -> "白银" + rankString[2 - (score - 60) / 60]
-            score < 360 -> "黄金" + rankString[4 - (score - 240) / 60]
-            score < 600 -> "黄金" + rankString[2 - (score - 360) / 80]
-            score < 1000 -> "铂金" + rankString[4 - (score - 600) / 80]
-            score < 1500 -> "钻石" + rankString[4 - (score - 1000) / 100]
-            score < 2000 -> "大师" + rankString[4 - (score - 1500) / 100]
-            score < 2800 -> "至尊" + rankString[9 - (score - 2000) / 100]
-            score < 4800 -> "神仙" + rankString[9 - (score - 3000) / 200]
-            else -> "神仙" + rankString[0]
+            score < 60 -> "练气${(score * 13 / 60.0).roundToInt() + 1}层"
+            score < 240 -> "筑基" + rankString2[(score - 60) / 45]
+            score < 600 -> "结丹" + rankString2[(score - 240) / 90]
+            score < 1000 -> "元婴" + rankString2[(score - 600) / 100]
+            score < 1500 -> "化神" + rankString2[(score - 1000) / 125]
+            score < 2000 -> "炼虚" + rankString2[(score - 1500) / 125]
+            score < 2900 -> "合体" + rankString2[(score - 2000) / 250]
+            score < 4800 -> "大乘" + rankString2[(score - 3000) / 500]
+            else -> "大乘" + rankString2.last()
         }
     }
 
