@@ -242,7 +242,7 @@ object Statistics {
             var i = 0
             return l.joinToString(separator = "\n") {
                 val name = it.name.replace("\"", "\\\"")
-                val rank = ScoreFactory.getRankNameByScore(it.score)
+                val rank = ScoreFactory.getRankStringNameByScore(it.score)
                 "第${++i}名：$name·$rank·${it.score}"
             }
         }

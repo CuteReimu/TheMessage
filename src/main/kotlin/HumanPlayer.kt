@@ -403,7 +403,7 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
                 val ns = newScoreMap[player.playerName] ?: Statistics.getScore(player) ?: 0
                 addScore.add(addScoreMap[player.playerName] ?: 0)
                 newScore.add(ns)
-                newRank.add(ScoreFactory.getRankNameByScore(ns))
+                newRank.add(ScoreFactory.getRankStringNameByScore(ns))
                 alive.add(player.alive)
             }
         })

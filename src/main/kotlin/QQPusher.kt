@@ -98,7 +98,7 @@ object QQPusher {
                 else if (addScore < 0) addScore.toString()
                 else if (result == "失败" || result == "输掉游戏") "-0"
                 else "+0"
-            val rank = ScoreFactory.getRankNameByScore(newScore)
+            val rank = ScoreFactory.getRankStringNameByScore(newScore)
             lines.add("$name,$roleName,$identity,$result,$rank,$newScore($addScoreStr)")
             if (player is HumanPlayer)
                 map[name] = "$roleName,$identity,$result,$rank,$newScore($addScoreStr)"

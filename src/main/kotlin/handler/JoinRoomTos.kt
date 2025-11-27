@@ -135,7 +135,7 @@ class JoinRoomTos : ProtoHandler {
                     }
                     val name = p.playerName
                     val score = Statistics.getScore(name) ?: 0
-                    val rank = if (p is HumanPlayer) ScoreFactory.getRankNameByScore(score) else ""
+                    val rank = if (p is HumanPlayer) ScoreFactory.getRankStringNameByScore(score) else ""
                     names.add(name)
                     val c =
                         if (p is HumanPlayer) Statistics.getPlayerGameCount(p.playerName)
