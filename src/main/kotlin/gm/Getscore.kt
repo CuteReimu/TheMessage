@@ -14,6 +14,12 @@ class Getscore : Function<Map<String, String>, Any> {
             if (playerInfo == null) {
                 gson.toJson(mapOf("result" to "${name}已身死道消"))
             } else {
+                val operator = form["operator"]
+                if (operator != null) {
+                    val playerInfo2 = Statistics.getPlayerInfo(operator)
+                    if (playerInfo2 == null || playerInfo2.scoreWithDecay * 1.3 < playerInfo.scoreWithDecay)
+                        return gson.toJson(mapOf("result" to "差距太大，无法查询"))
+                }
                 val winRateSum = "%.2f%%".format(ScoreFactory.getAllWinRate())
                 val rbWinRateSum = "%.2f%%".format(ScoreFactory.getRBWinRate())
                 val blackWinRateSum = "%.2f%%".format(ScoreFactory.getBlackWinRate())
