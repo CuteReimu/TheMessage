@@ -457,7 +457,8 @@ object Statistics {
                 sb.append('\n')
                 deadPlayers.add(info.name)
             }
-            writeFile("playerInfo_dead.csv", sb.toString().toByteArray(), true)
+            if (deadPlayers.isNotEmpty())
+                writeFile("playerInfo_dead.csv", sb.toString().toByteArray(), true)
             runBlocking {
                 deadPlayers.forEach {
                     playerInfoMap.remove(it)
@@ -465,7 +466,8 @@ object Statistics {
                 }
                 countChannel.send(deadPlayers.size)
             }
-            savePlayerInfo()
+            if (deadPlayers.isNotEmpty())
+                savePlayerInfo()
         }
         return runBlocking {
             countChannel.receive()
