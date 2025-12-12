@@ -119,7 +119,9 @@ object QQPusher {
             }
             try {
                 File("history").mkdirs()
-                map.forEach(::addHistory)
+                map.forEach { (k, s) ->
+                    addHistory(k, s)
+                }
             } catch (e: Throwable) {
                 logger.error("catch throwable", e)
             }
@@ -161,24 +163,39 @@ object QQPusher {
         }
     }
 
-    private fun addHistory(name: String, s: String) {
-        var list = try {
-            readLines("history/$name.csv", Charsets.UTF_8)
-        } catch (e: FileNotFoundException) {
-            ArrayList()
+    private val muHistory = Mutex()
+
+    private suspend fun addHistory(name: String, s: String) {
+        muHistory.withLock {
+            var list = try {
+                readLines("history/$name.csv", Charsets.UTF_8)
+            } catch (e: FileNotFoundException) {
+                ArrayList()
+            }
+            list.add(s)
+            if (list.size > 10)
+                list = list.subList(list.size - 10, list.size)
+            writeLines(list, "history/$name.csv", Charsets.UTF_8)
         }
-        list.add(s)
-        if (list.size > 10)
-            list = list.subList(list.size - 10, list.size)
-        writeLines(list, "history/$name.csv", Charsets.UTF_8)
     }
 
-    fun getHistory(name: String): List<String> = try {
-        readLines("history/$name.csv", Charsets.UTF_8)
-    } catch (e: Throwable) {
-        if (e !is FileNotFoundException)
-            logger.error("catch throwable", e)
-        emptyList()
+    suspend fun removeHistory(name: String) {
+        muHistory.withLock {
+            val file = File("history/$name.csv")
+            if (file.exists()) {
+                file.delete()
+            }
+        }
+    }
+
+    suspend fun getHistory(name: String): List<String> = muHistory.withLock {
+        try {
+            readLines("history/$name.csv", Charsets.UTF_8)
+        } catch (e: Throwable) {
+            if (e !is FileNotFoundException)
+                logger.error("catch throwable", e)
+            emptyList()
+        }
     }
 
     private fun sendGroupMessage(groupId: Long, message: String, atAll: Boolean, vararg at: Long) {

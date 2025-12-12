@@ -471,6 +471,49 @@ object Statistics {
         }
     }
 
+    fun removeDeadPlayers(): Int {
+        val countChannel = Channel<Int>(1)
+        pool.trySend {
+            val sb = StringBuilder()
+            val deadPlayers = ArrayList<String>()
+            for ((_, info) in playerInfoMap) {
+                if (info.scoreWithDecay > -1200) continue
+                sb.append(info.winCount).append(',')
+                sb.append(info.gameCount).append(',')
+                sb.append(info.name).append(',')
+                sb.append(info.score).append(',')
+                sb.append(info.password).append(',')
+                sb.append(info.forbidUntil).append(',')
+                sb.append(info.title).append(',')
+                sb.append(info.lastTime).append(',')
+                sb.append(info.energy).append(',')
+                sb.append(info.maxScore).append(',')
+                sb.append(info.rbWinCount).append(',')
+                sb.append(info.rbGameCount).append(',')
+                sb.append(info.blackWinCount).append(',')
+                sb.append(info.blackGameCount)
+                listOf(Killer, Stealer, Collector, Mutator, Pioneer, Disturber, Sweeper).forEach {
+                    sb.append(',').append(info.blacksWinCount[it] ?: 0)
+                    sb.append(',').append(info.blacksGameCount[it] ?: 0)
+                }
+                sb.append('\n')
+                deadPlayers.add(info.name)
+            }
+            writeFile("playerInfo_dead.csv", sb.toString().toByteArray(), true)
+            runBlocking {
+                deadPlayers.forEach {
+                    playerInfoMap.remove(it)
+                    QQPusher.removeHistory(it)
+                }
+                countChannel.send(deadPlayers.size)
+            }
+            savePlayerInfo()
+        }
+        return runBlocking {
+            countChannel.receive()
+        }
+    }
+
     class Record(
         val role: role,
         val isWinner: Boolean,

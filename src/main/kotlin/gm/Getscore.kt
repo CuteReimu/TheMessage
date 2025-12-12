@@ -4,6 +4,7 @@ import com.fengsheng.QQPusher
 import com.fengsheng.ScoreFactory
 import com.fengsheng.Statistics
 import com.fengsheng.protos.Common.secret_task.*
+import kotlinx.coroutines.runBlocking
 import java.util.function.Function
 
 class Getscore : Function<Map<String, String>, Any> {
@@ -58,7 +59,7 @@ class Getscore : Function<Map<String, String>, Any> {
                 s += "---------------------------------\n"
                 s += "剩余精力：$energy"
                 if (playerInfo.score != score) s += "（长期不打会掉分，打一场即可全部恢复）"
-                val history = QQPusher.getHistory(name)
+                val history = runBlocking { QQPusher.getHistory(name) }
                 if (history.isNotEmpty())
                     s += "\n\n最近${history.size}场战绩\n" + history.joinToString(separator = "\n")
                 gson.toJson(mapOf("result" to s))
