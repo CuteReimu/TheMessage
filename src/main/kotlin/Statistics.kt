@@ -32,7 +32,6 @@ object Statistics {
     private val robotInfoMap = ConcurrentHashMap<String, RobotInfo>()
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
-    private val trialStartTime = ConcurrentHashMap<String, Long>()
     val rankList25 = AtomicReference<String>()
     val rankList100 = AtomicReference<String>()
     val rankListImage = AtomicReference<BufferedImage>()
@@ -78,11 +77,7 @@ object Statistics {
             val now = System.currentTimeMillis()
             var win = 0
             var game = 0
-            var updateTrial = false
             for (count in playerGameResultList) {
-                if (count.isWin) {
-                    if (trialStartTime.remove(count.playerName) != null) updateTrial = true
-                }
                 playerInfoMap.computeIfPresent(count.playerName) { _, v ->
                     val addWin = if (count.isWin) 1 else 0
                     val addRbWin = if (count.isWin && count.identity != Black) 1 else 0
@@ -112,7 +107,6 @@ object Statistics {
             totalGameCount.addAndGet(game)
             pool.trySend {
                 savePlayerInfo()
-                if (updateTrial) saveTrials()
             }
         } catch (e: Exception) {
             logger.error("add player game count failed: ", e)
@@ -353,15 +347,6 @@ object Statistics {
         writeFile("robotInfo.csv", sb.toString().toByteArray())
     }
 
-    private fun saveTrials() {
-        val sb = StringBuilder()
-        for ((key, value) in trialStartTime) {
-            sb.append(value).append(',')
-            sb.append(key).append('\n')
-        }
-        writeFile("trial.csv", sb.toString().toByteArray())
-    }
-
     @Throws(IOException::class)
     fun load() {
         var winCount = 0
@@ -419,34 +404,7 @@ object Statistics {
         }
         totalWinCount.set(winCount)
         totalGameCount.set(gameCount)
-        try {
-            BufferedReader(InputStreamReader(FileInputStream("trial.csv"))).use { reader ->
-                var line: String?
-                while (true) {
-                    line = reader.readLine()
-                    if (line == null) break
-                    val a = line!!.split(",".toRegex(), limit = 2)
-                    trialStartTime[a[1]] = a[0].toLong()
-                }
-            }
-        } catch (ignored: FileNotFoundException) {
-        }
         calculateRankList()
-    }
-
-    fun getTrialStartTime(playerName: String): Long {
-        return trialStartTime.getOrDefault(playerName, 0L)
-    }
-
-    fun setTrialStartTime(playerName: String, time: Long) {
-        pool.trySend {
-            try {
-                trialStartTime[playerName] = time
-                saveTrials()
-            } catch (e: Exception) {
-                logger.error("execute task failed", e)
-            }
-        }
     }
 
     fun displayRecordList(player: HumanPlayer) {

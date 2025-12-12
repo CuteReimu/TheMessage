@@ -11,7 +11,6 @@ class Register : Function<Map<String, String>, Any> {
             if (invalidString.any { it in name }) return gson.toJson(mapOf("error" to "名字中含有非法字符"))
             if ("名字" in name) return gson.toJson(mapOf("error" to "不能含有“名字”二字"))
             val result = Statistics.register(name)
-            Statistics.setTrialStartTime(name, System.currentTimeMillis())
             gson.toJson(mapOf("result" to result))
         } catch (e: NullPointerException) {
             gson.toJson(mapOf("error" to "参数错误"))
