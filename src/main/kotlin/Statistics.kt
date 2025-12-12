@@ -435,7 +435,7 @@ object Statistics {
             val sb = StringBuilder()
             val deadPlayers = ArrayList<String>()
             for ((_, info) in playerInfoMap) {
-                if (info.scoreWithDecay > -1200) continue
+                if (info.scoreWithDecayWithoutLimit > -1200) continue
                 sb.append(info.winCount).append(',')
                 sb.append(info.gameCount).append(',')
                 sb.append(info.name).append(',')
@@ -513,9 +513,14 @@ object Statistics {
     ) : Comparable<PlayerInfo> {
         val scoreWithDecay: Int
             get() {
+                return scoreWithDecayWithoutLimit.coerceAtLeast(0)
+            }
+
+        internal val scoreWithDecayWithoutLimit: Int
+            get() {
                 val days = ((System.currentTimeMillis() - lastTime) / (24 * 3600000L)).toInt()
                 val decay = days / 7 * 20
-                return (score - decay).coerceAtLeast(0)
+                return score - decay
             }
 
         override fun compareTo(other: PlayerInfo) = when {
