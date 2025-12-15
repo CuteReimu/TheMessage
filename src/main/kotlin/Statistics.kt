@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.fixedRateTimer
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 object Statistics {
@@ -32,6 +33,7 @@ object Statistics {
     private val robotInfoMap = ConcurrentHashMap<String, RobotInfo>()
     private val totalWinCount = AtomicInteger()
     private val totalGameCount = AtomicInteger()
+    private val robotAveScore = AtomicInteger()
     val rankList25 = AtomicReference<String>()
     val rankList100 = AtomicReference<String>()
     val rankListImage = AtomicReference<BufferedImage>()
@@ -175,10 +177,9 @@ object Statistics {
 
     fun getPlayerInfo(name: String) = playerInfoMap[name]
     fun getScore(name: String) = playerInfoMap[name]?.score
-    fun getScore(player: Player) =
-        if (player is HumanPlayer) getScore(player.playerName) else robotInfoMap[player.playerName]?.score
+    fun getScore(player: Player) = if (player is HumanPlayer) getScore(player.playerName) else robotAveScore.get()
     fun getScore2(player: Player) =
-        if (player is HumanPlayer) playerInfoMap[player.playerName]?.scoreWithDecay else robotInfoMap[player.playerName]?.score
+        if (player is HumanPlayer) playerInfoMap[player.playerName]?.scoreWithDecay else robotAveScore.get()
     fun getEnergy(name: String) = playerInfoMap[name]?.energy ?: 0
     fun addEnergy(name: String, energy: Int, save: Boolean = false): Boolean {
         val ok = playerInfoMap.computeIfPresent(name) { _, v ->
@@ -220,6 +221,13 @@ object Statistics {
                 delta = newScore - (v?.score ?: 0)
                 v?.copy(score = newScore) ?: RobotInfo(player.playerName, newScore)
             }
+            var count = 0
+            var total = 0
+            robotInfoMap.forEach { (_, value) ->
+                count++
+                total += value.score
+            }
+            robotAveScore.set(if (count > 0) (total.toDouble() / count).roundToInt() else 0)
         }
         if (save) pool.trySend(::savePlayerInfo)
         return newScore to delta
@@ -412,6 +420,14 @@ object Statistics {
             }
         } catch (ignored: FileNotFoundException) {
         }
+
+        var count = 0
+        var total = 0
+        robotInfoMap.forEach { (_, value) ->
+            count++
+            total += value.score
+        }
+        robotAveScore.set(if (count > 0) (total.toDouble() / count).roundToInt() else 0)
         totalWinCount.set(winCount)
         totalGameCount.set(gameCount)
         calculateRankList()
