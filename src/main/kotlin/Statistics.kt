@@ -228,6 +228,8 @@ object Statistics {
                 total += value.score
             }
             robotAveScore.set(if (count > 0) (total.toDouble() / count).roundToInt() else 0)
+            newScore = robotAveScore.get()
+            delta = score
         }
         if (save) pool.trySend(::savePlayerInfo)
         return newScore to delta
