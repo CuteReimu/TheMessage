@@ -1,7 +1,6 @@
-package gm
+package com.fengsheng.gm
 
 import com.fengsheng.Statistics
-import com.fengsheng.gm.gson
 import java.util.function.Function
 
 class Addscore : Function<Map<String, String>, Any> {
