@@ -131,6 +131,7 @@ push.push_qq_groups=12345678
 | /frequency         | 无                                | 返回json格式的游玩频率统计信息                                                                      |
 | /resetseason       | 无                                | 重置赛季，重置前请手动备份PlayerInfo.csv                                                            |
 | /addenergy         | name=aaa&energy=1                | 增加精力                                                                                   |
+| /addscore          | name=aaa&score=1                 | 增加分数                                                                                   |
 | /getallgames       | 无                                | 获取所有房间的状态                                                                              |
 | /removedeadplayers | 无                                | 删除所有僵尸号，执行前前请手动备份PlayerInfo.csv，请在没有游戏进行时执行                                            |
 

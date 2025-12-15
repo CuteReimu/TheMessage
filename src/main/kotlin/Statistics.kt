@@ -72,6 +72,16 @@ object Statistics {
         }
     }
 
+    fun gmAddScore(name: String, score: Int): Int {
+        var newScore = 0
+        playerInfoMap.computeIfPresent(name) { _, v ->
+            newScore = v.score + score
+            v.copy(score = newScore, maxScore = maxOf(v.maxScore, newScore))
+        }
+        pool.trySend(::savePlayerInfo)
+        return newScore
+    }
+
     fun addPlayerGameCount(playerGameResultList: List<PlayerGameResult>) {
         try {
             val now = System.currentTimeMillis()
