@@ -169,8 +169,6 @@ push.push_qq_groups=12345678
 如果依赖库下载太慢，可以修改`build.gradle.kts`，自行使用下载较快的镜像
 
 ```diff
-+ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 repositories {
 +   maven("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/")
     mavenCentral()
