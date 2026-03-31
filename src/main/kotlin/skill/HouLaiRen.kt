@@ -57,7 +57,7 @@ class HouLaiRen : ActiveSkill {
         r.incrSeq()
         r.addSkillUseCount(skillId)
         g.playerSetRoleFaceUp(r, true)
-        val roles = RoleCache.getRandomRoles(3, g.players.map { it!!.role }.toSet())
+        val roles = RoleCache.getRandomRoles(3, g.players.map { it!!.role }.toSet(), g.extension)
         val discardCards = r.messageCards.filter { it.id != message.remainCardId }
         logger.info("${r}发动了[后来人]，弃掉了${discardCards.joinToString()}")
         r.messageCards.clear()

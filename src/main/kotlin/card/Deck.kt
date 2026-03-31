@@ -125,7 +125,7 @@ class Deck(private val game: Game) {
             })
     }
 
-    fun init(totalPlayerCount: Int) {
+    fun init(totalPlayerCount: Int, extension: Int) {
         cards.clear()
         if (totalPlayerCount <= 4) {
             cards.addAll(DefaultDeck.subList(0, 108))
@@ -140,6 +140,8 @@ class Deck(private val game: Game) {
                 shiTanIndex.forEach { cards.removeAt(it) }
             }
         }
+        if (extension < 3) cards = ArrayList(cards.filterNot { it is DiaoHuLiShan || it is YuQinGuZong })
+        if (extension < 2) cards = ArrayList(cards.filterNot { it is FengYunBianHuan || it is MiLing })
         for (card in cards) {
             val index =
                 if (card.colors.size == 1) card.colors.first().number * 4

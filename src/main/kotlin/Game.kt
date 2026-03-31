@@ -39,6 +39,8 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     @Volatile
     var isStarted = false
 
+    var extension = 3
+
     @Volatile
     var isEnd = false
         private set
@@ -136,6 +138,14 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         isStarted = true
         players = players.shuffled()
         players.forEachIndexed { i, p -> p!!.location = i }
+        val humanCount = players.count { it is HumanPlayer }
+        extension = run {
+            for (i in 3 downTo 1) {
+                if (players.count { it is HumanPlayer && it.roomExtension >= i } * 2 >= humanCount) return@run i
+            }
+            3
+        }
+
         QQPusher.notifyStart()
         val identities = ArrayList<color>()
         when (players.size) {
@@ -217,12 +227,18 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
             else -> players.size - 4
         }
         possibleSecretTasks = tasks.take(possibleSecretTaskCount.coerceAtMost(tasks.size)).shuffled()
+        val n = if (extension == 1) players.size * 2 else players.size * 3
         val roleSkillsDataList = if (Config.IsGmEnable) RoleCache.getRandomRolesWithSpecific(
-            players.size * 3,
-            Config.DebugRoles
-        ) else RoleCache.getRandomRoles(players.size * 3)
+            n,
+            Config.DebugRoles,
+            extension
+        ) else RoleCache.getRandomRoles(n, extension)
         resolve(WaitForSelectRole(this, players.indices.map {
-            listOf(
+            if (extension == 1) listOf(
+                roleSkillsDataList[it],
+                roleSkillsDataList[it + players.size],
+            ).filter { r -> r.role != unknown }.toMutableList()
+            else listOf(
                 roleSkillsDataList[it],
                 roleSkillsDataList[it + players.size],
                 roleSkillsDataList[it + players.size * 2]

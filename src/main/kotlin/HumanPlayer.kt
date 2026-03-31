@@ -47,6 +47,13 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
     @Volatile
     var isReconnecting = false
 
+    /** 扩展包，1-只有基础，2-基础一扩，3-全部 */
+    @Volatile
+    var roomExtension = 3
+        set(value) {
+            field = if (value in 1..3) value else 3
+        }
+
     /**
      * 游戏结束重置
      */

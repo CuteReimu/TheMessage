@@ -113,6 +113,7 @@ class JoinRoomTos : ProtoHandler {
                 }
             }
             player.playerName = playerName
+            player.roomExtension = pb.extension
             val count = PlayerGameCount(playerInfo.winCount, playerInfo.gameCount)
             if (!newGame.onPlayerJoinRoom(player, count)) {
                 Game.playerNameCache.remove(playerName) // 登录失败的话，要把注册清掉
@@ -121,6 +122,7 @@ class JoinRoomTos : ProtoHandler {
             }
             player.game = newGame
             player.send(getRoomInfoToc {
+                extension = player.roomExtension
                 myPosition = player.location
                 onlineCount = Game.onlineCount
                 inGameCount = Game.inGameCount

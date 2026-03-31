@@ -73,6 +73,7 @@ message join_room_tos {
   string name = 2; // 玩家的名字
   string password = 4; // 密码，建议客户端先加密一下再发过来
   uint32 player_count = 6; // （创房）房间内的总人数
+  uint32 extension = 7; // 扩展包，1-只有基础，2-基础一扩，3-全部，0-默认全部
 }
 
 // 返回房间所有人的信息
@@ -87,6 +88,15 @@ message get_room_info_toc {
   string          notice = 8; // 房间公告
   uint32          room_id = 9; // 房间号
   uint32          in_game_count = 10; // 正在进行游戏的桌数
+  uint32          extension = 11; // 扩展包，1-只有基础，2-基础一扩，3-全部
+}
+
+message set_room_extension_tos {
+  uint32 extension = 1; // 扩展包，1-只有基础，2-基础一扩，3-全部
+}
+
+message set_room_extension_toc {
+  uint32 extension = 1; // 扩展包，1-只有基础，2-基础一扩，3-全部
 }
 
 // 通知房间倒计时

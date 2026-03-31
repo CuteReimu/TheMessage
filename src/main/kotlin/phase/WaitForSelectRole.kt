@@ -112,6 +112,14 @@ class WaitForSelectRole(val game: Game, val options: List<MutableList<RoleSkills
             waitingSecond = ((endTime - System.currentTimeMillis()) / 1000.0).roundToInt().coerceAtLeast(1)
             possibleSecretTask.addAll(game.possibleSecretTasks)
         })
+        if (player.roomExtension != game.extension) {
+            val extensionName = when (game.extension) {
+                1 -> "标准包"
+                2 -> "标准包+一扩"
+                else -> "全部扩展包"
+            }
+            player.sendErrorMessage("根据投票结果，本次游戏使用$extensionName")
+        }
         if (game.players.size < 5)
             player.notifyIdentity()
     }

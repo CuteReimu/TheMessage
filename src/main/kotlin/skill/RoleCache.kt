@@ -141,9 +141,14 @@ object RoleCache {
     /**
      * @return 长度为 `n` 的列表
      */
-    fun getRandomRoles(n: Int): List<RoleSkillsData> = runBlocking {
+    fun getRandomRoles(n: Int, extension: Int): List<RoleSkillsData> = runBlocking {
         mu.withLock {
-            val indexList = cache.indices.shuffled()
+            // TODO: 禁用角色再解禁的情况下会导致限制扩展包排序不对
+            val indexList = when (extension) {
+                2 -> 1..cache.indexOfFirst { it.role == sp_duan_mu_jing }
+                1 -> 1..cache.indexOfFirst { it.role == sp_li_ning_yu }
+                else -> cache.indices
+            }.shuffled()
             List(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
         }
     }
@@ -152,10 +157,15 @@ object RoleCache {
      * @param except 排除的角色
      * @return 长度为 `n` 的列表
      */
-    fun getRandomRoles(n: Int, except: Set<role>): List<RoleSkillsData> = runBlocking {
+    fun getRandomRoles(n: Int, except: Set<role>, extension: Int): List<RoleSkillsData> = runBlocking {
         mu.withLock {
+            // TODO: 禁用角色再解禁的情况下会导致限制扩展包排序不对
             val cache = this@RoleCache.cache.filterNot { it.role in except }
-            val indexList = cache.indices.shuffled()
+            val indexList = when (extension) {
+                2 -> 1..cache.indexOfFirst { it.role == sp_duan_mu_jing }
+                1 -> 1..cache.indexOfFirst { it.role == sp_li_ning_yu }
+                else -> cache.indices
+            }.shuffled()
             List(n) { i -> if (i < indexList.size) cache[indexList[i]] else RoleSkillsData() }
         }
     }
@@ -164,8 +174,8 @@ object RoleCache {
      * @param roles 返回数组的前几个角色强行指定
      * @return 长度为 `n` 的列表
      */
-    fun getRandomRolesWithSpecific(n: Int, roles: List<role>): List<RoleSkillsData> {
-        val roleSkillsDataList = getRandomRoles(n).toMutableList()
+    fun getRandomRolesWithSpecific(n: Int, roles: List<role>, extension: Int): List<RoleSkillsData> {
+        val roleSkillsDataList = getRandomRoles(n, extension).toMutableList()
         var roleIndex = 0
         while (roleIndex < roles.size && roleIndex < n) {
             val index = roleSkillsDataList.indexOfFirst { it.role == roles[roleIndex] }
