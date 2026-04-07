@@ -39,7 +39,7 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
     @Volatile
     var isStarted = false
 
-    var extension = 3
+    var extension = 4
 
     @Volatile
     var isEnd = false
@@ -210,6 +210,14 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         }
         val tasks = arrayListOf(Killer, Stealer, Collector, Pioneer)
         if (players.size >= 5) tasks.addAll(listOf(Mutator, Disturber, Sweeper))
+        if (extension < 3) {
+            tasks.remove(Sweeper)
+            tasks.remove(Disturber)
+        }
+        if (extension < 2) {
+            tasks.remove(Pioneer)
+            tasks.remove(Mutator)
+        }
         tasks.shuffle()
         var secretIndex = 0
         for (i in players.indices) {
