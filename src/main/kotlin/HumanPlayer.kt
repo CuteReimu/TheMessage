@@ -47,11 +47,11 @@ class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val n
     @Volatile
     var isReconnecting = false
 
-    /** 扩展包，1-只有基础，2-基础一扩，3-全部 */
+    /** 扩展包，1-只有基础，2-基础一扩，3-没有王响、孙守谟，4-全部 */
     @Volatile
-    var roomExtension = 3
+    var roomExtension = 4
         set(value) {
-            field = if (value in 1..3) value else 3
+            field = if (value in 1..4) value else 4
         }
 
     /**

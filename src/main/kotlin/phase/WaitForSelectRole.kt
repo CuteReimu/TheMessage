@@ -114,11 +114,12 @@ class WaitForSelectRole(val game: Game, val options: List<MutableList<RoleSkills
         })
         if (player.roomExtension != game.extension) {
             val extensionName = when (game.extension) {
-                1 -> "标准包"
-                2 -> "标准包+一扩"
-                else -> "全部扩展包"
+                1 -> "使用标准包"
+                2 -> "使用标准包+一扩"
+                3 -> "不使用王响、孙守謨"
+                else -> "使用全部扩展包"
             }
-            player.sendErrorMessage("根据投票结果，本次游戏使用$extensionName")
+            player.sendErrorMessage("根据投票结果，本次游戏$extensionName")
         }
         if (game.players.size < 5)
             player.notifyIdentity()

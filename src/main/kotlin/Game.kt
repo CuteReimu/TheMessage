@@ -140,10 +140,10 @@ class Game(val id: Int, totalPlayerCount: Int, val actorRef: ActorRef) {
         players.forEachIndexed { i, p -> p!!.location = i }
         val humanCount = players.count { it is HumanPlayer }
         extension = run {
-            for (i in 3 downTo 1) {
+            for (i in 4 downTo 1) {
                 if (players.count { it is HumanPlayer && it.roomExtension >= i } * 2 >= humanCount) return@run i
             }
-            3
+            4
         }
 
         QQPusher.notifyStart()

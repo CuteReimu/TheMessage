@@ -77,10 +77,10 @@ object RoleCache {
         RoleSkillsData("小铃铛", xiao_ling_dang, true, true, XinGeLianLuo(), HouZiQieXin()),
         RoleSkillsData("陈大耳", chen_da_er, false, true, BianZeTong()),
         RoleSkillsData("边云疆", bian_yun_jiang, false, true, YouDiShenRu(), JianDiFengXing()),
-        RoleSkillsData("孙守謨", sun_shou_mo, false, true, XiangJinSiSuo(), QiangYingXiaLing()),
-        RoleSkillsData("王响", huo_che_si_ji, false, true, JieCheYunHuo(), WorkersAreKnowledgable()),
         RoleSkillsData("SP小九", cp_xiao_jiu, false, true, ZhuangZhiManHuai(), YiZhongRen()),
         RoleSkillsData("SP韩梅", cp_han_mei, true, true, AnCangShaJi(), BaiYueGuang()),
+        RoleSkillsData("孙守謨", sun_shou_mo, false, true, XiangJinSiSuo(), QiangYingXiaLing()),
+        RoleSkillsData("王响", huo_che_si_ji, false, true, JieCheYunHuo(), WorkersAreKnowledgable()),
     )
     private val mapCache: Map<role, RoleSkillsData>
     private val pool = Channel<() -> Unit>(Channel.UNLIMITED)
@@ -145,6 +145,7 @@ object RoleCache {
         mu.withLock {
             // TODO: 禁用角色再解禁的情况下会导致限制扩展包排序不对
             val indexList = when (extension) {
+                3 -> 1..cache.indexOfFirst { it.role == cp_han_mei }
                 2 -> 1..cache.indexOfFirst { it.role == sp_duan_mu_jing }
                 1 -> 1..cache.indexOfFirst { it.role == sp_li_ning_yu }
                 else -> cache.indices
@@ -162,6 +163,7 @@ object RoleCache {
             // TODO: 禁用角色再解禁的情况下会导致限制扩展包排序不对
             val cache = this@RoleCache.cache.filterNot { it.role in except }
             val indexList = when (extension) {
+                3 -> 1..cache.indexOfFirst { it.role == cp_han_mei }
                 2 -> 1..cache.indexOfFirst { it.role == sp_duan_mu_jing }
                 1 -> 1..cache.indexOfFirst { it.role == sp_li_ning_yu }
                 else -> cache.indices
