@@ -6,6 +6,7 @@ import com.fengsheng.protos.*
 import com.google.protobuf.GeneratedMessage
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.logger
+import java.net.InetAddress
 
 class JoinRoomTos : ProtoHandler {
     override fun handle(player: HumanPlayer, message: GeneratedMessage) {
@@ -150,10 +151,28 @@ class JoinRoomTos : ProtoHandler {
                 notice = "${Config.Notice.get()}\n\n${Statistics.rankList25.get()}"
                 roomId = newGame.id
             })
+            // 检查是否有ip接近的玩家
+            val ip = player.ip
+            if (ip != null) {
+                val hasSimilarIp = newGame.players.any { p -> p is HumanPlayer && p !== player && isSimilarIp(p.ip, ip) }
+                if (hasSimilarIp) {
+                    newGame.players.send { errorMessageToc { msg = "房间内疑似有多名玩家ip地址接近，请知悉" } }
+                }
+            }
+            newGame.players.groupBy { }
         }
     }
 
     companion object {
+        private fun isSimilarIp(addr1: InetAddress?, addr2: InetAddress?): Boolean {
+            if (addr1 == null || addr2 == null) return false
+            val bytes1 = addr1.address
+            val bytes2 = addr2.address
+            if (bytes1.size != bytes2.size) return false
+            val prefixLen = if (bytes1.size == 4) 2 else 6 // IPv4取前16位(/16)，IPv6取前48位(/48)
+            return bytes1.take(prefixLen) == bytes2.take(prefixLen)
+        }
+
         private fun Game.removeAllRobot() {
             for ((index, robotPlayer) in players.withIndex()) {
                 if (robotPlayer is RobotPlayer) {

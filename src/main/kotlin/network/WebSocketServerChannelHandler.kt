@@ -66,7 +66,8 @@ class WebSocketServerChannelHandler : SimpleChannelInboundHandler<WebSocketFrame
     override fun channelActive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
         logger.info("session connected: ${channel.id().asShortText()} ${channel.remoteAddress()}")
-        val player = HumanPlayer(channel, true) { protoName: String, buf: ByteArray ->
+        val ip = (channel.remoteAddress() as? java.net.InetSocketAddress)?.address
+        val player = HumanPlayer(channel, true, ip) { protoName: String, buf: ByteArray ->
             val protoNameBuf = protoName.toByteArray()
             val totalLen = 2 + protoNameBuf.size + buf.size
             val byteBuf = Unpooled.buffer(totalLen)

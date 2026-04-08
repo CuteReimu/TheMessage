@@ -26,10 +26,9 @@ import java.net.SocketException
 class ProtoServerChannelHandler : SimpleChannelInboundHandler<ByteBuf>() {
     override fun channelActive(ctx: ChannelHandlerContext) {
         val channel = ctx.channel()
-        logger.info(
-            "session connected: ${channel.id().asShortText()} ${channel.remoteAddress()}"
-        )
-        val player = HumanPlayer(channel) { protoName: String, buf: ByteArray ->
+        logger.info("session connected: ${channel.id().asShortText()} ${channel.remoteAddress()}")
+        val ip = (channel.remoteAddress() as? java.net.InetSocketAddress)?.address
+        val player = HumanPlayer(channel, false, ip) { protoName: String, buf: ByteArray ->
             val byteBuf = PooledByteBufAllocator.DEFAULT.ioBuffer(buf.size + 4, buf.size + 4)
             byteBuf.writeShortLE(buf.size + 2)
             byteBuf.writeShortLE(stringHash(protoName).toInt())

@@ -21,10 +21,16 @@ import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelFutureListener
 import io.netty.util.Timeout
 import org.apache.logging.log4j.kotlin.logger
+import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-class HumanPlayer(var channel: Channel, var needWaitLoad: Boolean = false, val newBodyFun: (String, ByteArray) -> Any) :
+class HumanPlayer(
+    var channel: Channel,
+    var needWaitLoad: Boolean = false,
+    val ip: InetAddress?,
+    val newBodyFun: (String, ByteArray) -> Any,
+) :
     Player() {
     var seq = 0
         private set
