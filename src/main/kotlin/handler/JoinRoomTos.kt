@@ -173,7 +173,7 @@ class JoinRoomTos : ProtoHandler {
             val bytes1 = addr1.address
             val bytes2 = addr2.address
             if (bytes1.size != bytes2.size) return false
-            val prefixLen = if (bytes1.size == 4) 2 else 6 // IPv4取前16位(/16)，IPv6取前48位(/48)
+            val prefixLen = if (bytes1.size == 4) 3 else 8 // IPv4取前24位(/24)，IPv6取前64位(/64)
             return bytes1.take(prefixLen) == bytes2.take(prefixLen)
         }
 
