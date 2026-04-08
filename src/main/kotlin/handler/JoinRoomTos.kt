@@ -154,7 +154,11 @@ class JoinRoomTos : ProtoHandler {
             // 检查是否有ip接近的玩家
             val ip = player.ip
             if (ip != null) {
-                val hasSimilarIp = newGame.players.any { p -> p is HumanPlayer && p !== player && isSimilarIp(p.ip, ip) }
+                val hasSimilarIp = newGame.players.filterIsInstance<HumanPlayer>().run {
+                    any { player ->
+                        any { p -> p !== player && isSimilarIp(p.ip, ip) }
+                    }
+                }
                 if (hasSimilarIp) {
                     newGame.players.send { errorMessageToc { msg = "房间内疑似有多名玩家ip地址接近，请知悉" } }
                 }
