@@ -439,13 +439,17 @@ fun Player.calculateMessageCardValue(
             v1 = merge(v1, myValue)
         }
         // 防御王富贵【江湖令】：从王富贵的角度判断是否想要弃掉牌
-        if (sender.skills.any { it is JiangHuLing } && sender.skills.any { it is OneTurnSkill } && sender !== inFrontOfWhom) {
+        val jiangHuLingDeclaredColor = JiangHuLing.getDeclaredColor(sender.skills)
+        if (sender.skills.any { it is JiangHuLing } && jiangHuLingDeclaredColor != null && sender !== inFrontOfWhom) {
             // 王富贵已经发动了江湖令，模拟他的决策过程
+            // 注意：江湖令只能弃置宣言颜色的情报，因此必须按宣言颜色过滤
             inFrontOfWhom.messageCards.add(TmpCard(colors))
             var wangFuGuiMaxValue = 0
             var myMaxValue = 0
             var isBlack = false
             for (messageCard in inFrontOfWhom.messageCards.toList()) {
+                // 只考虑带有宣言颜色的情报（江湖令限制）
+                if (jiangHuLingDeclaredColor !in messageCard.colors) continue
                 // 从王富贵的角度计算移除这张牌的价值
                 var wangFuGuiValue = sender.calculateRemoveCardValue(whoseTurn, inFrontOfWhom, messageCard)
                 if (messageCard.isBlack()) {

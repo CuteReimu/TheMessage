@@ -102,6 +102,15 @@ class JiangHuLing : TriggeredSkill {
         }
     }
 
+    companion object {
+        /**
+         * 获取玩家已发动的[江湖令]所宣言的颜色，若未发动则返回null
+         */
+        fun getDeclaredColor(skills: List<Skill>): color? {
+            return (skills.find { it is JiangHuLing2 } as? JiangHuLing2)?.color
+        }
+    }
+
     private class JiangHuLing2(val color: color) : TriggeredSkill, OneTurnSkill {
         override val skillId = SkillId.UNKNOWN
 
