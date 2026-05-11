@@ -312,6 +312,75 @@ doc/
 6. **不要删除TODO**: 代码中的TODO标记了已知但暂不实现的复杂逻辑，保留它们
 7. **测试通过**: 修改后确保 `./gradlew build` 通过
 
+## 技能快速查找指南
+
+在分析日志或调试AI行为时，经常需要确认某个角色有哪些技能、技能的具体实现是什么。以下是几种互相配合的查找方法。
+
+### 方法一：查角色拥有哪些技能 → RoleCache.kt
+
+`src/main/kotlin/skill/RoleCache.kt` 是所有角色技能配置的注册中心，每一行的格式是：
+
+```kotlin
+RoleSkillsData("角色名", proto枚举, 是否女性, 是否可隐匿, 技能1(), 技能2(), ...)
+```
+
+例如：
+```kotlin
+RoleSkillsData("凌素秋", ling_su_qiu, true, true, TanXuBianShi(), CunBuBuRang())
+RoleSkillsData("黄济仁", huang_ji_ren, false, false, DuiZhengXiaYao())
+RoleSkillsData("SP白菲菲", sp_bai_fei_fei, true, true, TaoQu())
+RoleSkillsData("陈大耳", chen_da_er, false, true, BianZeTong())
+```
+
+直接在此文件中搜索角色名，即可看到该角色所有技能的类名。
+
+### 方法二：根据技能类名找实现文件 → skill/拼音.kt
+
+技能类名即为文件名（大驼峰拼音），位于 `src/main/kotlin/skill/` 目录下：
+
+| 技能类名 | 文件 | 对应中文 |
+|---|---|---|
+| `JiSong` | `JiSong.kt` | 急送 |
+| `DuiZhengXiaYao` | `DuiZhengXiaYao.kt` | 对症下药 |
+| `TanXuBianShi` | `TanXuBianShi.kt` | 探虚辨实 |
+| `CunBuBuRang` | `CunBuBuRang.kt` | 寸步不让 |
+| `TaoQu` | `TaoQu.kt` | 套取 |
+| `BianZeTong` | `BianZeTong.kt` | 变则通 |
+
+### 方法三：根据日志中的中文技能名全局搜索
+
+日志中技能触发格式通常为 `发动了[技能名]`，例如：
+
+```
+6号[黄济仁] 发动了[对症下药]
+```
+
+直接全局搜索中文技能名（如搜索 `"急送"`），即可在对应 `.kt` 文件中定位到该技能名的定义处（通常在 `logger.info("...发动了[急送]...")` 所在行附近）。
+
+### 方法四：通过 SkillId 枚举反查
+
+`src/main/kotlin/skill/SkillId.kt` 中定义了所有技能的枚举，格式为：
+
+```kotlin
+enum class SkillId(private val cName: String) {
+    JI_SONG("急送"),
+    DUI_ZHENG_XIA_YAO("对症下药"),
+    ...
+}
+```
+
+每个技能文件中都有 `override val skillId = SkillId.XXX`，因此也可以通过搜索 `SkillId.JI_SONG` 找到实现文件。
+
+### 查找流程总结
+
+```
+已知角色名  →  RoleCache.kt 搜索角色名  →  得到技能类名  →  skill/类名.kt
+已知技能名  →  全局搜索中文名  →  直接定位到实现文件
+已知技能名  →  SkillId.kt 查枚举值  →  搜索 SkillId.XXX  →  实现文件
+```
+
+---
+
 ## 日志分析指南
 
 当用户提供游戏日志，并要求分析某一时间节点各玩家的手牌和情报区状态时，请按照以下方法进行推演。
