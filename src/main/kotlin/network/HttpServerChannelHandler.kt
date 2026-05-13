@@ -23,12 +23,7 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
         if (msg is HttpRequest) {
             if (msg.method() !== HttpMethod.GET) {
                 val byteBuf = Unpooled.copiedBuffer(gson.toJson(mapOf("error" to "invalid method")), CharsetUtil.UTF_8)
-                val response: FullHttpResponse =
-                    DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED, byteBuf)
-                response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
-                response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
-                response.headers().add(HttpHeaderNames.CONNECTION, "close")
-                ctx.writeAndFlush(response)
+                ctx.writeAndFlush(buildResponse(HttpResponseStatus.METHOD_NOT_ALLOWED, "application/json", byteBuf))
             } else {
                 try {
                     val uri = URI(msg.uri())
@@ -63,54 +58,20 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
                             "application/json" to Unpooled.copiedBuffer(gson.toJson(mapOf("error" to error)), CharsetUtil.UTF_8)
                         }
                     }
-                    val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf)
-                    response.headers().add(HttpHeaderNames.CONTENT_TYPE, contentType)
-                    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
-                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
-                    ctx.writeAndFlush(response)
+                    ctx.writeAndFlush(buildResponse(HttpResponseStatus.OK, contentType, byteBuf))
                 } catch (e: URISyntaxException) {
                     val byteBuf = Unpooled.copiedBuffer(gson.toJson(mapOf("error" to "parse form failed")), CharsetUtil.UTF_8)
-                    val response =
-                        DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST, byteBuf)
-                    response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
-                    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
-                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
-                    ctx.writeAndFlush(response)
+                    ctx.writeAndFlush(buildResponse(HttpResponseStatus.BAD_REQUEST, "application/json", byteBuf))
                 } catch (e: ClassNotFoundException) {
-                    val byteBuf = Unpooled.copiedBuffer(gson.toJson(mapOf("error" to "404 not found")), CharsetUtil.UTF_8)
-                    val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
-                    response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
-                    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
-                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
-                    ctx.writeAndFlush(response)
+                    ctx.writeAndFlush(buildNotFound())
                 } catch (e: InvocationTargetException) {
-                    val byteBuf = Unpooled.copiedBuffer(gson.toJson(mapOf("error" to "404 not found")), CharsetUtil.UTF_8)
-                    val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
-                    response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
-                    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
-                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
-                    ctx.writeAndFlush(response)
+                    ctx.writeAndFlush(buildNotFound())
                 } catch (e: InstantiationException) {
-                    val byteBuf = Unpooled.copiedBuffer(gson.toJson(mapOf("error" to "404 not found")), CharsetUtil.UTF_8)
-                    val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
-                    response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
-                    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
-                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
-                    ctx.writeAndFlush(response)
+                    ctx.writeAndFlush(buildNotFound())
                 } catch (e: IllegalAccessException) {
-                    val byteBuf = Unpooled.copiedBuffer(gson.toJson(mapOf("error" to "404 not found")), CharsetUtil.UTF_8)
-                    val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
-                    response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
-                    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
-                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
-                    ctx.writeAndFlush(response)
+                    ctx.writeAndFlush(buildNotFound())
                 } catch (e: NoSuchMethodException) {
-                    val byteBuf = Unpooled.copiedBuffer(gson.toJson(mapOf("error" to "404 not found")), CharsetUtil.UTF_8)
-                    val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf)
-                    response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json")
-                    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
-                    response.headers().add(HttpHeaderNames.CONNECTION, "close")
-                    ctx.writeAndFlush(response)
+                    ctx.writeAndFlush(buildNotFound())
                 }
             }
         }
@@ -118,5 +79,25 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
 
     companion object {
         private val gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
+
+        private fun buildResponse(
+            status: HttpResponseStatus,
+            contentType: String,
+            byteBuf: io.netty.buffer.ByteBuf
+        ): FullHttpResponse {
+            val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, byteBuf)
+            response.headers().add(HttpHeaderNames.CONTENT_TYPE, contentType)
+            response.headers().add(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes())
+            response.headers().add(HttpHeaderNames.CONNECTION, "close")
+            response.headers().add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+            response.headers().add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "*")
+            response.headers().add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS, "*")
+            return response
+        }
+
+        private fun buildNotFound(): FullHttpResponse {
+            val byteBuf = Unpooled.copiedBuffer(gson.toJson(mapOf("error" to "404 not found")), CharsetUtil.UTF_8)
+            return buildResponse(HttpResponseStatus.NOT_FOUND, "application/json", byteBuf)
+        }
     }
 }
