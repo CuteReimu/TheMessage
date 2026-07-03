@@ -145,7 +145,7 @@ class JiBan : MainPhaseSkill() {
                 else availableTargets.filter { r.isPartner(it!!) }.ifEmpty { availableTargets }
             val player = players.random()!!
 
-            val chosenCard =
+            var chosenCard =
                 if (seq != 0) listOf(r.cards.random())
                 else if (r.game!!.isEarly) // 首轮选价值最低的牌给出去
                     listOf(r.cards.bestCard(r.identity, true))
@@ -175,6 +175,11 @@ class JiBan : MainPhaseSkill() {
                         listOf(r.cards.bestCard(r.identity, true))
                     }
                 }
+            if (chosenCard.size > 1) {
+                chosenCard = chosenCard.run {
+                    filter { c -> c.type != Wei_Bi }.ifEmpty { listOf(random()) }
+                }
+            }
             r.game!!.tryContinueResolveProtocol(r, skillJiBanBTos {
                 targetPlayerId = r.getAlternativeLocation(player.location)
                 chosenCard.forEach { cardIds.add(it.id) }
