@@ -27,7 +27,8 @@ class HttpServerChannelHandler : SimpleChannelInboundHandler<HttpObject>() {
             } else {
                 try {
                     val uri = URI(msg.uri())
-                    logger.info("GM HTTP receive: $uri")
+                    if (msg.uri() != "/get_group_messages")
+                        logger.info("GM HTTP receive: $uri")
                     val form = HashMap<String, String>()
                     val query = uri.rawQuery
                     if (query != null) {
