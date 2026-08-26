@@ -133,6 +133,12 @@ object Statistics {
         return result
     }
 
+    fun removePlayer(name: String): PlayerInfo? {
+        val removed = playerInfoMap.remove(name)
+        if (removed != null) pool.trySend(::savePlayerInfo)
+        return removed
+    }
+
     fun login(name: String, pwd: String?): PlayerInfo {
         val password = try {
             if (pwd.isNullOrEmpty()) "" else md5(name + pwd)
