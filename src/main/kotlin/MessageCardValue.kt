@@ -1,7 +1,6 @@
 package com.fengsheng
 
 import com.fengsheng.RobotPlayer.Companion.sortCards
-import com.fengsheng.ScoreFactory.logger
 import com.fengsheng.card.Card
 import com.fengsheng.card.count
 import com.fengsheng.card.countTrueCard
@@ -14,6 +13,7 @@ import com.fengsheng.protos.Common.role.zhang_yi_ting
 import com.fengsheng.protos.Common.secret_task.*
 import com.fengsheng.skill.*
 import com.fengsheng.skill.LengXueXunLian.MustLockOne
+import org.apache.logging.log4j.kotlin.logger
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
